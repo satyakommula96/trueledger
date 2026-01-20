@@ -21,11 +21,13 @@ jobs:
           channel: 'stable'
       - run: flutter pub get
       - run: flutter build apk --release
+      - name: Rename APK
+        run: mv build/app/outputs/flutter-apk/app-release.apk truecash.apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: truecash.apk
 
   build_ios:
     name: Build iOS IPA (No-Sign)
@@ -42,12 +44,12 @@ jobs:
           cd build/ios/iphoneos
           mkdir Payload
           cp -r Runner.app Payload/
-          zip -r ../../../Runner.ipa Payload
+          zip -r ../../../truecash.ipa Payload
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: ios-release-ipa
-          path: Runner.ipa
+          path: truecash.ipa
 
   build_linux:
     name: Build Linux
@@ -63,11 +65,13 @@ jobs:
           sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-14-dev
       - run: flutter pub get
       - run: flutter build linux --release
+      - name: Archive Linux Build
+        run: tar -czvf truecash.tar.gz -C build/linux/x64/release/bundle .
       - name: Upload Linux Binary
         uses: actions/upload-artifact@v4
         with:
-          name: linux-release-binary
-          path: build/linux/x64/release/bundle/
+          name: linux-release-x64
+          path: truecash.tar.gz
 
   build_macos:
     name: Build macOS
@@ -79,8 +83,12 @@ jobs:
           channel: 'stable'
       - run: flutter pub get
       - run: flutter build macos --release
+      - name: Archive macOS Build
+        run: |
+          cd build/macos/Build/Products/Release/
+          zip -r ../../../../truecash.zip .
       - name: Upload macOS App
         uses: actions/upload-artifact@v4
         with:
-          name: macos-release-app
-          path: build/macos/Build/Products/Release/
+          name: macos-release-x64
+          path: truecash.zip
