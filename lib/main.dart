@@ -5,20 +5,34 @@ import 'dart:ui';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'screens/dashboard.dart';
 import 'theme/theme.dart';
+import 'services/notification_service.dart';
 
-void main() {
+import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/intro_screen.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
-  runApp(const TrueCashApp());
+
+  // Initialize Notifications
+  await NotificationService().init();
+
+  final prefs = await SharedPreferences.getInstance();
+  final bool showIntro = !(prefs.getBool('intro_seen') ?? false);
+
+  runApp(TrueCashApp(showIntro: showIntro));
 }
 
 // Global theme notifier
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
 class TrueCashApp extends StatelessWidget {
-  const TrueCashApp({super.key});
+  final bool showIntro;
+  const TrueCashApp({super.key, required this.showIntro});
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +46,14 @@ class TrueCashApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: mode,
           scrollBehavior: const MaterialScrollBehavior().copyWith(
-            dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.trackpad},
+            dragDevices: {
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.touch,
+              PointerDeviceKind.stylus,
+              PointerDeviceKind.trackpad
+            },
           ),
-          home: const Dashboard(),
+          home: showIntro ? const IntroScreen() : const Dashboard(),
         );
       },
     );
