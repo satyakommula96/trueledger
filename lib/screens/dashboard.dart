@@ -11,9 +11,7 @@ import 'credit_cards.dart';
 import 'monthly_history.dart';
 import 'settings.dart';
 import 'edit_budget.dart';
-import 'edit_goal.dart';
 import 'add_budget.dart';
-import 'add_goal.dart';
 import 'subscriptions.dart';
 import 'loans.dart';
 
@@ -369,7 +367,7 @@ class _DashboardState extends State<Dashboard> {
 
   Widget _buildBottomBar(BuildContext context, AppColors semantic) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(padding: const EdgeInsets.fromLTRB(20, 12, 20, 32), decoration: BoxDecoration(color: colorScheme.background, border: Border(top: BorderSide(color: semantic.divider))), child: Row(children: [Expanded(child: InkWell(onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddExpense())); load(); }, child: Container(height: 52, decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(10)), child: const Center(child: Text("Add Expense", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)))))), const SizedBox(width: 12), _buildActionIcon(Icons.handshake_outlined, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoansScreen())), semantic), const SizedBox(width: 12), _buildActionIcon(Icons.credit_card_outlined, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreditCardsScreen())), semantic), const SizedBox(width: 12), _buildActionIcon(Icons.history_outlined, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonthlyHistoryScreen())), semantic)]));
+    return Container(padding: const EdgeInsets.fromLTRB(20, 12, 20, 32), decoration: BoxDecoration(color: colorScheme.surface, border: Border(top: BorderSide(color: semantic.divider))), child: Row(children: [Expanded(child: InkWell(onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddExpense())); load(); }, child: Container(height: 52, decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(10)), child: const Center(child: Text("Add Expense", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)))))), const SizedBox(width: 12), _buildActionIcon(Icons.handshake_outlined, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoansScreen())), semantic), const SizedBox(width: 12), _buildActionIcon(Icons.credit_card_outlined, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreditCardsScreen())), semantic), const SizedBox(width: 12), _buildActionIcon(Icons.history_outlined, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonthlyHistoryScreen())), semantic)]));
   }
 
   Widget _buildActionIcon(IconData icon, VoidCallback onTap, AppColors semantic) {

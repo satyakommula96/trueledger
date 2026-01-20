@@ -76,7 +76,7 @@ class _LoansScreenState extends State<LoansScreen> {
                             ),
                             child: Text(l['loan_type'].toString().toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.overspent)),
                           ),
-                          Text(l['due_date'].toString().toUpperCase() + " DUE", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.secondaryText)),
+                          Text("${l['due_date'].toString().toUpperCase()} DUE", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.secondaryText)),
                         ],
                       ),
                       const SizedBox(height: 16),

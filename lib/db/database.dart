@@ -53,34 +53,34 @@ class AppDatabase {
   }
 
   static Future<void> clearData() async {
-    final _db = await db;
-    await _db.delete('income_sources');
-    await _db.delete('fixed_expenses');
-    await _db.delete('variable_expenses');
-    await _db.delete('investments');
-    await _db.delete('subscriptions');
-    await _db.delete('retirement_contributions');
-    await _db.delete('credit_cards');
-    await _db.delete('loans');
-    await _db.delete('saving_goals');
-    await _db.delete('budgets');
+    final database = await db;
+    await database.delete('income_sources');
+    await database.delete('fixed_expenses');
+    await database.delete('variable_expenses');
+    await database.delete('investments');
+    await database.delete('subscriptions');
+    await database.delete('retirement_contributions');
+    await database.delete('credit_cards');
+    await database.delete('loans');
+    await database.delete('saving_goals');
+    await database.delete('budgets');
   }
 
   static Future<void> seedDummyData() async {
-    final _db = await db;
+    final database = await db;
     final now = DateTime.now();
     final nowStr = now.toIso8601String();
     
-    await _db.insert('income_sources', {'source': 'Main Salary', 'amount': 167000, 'date': nowStr});
-    await _db.insert('income_sources', {'source': 'Freelance Project', 'amount': 25000, 'date': nowStr});
+    await database.insert('income_sources', {'source': 'Main Salary', 'amount': 167000, 'date': nowStr});
+    await database.insert('income_sources', {'source': 'Freelance Project', 'amount': 25000, 'date': nowStr});
 
-    await _db.insert('fixed_expenses', {'name': 'Luxury Apartment Rent', 'amount': 45000, 'category': 'Housing', 'date': nowStr});
-    await _db.insert('fixed_expenses', {'name': 'Car EMI', 'amount': 18500, 'category': 'Transport', 'date': nowStr});
+    await database.insert('fixed_expenses', {'name': 'Luxury Apartment Rent', 'amount': 45000, 'category': 'Housing', 'date': nowStr});
+    await database.insert('fixed_expenses', {'name': 'Car EMI', 'amount': 18500, 'category': 'Transport', 'date': nowStr});
 
-    await _db.insert('retirement_contributions', {'type': 'NPS', 'amount': 50000, 'date': nowStr});
-    await _db.insert('retirement_contributions', {'type': 'EPF', 'amount': 145000, 'date': nowStr});
+    await database.insert('retirement_contributions', {'type': 'NPS', 'amount': 50000, 'date': nowStr});
+    await database.insert('retirement_contributions', {'type': 'EPF', 'amount': 145000, 'date': nowStr});
 
-    await _db.insert('loans', {
+    await database.insert('loans', {
       'name': 'Gold Loan (Sovereign)',
       'loan_type': 'Gold',
       'total_amount': 200000,
@@ -90,7 +90,7 @@ class AppDatabase {
       'due_date': '5th',
       'date': nowStr
     });
-    await _db.insert('loans', {
+    await database.insert('loans', {
       'name': 'Car Finance (Tata)',
       'loan_type': 'Car',
       'total_amount': 800000,
@@ -100,7 +100,7 @@ class AppDatabase {
       'due_date': '10th',
       'date': nowStr
     });
-    await _db.insert('loans', {
+    await database.insert('loans', {
       'name': 'In-Person Borrowing (Friend)',
       'loan_type': 'Person',
       'total_amount': 50000,
@@ -116,24 +116,24 @@ class AppDatabase {
       final monthStr = monthDate.toIso8601String();
       final baseAmount = 20000 + (i * 3500);
       
-      await _db.insert('variable_expenses', {'date': monthStr, 'amount': baseAmount + 500, 'category': 'Food', 'note': 'Groceries & Dining'});
-      await _db.insert('variable_expenses', {'date': monthStr, 'amount': (baseAmount * 0.4).toInt(), 'category': 'Transport', 'note': 'Fuel & Uber'});
-      await _db.insert('variable_expenses', {'date': monthStr, 'amount': (baseAmount * 0.6).toInt(), 'category': 'Shopping', 'note': 'Amazon/Myntra'});
+      await database.insert('variable_expenses', {'date': monthStr, 'amount': baseAmount + 500, 'category': 'Food', 'note': 'Groceries & Dining'});
+      await database.insert('variable_expenses', {'date': monthStr, 'amount': (baseAmount * 0.4).toInt(), 'category': 'Transport', 'note': 'Fuel & Uber'});
+      await database.insert('variable_expenses', {'date': monthStr, 'amount': (baseAmount * 0.6).toInt(), 'category': 'Shopping', 'note': 'Amazon/Myntra'});
     }
 
-    await _db.insert('investments', {'name': 'Nifty 50 Index Fund', 'amount': 250000, 'active': 1, 'type': 'Equity', 'date': nowStr});
-    await _db.insert('investments', {'name': 'Gold Bonds', 'amount': 50000, 'active': 1, 'type': 'Commodity', 'date': nowStr});
+    await database.insert('investments', {'name': 'Nifty 50 Index Fund', 'amount': 250000, 'active': 1, 'type': 'Equity', 'date': nowStr});
+    await database.insert('investments', {'name': 'Gold Bonds', 'amount': 50000, 'active': 1, 'type': 'Commodity', 'date': nowStr});
 
-    await _db.insert('subscriptions', {'name': 'Netflix 4K', 'amount': 649, 'active': 1, 'billing_date': '5', 'date': nowStr});
-    await _db.insert('subscriptions', {'name': 'Youtube Premium', 'amount': 189, 'active': 1, 'billing_date': '12', 'date': nowStr});
+    await database.insert('subscriptions', {'name': 'Netflix 4K', 'amount': 649, 'active': 1, 'billing_date': '5', 'date': nowStr});
+    await database.insert('subscriptions', {'name': 'Youtube Premium', 'amount': 189, 'active': 1, 'billing_date': '12', 'date': nowStr});
 
-    await _db.insert('credit_cards', {'bank': 'Amex Platinum', 'credit_limit': 1000000, 'statement_balance': 125000, 'min_due': 6250, 'due_date': '20th Jan'});
-    await _db.insert('credit_cards', {'bank': 'HDFC Infinia', 'credit_limit': 800000, 'statement_balance': 45000, 'min_due': 2250, 'due_date': '15th Feb'});
+    await database.insert('credit_cards', {'bank': 'Amex Platinum', 'credit_limit': 1000000, 'statement_balance': 125000, 'min_due': 6250, 'due_date': '20th Jan'});
+    await database.insert('credit_cards', {'bank': 'HDFC Infinia', 'credit_limit': 800000, 'statement_balance': 45000, 'min_due': 2250, 'due_date': '15th Feb'});
 
-    await _db.insert('saving_goals', {'name': 'Tesla Model 3', 'target_amount': 4500000, 'current_amount': 850000});
-    await _db.insert('saving_goals', {'name': 'Switzerland Trip', 'target_amount': 600000, 'current_amount': 320000});
+    await database.insert('saving_goals', {'name': 'Tesla Model 3', 'target_amount': 4500000, 'current_amount': 850000});
+    await database.insert('saving_goals', {'name': 'Switzerland Trip', 'target_amount': 600000, 'current_amount': 320000});
 
-    await _db.insert('budgets', {'category': 'Food', 'monthly_limit': 15000});
-    await _db.insert('budgets', {'category': 'Shopping', 'monthly_limit': 10000});
+    await database.insert('budgets', {'category': 'Food', 'monthly_limit': 15000});
+    await database.insert('budgets', {'category': 'Shopping', 'monthly_limit': 10000});
   }
 }

@@ -27,10 +27,8 @@ class AppTheme {
     colorScheme: const ColorScheme.dark(
       primary: Color(0xFF34D399),    // Primary action color (Green from sample)
       onPrimary: Colors.white,
-      surface: Color(0xFF1E293B),    // --card (Dark)
-      background: Color(0xFF0F172A), // --bg (Dark)
-      onSurface: Color(0xFFE5E7EB),  // --text-primary (Dark)
-      onBackground: Color(0xFFE5E7EB),
+      surface: Color(0xFF1E293B), // --bg (Dark)
+      onSurface: Color(0xFFE5E7EB),
       outline: Color(0xFF334155),    // --border (Dark)
     ),
     scaffoldBackgroundColor: const Color(0xFF0F172A),
@@ -58,10 +56,8 @@ class AppTheme {
     colorScheme: const ColorScheme.light(
       primary: Color(0xFF2ECC71),    // Primary action color (Green from sample)
       onPrimary: Colors.white,
-      surface: Color(0xFFF6F7F9),    // --card (Light)
-      background: Color(0xFFFFFFFF), // --bg (Light)
-      onSurface: Color(0xFF1F2933),  // --text-primary (Light)
-      onBackground: Color(0xFF1F2933),
+      surface: Color(0xFFF6F7F9), // --bg (Light)
+      onSurface: Color(0xFF1F2933),
       outline: Color(0xFFE5E7EB),    // --border (Light)
     ),
     scaffoldBackgroundColor: const Color(0xFFFFFFFF),
