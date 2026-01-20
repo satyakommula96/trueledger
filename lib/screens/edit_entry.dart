@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../models/models.dart';
+import '../logic/financial_repository.dart';
 
 class EditEntryScreen extends StatefulWidget {
-  final Map<String, dynamic> entry;
-  final String type; 
+  final LedgerItem entry;
   
-  const EditEntryScreen({super.key, required this.entry, required this.type});
+  const EditEntryScreen({super.key, required this.entry});
 
   @override
   State<EditEntryScreen> createState() => _EditEntryScreenState();
@@ -20,14 +20,10 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
   @override
   void initState() {
     super.initState();
-    amountCtrl = TextEditingController(text: widget.entry['amount'].toString());
-    String initialLabel = "";
-    if (widget.type == 'Variable') { initialLabel = widget.entry['category']; } 
-    else if (widget.type == 'Income') { initialLabel = widget.entry['source']; } 
-    else { initialLabel = widget.entry['name']; }
-    labelCtrl = TextEditingController(text: initialLabel);
-    noteCtrl = TextEditingController(text: widget.entry['note']?.toString() ?? '');
-    category = widget.type == 'Variable' ? widget.entry['category'] : widget.type;
+    amountCtrl = TextEditingController(text: widget.entry.amount.toString());
+    labelCtrl = TextEditingController(text: widget.entry.label);
+    noteCtrl = TextEditingController(text: widget.entry.note ?? '');
+    category = widget.entry.type == 'Variable' ? widget.entry.label : widget.entry.type; // category is barely used or unused?
   }
 
   @override
@@ -36,7 +32,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("EDIT ${widget.type.toUpperCase()}"),
+        title: Text("EDIT ${widget.entry.type.toUpperCase()}"),
         actions: [
           IconButton(onPressed: _confirmDelete, icon: Icon(Icons.delete_outline, color: colorScheme.onSurface.withOpacity(0.3))),
         ],
@@ -54,13 +50,13 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
               decoration: const InputDecoration(prefixText: "₹ ", border: InputBorder.none),
             ),
             const SizedBox(height: 48),
-            Text(widget.type == 'Income' ? "SOURCE" : "LABEL", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
+            Text(widget.entry.type == 'Income' ? "SOURCE" : "LABEL", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
             TextField(
               controller: labelCtrl,
               decoration: const InputDecoration(border: UnderlineInputBorder()),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            if (widget.type == 'Variable') ...[
+            if (widget.entry.type == 'Variable') ...[
               const SizedBox(height: 48),
               const Text("NOTE", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
               TextField(
@@ -90,15 +86,14 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
   }
 
   Future<void> _update() async {
-    final db = await AppDatabase.db;
+    final repo = FinancialRepository();
+    final Map<String, dynamic> updates = {};
     final amount = int.tryParse(amountCtrl.text) ?? 0;
-    switch (widget.type) {
-      case 'Variable': await db.update('variable_expenses', {'amount': amount, 'category': labelCtrl.text, 'note': noteCtrl.text}, where: 'id = ?', whereArgs: [widget.entry['id']]); break;
-      case 'Income': await db.update('income_sources', {'amount': amount, 'source': labelCtrl.text}, where: 'id = ?', whereArgs: [widget.entry['id']]); break;
-      case 'Fixed': await db.update('fixed_expenses', {'amount': amount, 'name': labelCtrl.text}, where: 'id = ?', whereArgs: [widget.entry['id']]); break;
-      case 'Investment': await db.update('investments', {'amount': amount, 'name': labelCtrl.text}, where: 'id = ?', whereArgs: [widget.entry['id']]); break;
-      case 'Subscription': await db.update('subscriptions', {'amount': amount, 'name': labelCtrl.text}, where: 'id = ?', whereArgs: [widget.entry['id']]); break;
-    }
+    if (widget.entry.type == 'Variable') { updates['amount'] = amount; updates['category'] = labelCtrl.text; updates['note'] = noteCtrl.text; }
+    else if (widget.entry.type == 'Income') { updates['amount'] = amount; updates['source'] = labelCtrl.text; }
+    else { updates['amount'] = amount; updates['name'] = labelCtrl.text; }
+    
+    await repo.updateEntry(widget.entry.type, widget.entry.id, updates);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Entry updated"), behavior: SnackBarBehavior.floating));
       Navigator.pop(context);
@@ -118,16 +113,16 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
       )
     );
     if (confirmed == true) {
-      final db = await AppDatabase.db;
+      final repo = FinancialRepository();
       String table = "";
-      switch (widget.type) {
+      switch (widget.entry.type) {
         case 'Variable': table = 'variable_expenses'; break;
         case 'Income': table = 'income_sources'; break;
         case 'Fixed': table = 'fixed_expenses'; break;
         case 'Investment': table = 'investments'; break;
         case 'Subscription': table = 'subscriptions'; break;
       }
-      await db.delete(table, where: 'id = ?', whereArgs: [widget.entry['id']]);
+      await repo.deleteItem(table, widget.entry.id);
       if (mounted) Navigator.pop(context);
     }
   }

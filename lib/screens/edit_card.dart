@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
+import '../models/models.dart';
 
 class EditCreditCardScreen extends StatefulWidget {
-  final Map<String, dynamic> card;
+  final CreditCard card;
   const EditCreditCardScreen({super.key, required this.card});
 
   @override
@@ -19,11 +20,11 @@ class _EditCreditCardScreenState extends State<EditCreditCardScreen> {
   @override
   void initState() {
     super.initState();
-    bankCtrl = TextEditingController(text: widget.card['bank'].toString());
-    limitCtrl = TextEditingController(text: widget.card['credit_limit'].toString());
-    stmtCtrl = TextEditingController(text: widget.card['statement_balance'].toString());
-    minDueCtrl = TextEditingController(text: widget.card['min_due'].toString());
-    dueDateCtrl = TextEditingController(text: widget.card['due_date']?.toString() ?? '');
+    bankCtrl = TextEditingController(text: widget.card.bank);
+    limitCtrl = TextEditingController(text: widget.card.creditLimit.toString());
+    stmtCtrl = TextEditingController(text: widget.card.statementBalance.toString());
+    minDueCtrl = TextEditingController(text: widget.card.minDue.toString());
+    dueDateCtrl = TextEditingController(text: widget.card.dueDate);
   }
 
   @override
@@ -89,18 +90,14 @@ class _EditCreditCardScreenState extends State<EditCreditCardScreen> {
 
   Future<void> _update() async {
     if (bankCtrl.text.isEmpty || limitCtrl.text.isEmpty) return;
-    final db = await AppDatabase.db;
-    await db.update(
-      'credit_cards',
-      {
-        'bank': bankCtrl.text,
-        'credit_limit': int.tryParse(limitCtrl.text) ?? 0,
-        'statement_balance': int.tryParse(stmtCtrl.text) ?? 0,
-        'min_due': int.tryParse(minDueCtrl.text) ?? 0,
-        'due_date': dueDateCtrl.text,
-      },
-      where: 'id = ?',
-      whereArgs: [widget.card['id']],
+    final repo = FinancialRepository();
+    await repo.updateCreditCard(
+      widget.card.id,
+      bankCtrl.text,
+      int.tryParse(limitCtrl.text) ?? 0,
+      int.tryParse(stmtCtrl.text) ?? 0,
+      int.tryParse(minDueCtrl.text) ?? 0,
+      dueDateCtrl.text
     );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Card Details Updated"), behavior: SnackBarBehavior.floating));
@@ -125,8 +122,8 @@ class _EditCreditCardScreenState extends State<EditCreditCardScreen> {
     );
 
     if (confirmed == true) {
-      final db = await AppDatabase.db;
-      await db.delete('credit_cards', where: 'id = ?', whereArgs: [widget.card['id']]);
+      final repo = FinancialRepository();
+      await repo.deleteItem('credit_cards', widget.card.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Card Deleted"), behavior: SnackBarBehavior.floating));
         Navigator.pop(context);

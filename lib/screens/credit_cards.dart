@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
+import '../models/models.dart';
 import '../theme/theme.dart';
 import 'add_card.dart';
 import 'edit_card.dart';
@@ -12,12 +13,13 @@ class CreditCardsScreen extends StatefulWidget {
 }
 
 class _CreditCardsScreenState extends State<CreditCardsScreen> {
-  List<Map<String, dynamic>> cards = [];
+  List<CreditCard> cards = [];
+  bool _isLoading = true;
 
   Future<void> load() async {
-    final db = await AppDatabase.db;
-    final data = await db.query('credit_cards');
-    setState(() { cards = data.map((e) => Map<String, dynamic>.from(e)).toList(); });
+    final repo = FinancialRepository();
+    final data = await repo.getCreditCards();
+    if (mounted) setState(() { cards = data; _isLoading = false; });
   }
 
   @override
@@ -39,17 +41,19 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
         },
         child: const Icon(Icons.add),
       ),
-      body: cards.isEmpty 
-        ? Center(child: Text("NO CARDS REGISTERED.", style: TextStyle(color: semantic.secondaryText, fontSize: 10, fontWeight: FontWeight.bold)))
-        : ListView.builder(
+      body: _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : cards.isEmpty 
+          ? Center(child: Text("NO CARDS REGISTERED.", style: TextStyle(color: semantic.secondaryText, fontSize: 10, fontWeight: FontWeight.bold)))
+          : ListView.builder(
             padding: const EdgeInsets.all(24),
             itemCount: cards.length,
             itemBuilder: (_, i) {
               final c = cards[i];
-              final limit = (c['credit_limit'] as num?)?.toDouble() ?? 0;
-              final stmt = (c['statement_balance'] as num?)?.toDouble() ?? 0;
-              final minDue = (c['min_due'] as num?)?.toDouble() ?? 0;
-              final util = limit == 0 ? 0 : (stmt / limit) * 100;
+              final limit = c.creditLimit.toDouble();
+              final stmt = c.statementBalance.toDouble();
+              final minDue = c.minDue.toDouble();
+              final util = limit == 0 ? 0.0 : (stmt / limit) * 100;
               final isHighUtil = util > 30;
 
               return InkWell(
@@ -69,7 +73,7 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(c['bank'].toString().toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: semantic.secondaryText)),
+                          Text(c.bank.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: semantic.secondaryText)),
                           if (isHighUtil) Icon(Icons.warning_amber_rounded, color: semantic.warning, size: 18),
                         ],
                       ),

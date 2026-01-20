@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'screens/dashboard.dart';
 import 'theme/theme.dart';
@@ -30,6 +31,9 @@ class TrueCashApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: mode,
+          scrollBehavior: const MaterialScrollBehavior().copyWith(
+            dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.trackpad},
+          ),
           home: const Dashboard(),
         );
       },

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
 
 class AddGoalScreen extends StatefulWidget {
   const AddGoalScreen({super.key});
@@ -47,12 +47,8 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
 
   Future<void> _save() async {
     if (nameCtrl.text.isEmpty || targetCtrl.text.isEmpty) return;
-    final db = await AppDatabase.db;
-    await db.insert('saving_goals', {
-      'name': nameCtrl.text,
-      'target_amount': int.parse(targetCtrl.text),
-      'current_amount': 0,
-    });
+    final repo = FinancialRepository();
+    await repo.addGoal(nameCtrl.text, int.parse(targetCtrl.text));
     if (mounted) Navigator.pop(context);
   }
 }

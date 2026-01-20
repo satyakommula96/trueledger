@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
+import '../models/models.dart';
 
 class EditBudgetScreen extends StatefulWidget {
-  final Map<String, dynamic> budget;
+  final Budget budget;
   const EditBudgetScreen({super.key, required this.budget});
 
   @override
@@ -15,14 +16,14 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
   @override
   void initState() {
     super.initState();
-    limitCtrl = TextEditingController(text: widget.budget['monthly_limit'].toString());
+    limitCtrl = TextEditingController(text: widget.budget.monthlyLimit.toString());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Edit ${widget.budget['category']} Budget"),
+        title: Text("Edit ${widget.budget.category} Budget"),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
@@ -65,14 +66,14 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
   }
 
   Future<void> _update() async {
-    final db = await AppDatabase.db;
-    await db.update('budgets', {'monthly_limit': int.parse(limitCtrl.text)}, where: 'id = ?', whereArgs: [widget.budget['id']]);
+    final repo = FinancialRepository();
+    await repo.updateBudget(widget.budget.id, int.parse(limitCtrl.text));
     if (mounted) Navigator.pop(context);
   }
 
   Future<void> _delete() async {
-    final db = await AppDatabase.db;
-    await db.delete('budgets', where: 'id = ?', whereArgs: [widget.budget['id']]);
+    final repo = FinancialRepository();
+    await repo.deleteItem('budgets', widget.budget.id);
     if (mounted) Navigator.pop(context);
   }
 }

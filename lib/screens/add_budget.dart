@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
 
 class AddBudgetScreen extends StatefulWidget {
   const AddBudgetScreen({super.key});
@@ -47,11 +47,8 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
 
   Future<void> _save() async {
     if (categoryCtrl.text.isEmpty || limitCtrl.text.isEmpty) return;
-    final db = await AppDatabase.db;
-    await db.insert('budgets', {
-      'category': categoryCtrl.text,
-      'monthly_limit': int.parse(limitCtrl.text),
-    });
+    final repo = FinancialRepository();
+    await repo.addBudget(categoryCtrl.text, int.parse(limitCtrl.text));
     if (mounted) Navigator.pop(context);
   }
 }

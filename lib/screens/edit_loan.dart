@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../models/models.dart';
+import '../logic/financial_repository.dart';
 import '../theme/theme.dart';
 
 class EditLoanScreen extends StatefulWidget {
-  final Map<String, dynamic> loan;
+  final Loan loan;
   const EditLoanScreen({super.key, required this.loan});
 
   @override
@@ -22,13 +23,13 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
   @override
   void initState() {
     super.initState();
-    nameCtrl = TextEditingController(text: widget.loan['name']);
-    totalCtrl = TextEditingController(text: widget.loan['total_amount'].toString());
-    remainingCtrl = TextEditingController(text: widget.loan['remaining_amount'].toString());
-    emiCtrl = TextEditingController(text: widget.loan['emi'].toString());
-    rateCtrl = TextEditingController(text: widget.loan['interest_rate'].toString());
-    dueCtrl = TextEditingController(text: widget.loan['due_date']);
-    selectedType = widget.loan['loan_type'];
+    nameCtrl = TextEditingController(text: widget.loan.name);
+    totalCtrl = TextEditingController(text: widget.loan.totalAmount.toString());
+    remainingCtrl = TextEditingController(text: widget.loan.remainingAmount.toString());
+    emiCtrl = TextEditingController(text: widget.loan.emi.toString());
+    rateCtrl = TextEditingController(text: widget.loan.interestRate.toString());
+    dueCtrl = TextEditingController(text: widget.loan.dueDate);
+    selectedType = widget.loan.loanType;
   }
 
   @override
@@ -90,6 +91,23 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
             ],
             _buildField(selectedType == 'Person' ? "EXPECTED REPAYMENT DATE" : "DUE DATE (DAY OF MONTH)", dueCtrl, type: TextInputType.text),
             const SizedBox(height: 48),
+            if (selectedType != 'Person') ...[
+              SizedBox(
+                width: double.infinity,
+                height: 60,
+                child: OutlinedButton.icon(
+                  onPressed: _payEmi,
+                  icon: const Icon(Icons.payment),
+                  label: const Text("RECORD EMI PAYMENT", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                    side: BorderSide(color: colorScheme.primary),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
             SizedBox(
               width: double.infinity,
               height: 60,
@@ -108,6 +126,55 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _payEmi() async {
+    final remaining = double.tryParse(remainingCtrl.text) ?? 0.0;
+    final rate = double.tryParse(rateCtrl.text) ?? 0.0;
+    final emi = double.tryParse(emiCtrl.text) ?? 0.0;
+    
+    // Simple Interest for 1 month
+    final interestFn = (remaining * rate / 100) / 12;
+    final interest = interestFn.round();
+    final principalComp = (emi - interest).round();
+    
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("RECORD EMI PAYMENT"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Emi Amount: ₹${emi.toInt()}"),
+            const SizedBox(height: 8),
+            Text("Interest Component: ₹$interest", style: const TextStyle(color: Colors.red)),
+            Text("Principal Reduction: ₹$principalComp", style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            const Text("This will reduce the loan balance and record an expense.", style: TextStyle(fontSize: 10, color: Colors.grey)),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("CANCEL")),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("CONFIRM")),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final newBalance = (remaining - principalComp).toInt();
+      setState(() {
+        remainingCtrl.text = newBalance.toString();
+      });
+      // Save loan update
+      await _save();
+      // Record expense
+      if (mounted) {
+        final repo = FinancialRepository();
+        await repo.addEntry('Fixed', emi.toInt(), 'EMI', 'EMI Payment for ${nameCtrl.text}', DateTime.now().toIso8601String());
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("EMI Recorded: Loan adjusted & Expense added.")));
+      }
+    }
   }
 
   Widget _buildField(String label, TextEditingController ctrl, {TextInputType type = TextInputType.text, String? prefix}) {
@@ -135,22 +202,23 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
   }
 
   Future<void> _save() async {
-    final db = await AppDatabase.db;
-    await db.update('loans', {
-      'name': nameCtrl.text,
-      'loan_type': selectedType,
-      'total_amount': int.tryParse(totalCtrl.text) ?? 0,
-      'remaining_amount': int.tryParse(remainingCtrl.text) ?? 0,
-      'emi': int.tryParse(emiCtrl.text) ?? 0,
-      'interest_rate': double.tryParse(rateCtrl.text) ?? 0.0,
-      'due_date': dueCtrl.text,
-    }, where: 'id = ?', whereArgs: [widget.loan['id']]);
+    final repo = FinancialRepository();
+    await repo.updateLoan(
+      widget.loan.id,
+      nameCtrl.text,
+      selectedType,
+      int.tryParse(totalCtrl.text) ?? 0,
+      int.tryParse(remainingCtrl.text) ?? 0,
+      int.tryParse(emiCtrl.text) ?? 0,
+      double.tryParse(rateCtrl.text) ?? 0.0,
+      dueCtrl.text,
+    );
     if (mounted) Navigator.pop(context);
   }
 
   Future<void> _delete() async {
-    final db = await AppDatabase.db;
-    await db.delete('loans', where: 'id = ?', whereArgs: [widget.loan['id']]);
+    final repo = FinancialRepository();
+    await repo.deleteItem('loans', widget.loan.id);
     if (mounted) Navigator.pop(context);
   }
 }

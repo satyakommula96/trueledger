@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import 'package:intl/intl.dart';
+import '../logic/financial_repository.dart';
+import '../models/models.dart';
 import '../theme/theme.dart';
 import 'edit_entry.dart';
 
@@ -15,28 +17,47 @@ class _MonthDetailScreenState extends State<MonthDetailScreen> {
   String searchQuery = "";
   String typeFilter = "All";
 
-  Future<List<Map<String, dynamic>>> _loadHistory() async {
-    final db = await AppDatabase.db;
-    List<Map<String, dynamic>> allItems = [];
-    final vars = await db.rawQuery('SELECT *, "Variable" as entryType FROM variable_expenses WHERE substr(date, 1, 7) = ?', [widget.month]);
-    allItems.addAll(vars);
-    final income = await db.rawQuery('SELECT *, "Income" as entryType FROM income_sources WHERE substr(date, 1, 7) = ?', [widget.month]);
-    allItems.addAll(income);
-    final fixed = await db.rawQuery('SELECT *, "Fixed" as entryType FROM fixed_expenses WHERE substr(date, 1, 7) = ?', [widget.month]);
-    allItems.addAll(fixed);
-    final invs = await db.rawQuery('SELECT *, "Investment" as entryType FROM investments WHERE substr(date, 1, 7) = ?', [widget.month]);
-    allItems.addAll(invs);
+  List<LedgerItem> _allItems = [];
+  bool _isLoading = true;
 
-    if (typeFilter != "All") allItems = allItems.where((e) => e['entryType'] == typeFilter).toList();
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final repo = FinancialRepository();
+      final data = await repo.getMonthDetails(widget.month);
+      if (mounted) {
+        setState(() {
+          _allItems = data;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading month details: $e");
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+    }
+  }
+
+  List<LedgerItem> _getFilteredItems() {
+    var items = _allItems;
+    if (typeFilter != "All") {
+      items = items.where((e) => e.type == typeFilter).toList();
+    }
     if (searchQuery.isNotEmpty) {
-      allItems = allItems.where((e) {
-        final label = (e['category'] ?? e['source'] ?? e['name'] ?? "").toString().toLowerCase();
-        final note = (e['note'] ?? "").toString().toLowerCase();
+      items = items.where((e) {
+        final label = e.label.toLowerCase();
+        final note = (e.note ?? "").toLowerCase();
         return label.contains(searchQuery.toLowerCase()) || note.contains(searchQuery.toLowerCase());
       }).toList();
     }
-    allItems.sort((a, b) => (b['id'] as int).compareTo(a['id'] as int));
-    return allItems;
+    return items;
   }
 
   @override
@@ -83,57 +104,61 @@ class _MonthDetailScreenState extends State<MonthDetailScreen> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: _loadHistory(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-                final items = snapshot.data!;
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: items.length,
-                  itemBuilder: (context, i) {
-                    final item = items[i];
-                    final String type = item['entryType'];
-                    final isIncome = type == 'Income';
-                    final label = item['category'] ?? item['source'] ?? item['name'] ?? "Unknown";
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surface, 
-                        borderRadius: BorderRadius.circular(12), 
-                        border: Border.all(color: semantic.divider)
-                      ),
-                      child: InkWell(
-                        onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => EditEntryScreen(entry: item, type: type))); setState(() {}); },
-                        borderRadius: BorderRadius.circular(12),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(label.toString().toUpperCase(), style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5, color: colorScheme.onSurface)),
-                                    const SizedBox(height: 6),
-                                    Text(type.toUpperCase(), style: TextStyle(fontSize: 9, color: semantic.secondaryText, fontWeight: FontWeight.w900, letterSpacing: 1)),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                "₹${item['amount']}", 
-                                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: isIncome ? semantic.income : colorScheme.onSurface)
-                              ),
-                            ],
+            child: _isLoading 
+              ? const Center(child: CircularProgressIndicator())
+              : Builder(
+                  builder: (context) {
+                    final items = _getFilteredItems();
+                    if (items.isEmpty) return Center(child: Text("NO ENTRIES FOUND", style: TextStyle(color: semantic.secondaryText, fontSize: 10, fontWeight: FontWeight.bold)));
+                    
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      itemCount: items.length,
+                      itemBuilder: (context, i) {
+                        final item = items[i];
+                        final String type = item.type;
+                        final isIncome = type == 'Income';
+                        final label = item.label;
+    
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surface, 
+                            borderRadius: BorderRadius.circular(12), 
+                            border: Border.all(color: semantic.divider)
                           ),
-                        ),
-                      ),
+                          child: InkWell(
+                            onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => EditEntryScreen(entry: item))); _loadData(); },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  _CategoryIcon(type: type, label: label, semantic: semantic),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(label.toString().toUpperCase(), style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5, color: colorScheme.onSurface)),
+                                        const SizedBox(height: 6),
+                                        Text(type.toUpperCase(), style: TextStyle(fontSize: 9, color: semantic.secondaryText, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    "₹${item.amount}", 
+                                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: isIncome ? semantic.income : colorScheme.onSurface)
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     );
-                  },
-                );
-              },
-            ),
+                  }
+                ),
           ),
         ],
       ),
@@ -142,9 +167,54 @@ class _MonthDetailScreenState extends State<MonthDetailScreen> {
 
   String _formatMonth(String yyyyMm) {
     try {
-      final parts = yyyyMm.split('-');
-      const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-      return "${months[int.parse(parts[1]) - 1]} ${parts[0]}";
+      final date = DateTime.parse('$yyyyMm-01');
+      return DateFormat('MMMM yyyy').format(date).toUpperCase();
     } catch (e) { return yyyyMm; }
+  }
+}
+
+class _CategoryIcon extends StatelessWidget {
+  final String type;
+  final String label;
+  final AppColors semantic;
+
+  const _CategoryIcon({required this.type, required this.label, required this.semantic});
+
+  IconData _getIcon() {
+    if (type == 'Income') return Icons.arrow_downward;
+    if (type == 'Investment') return Icons.trending_up;
+    
+    final l = label.toLowerCase();
+    if (l.contains('food') || l.contains('grocer') || l.contains('restaurant')) return Icons.restaurant;
+    if (l.contains('travel') || l.contains('transport') || l.contains('fuel') || l.contains('gas')) return Icons.directions_car;
+    if (l.contains('shop') || l.contains('clothes')) return Icons.shopping_bag;
+    if (l.contains('bill') || l.contains('utilit')) return Icons.receipt_long;
+    if (l.contains('entert') || l.contains('movie')) return Icons.movie;
+    if (l.contains('health') || l.contains('doctor') || l.contains('medic')) return Icons.medical_services;
+    if (l.contains('educ') || l.contains('school') || l.contains('fee')) return Icons.school;
+    if (l.contains('rent') || l.contains('home')) return Icons.home;
+    if (l.contains('salary') || l.contains('wage')) return Icons.work;
+    
+    if (l.contains('investment') || l.contains('stock') || l.contains('sip') || l.contains('mutual')) return Icons.trending_up;
+    return type == 'Fixed' ? Icons.calendar_today : Icons.category;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: _getIconColor().withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(_getIcon(), size: 20, color: _getIconColor()),
+    );
+  }
+
+  Color _getIconColor() {
+    if (type == 'Income') return semantic.income;
+    if (type == 'Investment') return semantic.warning;
+    return semantic.secondaryText;
   }
 }

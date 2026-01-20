@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:intl/intl.dart';
+import '../models/models.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../db/database.dart';
+
+import '../logic/financial_repository.dart';
 import '../logic/monthly_calc.dart';
 import '../main.dart'; 
 import '../theme/theme.dart';
@@ -25,57 +27,33 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   MonthlySummary? summary;
   List<Map<String, dynamic>> categorySpending = [];
-  List<Map<String, dynamic>> budgets = [];
-  List<Map<String, dynamic>> savingGoals = [];
+  List<Budget> budgets = [];
+  List<SavingGoal> savingGoals = [];
   List<Map<String, dynamic>> trendData = [];
   List<Map<String, dynamic>> upcomingBills = [];
-  int npsTotal = 0;
-  int pfTotal = 0;
-  int investmentsTotal = 0;
-  int creditCardDebt = 0;
-  int loansTotal = 0;
-  int netWorth = 0;
+
+  final _repo = FinancialRepository();
 
   Future<void> load() async {
-    final db = await AppDatabase.db;
-    final income = Sqflite.firstIntValue(await db.rawQuery('SELECT SUM(amount) FROM income_sources')) ?? 0;
-    final fixed = Sqflite.firstIntValue(await db.rawQuery('SELECT SUM(amount) FROM fixed_expenses')) ?? 0;
-    final variable = Sqflite.firstIntValue(await db.rawQuery('SELECT SUM(amount) FROM variable_expenses')) ?? 0;
-    final subs = Sqflite.firstIntValue(await db.rawQuery('SELECT SUM(amount) FROM subscriptions WHERE active=1')) ?? 0;
-    investmentsTotal = Sqflite.firstIntValue(await db.rawQuery('SELECT SUM(amount) FROM investments WHERE active=1')) ?? 0;
-    npsTotal = Sqflite.firstIntValue(await db.rawQuery("SELECT SUM(amount) FROM retirement_contributions WHERE type = 'NPS'")) ?? 0;
-    pfTotal = Sqflite.firstIntValue(await db.rawQuery("SELECT SUM(amount) FROM retirement_contributions WHERE type = 'EPF'")) ?? 0;
-    final otherRetirement = Sqflite.firstIntValue(await db.rawQuery("SELECT SUM(amount) FROM retirement_contributions WHERE type NOT IN ('NPS', 'EPF')")) ?? 0;
-    creditCardDebt = Sqflite.firstIntValue(await db.rawQuery("SELECT SUM(statement_balance) FROM credit_cards")) ?? 0;
-    loansTotal = Sqflite.firstIntValue(await db.rawQuery("SELECT SUM(remaining_amount) FROM loans")) ?? 0;
-    netWorth = (investmentsTotal + npsTotal + pfTotal + otherRetirement) - (creditCardDebt + loansTotal);
+    final results = await Future.wait([
+      _repo.getMonthlySummary(),
+      _repo.getCategorySpending(),
+      _repo.getBudgets(),
+      _repo.getSavingGoals(),
+      _repo.getSpendingTrend(),
+      _repo.getUpcomingBills(),
+    ]);
 
-    final trendRaw = await db.rawQuery('SELECT substr(date, 1, 7) as month, SUM(amount) as total FROM variable_expenses GROUP BY month ORDER BY month DESC LIMIT 6');
-    trendData = trendRaw.reversed.toList();
-
-    final subBills = await db.query('subscriptions', where: 'active = 1');
-    final ccBills = await db.query('credit_cards');
-    final loanBills = await db.query('loans');
-    upcomingBills = [
-      ...subBills.map((s) => {'title': s['name'], 'amount': s['amount'], 'type': 'SUBSCRIPTION', 'due': 'RECURRING'}),
-      ...ccBills.map((c) => {'title': c['bank'], 'amount': c['min_due'], 'type': 'CREDIT DUE', 'due': c['due_date']}),
-      ...loanBills.map((l) => {'title': l['name'], 'amount': l['emi'], 'type': 'LOAN EMI', 'due': l['due_date']}),
-    ];
-
-    final budgetData = await db.query('budgets');
-    List<Map<String, dynamic>> processedBudgets = [];
-    for (var b in budgetData) {
-      final spent = Sqflite.firstIntValue(await db.rawQuery('SELECT SUM(amount) FROM variable_expenses WHERE category = ?', [b['category']])) ?? 0;
-      processedBudgets.add({...b, 'spent': spent});
+    if (mounted) {
+      setState(() {
+        summary = results[0] as MonthlySummary;
+        categorySpending = results[1] as List<Map<String, dynamic>>;
+        budgets = results[2] as List<Budget>;
+        savingGoals = results[3] as List<SavingGoal>;
+        trendData = results[4] as List<Map<String, dynamic>>;
+        upcomingBills = results[5] as List<Map<String, dynamic>>;
+      });
     }
-    
-    final goals = await db.query('saving_goals');
-    final groupData = await db.rawQuery('SELECT category, SUM(amount) as total FROM variable_expenses GROUP BY category ORDER BY total DESC');
-
-    setState(() {
-      summary = MonthlySummary(totalIncome: income, totalFixed: fixed, totalVariable: variable, totalSubscriptions: subs, totalInvestments: investmentsTotal);
-      categorySpending = groupData; budgets = processedBudgets; savingGoals = goals;
-    });
   }
 
   @override
@@ -106,9 +84,9 @@ class _DashboardState extends State<Dashboard> {
                     const SizedBox(height: 20),
                     Row(
                       children: [
-                        Expanded(child: _buildSummaryCard("Income", "₹${summary!.totalIncome}", semantic.income, semantic)),
+                        Expanded(child: _buildSummaryCard("Income", "₹${NumberFormat.compact().format(summary!.totalIncome)}", semantic.income, semantic, Icons.arrow_downward)),
                         const SizedBox(width: 12),
-                        Expanded(child: _buildSummaryCard("Expenses", "₹${summary!.totalFixed + summary!.totalVariable + summary!.totalSubscriptions}", semantic.overspent, semantic)),
+                        Expanded(child: _buildSummaryCard("Expenses", "₹${NumberFormat.compact().format(summary!.totalFixed + summary!.totalVariable + summary!.totalSubscriptions)}", semantic.overspent, semantic, Icons.arrow_upward)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -147,7 +125,7 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildSummaryCard(String label, String value, Color valueColor, AppColors semantic) {
+  Widget _buildSummaryCard(String label, String value, Color valueColor, AppColors semantic, IconData icon) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
@@ -158,8 +136,14 @@ class _DashboardState extends State<Dashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label.toUpperCase(), style: TextStyle(fontSize: 10, color: semantic.secondaryText, fontWeight: FontWeight.w900, letterSpacing: 1)),
-          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label.toUpperCase(), style: TextStyle(fontSize: 10, color: semantic.secondaryText, fontWeight: FontWeight.w900, letterSpacing: 1)),
+              Icon(icon, size: 16, color: semantic.secondaryText.withOpacity(0.5)),
+            ],
+          ),
+          const SizedBox(height: 12),
           Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: valueColor, letterSpacing: -0.5)),
         ],
       ),
@@ -187,50 +171,83 @@ class _DashboardState extends State<Dashboard> {
   Widget _buildWealthHero(ColorScheme colorScheme, AppColors semantic) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      height: 220,
       decoration: BoxDecoration(
-        color: colorScheme.primary, 
-        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [colorScheme.primary, colorScheme.primary.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(32),
         boxShadow: [
-          BoxShadow(color: colorScheme.primary.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 10)),
+          BoxShadow(color: colorScheme.primary.withOpacity(0.3), blurRadius: 24, offset: const Offset(0, 12)),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("TOTAL NET WORTH", style: TextStyle(color: colorScheme.onPrimary.withOpacity(0.5), fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 2)),
-              Icon(Icons.account_balance_wallet_outlined, color: colorScheme.onPrimary.withOpacity(0.3), size: 18),
-            ],
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Icon(Icons.account_balance_wallet, size: 200, color: Colors.white.withOpacity(0.1)),
           ),
-          const SizedBox(height: 16),
-          Text("₹$netWorth", style: TextStyle(color: colorScheme.onPrimary, fontSize: 40, fontWeight: FontWeight.w900, letterSpacing: -1.5)),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: colorScheme.onPrimary.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-            child: Text("AFTER LIABILITIES", style: TextStyle(color: colorScheme.onPrimary.withOpacity(0.8), fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1)),
-          )
+          Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(color: Colors.black.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                      child: Row(
+                        children: [
+                          Icon(Icons.verified_user_outlined, size: 14, color: colorScheme.onPrimary.withOpacity(0.8)),
+                          const SizedBox(width: 6),
+                          Text("TOTAL NET WORTH", style: TextStyle(color: colorScheme.onPrimary.withOpacity(0.9), fontWeight: FontWeight.w700, fontSize: 10, letterSpacing: 1)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.more_horiz, color: colorScheme.onPrimary.withOpacity(0.6)),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("₹${NumberFormat('#,##,##0').format(summary!.netWorth)}", style: TextStyle(color: colorScheme.onPrimary, fontSize: 42, fontWeight: FontWeight.w900, letterSpacing: -1.5, height: 1.0)),
+                    const SizedBox(height: 8),
+                    Text("AFTER LIABILITIES", style: TextStyle(color: colorScheme.onPrimary.withOpacity(0.7), fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildAssetLiabilityCard(ColorScheme colorScheme, AppColors semantic) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: colorScheme.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: semantic.divider)),
-      child: Row(
-        children: [
-          _buildMiniStat("TOTAL ASSETS", "₹${netWorth + creditCardDebt + loansTotal}", semantic.income, semantic),
-          const Spacer(),
-          Container(width: 1, height: 40, color: semantic.divider),
-          const Spacer(),
-          _buildMiniStat("LIABILITIES", "₹${creditCardDebt + loansTotal}", semantic.overspent, semantic),
-        ],
-      ),
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(color: semantic.income.withOpacity(0.05), borderRadius: BorderRadius.circular(20), border: Border.all(color: semantic.income.withOpacity(0.2))),
+            child: _buildMiniStat("TOTAL ASSETS", "₹${NumberFormat.compact().format(summary!.netWorth + summary!.creditCardDebt + summary!.loansTotal)}", semantic.income, semantic),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(color: semantic.overspent.withOpacity(0.05), borderRadius: BorderRadius.circular(20), border: Border.all(color: semantic.overspent.withOpacity(0.2))),
+            child: _buildMiniStat("LIABILITIES", "₹${NumberFormat.compact().format(summary!.creditCardDebt + summary!.loansTotal)}", semantic.overspent, semantic),
+          ),
+        ),
+      ],
     );
   }
 
@@ -256,7 +273,7 @@ class _DashboardState extends State<Dashboard> {
               children: [
                 Text("REMAINING DEBT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: semantic.secondaryText, letterSpacing: 1)),
                 const SizedBox(height: 8),
-                Text("₹$loansTotal", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: semantic.overspent)),
+                Text("₹${summary!.loansTotal}", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: semantic.overspent)),
               ],
             ),
             const Spacer(),
@@ -293,7 +310,14 @@ class _DashboardState extends State<Dashboard> {
               spots: trendData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), (e.value['total'] as num).toDouble())).toList(),
               isCurved: true,
               color: colorScheme.primary, barWidth: 3, dotData: const FlDotData(show: false),
-              belowBarData: BarAreaData(show: true, color: colorScheme.primary.withOpacity(0.05)),
+              belowBarData: BarAreaData(
+                show: true,
+                gradient: LinearGradient(
+                  colors: [colorScheme.primary.withOpacity(0.3), colorScheme.primary.withOpacity(0.0)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
             ),
           ],
         ),
@@ -355,9 +379,39 @@ class _DashboardState extends State<Dashboard> {
 
   Widget _buildBudgetSection(ColorScheme colorScheme, AppColors semantic) {
     return Column(children: budgets.map((b) {
-      final util = (b['spent'] as num) / (b['monthly_limit'] as num == 0 ? 1 : b['monthly_limit'] as num);
-      final overspent = util > 1.0;
-      return InkWell(onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => EditBudgetScreen(budget: b))); load(); }, child: Container(margin: const EdgeInsets.only(bottom: 12), padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: colorScheme.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: semantic.divider)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(b['category'].toString().toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)), Text("₹${(b['spent'] as num).toInt()} / ₹${(b['monthly_limit'] as num).toInt()}", style: TextStyle(fontSize: 12, color: overspent ? semantic.overspent : semantic.secondaryText, fontWeight: FontWeight.w700))]), const SizedBox(height: 12), ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: util, minHeight: 6, backgroundColor: semantic.divider, color: overspent ? semantic.overspent : colorScheme.primary))])));
+      final double progress = (b.spent / b.monthlyLimit).clamp(0.0, 1.0);
+      final bool isOver = b.spent > b.monthlyLimit;
+      
+      return InkWell(
+        onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => EditBudgetScreen(budget: b))); load(); },
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(color: colorScheme.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: semantic.divider)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(b.category.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  Text("₹${b.spent} / ₹${b.monthlyLimit}", style: TextStyle(fontSize: 12, color: isOver ? semantic.overspent : semantic.secondaryText, fontWeight: FontWeight.w700)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 6,
+                  backgroundColor: semantic.divider,
+                  color: isOver ? semantic.overspent : colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }).toList());
   }
 
@@ -367,10 +421,68 @@ class _DashboardState extends State<Dashboard> {
 
   Widget _buildBottomBar(BuildContext context, AppColors semantic) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(padding: const EdgeInsets.fromLTRB(20, 12, 20, 32), decoration: BoxDecoration(color: colorScheme.surface, border: Border(top: BorderSide(color: semantic.divider))), child: Row(children: [Expanded(child: InkWell(onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddExpense())); load(); }, child: Container(height: 52, decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(10)), child: const Center(child: Text("Add Expense", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)))))), const SizedBox(width: 12), _buildActionIcon(Icons.handshake_outlined, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoansScreen())), semantic), const SizedBox(width: 12), _buildActionIcon(Icons.credit_card_outlined, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreditCardsScreen())), semantic), const SizedBox(width: 12), _buildActionIcon(Icons.history_outlined, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonthlyHistoryScreen())), semantic)]));
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+      child: Container(
+        height: 70,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: colorScheme.surface, 
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: semantic.divider),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10)),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildActionIcon(Icons.handshake_outlined, "LOANS", () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LoansScreen())), semantic),
+            _buildActionIcon(Icons.credit_card_outlined, "CARDS", () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreditCardsScreen())), semantic),
+            
+            InkWell(
+              onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddExpense())); load(); },
+              child: Container(
+                height: 54,
+                width: 54,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [colorScheme.primary, colorScheme.primary]),
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(color: colorScheme.primary.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6)),
+                  ],
+                ),
+                child: const Icon(Icons.add, color: Colors.white, size: 28),
+              ),
+            ),
+            
+            _buildActionIcon(Icons.event_repeat, "SUBS", () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionsScreen())), semantic),
+            _buildActionIcon(Icons.history_outlined, "HISTORY", () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonthlyHistoryScreen())), semantic),
+          ],
+        ),
+      ),
+    );
   }
 
-  Widget _buildActionIcon(IconData icon, VoidCallback onTap, AppColors semantic) {
-    return InkWell(onTap: onTap, child: Container(width: 52, height: 52, decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: semantic.divider)), child: Icon(icon, size: 22, color: semantic.secondaryText)));
+  Widget _buildActionIcon(IconData icon, String label, VoidCallback onTap, AppColors semantic) {
+    return InkWell(
+      onTap: onTap, 
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: 60, 
+        height: 60,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 24, color: semantic.secondaryText),
+            const SizedBox(height: 4),
+            Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800, color: semantic.secondaryText, letterSpacing: 0.5)),
+          ],
+        ),
+      ),
+    );
   }
 }

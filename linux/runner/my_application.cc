@@ -59,13 +59,16 @@ static void my_application_activate(GApplication* application) {
   // Set application name and icon
   g_set_application_name("TrueCash");
   const gchar* assets_path = fl_dart_project_get_assets_path(project);
-  g_autofree gchar* icon_path = g_build_filename(assets_path, "assets", "icons", "app_icon.png", nullptr);
+  g_autofree gchar* icon_path = g_build_filename(assets_path, "assets", "images", "logo.png", nullptr);
   
-  if (!gtk_window_set_icon_from_file(window, icon_path, nullptr)) {
-    gtk_window_set_icon_from_file(window, "assets/icons/app_icon.png", nullptr);
+  GError* error = nullptr;
+  if (!gtk_window_set_icon_from_file(window, icon_path, &error)) {
+    g_warning("Could not set icon from %s: %s", icon_path, error->message);
+    g_clear_error(&error); 
+  } else {
+      // Also set as default for all future windows if successful
+      gtk_window_set_default_icon_from_file(icon_path, nullptr);
   }
-  // Also set as default for all future windows
-  gtk_window_set_default_icon_from_file(icon_path, nullptr);
 
   fl_dart_project_set_dart_entrypoint_arguments(
       project, self->dart_entrypoint_arguments);

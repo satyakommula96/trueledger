@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
+import '../models/models.dart';
 import '../theme/theme.dart';
 import 'add_loan.dart';
 import 'edit_loan.dart';
@@ -12,12 +13,13 @@ class LoansScreen extends StatefulWidget {
 }
 
 class _LoansScreenState extends State<LoansScreen> {
-  List<Map<String, dynamic>> loans = [];
+  List<Loan> loans = [];
+  bool _isLoading = true;
 
   Future<void> load() async {
-    final db = await AppDatabase.db;
-    final data = await db.query('loans');
-    setState(() { loans = data; });
+    final repo = FinancialRepository();
+    final data = await repo.getLoans();
+    if (mounted) setState(() { loans = data; _isLoading = false; });
   }
 
   @override
@@ -39,17 +41,19 @@ class _LoansScreenState extends State<LoansScreen> {
         },
         child: const Icon(Icons.add),
       ),
-      body: loans.isEmpty 
-        ? Center(child: Text("NO ACTIVE BORROWINGS.", style: TextStyle(color: semantic.secondaryText, fontSize: 10, fontWeight: FontWeight.bold)))
-        : ListView.builder(
+      body: _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : loans.isEmpty 
+          ? Center(child: Text("NO ACTIVE BORROWINGS.", style: TextStyle(color: semantic.secondaryText, fontSize: 10, fontWeight: FontWeight.bold)))
+          : ListView.builder(
             padding: const EdgeInsets.all(24),
             itemCount: loans.length,
             itemBuilder: (_, i) {
               final l = loans[i];
-              final total = (l['total_amount'] as num).toDouble();
-              final remaining = (l['remaining_amount'] as num).toDouble();
-              final emi = (l['emi'] as num).toDouble();
-              final progress = remaining / total;
+              final total = l.totalAmount.toDouble();
+              final remaining = l.remainingAmount.toDouble();
+              final emi = l.emi.toDouble();
+              final progress = total == 0 ? 0.0 : remaining / total;
 
               return InkWell(
                 onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => EditLoanScreen(loan: l))); load(); },
@@ -74,13 +78,13 @@ class _LoansScreenState extends State<LoansScreen> {
                               color: semantic.overspent.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(l['loan_type'].toString().toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.overspent)),
+                            child: Text(l.loanType.toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.overspent)),
                           ),
-                          Text("${l['due_date'].toString().toUpperCase()} DUE", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.secondaryText)),
+                          Text("${l.dueDate.toUpperCase()} DUE", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.secondaryText)),
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Text(l['name'].toString().toUpperCase(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                      Text(l.name.toUpperCase(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
                       const SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -89,10 +93,10 @@ class _LoansScreenState extends State<LoansScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text("₹${remaining.toInt()}", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
-                              Text(l['loan_type'] == 'Person' ? "Borrowed Amount" : "Remaining Balance", style: TextStyle(fontSize: 10, color: semantic.secondaryText, fontWeight: FontWeight.w500)),
+                              Text(l.loanType == 'Person' ? "Borrowed Amount" : "Remaining Balance", style: TextStyle(fontSize: 10, color: semantic.secondaryText, fontWeight: FontWeight.w500)),
                             ],
                           ),
-                          if (l['loan_type'] != 'Person')
+                          if (l.loanType != 'Person')
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
@@ -116,8 +120,8 @@ class _LoansScreenState extends State<LoansScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          if (l['loan_type'] != 'Person')
-                            Text("${l['interest_rate']}% APR", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: semantic.secondaryText)),
+                          if (l.loanType != 'Person')
+                            Text("${l.interestRate}% APR", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: semantic.secondaryText)),
                           Text("TOTAL: ₹${total.toInt()}", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: semantic.secondaryText)),
                         ],
                       ),

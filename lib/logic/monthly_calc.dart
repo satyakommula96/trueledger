@@ -11,7 +11,14 @@ class MonthlySummary {
     required this.totalVariable,
     required this.totalSubscriptions,
     required this.totalInvestments,
+    this.netWorth = 0,
+    this.creditCardDebt = 0,
+    this.loansTotal = 0,
   });
+
+  final int netWorth;
+  final int creditCardDebt;
+  final int loansTotal;
 
   int get net => totalIncome - totalFixed - totalVariable - totalSubscriptions - totalInvestments;
 

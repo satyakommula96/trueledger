@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
 
 class AddSubscriptionScreen extends StatefulWidget {
   const AddSubscriptionScreen({super.key});
@@ -53,13 +53,12 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
 
   Future<void> _save() async {
     if (nameCtrl.text.isEmpty || amountCtrl.text.isEmpty) return;
-    final db = await AppDatabase.db;
-    await db.insert('subscriptions', {
-      'name': nameCtrl.text,
-      'amount': int.parse(amountCtrl.text),
-      'billing_date': dateCtrl.text,
-      'active': 1,
-    });
+    final repo = FinancialRepository();
+    await repo.addSubscription(
+      nameCtrl.text,
+      int.parse(amountCtrl.text),
+      dateCtrl.text
+    );
     if (mounted) Navigator.pop(context);
   }
 }

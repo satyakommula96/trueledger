@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
 
 class AddCreditCardScreen extends StatefulWidget {
   const AddCreditCardScreen({super.key});
@@ -70,14 +70,14 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen> {
 
   Future<void> _save() async {
     if (bankCtrl.text.isEmpty || limitCtrl.text.isEmpty) return;
-    final db = await AppDatabase.db;
-    await db.insert('credit_cards', {
-      'bank': bankCtrl.text,
-      'credit_limit': int.tryParse(limitCtrl.text) ?? 0,
-      'statement_balance': int.tryParse(stmtCtrl.text) ?? 0,
-      'min_due': int.tryParse(minDueCtrl.text) ?? 0,
-      'due_date': dueDateCtrl.text,
-    });
+    final repo = FinancialRepository();
+    await repo.addCreditCard(
+      bankCtrl.text,
+      int.tryParse(limitCtrl.text) ?? 0,
+      int.tryParse(stmtCtrl.text) ?? 0,
+      int.tryParse(minDueCtrl.text) ?? 0,
+      dueDateCtrl.text
+    );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Credit Card Added"), behavior: SnackBarBehavior.floating));
       Navigator.pop(context);

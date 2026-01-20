@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
+import '../models/models.dart';
 import 'add_subscription.dart';
 
 class SubscriptionsScreen extends StatefulWidget {
@@ -10,12 +11,13 @@ class SubscriptionsScreen extends StatefulWidget {
 }
 
 class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
-  List<Map<String, dynamic>> subs = [];
+  List<Subscription> subs = [];
+  bool _isLoading = true;
 
   Future<void> load() async {
-    final db = await AppDatabase.db;
-    final data = await db.query('subscriptions');
-    setState(() { subs = data.map((e) => Map<String, dynamic>.from(e)).toList(); });
+    final repo = FinancialRepository();
+    final data = await repo.getSubscriptions();
+    if (mounted) setState(() { subs = data; _isLoading = false; });
   }
 
   @override
@@ -24,7 +26,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final total = subs.isEmpty ? 0 : subs.map((e) => e['amount'] as int).reduce((a, b) => a + b);
+    final total = subs.isEmpty ? 0 : subs.map((e) => e.amount).reduce((a, b) => a + b);
 
     return Scaffold(
       appBar: AppBar(title: const Text("SUBSCRIPTIONS")),
@@ -37,7 +39,9 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
         },
         child: const Icon(Icons.add),
       ),
-      body: Column(
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator()) 
+        : Column(
         children: [
           Container(
             padding: const EdgeInsets.all(32),
@@ -77,15 +81,15 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(s['name'].toString().toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1)),
-                                  Text("Billed on: ${s['billing_date']}", style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                                  Text(s.name.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1)),
+                                  Text("Billed on: ${s.billingDate}", style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
                                 ],
                               ),
                             ),
-                            Text("₹${s['amount']}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                            Text("₹${s.amount}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
                             const SizedBox(width: 16),
                             IconButton(
-                              onPressed: () => _delete(s['id']),
+                              onPressed: () => _delete(s.id),
                               icon: Icon(Icons.remove_circle_outline, color: colorScheme.onSurface.withOpacity(0.3), size: 18),
                             )
                           ],
@@ -112,8 +116,8 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
       )
     );
     if (confirmed == true) {
-      final db = await AppDatabase.db;
-      await db.delete('subscriptions', where: 'id = ?', whereArgs: [id]);
+      final repo = FinancialRepository();
+      await repo.deleteItem('subscriptions', id);
       load();
     }
   }

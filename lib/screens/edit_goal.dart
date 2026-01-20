@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
 
 class EditGoalScreen extends StatefulWidget {
   final Map<String, dynamic> goal;
@@ -78,18 +78,19 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
   }
 
   Future<void> _update() async {
-    final db = await AppDatabase.db;
-    await db.update('saving_goals', {
-      'name': nameCtrl.text,
-      'target_amount': int.parse(targetCtrl.text),
-      'current_amount': int.parse(currentCtrl.text),
-    }, where: 'id = ?', whereArgs: [widget.goal['id']]);
+    final repo = FinancialRepository();
+    await repo.updateGoal(
+      widget.goal['id'],
+      nameCtrl.text,
+      int.parse(targetCtrl.text),
+      int.parse(currentCtrl.text),
+    );
     if (mounted) Navigator.pop(context);
   }
 
   Future<void> _delete() async {
-    final db = await AppDatabase.db;
-    await db.delete('saving_goals', where: 'id = ?', whereArgs: [widget.goal['id']]);
+    final repo = FinancialRepository();
+    await repo.deleteItem('saving_goals', widget.goal['id']);
     if (mounted) Navigator.pop(context);
   }
 }

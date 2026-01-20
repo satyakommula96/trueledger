@@ -2,14 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   Future<void> _exportToCSV(BuildContext context) async {
-    final db = await AppDatabase.db;
-    final txs = await db.query('variable_expenses');
+    final repo = FinancialRepository();
+    final txs = await repo.getAllValues('variable_expenses');
     
     if (txs.isEmpty) {
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No transactions to export")));
@@ -47,7 +47,8 @@ class SettingsScreen extends StatelessWidget {
     );
 
     if (confirmed == true) {
-      await AppDatabase.seedDummyData();
+      final repo = FinancialRepository();
+      await repo.seedData();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Sample data generated successfully")));
         Navigator.pop(context);
@@ -69,7 +70,8 @@ class SettingsScreen extends StatelessWidget {
     );
 
     if (confirmed == true) {
-      await AppDatabase.clearData();
+      final repo = FinancialRepository();
+      await repo.clearData();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("All data has been reset")));
         Navigator.pop(context);

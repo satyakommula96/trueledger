@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-import '../db/database.dart';
+import 'package:intl/intl.dart';
+
+import '../logic/financial_repository.dart';
 import '../theme/theme.dart';
 import 'month_detail.dart';
 
@@ -14,26 +15,12 @@ class MonthlyHistoryScreen extends StatefulWidget {
 class _MonthlyHistoryScreenState extends State<MonthlyHistoryScreen> {
   List<Map<String, dynamic>> monthSummaries = [];
 
-  Future<void> load() async {
-    final db = await AppDatabase.db;
-    final monthsQuery = await db.rawQuery('''
-      SELECT DISTINCT substr(date, 1, 7) as month FROM variable_expenses
-      UNION SELECT DISTINCT substr(date, 1, 7) as month FROM income_sources
-      UNION SELECT DISTINCT substr(date, 1, 7) as month FROM fixed_expenses
-      UNION SELECT DISTINCT substr(date, 1, 7) as month FROM investments
-      ORDER BY month DESC
-    ''');
+  bool _isLoading = true;
 
-    List<Map<String, dynamic>> summaries = [];
-    for (var m in monthsQuery) {
-      final month = m['month'].toString();
-      final income = Sqflite.firstIntValue(await db.rawQuery('SELECT SUM(amount) FROM income_sources WHERE substr(date, 1, 7) = ?', [month])) ?? 0;
-      final variable = Sqflite.firstIntValue(await db.rawQuery('SELECT SUM(amount) FROM variable_expenses WHERE substr(date, 1, 7) = ?', [month])) ?? 0;
-      final fixed = Sqflite.firstIntValue(await db.rawQuery('SELECT SUM(amount) FROM fixed_expenses WHERE substr(date, 1, 7) = ?', [month])) ?? 0;
-      final invested = Sqflite.firstIntValue(await db.rawQuery('SELECT SUM(amount) FROM investments WHERE substr(date, 1, 7) = ?', [month])) ?? 0;
-      summaries.add({'month': month, 'income': income, 'expenses': variable + fixed, 'invested': invested, 'net': income - (variable + fixed + invested)});
-    }
-    setState(() { monthSummaries = summaries; });
+  Future<void> load() async {
+    final repo = FinancialRepository();
+    final summaries = await repo.getMonthlyHistory();
+    if (mounted) setState(() { monthSummaries = summaries; _isLoading = false; });
   }
 
   @override
@@ -45,9 +32,11 @@ class _MonthlyHistoryScreenState extends State<MonthlyHistoryScreen> {
     final semantic = Theme.of(context).extension<AppColors>()!;
     return Scaffold(
       appBar: AppBar(title: const Text("LEDGER HISTORY")),
-      body: monthSummaries.isEmpty
-        ? Center(child: Text("NO PERIODS TRACKED.", style: TextStyle(color: semantic.secondaryText, fontSize: 10, fontWeight: FontWeight.bold)))
-        : ListView.builder(
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : monthSummaries.isEmpty
+          ? Center(child: Text("NO PERIODS TRACKED.", style: TextStyle(color: semantic.secondaryText, fontSize: 10, fontWeight: FontWeight.bold)))
+          : ListView.builder(
             padding: const EdgeInsets.all(24),
             itemCount: monthSummaries.length,
             itemBuilder: (_, i) {
@@ -99,9 +88,8 @@ class _MonthlyHistoryScreenState extends State<MonthlyHistoryScreen> {
 
   String _formatMonth(String yyyyMm) {
     try {
-      final parts = yyyyMm.split('-');
-      const months = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
-      return "${months[int.parse(parts[1]) - 1]} ${parts[0]}";
+      final date = DateTime.parse('$yyyyMm-01');
+      return DateFormat('MMMM yyyy').format(date).toUpperCase();
     } catch (e) { return yyyyMm; }
   }
 }

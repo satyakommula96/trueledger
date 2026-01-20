@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+import '../logic/financial_repository.dart';
 import '../theme/theme.dart';
 
 class AddLoanScreen extends StatefulWidget {
@@ -119,17 +119,17 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
 
   Future<void> _save() async {
     if (nameCtrl.text.isEmpty || remainingCtrl.text.isEmpty) return;
-    final db = await AppDatabase.db;
-    await db.insert('loans', {
-      'name': nameCtrl.text,
-      'loan_type': selectedType,
-      'total_amount': int.tryParse(totalCtrl.text) ?? 0,
-      'remaining_amount': int.tryParse(remainingCtrl.text) ?? 0,
-      'emi': int.tryParse(emiCtrl.text) ?? 0,
-      'interest_rate': double.tryParse(rateCtrl.text) ?? 0.0,
-      'due_date': dueCtrl.text,
-      'date': DateTime.now().toIso8601String(),
-    });
+    final repo = FinancialRepository();
+    await repo.addLoan(
+      nameCtrl.text,
+      selectedType,
+      int.tryParse(totalCtrl.text) ?? 0,
+      int.tryParse(remainingCtrl.text) ?? 0,
+      int.tryParse(emiCtrl.text) ?? 0,
+      double.tryParse(rateCtrl.text) ?? 0.0,
+      dueCtrl.text,
+      DateTime.now().toIso8601String(),
+    );
     if (mounted) Navigator.pop(context);
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../db/database.dart';
+
+import '../logic/financial_repository.dart';
 import '../theme/theme.dart';
 
 class AddExpense extends StatefulWidget {
@@ -18,7 +19,7 @@ class _AddExpenseState extends State<AddExpense> {
   final Map<String, List<String>> categoryMap = {
     'Variable': ['Food', 'Transport', 'Shopping', 'Entertainment', 'Others'],
     'Fixed': ['Rent', 'Utility', 'Insurance', 'EMI'],
-    'Investment': ['Stocks', 'Mutual Funds', 'Crypto', 'Gold'],
+    'Investment': ['Stocks', 'Mutual Funds', 'SIP', 'Crypto', 'Gold'],
     'Income': ['Salary', 'Freelance', 'Dividends'],
     'Subscription': ['OTT', 'Software', 'Gym'],
   };
@@ -120,16 +121,8 @@ class _AddExpenseState extends State<AddExpense> {
 
   Future<void> _save() async {
     if (amountCtrl.text.isEmpty) return;
-    final db = await AppDatabase.db;
-    final amount = int.parse(amountCtrl.text);
-    final now = DateTime.now().toIso8601String();
-    switch (type) {
-      case 'Income': await db.insert('income_sources', {'source': selectedCategory, 'amount': amount, 'date': now}); break;
-      case 'Fixed': await db.insert('fixed_expenses', {'name': selectedCategory, 'amount': amount, 'category': type, 'date': now}); break;
-      case 'Subscription': await db.insert('subscriptions', {'name': selectedCategory, 'amount': amount, 'active': 1, 'billing_date': '1', 'date': now}); break;
-      case 'Investment': await db.insert('investments', {'name': selectedCategory, 'amount': amount, 'active': 1, 'type': selectedCategory, 'date': now}); break;
-      default: await db.insert('variable_expenses', {'date': now, 'amount': amount, 'category': selectedCategory, 'note': noteCtrl.text});
-    }
+    final repo = FinancialRepository();
+    await repo.addEntry(type, int.parse(amountCtrl.text), selectedCategory, noteCtrl.text, DateTime.now().toIso8601String());
     if (mounted) {
       Navigator.pop(context);
     }
