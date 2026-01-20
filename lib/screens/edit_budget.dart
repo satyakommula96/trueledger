@@ -1,0 +1,78 @@
+import 'package:flutter/material.dart';
+import '../db/database.dart';
+
+class EditBudgetScreen extends StatefulWidget {
+  final Map<String, dynamic> budget;
+  const EditBudgetScreen({super.key, required this.budget});
+
+  @override
+  State<EditBudgetScreen> createState() => _EditBudgetScreenState();
+}
+
+class _EditBudgetScreenState extends State<EditBudgetScreen> {
+  late TextEditingController limitCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    limitCtrl = TextEditingController(text: widget.budget['monthly_limit'].toString());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Edit ${widget.budget['category']} Budget"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+            onPressed: _delete,
+          )
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            TextField(
+              controller: limitCtrl,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: "Monthly Limit (₹)",
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.05),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 60,
+              child: ElevatedButton(
+                onPressed: _update,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+                child: const Text("UPDATE BUDGET", style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _update() async {
+    final db = await AppDatabase.db;
+    await db.update('budgets', {'monthly_limit': int.parse(limitCtrl.text)}, where: 'id = ?', whereArgs: [widget.budget['id']]);
+    if (mounted) Navigator.pop(context);
+  }
+
+  Future<void> _delete() async {
+    final db = await AppDatabase.db;
+    await db.delete('budgets', where: 'id = ?', whereArgs: [widget.budget['id']]);
+    if (mounted) Navigator.pop(context);
+  }
+}

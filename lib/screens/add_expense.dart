@@ -1,0 +1,137 @@
+import 'package:flutter/material.dart';
+import '../db/database.dart';
+import '../theme/theme.dart';
+
+class AddExpense extends StatefulWidget {
+  const AddExpense({super.key});
+
+  @override
+  State<AddExpense> createState() => _AddExpenseState();
+}
+
+class _AddExpenseState extends State<AddExpense> {
+  final amountCtrl = TextEditingController();
+  final noteCtrl = TextEditingController();
+  String selectedCategory = 'General';
+  String type = 'Variable';
+
+  final Map<String, List<String>> categoryMap = {
+    'Variable': ['Food', 'Transport', 'Shopping', 'Entertainment', 'Others'],
+    'Fixed': ['Rent', 'Utility', 'Insurance', 'EMI'],
+    'Investment': ['Stocks', 'Mutual Funds', 'Crypto', 'Gold'],
+    'Income': ['Salary', 'Freelance', 'Dividends'],
+    'Subscription': ['OTT', 'Software', 'Gym'],
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<AppColors>()!;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("NEW LEDGER ENTRY")),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("ENTRY TYPE", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
+            const SizedBox(height: 16),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: categoryMap.keys.map((t) {
+                  final active = type == t;
+                  final isIncome = t == 'Income';
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: ChoiceChip(
+                      label: Text(t.toUpperCase()),
+                      selected: active,
+                      onSelected: (_) => setState(() { type = t; selectedCategory = categoryMap[t]![0]; }),
+                      selectedColor: isIncome ? semantic.income : colorScheme.onSurface,
+                      backgroundColor: Colors.transparent,
+                      side: BorderSide(color: active ? (isIncome ? semantic.income : colorScheme.onSurface) : colorScheme.onSurface.withOpacity(0.1)),
+                      labelStyle: TextStyle(color: active ? colorScheme.surface : colorScheme.onSurface, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 48),
+            const Text("TRANSACTION AMOUNT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: amountCtrl,
+              keyboardType: TextInputType.number,
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 48, letterSpacing: -2, color: type == 'Income' ? semantic.income : colorScheme.onSurface),
+              decoration: InputDecoration(prefixText: "₹ ", border: InputBorder.none, hintText: "0", hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.1))),
+            ),
+            const SizedBox(height: 48),
+            const Text("CATEGORY CLASSIFICATION", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: categoryMap[type]!.map((cat) {
+                final active = selectedCategory == cat;
+                return ActionChip(
+                  label: Text(cat.toUpperCase()),
+                  onPressed: () => setState(() => selectedCategory = cat),
+                  backgroundColor: active ? colorScheme.onSurface.withOpacity(0.05) : Colors.transparent,
+                  side: BorderSide(color: active ? colorScheme.onSurface : colorScheme.onSurface.withOpacity(0.05)),
+                  labelStyle: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 48),
+            const Text("AUDIT NOTES", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: noteCtrl,
+              decoration: InputDecoration(
+                hintText: "Optional details...",
+                filled: true,
+                fillColor: colorScheme.onSurface.withOpacity(0.02),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.1)),
+              ),
+            ),
+            const SizedBox(height: 64),
+            SizedBox(
+              width: double.infinity,
+              height: 64,
+              child: ElevatedButton(
+                onPressed: _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: type == 'Income' ? semantic.income : colorScheme.onSurface,
+                  foregroundColor: colorScheme.surface,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                child: const Text("COMMIT TO LEDGER", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 2)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _save() async {
+    if (amountCtrl.text.isEmpty) return;
+    final db = await AppDatabase.db;
+    final amount = int.parse(amountCtrl.text);
+    final now = DateTime.now().toIso8601String();
+    switch (type) {
+      case 'Income': await db.insert('income_sources', {'source': selectedCategory, 'amount': amount, 'date': now}); break;
+      case 'Fixed': await db.insert('fixed_expenses', {'name': selectedCategory, 'amount': amount, 'category': type, 'date': now}); break;
+      case 'Subscription': await db.insert('subscriptions', {'name': selectedCategory, 'amount': amount, 'active': 1, 'billing_date': '1', 'date': now}); break;
+      case 'Investment': await db.insert('investments', {'name': selectedCategory, 'amount': amount, 'active': 1, 'type': selectedCategory, 'date': now}); break;
+      default: await db.insert('variable_expenses', {'date': now, 'amount': amount, 'category': selectedCategory, 'note': noteCtrl.text});
+    }
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+}
