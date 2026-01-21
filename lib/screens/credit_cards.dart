@@ -73,7 +73,13 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(c.bank.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: semantic.secondaryText)),
+                          Row(
+                            children: [
+                              Icon(Icons.credit_card_rounded, size: 16, color: semantic.secondaryText),
+                              const SizedBox(width: 8),
+                              Text(c.bank.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: semantic.secondaryText)),
+                            ],
+                          ),
                           if (isHighUtil) Icon(Icons.warning_amber_rounded, color: semantic.warning, size: 18),
                         ],
                       ),

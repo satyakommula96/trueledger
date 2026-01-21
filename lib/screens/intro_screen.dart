@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dashboard.dart';
+import '../services/notification_service.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
@@ -38,6 +39,9 @@ class _IntroScreenState extends State<IntroScreen> {
   ];
 
   Future<void> _finishIntro() async {
+
+    await NotificationService().requestPermissions();
+    
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('intro_seen', true);
 

@@ -20,6 +20,7 @@ Future<void> main() async {
 
   // Initialize Notifications
   await NotificationService().init();
+  await NotificationService().scheduleDailyReminder();
 
   final prefs = await SharedPreferences.getInstance();
   final bool showIntro = !(prefs.getBool('intro_seen') ?? false);

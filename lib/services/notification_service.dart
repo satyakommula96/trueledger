@@ -1,5 +1,6 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest.dart' as tz;
+import 'dart:io';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart' as fln;
+import 'package:timezone/data/latest.dart' as tz_data;
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -10,32 +11,38 @@ class NotificationService {
 
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  final fln.FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      fln.FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
-    tz.initializeTimeZones();
+    tz_data.initializeTimeZones();
 
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const fln.AndroidInitializationSettings initializationSettingsAndroid =
+        fln.AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    final DarwinInitializationSettings initializationSettingsDarwin =
-        DarwinInitializationSettings(
+    final fln.DarwinInitializationSettings initializationSettingsDarwin =
+        fln.DarwinInitializationSettings(
       requestSoundPermission: false,
       requestBadgePermission: false,
       requestAlertPermission: false,
     );
 
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
+    final fln.LinuxInitializationSettings initializationSettingsLinux =
+        fln.LinuxInitializationSettings(
+      defaultActionName: 'Open notification',
+    );
+
+    final fln.InitializationSettings initializationSettings =
+        fln.InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
       macOS: initializationSettingsDarwin,
+      linux: initializationSettingsLinux,
     );
 
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) async {
+      onDidReceiveNotificationResponse: (fln.NotificationResponse response) async {
         // Handle notification tap
       },
     );
@@ -44,7 +51,7 @@ class NotificationService {
   Future<void> requestPermissions() async {
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
+            fln.IOSFlutterLocalNotificationsPlugin>()
         ?.requestPermissions(
           alert: true,
           badge: true,
@@ -53,7 +60,7 @@ class NotificationService {
 
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            MacOSFlutterLocalNotificationsPlugin>()
+            fln.MacOSFlutterLocalNotificationsPlugin>()
         ?.requestPermissions(
           alert: true,
           badge: true,
@@ -62,7 +69,7 @@ class NotificationService {
 
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+            fln.AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
   }
 
@@ -72,19 +79,20 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
-    const AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
+    const fln.AndroidNotificationDetails androidNotificationDetails =
+        fln.AndroidNotificationDetails(
       'default_channel',
       'Default Channel',
       channelDescription: 'Main channel for notifications',
-      importance: Importance.max,
-      priority: Priority.high,
+      importance: fln.Importance.max,
+      priority: fln.Priority.high,
     );
 
-    const NotificationDetails notificationDetails = NotificationDetails(
+    const fln.NotificationDetails notificationDetails = fln.NotificationDetails(
       android: androidNotificationDetails,
-      iOS: DarwinNotificationDetails(),
-      macOS: DarwinNotificationDetails(),
+      iOS: fln.DarwinNotificationDetails(),
+      macOS: fln.DarwinNotificationDetails(),
+      linux: fln.LinuxNotificationDetails(),
     );
 
     await flutterLocalNotificationsPlugin.show(
@@ -96,37 +104,31 @@ class NotificationService {
     );
   }
 
-  /*
-  Future<void> scheduleNotification({
-    required int id,
-    required String title,
-    required String body,
-    required DateTime scheduledDate,
-    String? payload,
-  }) async {
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
+  Future<void> scheduleDailyReminder() async {
+    if (Platform.isLinux) {
+      // Periodic notifications are not supported on Linux
+      return;
+    }
+
+    // Using periodicallyShow as a robust workaround for zonedSchedule compilation issues
+    await flutterLocalNotificationsPlugin.periodicallyShow(
+      888,
+      'Daily Reminder',
+      'Add your expenses for today!',
+      fln.RepeatInterval.daily,
+      const fln.NotificationDetails(
+        android: fln.AndroidNotificationDetails(
           'scheduled_channel',
           'Scheduled Notifications',
           channelDescription: 'Channel for scheduled notifications',
-          importance: Importance.max,
-          priority: Priority.high,
+          importance: fln.Importance.max,
+          priority: fln.Priority.high,
         ),
-        iOS: DarwinNotificationDetails(),
-        macOS: DarwinNotificationDetails(),
+        iOS: fln.DarwinNotificationDetails(),
+        macOS: fln.DarwinNotificationDetails(),
+        linux: fln.LinuxNotificationDetails(),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      payload: payload,
-      matchDateTimeComponents:
-          DateTimeComponents.time, // Recurring daily at the same time
+      androidScheduleMode: fln.AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
-  */
 }

@@ -9,6 +9,7 @@ class AppTheme {
     warning: const Color(0xFFFBBF24),   // --warning (Dark)
     divider: const Color(0xFF334155),   // --border (Dark)
     secondaryText: const Color(0xFF9CA3AF), // --text-secondary (Dark)
+    surfaceCombined: const Color(0xFF1E293B),
   );
 
   static AppColors lightColors = AppColors(
@@ -18,6 +19,7 @@ class AppTheme {
     warning: const Color(0xFFF39C12),   // --warning (Light)
     divider: const Color(0xFFE5E7EB),   // --border (Light)
     secondaryText: const Color(0xFF6B7280), // --text-secondary (Light)
+    surfaceCombined: const Color(0xFFEFF6FF),
   );
 
   static ThemeData get darkTheme => ThemeData(
@@ -86,6 +88,7 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color warning;
   final Color divider;
   final Color secondaryText;
+  final Color surfaceCombined;
 
   AppColors({
     required this.income,
@@ -94,10 +97,11 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.warning,
     required this.divider,
     required this.secondaryText,
+    required this.surfaceCombined,
   });
 
   @override
-  ThemeExtension<AppColors> copyWith({Color? income, Color? expense, Color? overspent, Color? warning, Color? divider, Color? secondaryText}) {
+  ThemeExtension<AppColors> copyWith({Color? income, Color? expense, Color? overspent, Color? warning, Color? divider, Color? secondaryText, Color? surfaceCombined}) {
     return AppColors(
       income: income ?? this.income,
       expense: expense ?? this.expense,
@@ -105,6 +109,7 @@ class AppColors extends ThemeExtension<AppColors> {
       warning: warning ?? this.warning,
       divider: divider ?? this.divider,
       secondaryText: secondaryText ?? this.secondaryText,
+      surfaceCombined: surfaceCombined ?? this.surfaceCombined,
     );
   }
 
@@ -118,6 +123,7 @@ class AppColors extends ThemeExtension<AppColors> {
       warning: Color.lerp(warning, other.warning, t)!,
       divider: Color.lerp(divider, other.divider, t)!,
       secondaryText: Color.lerp(secondaryText, other.secondaryText, t)!,
+      surfaceCombined: Color.lerp(surfaceCombined, other.surfaceCombined, t)!,
     );
   }
 }

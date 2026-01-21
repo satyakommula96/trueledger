@@ -77,6 +77,15 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                         ),
                         child: Row(
                           children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              margin: const EdgeInsets.only(right: 16),
+                              decoration: BoxDecoration(
+                                color: colorScheme.secondaryContainer.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(Icons.subscriptions_rounded, color: colorScheme.onSecondaryContainer, size: 20),
+                            ),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

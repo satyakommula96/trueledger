@@ -72,13 +72,32 @@ class _LoansScreenState extends State<LoansScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: semantic.overspent.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(l.loanType.toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.overspent)),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: semantic.surfaceCombined,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  l.loanType == 'Person' 
+                                    ? Icons.person_rounded 
+                                    : Icons.account_balance_rounded,
+                                  size: 16,
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: semantic.overspent.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(l.loanType.toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.overspent)),
+                              ),
+                            ],
                           ),
                           Text("${l.dueDate.toUpperCase()} DUE", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.secondaryText)),
                         ],
