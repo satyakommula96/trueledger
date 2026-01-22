@@ -49,7 +49,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
             decoration: BoxDecoration(
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: colorScheme.onSurface.withOpacity(0.06)),
+              border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.06)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -73,7 +73,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                         decoration: BoxDecoration(
                           color: colorScheme.surface,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: colorScheme.onSurface.withOpacity(0.06)),
+                          border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.06)),
                         ),
                         child: Row(
                           children: [
@@ -81,7 +81,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                               padding: const EdgeInsets.all(10),
                               margin: const EdgeInsets.only(right: 16),
                               decoration: BoxDecoration(
-                                color: colorScheme.secondaryContainer.withOpacity(0.5),
+                                color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(Icons.subscriptions_rounded, color: colorScheme.onSecondaryContainer, size: 20),
@@ -99,7 +99,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                             const SizedBox(width: 16),
                             IconButton(
                               onPressed: () => _delete(s.id),
-                              icon: Icon(Icons.remove_circle_outline, color: colorScheme.onSurface.withOpacity(0.3), size: 18),
+                              icon: Icon(Icons.remove_circle_outline, color: colorScheme.onSurface.withValues(alpha: 0.3), size: 18),
                             )
                           ],
                         ),

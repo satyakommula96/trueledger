@@ -188,7 +188,7 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
                           label: const Text("RECORD PAYMENT"),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: colorScheme.primary,
-                            side: BorderSide(color: colorScheme.primary.withOpacity(0.5)),
+                            side: BorderSide(color: colorScheme.primary.withValues(alpha: 0.5)),
                           ),
                         ),
                       ),
