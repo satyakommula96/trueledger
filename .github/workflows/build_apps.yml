@@ -3,6 +3,7 @@ name: Flutter Multi-Platform Build
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -126,3 +127,24 @@ jobs:
         with:
           name: windows-setup-exe
           path: build/windows/x64/installer/truecash_setup.exe
+
+  release:
+    name: Create Release
+    needs: [build_android, build_ios, build_linux, build_macos, build_windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: releases
+          pattern: '*'
+          merge-multiple: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: releases/*
+          generate_release_notes: true
