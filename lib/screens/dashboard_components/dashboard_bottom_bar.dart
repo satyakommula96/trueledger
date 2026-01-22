@@ -20,7 +20,7 @@ class DashboardBottomBar extends StatelessWidget {
     final semantic = Theme.of(context).extension<AppColors>()!;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+      padding: EdgeInsets.fromLTRB(24, 0, 24, 32 + MediaQuery.of(context).padding.bottom),
       child: SizedBox(
         height: 80,
         child: Stack(

@@ -71,15 +71,13 @@ class WealthHero extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Icon(Icons.more_horiz,
-                        color: colorScheme.onPrimary.withValues(alpha: 0.6)),
                   ],
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                        "₹${NumberFormat('#,##,##0').format(summary.netWorth)}",
+                        "₹${NumberFormat.decimalPattern('en_IN').format(summary.netWorth)}",
                         style: TextStyle(
                             color: colorScheme.onPrimary,
                             fontSize: 42,

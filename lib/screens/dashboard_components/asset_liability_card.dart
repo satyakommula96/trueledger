@@ -25,11 +25,21 @@ class AssetLiabilityCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 border:
                     Border.all(color: semantic.income.withValues(alpha: 0.2))),
-            child: _buildMiniStat(
-                "TOTAL ASSETS",
-                "₹${NumberFormat.compact().format(summary.netWorth + summary.creditCardDebt + summary.loansTotal)}",
-                semantic.income,
-                semantic),
+            child: Stack(
+              children: [
+                Positioned(
+                    right: -10,
+                    bottom: -10,
+                    child: Icon(Icons.account_balance,
+                        size: 48,
+                        color: semantic.income.withValues(alpha: 0.1))),
+                _buildMiniStat(
+                    "TOTAL ASSETS",
+                    "₹${NumberFormat.compact(locale: 'en_IN').format(summary.netWorth + summary.creditCardDebt + summary.loansTotal)}",
+                    semantic.income,
+                    semantic),
+              ],
+            ),
           ),
         ),
         const SizedBox(width: 16),
@@ -41,11 +51,21 @@ class AssetLiabilityCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                     color: semantic.overspent.withValues(alpha: 0.2))),
-            child: _buildMiniStat(
-                "LIABILITIES",
-                "₹${NumberFormat.compact().format(summary.creditCardDebt + summary.loansTotal)}",
-                semantic.overspent,
-                semantic),
+            child: Stack(
+              children: [
+                Positioned(
+                    right: -10,
+                    bottom: -10,
+                    child: Icon(Icons.remove_circle_outline,
+                        size: 48,
+                        color: semantic.overspent.withValues(alpha: 0.1))),
+                _buildMiniStat(
+                    "LIABILITIES",
+                    "₹${NumberFormat.compact(locale: 'en_IN').format(summary.creditCardDebt + summary.loansTotal)}",
+                    semantic.overspent,
+                    semantic),
+              ],
+            ),
           ),
         ),
       ],

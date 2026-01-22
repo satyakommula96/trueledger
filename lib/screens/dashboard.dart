@@ -98,7 +98,7 @@ class _DashboardState extends State<Dashboard> {
                       children: [
                         Expanded(child: SummaryCard(
                           label: "Income",
-                          value: "₹${NumberFormat.compact().format(summary!.totalIncome)}",
+                          value: "₹${NumberFormat.compact(locale: 'en_IN').format(summary!.totalIncome)}",
                           valueColor: semantic.income,
                           semantic: semantic,
                           icon: Icons.arrow_downward
@@ -106,7 +106,7 @@ class _DashboardState extends State<Dashboard> {
                         const SizedBox(width: 12),
                         Expanded(child: SummaryCard(
                           label: "Expenses",
-                          value: "₹${NumberFormat.compact().format(summary!.totalFixed + summary!.totalVariable + summary!.totalSubscriptions)}",
+                          value: "₹${NumberFormat.compact(locale: 'en_IN').format(summary!.totalFixed + summary!.totalVariable + summary!.totalSubscriptions)}",
                           valueColor: semantic.overspent,
                           semantic: semantic,
                           icon: Icons.arrow_upward
