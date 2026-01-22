@@ -106,3 +106,23 @@ jobs:
         with:
           name: truecash-macos-dmg
           path: truecash_*.dmg
+
+  build_windows:
+    name: Build Windows Installer
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+      - run: flutter pub get
+      - run: flutter build windows --release
+      - name: Build Installer (Inno Setup)
+        run: iscc scripts/windows_setup.iss
+      - name: Upload Windows Setup
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-setup-exe
+          path: build/windows/x64/installer/truecash_setup.exe
