@@ -32,12 +32,24 @@ class SummaryCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label.toUpperCase(), style: TextStyle(fontSize: 10, color: semantic.secondaryText, fontWeight: FontWeight.w900, letterSpacing: 1)),
-              Icon(icon, size: 16, color: semantic.secondaryText.withOpacity(0.5)),
+              Text(label.toUpperCase(),
+                  style: TextStyle(
+                      fontSize: 10,
+                      color: semantic.secondaryText,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1)),
+              Icon(icon,
+                  size: 16,
+                  color: semantic.secondaryText.withValues(alpha: 0.5)),
             ],
           ),
           const SizedBox(height: 12),
-          Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: valueColor, letterSpacing: -0.5)),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: valueColor,
+                  letterSpacing: -0.5)),
         ],
       ),
     );
@@ -70,8 +82,18 @@ class FullWidthSummaryCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label.toUpperCase(), style: TextStyle(fontSize: 12, color: semantic.secondaryText, fontWeight: FontWeight.w900, letterSpacing: 1)),
-          Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: valueColor, letterSpacing: -0.5)),
+          Text(label.toUpperCase(),
+              style: TextStyle(
+                  fontSize: 12,
+                  color: semantic.secondaryText,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1)),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: valueColor,
+                  letterSpacing: -0.5)),
         ],
       ),
     );

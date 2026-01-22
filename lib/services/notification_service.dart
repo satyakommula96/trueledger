@@ -1,5 +1,7 @@
 import 'dart:io';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart' as fln;
+import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    as fln;
 import 'package:timezone/data/latest.dart' as tz_data;
 
 class NotificationService {
@@ -15,6 +17,8 @@ class NotificationService {
       fln.FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
+    if (kIsWeb) return;
+
     tz_data.initializeTimeZones();
 
     const fln.AndroidInitializationSettings initializationSettingsAndroid =
@@ -42,7 +46,8 @@ class NotificationService {
 
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (fln.NotificationResponse response) async {
+      onDidReceiveNotificationResponse:
+          (fln.NotificationResponse response) async {
         // Handle notification tap
       },
     );
@@ -105,8 +110,8 @@ class NotificationService {
   }
 
   Future<void> scheduleDailyReminder() async {
-    if (Platform.isLinux) {
-      // Periodic notifications are not supported on Linux
+    if (kIsWeb || Platform.isLinux) {
+      // Periodic notifications are not supported on Linux or Web (yet)
       return;
     }
 
@@ -128,7 +133,7 @@ class NotificationService {
         macOS: fln.DarwinNotificationDetails(),
         linux: fln.LinuxNotificationDetails(),
       ),
-      androidScheduleMode: fln.AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: fln.AndroidScheduleMode.inexactAllowWhileIdle,
     );
   }
 }

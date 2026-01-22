@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'screens/dashboard.dart';
 import 'theme/theme.dart';
 import 'services/notification_service.dart';
@@ -13,17 +14,37 @@ import 'screens/intro_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+  if (kIsWeb) {
+    databaseFactory = databaseFactoryFfiWeb;
+  } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
 
   // Initialize Notifications
-  await NotificationService().init();
-  await NotificationService().scheduleDailyReminder();
+  try {
+    await NotificationService().init();
+  } catch (e) {
+    debugPrint('Error initializing notifications: $e');
+  }
 
-  final prefs = await SharedPreferences.getInstance();
-  final bool showIntro = !(prefs.getBool('intro_seen') ?? false);
+  // Schedule daily reminder (fire and forget to not block startup provided init didn't hang)
+  // We don't await this to ensure app starts even if scheduling fails
+  NotificationService().scheduleDailyReminder().catchError((e) {
+    debugPrint('Error scheduling reminder: $e');
+  });
+
+  bool showIntro = false;
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final bool seen = prefs.getBool('intro_seen') ?? false;
+    debugPrint('Check Intro: seen=$seen');
+    showIntro = !seen;
+  } catch (e) {
+    debugPrint('Error accessing shared preferences: $e');
+    // Default to handling it gracefully, maybe show intro if unsure or dashboard
+    showIntro = true;
+  }
 
   runApp(TrueCashApp(showIntro: showIntro));
 }

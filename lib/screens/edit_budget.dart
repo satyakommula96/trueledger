@@ -16,7 +16,8 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
   @override
   void initState() {
     super.initState();
-    limitCtrl = TextEditingController(text: widget.budget.monthlyLimit.toString());
+    limitCtrl =
+        TextEditingController(text: widget.budget.monthlyLimit.toString());
   }
 
   @override
@@ -41,8 +42,13 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
               decoration: InputDecoration(
                 labelText: "Monthly Limit (₹)",
                 filled: true,
-                fillColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.05),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                fillColor: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.05),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none),
               ),
             ),
             const SizedBox(height: 40),
@@ -54,9 +60,11 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
                 ),
-                child: const Text("UPDATE BUDGET", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text("UPDATE BUDGET",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],

@@ -19,11 +19,19 @@ class _LoansScreenState extends State<LoansScreen> {
   Future<void> load() async {
     final repo = FinancialRepository();
     final data = await repo.getLoans();
-    if (mounted) setState(() { loans = data; _isLoading = false; });
+    if (mounted) {
+      setState(() {
+        loans = data;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
-  void initState() { super.initState(); load(); }
+  void initState() {
+    super.initState();
+    load();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,120 +44,170 @@ class _LoansScreenState extends State<LoansScreen> {
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
         onPressed: () async {
-          await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddLoanScreen()));
+          await Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const AddLoanScreen()));
           load();
         },
         child: const Icon(Icons.add),
       ),
       body: _isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : loans.isEmpty 
-          ? Center(child: Text("NO ACTIVE BORROWINGS.", style: TextStyle(color: semantic.secondaryText, fontSize: 10, fontWeight: FontWeight.bold)))
-          : ListView.builder(
-            padding: const EdgeInsets.all(24),
-            itemCount: loans.length,
-            itemBuilder: (_, i) {
-              final l = loans[i];
-              final total = l.totalAmount.toDouble();
-              final remaining = l.remainingAmount.toDouble();
-              final emi = l.emi.toDouble();
-              final progress = total == 0 ? 0.0 : remaining / total;
+          ? const Center(child: CircularProgressIndicator())
+          : loans.isEmpty
+              ? Center(
+                  child: Text("NO ACTIVE BORROWINGS.",
+                      style: TextStyle(
+                          color: semantic.secondaryText,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold)))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(24),
+                  itemCount: loans.length,
+                  itemBuilder: (_, i) {
+                    final l = loans[i];
+                    final total = l.totalAmount.toDouble();
+                    final remaining = l.remainingAmount.toDouble();
+                    final emi = l.emi.toDouble();
+                    final progress = total == 0 ? 0.0 : remaining / total;
 
-              return InkWell(
-                onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => EditLoanScreen(loan: l))); load(); },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: semantic.divider),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: semantic.surfaceCombined,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  l.loanType == 'Person' 
-                                    ? Icons.person_rounded 
-                                    : Icons.account_balance_rounded,
-                                  size: 16,
-                                  color: colorScheme.primary,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: semantic.overspent.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(l.loanType.toUpperCase(), style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.overspent)),
-                              ),
-                            ],
-                          ),
-                          Text("${l.dueDate.toUpperCase()} DUE", style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.secondaryText)),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(l.name.toUpperCase(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("₹${remaining.toInt()}", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
-                              Text(l.loanType == 'Person' ? "Borrowed Amount" : "Remaining Balance", style: TextStyle(fontSize: 10, color: semantic.secondaryText, fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                          if (l.loanType != 'Person')
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                    return InkWell(
+                      onTap: () async {
+                        await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => EditLoanScreen(loan: l)));
+                        load();
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: semantic.divider),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text("₹${emi.toInt()}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                                Text("Monthly EMI", style: TextStyle(fontSize: 10, color: semantic.secondaryText, fontWeight: FontWeight.w500)),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: semantic.surfaceCombined,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        l.loanType == 'Person'
+                                            ? Icons.person_rounded
+                                            : Icons.account_balance_rounded,
+                                        size: 16,
+                                        color: colorScheme.primary,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: semantic.overspent
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(l.loanType.toUpperCase(),
+                                          style: TextStyle(
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.w900,
+                                              color: semantic.overspent)),
+                                    ),
+                                  ],
+                                ),
+                                Text("${l.dueDate.toUpperCase()} DUE",
+                                    style: TextStyle(
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w900,
+                                        color: semantic.secondaryText)),
                               ],
                             ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: total == 0 ? 0 : 1 - progress, 
-                          backgroundColor: semantic.divider,
-                          color: semantic.overspent,
-                          minHeight: 6,
+                            const SizedBox(height: 16),
+                            Text(l.name.toUpperCase(),
+                                style: const TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w800)),
+                            const SizedBox(height: 24),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("₹${remaining.toInt()}",
+                                        style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: -0.5)),
+                                    Text(
+                                        l.loanType == 'Person'
+                                            ? "Borrowed Amount"
+                                            : "Remaining Balance",
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: semantic.secondaryText,
+                                            fontWeight: FontWeight.w500)),
+                                  ],
+                                ),
+                                if (l.loanType != 'Person')
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text("₹${emi.toInt()}",
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.w800)),
+                                      Text("Monthly EMI",
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              color: semantic.secondaryText,
+                                              fontWeight: FontWeight.w500)),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: total == 0 ? 0 : 1 - progress,
+                                backgroundColor: semantic.divider,
+                                color: semantic.overspent,
+                                minHeight: 6,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                if (l.loanType != 'Person')
+                                  Text("${l.interestRate}% APR",
+                                      style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w900,
+                                          color: semantic.secondaryText)),
+                                Text("TOTAL: ₹${total.toInt()}",
+                                    style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w900,
+                                        color: semantic.secondaryText)),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          if (l.loanType != 'Person')
-                            Text("${l.interestRate}% APR", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: semantic.secondaryText)),
-                          Text("TOTAL: ₹${total.toInt()}", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: semantic.secondaryText)),
-                        ],
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
     );
   }
 }

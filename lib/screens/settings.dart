@@ -1,8 +1,14 @@
 import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
+import '../utils/web_saver.dart';
 import '../logic/financial_repository.dart';
+import '../db/database.dart';
 
 import '../services/notification_service.dart';
 
@@ -70,6 +76,161 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _backupData(BuildContext context) async {
+    final repo = FinancialRepository();
+
+    // Gather all data
+    final data = {
+      'vars': await repo.getAllValues('variable_expenses'),
+      'income': await repo.getAllValues('income_sources'),
+      'fixed': await repo.getAllValues('fixed_expenses'),
+      'invs': await repo.getAllValues('investments'),
+      'subs': await repo.getAllValues('subscriptions'),
+      'cards': await repo.getAllValues('credit_cards'),
+      'loans': await repo.getAllValues('loans'),
+      'goals': await repo.getAllValues('saving_goals'),
+      'budgets': await repo.getAllValues('budgets'),
+      'backup_date': DateTime.now().toIso8601String(),
+      'version': '1.0'
+    };
+
+    final jsonString = jsonEncode(data);
+    final fileName =
+        "truecash_backup_${DateTime.now().millisecondsSinceEpoch}.json";
+
+    if (kIsWeb) {
+      // Web: Create XFile from bytes and "share" it (triggers download)
+      final bytes = utf8.encode(jsonString);
+      await saveFileWeb(bytes, fileName);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Backup download started")));
+      }
+      return;
+    }
+
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      // Desktop: Open "Save As" dialog
+      final outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Backup',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (outputFile != null) {
+        final file = File(outputFile);
+        await file.writeAsString(jsonString);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Backup saved to $outputFile")));
+        }
+      }
+      return;
+    }
+
+    // Mobile (Android/iOS)
+    final directory = await getTemporaryDirectory();
+    final file = File('${directory.path}/$fileName');
+    await file.writeAsString(jsonString);
+
+    if (context.mounted) {
+      // ignore: deprecated_member_use
+      await Share.shareXFiles([XFile(file.path)], text: 'TrueCash Backup File');
+    }
+  }
+
+  Future<void> _restoreData(BuildContext context) async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.any);
+    if (result == null || result.files.isEmpty) return;
+
+    // If web, bytes should be populated; else use path
+    String jsonString;
+    if (kIsWeb) {
+      final bytes = result.files.single.bytes;
+      if (bytes == null) return;
+      jsonString = utf8.decode(bytes);
+    } else {
+      final file = File(result.files.single.path!);
+      jsonString = await file.readAsString();
+    }
+
+    try {
+      final data = jsonDecode(jsonString) as Map<String, dynamic>;
+
+      if (data['version'] != '1.0') throw "Unknown backup version";
+
+      if (!context.mounted) return;
+
+      final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+                title: const Text("Restore Data?"),
+                content: const Text(
+                    "This will OVERWRITE all current data with the backup relative to the file date."),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text("CANCEL")),
+                  TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text("RESTORE",
+                          style: TextStyle(color: Colors.red))),
+                ],
+              ));
+
+      if (confirmed == true) {
+        final repo = FinancialRepository();
+        await repo.clearData();
+
+        // Restore tables
+        final db = await AppDatabase.db;
+        final batch = db.batch();
+
+        for (var i in (data['vars'] as List)) {
+          batch.insert('variable_expenses', i as Map<String, dynamic>);
+        }
+        for (var i in (data['income'] as List)) {
+          batch.insert('income_sources', i as Map<String, dynamic>);
+        }
+        for (var i in (data['fixed'] as List)) {
+          batch.insert('fixed_expenses', i as Map<String, dynamic>);
+        }
+        for (var i in (data['invs'] as List)) {
+          batch.insert('investments', i as Map<String, dynamic>);
+        }
+        for (var i in (data['subs'] as List)) {
+          batch.insert('subscriptions', i as Map<String, dynamic>);
+        }
+        for (var i in (data['cards'] as List)) {
+          batch.insert('credit_cards', i as Map<String, dynamic>);
+        }
+        for (var i in (data['loans'] as List)) {
+          batch.insert('loans', i as Map<String, dynamic>);
+        }
+        for (var i in (data['goals'] as List)) {
+          batch.insert('saving_goals', i as Map<String, dynamic>);
+        }
+        for (var i in (data['budgets'] as List)) {
+          batch.insert('budgets', i as Map<String, dynamic>);
+        }
+
+        await batch.commit();
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Restore Successful!")));
+          Navigator.pop(context); // Go back to dashboard to refresh
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Restore Failed: $e")));
+      }
+    }
+  }
+
   Future<void> _resetData(BuildContext context) async {
     final confirmed = await showDialog<bool>(
         context: context,
@@ -114,6 +275,24 @@ class SettingsScreen extends StatelessWidget {
             Icons.download_rounded,
             colorScheme.primary,
             () => _exportToCSV(context),
+          ),
+          const SizedBox(height: 16),
+          _buildOption(
+            context,
+            "Backup Data (Cloud Ready)",
+            "Save full backup to file",
+            Icons.cloud_upload_outlined,
+            Colors.blueAccent,
+            () => _backupData(context),
+          ),
+          const SizedBox(height: 16),
+          _buildOption(
+            context,
+            "Restore Data",
+            "Import backup file",
+            Icons.restore_page_outlined,
+            Colors.orange,
+            () => _restoreData(context),
           ),
           const SizedBox(height: 16),
           _buildOption(

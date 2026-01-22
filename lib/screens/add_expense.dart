@@ -36,7 +36,12 @@ class _AddExpenseState extends State<AddExpense> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("ENTRY TYPE", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
+            const Text("ENTRY TYPE",
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                    color: Colors.grey)),
             const SizedBox(height: 16),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -49,27 +54,63 @@ class _AddExpenseState extends State<AddExpense> {
                     child: ChoiceChip(
                       label: Text(t.toUpperCase()),
                       selected: active,
-                      onSelected: (_) => setState(() { type = t; selectedCategory = categoryMap[t]![0]; }),
-                      selectedColor: isIncome ? semantic.income : colorScheme.onSurface,
+                      onSelected: (_) => setState(() {
+                        type = t;
+                        selectedCategory = categoryMap[t]![0];
+                      }),
+                      selectedColor:
+                          isIncome ? semantic.income : colorScheme.onSurface,
                       backgroundColor: Colors.transparent,
-                      side: BorderSide(color: active ? (isIncome ? semantic.income : colorScheme.onSurface) : colorScheme.onSurface.withOpacity(0.1)),
-                      labelStyle: TextStyle(color: active ? colorScheme.surface : colorScheme.onSurface, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1),
+                      side: BorderSide(
+                          color: active
+                              ? (isIncome
+                                  ? semantic.income
+                                  : colorScheme.onSurface)
+                              : colorScheme.onSurface.withValues(alpha: 0.1)),
+                      labelStyle: TextStyle(
+                          color: active
+                              ? colorScheme.surface
+                              : colorScheme.onSurface,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 10,
+                          letterSpacing: 1),
                     ),
                   );
                 }).toList(),
               ),
             ),
             const SizedBox(height: 48),
-            const Text("TRANSACTION AMOUNT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
+            const Text("TRANSACTION AMOUNT",
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                    color: Colors.grey)),
             const SizedBox(height: 8),
             TextField(
               controller: amountCtrl,
               keyboardType: TextInputType.number,
-              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 48, letterSpacing: -2, color: type == 'Income' ? semantic.income : colorScheme.onSurface),
-              decoration: InputDecoration(prefixText: "₹ ", border: InputBorder.none, hintText: "0", hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.1))),
+              style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 48,
+                  letterSpacing: -2,
+                  color: type == 'Income'
+                      ? semantic.income
+                      : colorScheme.onSurface),
+              decoration: InputDecoration(
+                  prefixText: "₹ ",
+                  border: InputBorder.none,
+                  hintText: "0",
+                  hintStyle: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.1))),
             ),
             const SizedBox(height: 48),
-            const Text("CATEGORY CLASSIFICATION", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
+            const Text("CATEGORY CLASSIFICATION",
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                    color: Colors.grey)),
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
@@ -79,23 +120,40 @@ class _AddExpenseState extends State<AddExpense> {
                 return ActionChip(
                   label: Text(cat.toUpperCase()),
                   onPressed: () => setState(() => selectedCategory = cat),
-                  backgroundColor: active ? colorScheme.onSurface.withOpacity(0.05) : Colors.transparent,
-                  side: BorderSide(color: active ? colorScheme.onSurface : colorScheme.onSurface.withOpacity(0.05)),
-                  labelStyle: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1),
+                  backgroundColor: active
+                      ? colorScheme.onSurface.withValues(alpha: 0.05)
+                      : Colors.transparent,
+                  side: BorderSide(
+                      color: active
+                          ? colorScheme.onSurface
+                          : colorScheme.onSurface.withValues(alpha: 0.05)),
+                  labelStyle: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 9,
+                      letterSpacing: 1),
                 );
               }).toList(),
             ),
             const SizedBox(height: 48),
-            const Text("AUDIT NOTES", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
+            const Text("AUDIT NOTES",
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                    color: Colors.grey)),
             const SizedBox(height: 16),
             TextField(
               controller: noteCtrl,
               decoration: InputDecoration(
                 hintText: "Optional details...",
                 filled: true,
-                fillColor: colorScheme.onSurface.withOpacity(0.02),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-                hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.1)),
+                fillColor: colorScheme.onSurface.withValues(alpha: 0.02),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none),
+                hintStyle: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.1)),
               ),
             ),
             const SizedBox(height: 64),
@@ -105,12 +163,19 @@ class _AddExpenseState extends State<AddExpense> {
               child: ElevatedButton(
                 onPressed: _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: type == 'Income' ? semantic.income : colorScheme.onSurface,
+                  backgroundColor: type == 'Income'
+                      ? semantic.income
+                      : colorScheme.onSurface,
                   foregroundColor: colorScheme.surface,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
-                child: const Text("COMMIT TO LEDGER", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                child: const Text("COMMIT TO LEDGER",
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2)),
               ),
             ),
           ],
@@ -122,7 +187,8 @@ class _AddExpenseState extends State<AddExpense> {
   Future<void> _save() async {
     if (amountCtrl.text.isEmpty) return;
     final repo = FinancialRepository();
-    await repo.addEntry(type, int.parse(amountCtrl.text), selectedCategory, noteCtrl.text, DateTime.now().toIso8601String());
+    await repo.addEntry(type, int.parse(amountCtrl.text), selectedCategory,
+        noteCtrl.text, DateTime.now().toIso8601String());
     if (mounted) {
       Navigator.pop(context);
     }

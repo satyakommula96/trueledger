@@ -39,9 +39,8 @@ class _IntroScreenState extends State<IntroScreen> {
   ];
 
   Future<void> _finishIntro() async {
-
     await NotificationService().requestPermissions();
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('intro_seen', true);
 
@@ -178,7 +177,7 @@ class _IntroPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(30),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -201,7 +200,10 @@ class _IntroPage extends StatelessWidget {
             description,
             style: TextStyle(
               fontSize: 16,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.7),
               height: 1.5,
             ),
             textAlign: TextAlign.center,

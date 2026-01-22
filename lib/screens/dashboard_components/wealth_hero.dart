@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../logic/monthly_calc.dart';
-import '../../theme/theme.dart';
 
 class WealthHero extends StatelessWidget {
   final MonthlySummary summary;
@@ -11,19 +10,25 @@ class WealthHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Container(
       width: double.infinity,
       height: 220,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [colorScheme.primary, colorScheme.primary.withOpacity(0.8)],
+          colors: [
+            colorScheme.primary,
+            colorScheme.primary.withValues(alpha: 0.8)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
-          BoxShadow(color: colorScheme.primary.withOpacity(0.3), blurRadius: 24, offset: const Offset(0, 12)),
+          BoxShadow(
+              color: colorScheme.primary.withValues(alpha: 0.3),
+              blurRadius: 24,
+              offset: const Offset(0, 12)),
         ],
       ),
       child: Stack(
@@ -31,7 +36,8 @@ class WealthHero extends StatelessWidget {
           Positioned(
             right: -20,
             top: -20,
-            child: Icon(Icons.account_balance_wallet, size: 200, color: Colors.white.withOpacity(0.1)),
+            child: Icon(Icons.account_balance_wallet,
+                size: 200, color: Colors.white.withValues(alpha: 0.1)),
           ),
           Padding(
             padding: const EdgeInsets.all(32),
@@ -43,25 +49,50 @@ class WealthHero extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(color: Colors.black.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20)),
                       child: Row(
                         children: [
-                          Icon(Icons.verified_user_outlined, size: 14, color: colorScheme.onPrimary.withOpacity(0.8)),
+                          Icon(Icons.verified_user_outlined,
+                              size: 14,
+                              color:
+                                  colorScheme.onPrimary.withValues(alpha: 0.8)),
                           const SizedBox(width: 6),
-                          Text("TOTAL NET WORTH", style: TextStyle(color: colorScheme.onPrimary.withOpacity(0.9), fontWeight: FontWeight.w700, fontSize: 10, letterSpacing: 1)),
+                          Text("TOTAL NET WORTH",
+                              style: TextStyle(
+                                  color: colorScheme.onPrimary
+                                      .withValues(alpha: 0.9),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 10,
+                                  letterSpacing: 1)),
                         ],
                       ),
                     ),
-                    Icon(Icons.more_horiz, color: colorScheme.onPrimary.withOpacity(0.6)),
+                    Icon(Icons.more_horiz,
+                        color: colorScheme.onPrimary.withValues(alpha: 0.6)),
                   ],
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("₹${NumberFormat('#,##,##0').format(summary.netWorth)}", style: TextStyle(color: colorScheme.onPrimary, fontSize: 42, fontWeight: FontWeight.w900, letterSpacing: -1.5, height: 1.0)),
+                    Text(
+                        "₹${NumberFormat('#,##,##0').format(summary.netWorth)}",
+                        style: TextStyle(
+                            color: colorScheme.onPrimary,
+                            fontSize: 42,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -1.5,
+                            height: 1.0)),
                     const SizedBox(height: 8),
-                    Text("AFTER LIABILITIES", style: TextStyle(color: colorScheme.onPrimary.withOpacity(0.7), fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+                    Text("AFTER LIABILITIES",
+                        style: TextStyle(
+                            color: colorScheme.onPrimary.withValues(alpha: 0.7),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5)),
                   ],
                 ),
               ],

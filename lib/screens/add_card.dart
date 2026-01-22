@@ -27,9 +27,13 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen> {
           children: [
             _buildField("Bank Name", bankCtrl, Icons.account_balance),
             _buildField("Credit Limit", limitCtrl, Icons.speed, isNumber: true),
-            _buildField("Statement Balance", stmtCtrl, Icons.account_balance_wallet, isNumber: true),
-            _buildField("Minimum Due", minDueCtrl, Icons.low_priority, isNumber: true),
-            _buildField("Due Date (e.g. 15th)", dueDateCtrl, Icons.calendar_today),
+            _buildField(
+                "Statement Balance", stmtCtrl, Icons.account_balance_wallet,
+                isNumber: true),
+            _buildField("Minimum Due", minDueCtrl, Icons.low_priority,
+                isNumber: true),
+            _buildField(
+                "Due Date (e.g. 15th)", dueDateCtrl, Icons.calendar_today),
             const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
@@ -39,9 +43,11 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colorScheme.primary,
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
                 ),
-                child: const Text("ADD CARD", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text("ADD CARD",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -50,7 +56,8 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController ctrl, IconData icon, {bool isNumber = false}) {
+  Widget _buildField(String label, TextEditingController ctrl, IconData icon,
+      {bool isNumber = false}) {
     final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -61,8 +68,10 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen> {
           labelText: label,
           prefixIcon: Icon(icon),
           filled: true,
-          fillColor: colorScheme.onSurface.withOpacity(0.05),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+          fillColor: colorScheme.onSurface.withValues(alpha: 0.05),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none),
         ),
       ),
     );
@@ -72,14 +81,15 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen> {
     if (bankCtrl.text.isEmpty || limitCtrl.text.isEmpty) return;
     final repo = FinancialRepository();
     await repo.addCreditCard(
-      bankCtrl.text,
-      int.tryParse(limitCtrl.text) ?? 0,
-      int.tryParse(stmtCtrl.text) ?? 0,
-      int.tryParse(minDueCtrl.text) ?? 0,
-      dueDateCtrl.text
-    );
+        bankCtrl.text,
+        int.tryParse(limitCtrl.text) ?? 0,
+        int.tryParse(stmtCtrl.text) ?? 0,
+        int.tryParse(minDueCtrl.text) ?? 0,
+        dueDateCtrl.text);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Credit Card Added"), behavior: SnackBarBehavior.floating));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Credit Card Added"),
+          behavior: SnackBarBehavior.floating));
       Navigator.pop(context);
     }
   }

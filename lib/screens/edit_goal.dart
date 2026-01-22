@@ -18,8 +18,10 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
   void initState() {
     super.initState();
     nameCtrl = TextEditingController(text: widget.goal['name']);
-    targetCtrl = TextEditingController(text: widget.goal['target_amount'].toString());
-    currentCtrl = TextEditingController(text: widget.goal['current_amount'].toString());
+    targetCtrl =
+        TextEditingController(text: widget.goal['target_amount'].toString());
+    currentCtrl =
+        TextEditingController(text: widget.goal['current_amount'].toString());
   }
 
   @override
@@ -50,9 +52,11 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
                 ),
-                child: const Text("UPDATE GOAL", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text("UPDATE GOAL",
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -61,7 +65,8 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
     );
   }
 
-  Widget _buildField(String label, TextEditingController ctrl, {bool isNum = false}) {
+  Widget _buildField(String label, TextEditingController ctrl,
+      {bool isNum = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: TextField(
@@ -70,8 +75,11 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
         decoration: InputDecoration(
           labelText: label,
           filled: true,
-          fillColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.05),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+          fillColor:
+              Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none),
         ),
       ),
     );

@@ -20,8 +20,11 @@ class LedgerItem {
     String label = "Unknown";
     if (map['category'] != null) {
       label = map['category'];
-    } else if (map['source'] != null) label = map['source'];
-    else if (map['name'] != null) label = map['name'];
+    } else if (map['source'] != null) {
+      label = map['source'];
+    } else if (map['name'] != null) {
+      label = map['name'];
+    }
 
     return LedgerItem(
       id: map['id'] as int,
@@ -45,9 +48,12 @@ class LedgerItem {
     // Reconstruct specific keys based on type
     if (type == 'Income') {
       map['source'] = label;
-    } else if (type == 'Variable') map['category'] = label;
-    else map['name'] = label;
-    
+    } else if (type == 'Variable') {
+      map['category'] = label;
+    } else {
+      map['name'] = label;
+    }
+
     return map;
   }
 }

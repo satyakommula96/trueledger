@@ -20,27 +20,51 @@ class AssetLiabilityCard extends StatelessWidget {
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(color: semantic.income.withOpacity(0.05), borderRadius: BorderRadius.circular(20), border: Border.all(color: semantic.income.withOpacity(0.2))),
-            child: _buildMiniStat("TOTAL ASSETS", "₹${NumberFormat.compact().format(summary.netWorth + summary.creditCardDebt + summary.loansTotal)}", semantic.income, semantic),
+            decoration: BoxDecoration(
+                color: semantic.income.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(20),
+                border:
+                    Border.all(color: semantic.income.withValues(alpha: 0.2))),
+            child: _buildMiniStat(
+                "TOTAL ASSETS",
+                "₹${NumberFormat.compact().format(summary.netWorth + summary.creditCardDebt + summary.loansTotal)}",
+                semantic.income,
+                semantic),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(color: semantic.overspent.withOpacity(0.05), borderRadius: BorderRadius.circular(20), border: Border.all(color: semantic.overspent.withOpacity(0.2))),
-            child: _buildMiniStat("LIABILITIES", "₹${NumberFormat.compact().format(summary.creditCardDebt + summary.loansTotal)}", semantic.overspent, semantic),
+            decoration: BoxDecoration(
+                color: semantic.overspent.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                    color: semantic.overspent.withValues(alpha: 0.2))),
+            child: _buildMiniStat(
+                "LIABILITIES",
+                "₹${NumberFormat.compact().format(summary.creditCardDebt + summary.loansTotal)}",
+                semantic.overspent,
+                semantic),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMiniStat(String label, String val, Color color, AppColors semantic) {
+  Widget _buildMiniStat(
+      String label, String val, Color color, AppColors semantic) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(label, style: TextStyle(color: semantic.secondaryText, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
-        const SizedBox(height: 6),
-        Text(val, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.w800)),
+      Text(label,
+          style: TextStyle(
+              color: semantic.secondaryText,
+              fontSize: 8,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.2)),
+      const SizedBox(height: 6),
+      Text(val,
+          style: TextStyle(
+              color: color, fontSize: 16, fontWeight: FontWeight.w800)),
     ]);
   }
 }

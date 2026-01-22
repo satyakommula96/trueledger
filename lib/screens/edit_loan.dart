@@ -25,7 +25,8 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
     super.initState();
     nameCtrl = TextEditingController(text: widget.loan.name);
     totalCtrl = TextEditingController(text: widget.loan.totalAmount.toString());
-    remainingCtrl = TextEditingController(text: widget.loan.remainingAmount.toString());
+    remainingCtrl =
+        TextEditingController(text: widget.loan.remainingAmount.toString());
     emiCtrl = TextEditingController(text: widget.loan.emi.toString());
     rateCtrl = TextEditingController(text: widget.loan.interestRate.toString());
     dueCtrl = TextEditingController(text: widget.loan.dueDate);
@@ -52,44 +53,78 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("LOAN CLASSIFICATION", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 2, color: Colors.grey)),
+            const Text("LOAN CLASSIFICATION",
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                    color: Colors.grey)),
             const SizedBox(height: 16),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: ['Gold', 'Car', 'Personal', 'Person', 'Home', 'Education'].map((t) {
+              children: [
+                'Gold',
+                'Car',
+                'Personal',
+                'Person',
+                'Home',
+                'Education'
+              ].map((t) {
                 final active = selectedType == t;
                 return ActionChip(
                   label: Text(t.toUpperCase()),
                   onPressed: () => setState(() => selectedType = t),
-                  backgroundColor: active ? colorScheme.primary.withOpacity(0.1) : Colors.transparent,
-                  side: BorderSide(color: active ? colorScheme.primary : semantic.divider),
-                  labelStyle: TextStyle(color: active ? colorScheme.primary : colorScheme.onSurface, fontWeight: FontWeight.w900, fontSize: 9, letterSpacing: 1),
+                  backgroundColor: active
+                      ? colorScheme.primary.withValues(alpha: 0.1)
+                      : Colors.transparent,
+                  side: BorderSide(
+                      color: active ? colorScheme.primary : semantic.divider),
+                  labelStyle: TextStyle(
+                      color:
+                          active ? colorScheme.primary : colorScheme.onSurface,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 9,
+                      letterSpacing: 1),
                 );
               }).toList(),
             ),
             const SizedBox(height: 32),
-            _buildField("CREDITOR / LOAN NAME", nameCtrl, type: TextInputType.text),
+            _buildField("CREDITOR / LOAN NAME", nameCtrl,
+                type: TextInputType.text),
             const SizedBox(height: 24),
             Row(
               children: [
-                Expanded(child: _buildField("REMAINING BALANCE", remainingCtrl, type: TextInputType.number, prefix: "₹")),
+                Expanded(
+                    child: _buildField("REMAINING BALANCE", remainingCtrl,
+                        type: TextInputType.number, prefix: "₹")),
                 const SizedBox(width: 16),
-                Expanded(child: _buildField("TOTAL LOAN", totalCtrl, type: TextInputType.number, prefix: "₹")),
+                Expanded(
+                    child: _buildField("TOTAL LOAN", totalCtrl,
+                        type: TextInputType.number, prefix: "₹")),
               ],
             ),
             const SizedBox(height: 24),
             if (selectedType != 'Person') ...[
               Row(
                 children: [
-                  Expanded(child: _buildField("MONTHLY EMI", emiCtrl, type: TextInputType.number, prefix: "₹")),
+                  Expanded(
+                      child: _buildField("MONTHLY EMI", emiCtrl,
+                          type: TextInputType.number, prefix: "₹")),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildField("INTEREST RATE", rateCtrl, type: TextInputType.number, prefix: "%")),
+                  Expanded(
+                      child: _buildField("INTEREST RATE", rateCtrl,
+                          type: TextInputType.number, prefix: "%")),
                 ],
               ),
               const SizedBox(height: 24),
             ],
-            _buildField(selectedType == 'Person' ? "EXPECTED REPAYMENT DATE" : "DUE DATE (DAY OF MONTH)", dueCtrl, type: TextInputType.text),
+            _buildField(
+                selectedType == 'Person'
+                    ? "EXPECTED REPAYMENT DATE"
+                    : "DUE DATE (DAY OF MONTH)",
+                dueCtrl,
+                type: TextInputType.text),
             const SizedBox(height: 48),
             if (selectedType != 'Person') ...[
               SizedBox(
@@ -98,11 +133,16 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
                 child: OutlinedButton.icon(
                   onPressed: _payEmi,
                   icon: const Icon(Icons.payment),
-                  label: const Text("RECORD EMI PAYMENT", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                  label: const Text("RECORD EMI PAYMENT",
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: colorScheme.primary,
                     side: BorderSide(color: colorScheme.primary),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
@@ -116,10 +156,15 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colorScheme.onSurface,
                   foregroundColor: colorScheme.surface,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
-                child: const Text("UPDATE BORROWING", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                child: const Text("UPDATE BORROWING",
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2)),
               ),
             ),
           ],
@@ -132,12 +177,12 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
     final remaining = double.tryParse(remainingCtrl.text) ?? 0.0;
     final rate = double.tryParse(rateCtrl.text) ?? 0.0;
     final emi = double.tryParse(emiCtrl.text) ?? 0.0;
-    
+
     // Simple Interest for 1 month
     final interestFn = (remaining * rate / 100) / 12;
     final interest = interestFn.round();
     final principalComp = (emi - interest).round();
-    
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -148,15 +193,24 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
           children: [
             Text("Emi Amount: ₹${emi.toInt()}"),
             const SizedBox(height: 8),
-            Text("Interest Component: ₹$interest", style: const TextStyle(color: Colors.red)),
-            Text("Principal Reduction: ₹$principalComp", style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+            Text("Interest Component: ₹$interest",
+                style: const TextStyle(color: Colors.red)),
+            Text("Principal Reduction: ₹$principalComp",
+                style: const TextStyle(
+                    color: Colors.green, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            const Text("This will reduce the loan balance and record an expense.", style: TextStyle(fontSize: 10, color: Colors.grey)),
+            const Text(
+                "This will reduce the loan balance and record an expense.",
+                style: TextStyle(fontSize: 10, color: Colors.grey)),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("CANCEL")),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("CONFIRM")),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text("CANCEL")),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text("CONFIRM")),
         ],
       ),
     );
@@ -166,23 +220,33 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
       setState(() {
         remainingCtrl.text = newBalance.toString();
       });
-      // Save loan update
-      await _save();
-      // Record expense
+      // Record expense first to avoid context issues if _save pops
+      final repo = FinancialRepository();
+      await repo.addEntry('Fixed', emi.toInt(), 'EMI',
+          'EMI Payment for ${nameCtrl.text}', DateTime.now().toIso8601String());
+
       if (mounted) {
-        final repo = FinancialRepository();
-        await repo.addEntry('Fixed', emi.toInt(), 'EMI', 'EMI Payment for ${nameCtrl.text}', DateTime.now().toIso8601String());
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("EMI Recorded: Loan adjusted & Expense added.")));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("EMI Recorded: Loan adjusted & Expense added.")));
       }
+
+      // Save loan update (this pops the screen)
+      await _save();
     }
   }
 
-  Widget _buildField(String label, TextEditingController ctrl, {TextInputType type = TextInputType.text, String? prefix}) {
+  Widget _buildField(String label, TextEditingController ctrl,
+      {TextInputType type = TextInputType.text, String? prefix}) {
     final semantic = Theme.of(context).extension<AppColors>()!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1, color: Colors.grey)),
+        Text(label,
+            style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+                color: Colors.grey)),
         const SizedBox(height: 8),
         TextField(
           controller: ctrl,
@@ -190,11 +254,15 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             prefixText: prefix != null ? "$prefix " : null,
-            prefixStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            prefixStyle:
+                const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             filled: true,
             fillColor: Theme.of(context).colorScheme.surface,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: semantic.divider)),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: semantic.divider)),
           ),
         ),
       ],
