@@ -103,11 +103,17 @@ class _MonthlyHistoryScreenState extends State<MonthlyHistoryScreen> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     _buildStatItem(
-                                        "INCOME", CurrencyHelper.format(s['income']), semantic),
-                                    _buildStatItem("EXPENDITURE",
-                                        CurrencyHelper.format(s['expenses']), semantic),
-                                    _buildStatItem("INVESTED",
-                                        CurrencyHelper.format(s['invested']), semantic),
+                                        "INCOME",
+                                        CurrencyHelper.format(s['income']),
+                                        semantic),
+                                    _buildStatItem(
+                                        "EXPENDITURE",
+                                        CurrencyHelper.format(s['expenses']),
+                                        semantic),
+                                    _buildStatItem(
+                                        "INVESTED",
+                                        CurrencyHelper.format(s['invested']),
+                                        semantic),
                                   ]),
                             ],
                           ),

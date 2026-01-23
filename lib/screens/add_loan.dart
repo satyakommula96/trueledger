@@ -80,11 +80,15 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
               children: [
                 Expanded(
                     child: _buildField("REMAINING BALANCE", remainingCtrl,
-                        hint: "0", type: TextInputType.number, prefix: CurrencyHelper.symbol)),
+                        hint: "0",
+                        type: TextInputType.number,
+                        prefix: CurrencyHelper.symbol)),
                 const SizedBox(width: 16),
                 Expanded(
                     child: _buildField("TOTAL LOAN", totalCtrl,
-                        hint: "0", type: TextInputType.number, prefix: CurrencyHelper.symbol)),
+                        hint: "0",
+                        type: TextInputType.number,
+                        prefix: CurrencyHelper.symbol)),
               ],
             ),
             const SizedBox(height: 24),
@@ -93,7 +97,9 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                 children: [
                   Expanded(
                       child: _buildField("MONTHLY EMI", emiCtrl,
-                          hint: "0", type: TextInputType.number, prefix: CurrencyHelper.symbol)),
+                          hint: "0",
+                          type: TextInputType.number,
+                          prefix: CurrencyHelper.symbol)),
                   const SizedBox(width: 16),
                   Expanded(
                       child: _buildField("INTEREST RATE", rateCtrl,
@@ -112,7 +118,9 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                           ? "EXPECTED REPAYMENT DATE"
                           : "DUE DATE (DAY OF MONTH)",
                       dueCtrl,
-                      hint: selectedType == 'Individual' ? "Select Date" : "Select Day",
+                      hint: selectedType == 'Individual'
+                          ? "Select Date"
+                          : "Select Day",
                       type: TextInputType.text,
                       readOnly: true,
                       onTap: _pickDate),
@@ -122,7 +130,8 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 20),
                     child: TextButton(
-                      onPressed: () => setState(() => dueCtrl.text = "Flexible"),
+                      onPressed: () =>
+                          setState(() => dueCtrl.text = "Flexible"),
                       child: const Text("FLEXIBLE"),
                     ),
                   ),
@@ -222,6 +231,7 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     );
     if (mounted) Navigator.pop(context);
   }
+
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(

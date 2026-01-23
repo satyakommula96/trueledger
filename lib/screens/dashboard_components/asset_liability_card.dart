@@ -59,11 +59,13 @@ class AssetLiabilityCard extends StatelessWidget {
                       child: Icon(Icons.account_balance,
                           size: 48,
                           color: semantic.income.withValues(alpha: 0.1))),
-                      _buildMiniStat(
-                          "ASSETS",
-                          CurrencyHelper.format(summary.netWorth + summary.creditCardDebt + summary.loansTotal),
-                          semantic.income,
-                          semantic),
+                  _buildMiniStat(
+                      "ASSETS",
+                      CurrencyHelper.format(summary.netWorth +
+                          summary.creditCardDebt +
+                          summary.loansTotal),
+                      semantic.income,
+                      semantic),
                 ],
               ),
             ),
@@ -111,7 +113,8 @@ class AssetLiabilityCard extends StatelessWidget {
                           color: semantic.overspent.withValues(alpha: 0.1))),
                   _buildMiniStat(
                       "LIABILITIES",
-                      CurrencyHelper.format(summary.creditCardDebt + summary.loansTotal),
+                      CurrencyHelper.format(
+                          summary.creditCardDebt + summary.loansTotal),
                       semantic.overspent,
                       semantic),
                 ],

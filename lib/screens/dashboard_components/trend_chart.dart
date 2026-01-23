@@ -12,6 +12,26 @@ class TrendChart extends StatelessWidget {
     required this.semantic,
   });
 
+  double _forecastNext(List<double> values) {
+    if (values.isEmpty) return 0;
+    if (values.length == 1) return values.first;
+    int n = values.length;
+    double sumX = 0;
+    double sumY = 0;
+    double sumXY = 0;
+    double sumXX = 0;
+    for (int i = 0; i < n; i++) {
+      sumX += i;
+      sumY += values[i];
+      sumXY += i * values[i];
+      sumXX += i * i;
+    }
+    double slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    double intercept = (sumY - slope * sumX) / n;
+    double result = slope * n + intercept;
+    return double.parse(result.toStringAsFixed(2));
+  }
+
   @override
   Widget build(BuildContext context) {
     if (trendData.isEmpty) return const SizedBox.shrink();
@@ -46,7 +66,8 @@ class TrendChart extends StatelessWidget {
         child: LineChart(
           LineChartData(
             minX: 0,
-            maxX: (trendData.length - 1).toDouble(),
+
+            maxX: (trendData.length).toDouble(), // +1 for forecast spot
             gridData: FlGridData(
                 show: true,
                 drawVerticalLine: false,
@@ -62,6 +83,12 @@ class TrendChart extends StatelessWidget {
                       interval: 1,
                       getTitlesWidget: (value, meta) {
                         int index = value.toInt();
+                        if (index == trendData.length)
+                          return const Text("FCST",
+                              style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight:
+                                      FontWeight.bold)); // Forecast Label
                         if (index < 0 || index >= trendData.length) {
                           return const SizedBox();
                         }
@@ -118,6 +145,23 @@ class TrendChart extends StatelessWidget {
                     end: Alignment.bottomCenter,
                   ),
                 ),
+              ),
+              // Forecast Line
+              LineChartBarData(
+                spots: [
+                  FlSpot((trendData.length - 1).toDouble(),
+                      (trendData.last['total'] as num).toDouble()),
+                  FlSpot(
+                      trendData.length.toDouble(),
+                      _forecastNext(trendData
+                          .map((e) => (e['total'] as num).toDouble())
+                          .toList()))
+                ],
+                isCurved: true,
+                color: semantic.warning,
+                barWidth: 3,
+                dashArray: [5, 5],
+                dotData: const FlDotData(show: true),
               ),
             ],
           ),

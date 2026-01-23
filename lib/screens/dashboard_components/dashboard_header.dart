@@ -55,38 +55,6 @@ class DashboardHeader extends StatelessWidget {
             ),
             Row(
               children: [
-                ValueListenableBuilder<String>(
-                  valueListenable: CurrencyHelper.currencyNotifier,
-                  builder: (context, currency, _) {
-                    return PopupMenuButton<String>(
-                      initialValue: currency,
-                      icon: Text(CurrencyHelper.symbol, 
-                          style: TextStyle(
-                              fontSize: 20, 
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurface
-                          )
-                      ),
-                      onSelected: (String val) {
-                        CurrencyHelper.setCurrency(val);
-                      },
-                      itemBuilder: (BuildContext context) {
-                        return CurrencyHelper.currencies.keys.map((String choice) {
-                           return PopupMenuItem<String>(
-                             value: choice,
-                             child: Row(
-                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                               children: [
-                                  Text(choice),
-                                  Text(CurrencyHelper.currencies[choice]!)
-                               ]
-                             ),
-                           );
-                        }).toList();
-                      },
-                    );
-                  }
-                ),
                 IconButton(
                   icon: Icon(Icons.settings_outlined,
                       size: 22, color: colorScheme.onSurface),

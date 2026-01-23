@@ -136,7 +136,10 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                                                   fontWeight: FontWeight.w900,
                                                   fontSize: 13,
                                                   letterSpacing: 1)),
-                                          Text(DateHelper.formatDue(s.billingDate, prefix: "NEXT"),
+                                          Text(
+                                              DateHelper.formatDue(
+                                                  s.billingDate,
+                                                  prefix: "NEXT"),
                                               style: const TextStyle(
                                                   fontSize: 10,
                                                   color: Colors.grey,

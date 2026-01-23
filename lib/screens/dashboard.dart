@@ -12,8 +12,9 @@ import 'dashboard_components/section_header.dart';
 import 'dashboard_components/summary_card.dart';
 import 'dashboard_components/payment_calendar.dart';
 import 'dashboard_components/wealth_hero.dart';
-
-
+import 'dashboard_components/smart_insights.dart';
+import 'dashboard_components/health_meter.dart';
+import '../logic/intelligence_service.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -79,70 +80,93 @@ class _DashboardState extends State<Dashboard> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ValueListenableBuilder<String>(
-      valueListenable: CurrencyHelper.currencyNotifier,
-      builder: (context, currency, _) {
-        return Scaffold(
-          extendBody: true,
-      bottomNavigationBar: DashboardBottomBar(onLoad: load),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: load,
-          color: colorScheme.primary,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              DashboardHeader(isDark: isDark, onLoad: load),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    WealthHero(summary: summary!),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                            child: SummaryCard(
-                                label: "Income",
-                                value: CurrencyHelper.format(summary!.totalIncome),
-                                valueColor: semantic.income,
-                                semantic: semantic,
-                                icon: Icons.arrow_downward)),
-                        const SizedBox(width: 12),
-                        Expanded(
-                            child: SummaryCard(
-                                label: "Expenses",
-                                value: CurrencyHelper.format(summary!.totalFixed + summary!.totalVariable + summary!.totalSubscriptions),
-                                valueColor: semantic.overspent,
-                                semantic: semantic,
-                                icon: Icons.arrow_upward)),
-                      ],
+        valueListenable: CurrencyHelper.currencyNotifier,
+        builder: (context, currency, _) {
+          return Scaffold(
+            extendBody: true,
+            bottomNavigationBar: DashboardBottomBar(onLoad: load),
+            body: SafeArea(
+              child: RefreshIndicator(
+                onRefresh: load,
+                color: colorScheme.primary,
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    DashboardHeader(isDark: isDark, onLoad: load),
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          WealthHero(summary: summary!),
+                          const SizedBox(height: 24),
+                          HealthMeter(
+                            score: IntelligenceService.calculateHealthScore(
+                              summary: summary!,
+                              budgets: budgets,
+                            ),
+                            semantic: semantic,
+                          ),
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              Expanded(
+                                  child: SummaryCard(
+                                      label: "Income",
+                                      value: CurrencyHelper.format(
+                                          summary!.totalIncome),
+                                      valueColor: semantic.income,
+                                      semantic: semantic,
+                                      icon: Icons.arrow_downward)),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                  child: SummaryCard(
+                                      label: "Expenses",
+                                      value: CurrencyHelper.format(
+                                          summary!.totalFixed +
+                                              summary!.totalVariable +
+                                              summary!.totalSubscriptions),
+                                      valueColor: semantic.overspent,
+                                      semantic: semantic,
+                                      icon: Icons.arrow_upward)),
+                            ],
+                          ),
+                          const SizedBox(height: 32),
+                          SectionHeader(
+                              title: "Financial Overview",
+                              sub: "Assets vs Liabilities",
+                              semantic: semantic),
+                          const SizedBox(height: 16),
+                          AssetLiabilityCard(
+                              summary: summary!,
+                              semantic: semantic,
+                              onLoad: load),
+                          const SizedBox(height: 32),
+                          const SizedBox(height: 32),
+                          SectionHeader(
+                              title: "Payment Calendar",
+                              sub: "Month view",
+                              semantic: semantic),
+                          const SizedBox(height: 16),
+                          PaymentCalendar(
+                              bills: upcomingBills, semantic: semantic),
+                          const SizedBox(height: 32),
+                          SmartInsightsCard(
+                            insights: IntelligenceService.generateInsights(
+                              summary: summary!,
+                              trendData: trendData,
+                              budgets: budgets,
+                            ),
+                            semantic: semantic,
+                          ),
+                          const SizedBox(height: 120),
+                        ]),
+                      ),
                     ),
-                    const SizedBox(height: 32),
-                    SectionHeader(
-                        title: "Financial Overview",
-                        sub: "Assets vs Liabilities",
-                        semantic: semantic),
-                    const SizedBox(height: 16),
-                    AssetLiabilityCard(
-                        summary: summary!, semantic: semantic, onLoad: load),
-                    const SizedBox(height: 32),
-                    const SizedBox(height: 32),
-                    SectionHeader(
-                        title: "Payment Calendar",
-                        sub: "Month view",
-                        semantic: semantic),
-                    const SizedBox(height: 16),
-                    PaymentCalendar(bills: upcomingBills, semantic: semantic),
-                    const SizedBox(height: 120),
-                  ]),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-      }
-    );
+            ),
+          );
+        });
   }
 }

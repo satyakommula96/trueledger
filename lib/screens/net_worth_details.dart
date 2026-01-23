@@ -28,7 +28,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
 
   // Assets
   List<Map<String, dynamic>> _investments = [];
-  
+
   // Computed totals for header
   double _totalAssets = 0;
   double _totalLiabilities = 0;
@@ -42,7 +42,9 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
   Future<void> _loadData() async {
     final cards = await _repo.getCreditCards();
     final loans = await _repo.getLoans();
-    final investments = (await _repo.getAllValues('investments')).where((i) => i['active'] == 1).toList();
+    final investments = (await _repo.getAllValues('investments'))
+        .where((i) => i['active'] == 1)
+        .toList();
     final retirement = await _repo.getAllValues('retirement_contributions');
 
     // Categorize Liabilities
@@ -139,7 +141,8 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
           padding: const EdgeInsets.all(20),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              _buildTotalHeader("LIABILITIES", _totalLiabilities, semantic.overspent),
+              _buildTotalHeader(
+                  "LIABILITIES", _totalLiabilities, semantic.overspent),
               const SizedBox(height: 24),
             ]),
           ),
@@ -150,7 +153,8 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                if (_bankLoans.isEmpty) return _buildEmptyState("No active loans");
+                if (_bankLoans.isEmpty)
+                  return _buildEmptyState("No active loans");
                 final l = _bankLoans[index];
                 return _buildListItem(
                   l.name,
@@ -170,7 +174,8 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                if (_creditCards.isEmpty) return _buildEmptyState("No credit cards");
+                if (_creditCards.isEmpty)
+                  return _buildEmptyState("No credit cards");
                 final c = _creditCards[index];
                 return _buildListItem(
                   c.bank,
@@ -190,7 +195,8 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                if (_personalBorrowings.isEmpty) return _buildEmptyState("No personal borrowings");
+                if (_personalBorrowings.isEmpty)
+                  return _buildEmptyState("No personal borrowings");
                 final l = _personalBorrowings[index];
                 return _buildListItem(
                   l.name,
@@ -199,11 +205,14 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
                   semantic.overspent,
                 );
               },
-              childCount: _personalBorrowings.isEmpty ? 1 : _personalBorrowings.length,
+              childCount:
+                  _personalBorrowings.isEmpty ? 1 : _personalBorrowings.length,
             ),
           ),
         ),
-        SliverToBoxAdapter(child: SizedBox(height: 100 + MediaQuery.of(context).padding.bottom)),
+        SliverToBoxAdapter(
+            child:
+                SizedBox(height: 100 + MediaQuery.of(context).padding.bottom)),
       ],
     );
   }
@@ -216,14 +225,23 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
           type.contains('fund');
     }).toList();
 
-    final gold = _investments.where((i) => (i['type'] as String? ?? '').toLowerCase().contains('gold')).toList();
+    final gold = _investments
+        .where(
+            (i) => (i['type'] as String? ?? '').toLowerCase().contains('gold'))
+        .toList();
 
     final retirement = _investments.where((i) {
       final type = (i['type'] as String? ?? '').toLowerCase();
-      return type.contains('epf') || type.contains('nps') || type.contains('ppf') || type.contains('retirement');
+      return type.contains('epf') ||
+          type.contains('nps') ||
+          type.contains('ppf') ||
+          type.contains('retirement');
     }).toList();
 
-    final lending = _investments.where((i) => (i['type'] as String? ?? '').toLowerCase().contains('lending')).toList();
+    final lending = _investments
+        .where((i) =>
+            (i['type'] as String? ?? '').toLowerCase().contains('lending'))
+        .toList();
 
     final other = _investments.where((i) {
       final type = (i['type'] as String? ?? '').toLowerCase();
@@ -255,7 +273,8 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                if (equity.isEmpty) return _buildEmptyState("No equity investments");
+                if (equity.isEmpty)
+                  return _buildEmptyState("No equity investments");
                 final i = equity[index];
                 return _buildListItem(
                   i['name'] ?? 'Investment',
@@ -275,7 +294,8 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                if (gold.isEmpty) return _buildEmptyState("No gold investments");
+                if (gold.isEmpty)
+                  return _buildEmptyState("No gold investments");
                 final i = gold[index];
                 return _buildListItem(
                   i['name'] ?? 'Gold',
@@ -295,7 +315,8 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                if (retirement.isEmpty) return _buildEmptyState("No retirement savings");
+                if (retirement.isEmpty)
+                  return _buildEmptyState("No retirement savings");
                 final i = retirement[index];
                 return _buildListItem(
                   i['name'] ?? 'Savings',
@@ -351,7 +372,9 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
             ),
           ),
         ],
-        SliverToBoxAdapter(child: SizedBox(height: 100 + MediaQuery.of(context).padding.bottom)),
+        SliverToBoxAdapter(
+            child:
+                SizedBox(height: 100 + MediaQuery.of(context).padding.bottom)),
       ],
     );
   }
@@ -405,13 +428,16 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-             color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
-          Icon(icon ?? Icons.info_outline, size: 16, color: Theme.of(context).disabledColor),
+          Icon(icon ?? Icons.info_outline,
+              size: 16, color: Theme.of(context).disabledColor),
           const SizedBox(width: 12),
-          Text(msg, style: TextStyle(color: Theme.of(context).disabledColor, fontSize: 13)),
+          Text(msg,
+              style: TextStyle(
+                  color: Theme.of(context).disabledColor, fontSize: 13)),
         ],
       ),
     );
@@ -427,7 +453,7 @@ class _NetWorthDetailsScreenState extends State<NetWorthDetailsScreen> {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Theme.of(context).dividerColor),
-         boxShadow: [
+        boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 4,
@@ -475,7 +501,8 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: color,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -499,6 +526,8 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) {
-    return oldDelegate.title != title || oldDelegate.color != color || oldDelegate.textColor != textColor;
+    return oldDelegate.title != title ||
+        oldDelegate.color != color ||
+        oldDelegate.textColor != textColor;
   }
 }

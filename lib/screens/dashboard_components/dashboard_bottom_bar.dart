@@ -82,8 +82,7 @@ class DashboardBottomBar extends StatelessWidget {
                             () => Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (_) =>
-                                        const AnalysisScreen())),
+                                    builder: (_) => const AnalysisScreen())),
                             semantic),
                       ),
                       Expanded(

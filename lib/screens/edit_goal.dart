@@ -43,8 +43,10 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
         child: Column(
           children: [
             _buildField("Goal Name", nameCtrl),
-            _buildField("Target Amount", targetCtrl, isNum: true, prefix: CurrencyHelper.symbol),
-            _buildField("Current Saved", currentCtrl, isNum: true, prefix: CurrencyHelper.symbol),
+            _buildField("Target Amount", targetCtrl,
+                isNum: true, prefix: CurrencyHelper.symbol),
+            _buildField("Current Saved", currentCtrl,
+                isNum: true, prefix: CurrencyHelper.symbol),
             const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,

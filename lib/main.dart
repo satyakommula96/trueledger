@@ -11,6 +11,8 @@ import 'logic/currency_helper.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/intro_screen.dart';
+import 'screens/lock_screen.dart';
+import 'logic/financial_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,15 +66,34 @@ Future<void> main() async {
     showIntro = true;
   }
 
-  runApp(TrueCashApp(showIntro: showIntro));
+  // Check Automation
+  try {
+    final repo = FinancialRepository();
+    // Fire and forget, don't block
+    repo
+        .checkAndProcessRecurring()
+        .catchError((e) => debugPrint("Recurring error: $e"));
+  } catch (_) {}
+
+  // Check Lock
+  Widget home = showIntro ? const IntroScreen() : const Dashboard();
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final pin = prefs.getString('app_pin');
+    if (!showIntro && pin != null && pin.length == 4) {
+      home = const LockScreen();
+    }
+  } catch (_) {}
+
+  runApp(TrueCashApp(home: home));
 }
 
 // Global theme notifier
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
 class TrueCashApp extends StatelessWidget {
-  final bool showIntro;
-  const TrueCashApp({super.key, required this.showIntro});
+  final Widget home;
+  const TrueCashApp({super.key, required this.home});
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +114,7 @@ class TrueCashApp extends StatelessWidget {
               PointerDeviceKind.trackpad
             },
           ),
-          home: showIntro ? const IntroScreen() : const Dashboard(),
+          home: home,
         );
       },
     );

@@ -146,7 +146,8 @@ class NotificationService {
     await showNotification(
       id: bank.hashCode,
       title: 'Reminder Set: $bank',
-      body: 'We will remind you on the ${day}th of every month to update your bill.',
+      body:
+          'We will remind you on the ${day}th of every month to update your bill.',
     );
   }
 }

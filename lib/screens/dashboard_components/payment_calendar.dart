@@ -9,7 +9,8 @@ class PaymentCalendar extends StatefulWidget {
   final List<Map<String, dynamic>> bills;
   final AppColors semantic;
 
-  const PaymentCalendar({super.key, required this.bills, required this.semantic});
+  const PaymentCalendar(
+      {super.key, required this.bills, required this.semantic});
 
   @override
   State<PaymentCalendar> createState() => _PaymentCalendarState();
@@ -17,7 +18,7 @@ class PaymentCalendar extends StatefulWidget {
 
 class _PaymentCalendarState extends State<PaymentCalendar> {
   late DateTime _focusedMonth;
-  
+
   @override
   void initState() {
     super.initState();
@@ -31,13 +32,15 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
   List<Map<String, dynamic>> _getEventsForDay(int day) {
     final targetDate = DateTime(_focusedMonth.year, _focusedMonth.month, day);
     final events = <Map<String, dynamic>>[];
-    
+
     for (var bill in widget.bills) {
       final dueDateStr = bill['due']?.toString() ?? '';
       final date = _parseDueDate(dueDateStr);
       if (date != null) {
         // Check if it matches this day
-        if (date.year == targetDate.year && date.month == targetDate.month && date.day == targetDate.day) {
+        if (date.year == targetDate.year &&
+            date.month == targetDate.month &&
+            date.day == targetDate.day) {
           events.add(bill);
         }
       }
@@ -52,8 +55,9 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
   @override
   Widget build(BuildContext context) {
     final daysInMonth = _getDaysInMonth(_focusedMonth);
-    final firstDayWeekday = DateTime(_focusedMonth.year, _focusedMonth.month, 1).weekday;
-    
+    final firstDayWeekday =
+        DateTime(_focusedMonth.year, _focusedMonth.month, 1).weekday;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 0),
       decoration: BoxDecoration(
@@ -68,22 +72,22 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(DateFormat('MMMM yyyy').format(_focusedMonth).toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 12, 
-                    fontWeight: FontWeight.w900, 
-                    letterSpacing: 1, 
-                    color: widget.semantic.secondaryText
-                  )
-                ),
+                Text(
+                    DateFormat('MMMM yyyy').format(_focusedMonth).toUpperCase(),
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1,
+                        color: widget.semantic.secondaryText)),
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.chevron_left), 
+                      icon: const Icon(Icons.chevron_left),
                       onPressed: () {
-                         setState(() {
-                           _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1);
-                         });
+                        setState(() {
+                          _focusedMonth = DateTime(
+                              _focusedMonth.year, _focusedMonth.month - 1);
+                        });
                       },
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -101,9 +105,10 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
                     IconButton(
                       icon: const Icon(Icons.chevron_right),
                       onPressed: () {
-                         setState(() {
-                           _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1);
-                         });
+                        setState(() {
+                          _focusedMonth = DateTime(
+                              _focusedMonth.year, _focusedMonth.month + 1);
+                        });
                       },
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -119,8 +124,8 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7, 
-              mainAxisSpacing: 8, 
+              crossAxisCount: 7,
+              mainAxisSpacing: 8,
               crossAxisSpacing: 8,
               childAspectRatio: 1.0,
             ),
@@ -131,47 +136,60 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
               }
               final day = index - (firstDayWeekday - 1) + 1;
               final events = _getEventsForDay(day);
-              final isToday = day == DateTime.now().day && 
-                             _focusedMonth.month == DateTime.now().month && 
-                             _focusedMonth.year == DateTime.now().year;
+              final isToday = day == DateTime.now().day &&
+                  _focusedMonth.month == DateTime.now().month &&
+                  _focusedMonth.year == DateTime.now().year;
 
               return InkWell(
-                onTap: events.isNotEmpty ? () => _showDayDetails(day, events) : null,
+                onTap: events.isNotEmpty
+                    ? () => _showDayDetails(day, events)
+                    : null,
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isToday 
-                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1) 
-                      : (events.isNotEmpty ? widget.semantic.surfaceCombined : Colors.transparent),
+                    color: isToday
+                        ? Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: 0.1)
+                        : (events.isNotEmpty
+                            ? widget.semantic.surfaceCombined
+                            : Colors.transparent),
                     borderRadius: BorderRadius.circular(8),
-                    border: isToday ? Border.all(color: Theme.of(context).colorScheme.primary) : null,
+                    border: isToday
+                        ? Border.all(
+                            color: Theme.of(context).colorScheme.primary)
+                        : null,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("$day", 
-                        style: TextStyle(
-                          fontSize: 12, 
-                          fontWeight: events.isNotEmpty || isToday ? FontWeight.bold : FontWeight.normal,
-                          color: events.isNotEmpty || isToday ? Theme.of(context).colorScheme.onSurface : Colors.grey
-                        )
-                      ),
+                      Text("$day",
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: events.isNotEmpty || isToday
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: events.isNotEmpty || isToday
+                                  ? Theme.of(context).colorScheme.onSurface
+                                  : Colors.grey)),
                       if (events.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: events.take(3).map((e) {
                             Color dotColor = widget.semantic.secondaryText;
-                            if (e['type'] == 'SUBSCRIPTION') dotColor = widget.semantic.overspent;
-                            if (e['type'] == 'LOAN EMI') dotColor = Colors.orange;
-                            
+                            if (e['type'] == 'SUBSCRIPTION')
+                              dotColor = widget.semantic.overspent;
+                            if (e['type'] == 'LOAN EMI')
+                              dotColor = Colors.orange;
+
                             return Container(
-                              width: 4, height: 4,
+                              width: 4,
+                              height: 4,
                               margin: const EdgeInsets.symmetric(horizontal: 1),
                               decoration: BoxDecoration(
-                                color: dotColor,
-                                shape: BoxShape.circle
-                              ),
+                                  color: dotColor, shape: BoxShape.circle),
                             );
                           }).toList(),
                         )
@@ -186,6 +204,7 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
       ),
     );
   }
+
   void _showDayDetails(int day, List<Map<String, dynamic>> events) {
     showModalBottomSheet(
       context: context,
@@ -201,13 +220,15 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                DateFormat('EEEE, dd MMMM yyyy').format(DateTime(_focusedMonth.year, _focusedMonth.month, day)).toUpperCase(),
+                DateFormat('EEEE, dd MMMM yyyy')
+                    .format(
+                        DateTime(_focusedMonth.year, _focusedMonth.month, day))
+                    .toUpperCase(),
                 style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1,
-                  color: widget.semantic.secondaryText
-                ),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1,
+                    color: widget.semantic.secondaryText),
               ),
               const SizedBox(height: 16),
               ...events.map((e) => _buildDetailItem(e)),
@@ -221,7 +242,7 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
   Widget _buildDetailItem(Map<String, dynamic> bill) {
     IconData icon = Icons.receipt_long;
     Color color = widget.semantic.secondaryText;
-    
+
     if (bill['type'] == 'SUBSCRIPTION') {
       icon = Icons.subscriptions;
       color = widget.semantic.overspent;
@@ -275,6 +296,7 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
       ),
     );
   }
+
   Future<void> _scheduleNotifications() async {
     final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     // Initialize settings for Android and Linux
@@ -288,22 +310,21 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
 
     int count = 0;
     for (var bill in widget.bills) {
-       final date = _parseDueDate(bill['due'] ?? '');
-       if (date != null) {
-         final now = DateTime.now();
-         // If date is today or future
-         if (date.isAfter(now.subtract(const Duration(days: 1)))) {
-            // Schedule actual notification logic would go here.
-            // For now, we just simulate enabling them.
-            count++;
-         }
-       }
+      final date = _parseDueDate(bill['due'] ?? '');
+      if (date != null) {
+        final now = DateTime.now();
+        // If date is today or future
+        if (date.isAfter(now.subtract(const Duration(days: 1)))) {
+          // Schedule actual notification logic would go here.
+          // For now, we just simulate enabling them.
+          count++;
+        }
+      }
     }
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Scheduled reminders for $count upcoming payments."))
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Scheduled reminders for $count upcoming payments.")));
     }
   }
 }

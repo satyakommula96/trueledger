@@ -24,15 +24,15 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
     if (widget.subscription != null) {
       nameCtrl.text = widget.subscription!.name;
       amountCtrl.text = widget.subscription!.amount.toString();
-      
+
       // Try parsing ISO date, fallback to raw text if legacy
       try {
         final date = DateTime.parse(widget.subscription!.billingDate);
         _selectedDate = date;
         dateCtrl.text = DateFormat('dd MMM yyyy').format(date);
       } catch (e) {
-         // Fallback for legacy "5th" etc
-         dateCtrl.text = widget.subscription!.billingDate;
+        // Fallback for legacy "5th" etc
+        dateCtrl.text = widget.subscription!.billingDate;
       }
     }
   }
@@ -108,10 +108,12 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
   }
 
   Future<void> _save() async {
-    if (nameCtrl.text.isEmpty || amountCtrl.text.isEmpty || dateCtrl.text.isEmpty) return;
+    if (nameCtrl.text.isEmpty ||
+        amountCtrl.text.isEmpty ||
+        dateCtrl.text.isEmpty) return;
     final repo = FinancialRepository();
     final amount = int.parse(amountCtrl.text);
-    
+
     // Store ISO string if date selected, else raw text (legacy fallback)
     final billingDate = _selectedDate?.toIso8601String() ?? dateCtrl.text;
 

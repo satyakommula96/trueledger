@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class CurrencyHelper {
   static final ValueNotifier<String> currencyNotifier = ValueNotifier('INR');
-  
+
   static const Map<String, String> currencies = {
     'INR': '₹',
     'USD': '\$',
@@ -30,7 +30,7 @@ class CurrencyHelper {
   static String format(num value, {bool compact = true}) {
     final sym = symbol;
     final locale = currencyNotifier.value == 'INR' ? 'en_IN' : 'en_US';
-    
+
     if (compact) {
       return "$sym${NumberFormat.compact(locale: locale).format(value)}";
     }

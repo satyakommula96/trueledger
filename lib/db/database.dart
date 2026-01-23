@@ -24,7 +24,7 @@ class AppDatabase {
         await db.execute(
             'CREATE TABLE ${Schema.fixedExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colCategory} TEXT, ${Schema.colDate} TEXT)');
         await db.execute(
-            'CREATE TABLE ${Schema.variableExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colDate} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colCategory} TEXT, ${Schema.colNote} TEXT)');
+            'CREATE TABLE ${Schema.variableExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colDate} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colCategory} TEXT, ${Schema.colNote} TEXT, ${Schema.colTags} TEXT)');
         await db.execute(
             'CREATE TABLE ${Schema.investmentsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colActive} INTEGER, ${Schema.colType} TEXT, ${Schema.colDate} TEXT)');
         await db.execute(
@@ -59,6 +59,10 @@ class AppDatabase {
             'CREATE TABLE ${Schema.savingGoalsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colTargetAmount} INTEGER, ${Schema.colCurrentAmount} INTEGER)');
         await db.execute(
             'CREATE TABLE ${Schema.budgetsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colCategory} TEXT, ${Schema.colMonthlyLimit} INTEGER)');
+
+        // Automation & Settings Table (v4)
+        await db.execute(
+            'CREATE TABLE sys_config (key TEXT PRIMARY KEY, value TEXT)');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         // Handle database migrations here
@@ -77,6 +81,15 @@ class AppDatabase {
           } catch (_) {
             // Column might already exist if dev reset failed
           }
+        }
+
+        if (oldVersion < 4) {
+          try {
+            await db.execute(
+                "ALTER TABLE ${Schema.variableExpensesTable} ADD COLUMN ${Schema.colTags} TEXT");
+            await db.execute(
+                'CREATE TABLE IF NOT EXISTS sys_config (key TEXT PRIMARY KEY, value TEXT)');
+          } catch (_) {}
         }
       },
     );
@@ -101,15 +114,20 @@ class AppDatabase {
     final now = DateTime.now();
     final nowStr = now.toIso8601String();
 
-    // 1. Income
+    // 1. Income (High income to trigger Wealth Projection)
     await database.insert(Schema.incomeSourcesTable, {
-      Schema.colSource: 'Tech Corp Salary',
-      Schema.colAmount: 320000,
+      Schema.colSource: 'Product Director Salary',
+      Schema.colAmount: 450000,
       Schema.colDate: nowStr
     });
     await database.insert(Schema.incomeSourcesTable, {
-      Schema.colSource: 'Freelance Consulting',
-      Schema.colAmount: 45000,
+      Schema.colSource: 'Rental Income',
+      Schema.colAmount: 85000,
+      Schema.colDate: nowStr
+    });
+    await database.insert(Schema.incomeSourcesTable, {
+      Schema.colSource: 'Dividends',
+      Schema.colAmount: 12000,
       Schema.colDate: nowStr
     });
 
@@ -138,7 +156,8 @@ class AppDatabase {
       Schema.colName: 'Netflix Premium',
       Schema.colAmount: 649,
       Schema.colActive: 1,
-      Schema.colBillingDate: now.add(const Duration(days: 2)).day.toString(), // Due soon
+      Schema.colBillingDate:
+          now.add(const Duration(days: 2)).day.toString(), // Due soon
       Schema.colDate: nowStr
     });
     await database.insert(Schema.subscriptionsTable, {
@@ -153,6 +172,20 @@ class AppDatabase {
       Schema.colAmount: 199,
       Schema.colActive: 1,
       Schema.colBillingDate: now.add(const Duration(days: 15)).day.toString(),
+      Schema.colDate: nowStr
+    });
+    await database.insert(Schema.subscriptionsTable, {
+      Schema.colName: 'AWS Cloud Hosting',
+      Schema.colAmount: 12500,
+      Schema.colActive: 1,
+      Schema.colBillingDate: now.add(const Duration(days: 5)).day.toString(),
+      Schema.colDate: nowStr
+    });
+    await database.insert(Schema.subscriptionsTable, {
+      Schema.colName: 'Bloomberg Terminal',
+      Schema.colAmount: 22000,
+      Schema.colActive: 1,
+      Schema.colBillingDate: now.add(const Duration(days: 12)).day.toString(),
       Schema.colDate: nowStr
     });
 
@@ -178,7 +211,7 @@ class AppDatabase {
       Schema.colType: 'Gold / Commodity',
       Schema.colDate: nowStr
     });
-    
+
     // 5. Retirement
     await database.insert(Schema.retirementContributionsTable, {
       Schema.colType: 'NPS',
@@ -242,64 +275,65 @@ class AppDatabase {
     });
 
     // 8. Variable Expenses (Historical & Current)
-    final categories = ['Food', 'Transport', 'Shopping', 'Utility', 'Entertainment', 'Travel'];
-    
+    final categories = [
+      'Food',
+      'Transport',
+      'Shopping',
+      'Utility',
+      'Entertainment',
+      'Travel'
+    ];
+
     // Generate data for last 6 months including current
     for (int i = 0; i < 6; i++) {
-       final monthDate = DateTime(now.year, now.month - i, 1);
+      final monthDate = DateTime(now.year, now.month - i, 1);
 
-       
-       // Higher spending in current month for "Insight" calculation comparison
-       // If i=0 (current), let's make it HIGH. i=1 (last month) LOW.
-       // This ensures "Spending increased" warning.
-       
-       double multiplier = 1.0;
-       if (i == 0) multiplier = 1.3; // High current
-       if (i == 1) multiplier = 0.8; // Low previous
-       
-       for (var cat in categories) {
-         // Create 2-3 entries per category per month
-         int entries = 2;
-         if (cat == 'Food') entries = 4;
-         
-         for (int j=0; j<entries; j++) {
-           int base = 500;
-           if (cat == 'Shopping') base = 2500;
-           if (cat == 'Travel') base = 5000;
-           if (cat == 'Food') base = 800;
-           
-           final amount = (base * (0.8 + (0.4 * (j % 2))) * multiplier).toInt();
-           
-           // Random-ish date within that month
-           final entryDate = DateTime(monthDate.year, monthDate.month, 1 + (j * 5));
-           
-           await database.insert(Schema.variableExpensesTable, {
-             Schema.colDate: entryDate.toIso8601String(),
-             Schema.colAmount: amount,
-             Schema.colCategory: cat,
-             Schema.colNote: '$cat expense #$j'
-           });
-         }
-       }
+      // Higher spending in current month for "Insight" calculation comparison
+      // If i=0 (current), let's make it HIGH. i=1 (last month) LOW.
+      // This ensures "Spending increased" warning.
+
+      double multiplier = 1.0;
+      if (i == 0) multiplier = 1.3; // High current
+      if (i == 1) multiplier = 0.8; // Low previous
+
+      for (var cat in categories) {
+        // Create 2-3 entries per category per month
+        int entries = 2;
+        if (cat == 'Food') entries = 4;
+
+        for (int j = 0; j < entries; j++) {
+          int base = 500;
+          if (cat == 'Shopping') base = 2500;
+          if (cat == 'Travel') base = 5000;
+          if (cat == 'Food') base = 800;
+
+          final amount = (base * (0.8 + (0.4 * (j % 2))) * multiplier).toInt();
+
+          // Random-ish date within that month
+          final entryDate =
+              DateTime(monthDate.year, monthDate.month, 1 + (j * 5));
+
+          await database.insert(Schema.variableExpensesTable, {
+            Schema.colDate: entryDate.toIso8601String(),
+            Schema.colAmount: amount,
+            Schema.colCategory: cat,
+            Schema.colNote: '$cat expense #$j'
+          });
+        }
+      }
     }
 
     // 9. Budgets
+    await database.insert(Schema.budgetsTable,
+        {Schema.colCategory: 'Food', Schema.colMonthlyLimit: 25000});
+    await database.insert(Schema.budgetsTable,
+        {Schema.colCategory: 'Transport', Schema.colMonthlyLimit: 15000});
     await database.insert(Schema.budgetsTable, {
-      Schema.colCategory: 'Food', 
-      Schema.colMonthlyLimit: 25000
-    });
-    await database.insert(Schema.budgetsTable, {
-      Schema.colCategory: 'Transport', 
-      Schema.colMonthlyLimit: 15000
-    });
-    await database.insert(Schema.budgetsTable, {
-      Schema.colCategory: 'Shopping', 
+      Schema.colCategory: 'Shopping',
       Schema.colMonthlyLimit: 30000 // Likely to be overspent
     });
-    await database.insert(Schema.budgetsTable, {
-      Schema.colCategory: 'Entertainment', 
-      Schema.colMonthlyLimit: 10000
-    });
+    await database.insert(Schema.budgetsTable,
+        {Schema.colCategory: 'Entertainment', Schema.colMonthlyLimit: 10000});
 
     // 10. Goals
     await database.insert(Schema.savingGoalsTable, {

@@ -40,6 +40,10 @@ class FinancialRepository {
             await db.rawQuery("SELECT SUM(remaining_amount) FROM loans")) ??
         0;
 
+    final totalEMI = Sqflite.firstIntValue(
+            await db.rawQuery("SELECT SUM(emi) FROM loans")) ??
+        0;
+
     final netWorth = (investmentsTotal + npsTotal + pfTotal + otherRetirement) -
         (creditCardDebt + loansTotal);
 
@@ -54,6 +58,7 @@ class FinancialRepository {
       netWorth: netWorth,
       creditCardDebt: creditCardDebt,
       loansTotal: loansTotal,
+      totalMonthlyEMI: totalEMI,
     );
   }
 
@@ -157,9 +162,64 @@ class FinancialRepository {
           'date': date,
           'amount': amount,
           'category': category,
-          'note': note
+          'note': note,
+          'tags': note.contains('#') ? _extractTags(note) : null
         });
     }
+  }
+
+  String _extractTags(String note) {
+    final regex = RegExp(r'\#\w+');
+    final matches = regex.allMatches(note);
+    if (matches.isEmpty) return "";
+    return matches.map((m) => m.group(0)).join(',');
+  }
+
+  Future<void> checkAndProcessRecurring() async {
+    final db = await AppDatabase.db;
+    final now = DateTime.now();
+    final today = now.day;
+    final monthStr = now.toIso8601String().substring(0, 7); // YYYY-MM
+
+    // Check if we already processed today
+    final config =
+        await db.query('sys_config', where: 'key = ?', whereArgs: ['last_run']);
+    String lastRun = "";
+    if (config.isNotEmpty) {
+      lastRun = config.first['value'].toString();
+    }
+
+    final todayStr = now.toIso8601String().substring(0, 10);
+    if (lastRun == todayStr) return; // Already ran today
+
+    // Fetch active subscriptions
+    final subs = await db.query('subscriptions', where: 'active = 1');
+
+    for (var s in subs) {
+      int billingDay = int.tryParse(s['billing_date'].toString()) ?? 1;
+
+      // If billing day matches today OR we missed it (and haven't added it for this month)
+      if (today >= billingDay) {
+        // Check if this specific subscription has been added for this month
+        final existing = await db.rawQuery(
+            "SELECT id FROM fixed_expenses WHERE category = 'Subscription' AND name = ? AND substr(date, 1, 7) = ?",
+            [s['name'], monthStr]);
+
+        if (existing.isEmpty) {
+          await db.insert('fixed_expenses', {
+            'name': s['name'],
+            'amount': s['amount'],
+            'category': 'Subscription',
+            'date': now.toIso8601String()
+          });
+          print("Auto-processed subscription: ${s['name']}");
+        }
+      }
+    }
+
+    // Update last run
+    await db.insert('sys_config', {'key': 'last_run', 'value': todayStr},
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Map<String, dynamic>>> getMonthlyHistory() async {
@@ -263,8 +323,14 @@ class FinancialRepository {
     });
   }
 
-  Future<void> updateCreditCard(int id, String bank, int creditLimit,
-      int statementBalance, int minDue, String dueDate, String generationDate) async {
+  Future<void> updateCreditCard(
+      int id,
+      String bank,
+      int creditLimit,
+      int statementBalance,
+      int minDue,
+      String dueDate,
+      String generationDate) async {
     final db = await AppDatabase.db;
     await db.update(
       'credit_cards',

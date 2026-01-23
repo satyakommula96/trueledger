@@ -61,7 +61,8 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
               style: const TextStyle(
                   fontWeight: FontWeight.w900, fontSize: 48, letterSpacing: -2),
               decoration: InputDecoration(
-                  prefixText: "${CurrencyHelper.symbol} ", border: InputBorder.none),
+                  prefixText: "${CurrencyHelper.symbol} ",
+                  border: InputBorder.none),
             ),
             const SizedBox(height: 48),
             Text(widget.entry.type == 'Income' ? "SOURCE" : "LABEL",

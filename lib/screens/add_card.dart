@@ -67,14 +67,16 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen> {
         child: Column(
           children: [
             _buildField("Bank Name", bankCtrl, Icons.account_balance),
-            _buildField("Credit Limit", limitCtrl, Icons.speed, isNumber: true, prefix: CurrencyHelper.symbol),
-            _buildField("Statement Balance", stmtCtrl, Icons.account_balance_wallet, isNumber: true, prefix: CurrencyHelper.symbol),
-            _buildField("Minimum Due", minDueCtrl, Icons.low_priority, isNumber: true, prefix: CurrencyHelper.symbol),
+            _buildField("Credit Limit", limitCtrl, Icons.speed,
+                isNumber: true, prefix: CurrencyHelper.symbol),
             _buildField(
-                "Statement Generation Date", genDateCtrl, Icons.event,
+                "Statement Balance", stmtCtrl, Icons.account_balance_wallet,
+                isNumber: true, prefix: CurrencyHelper.symbol),
+            _buildField("Minimum Due", minDueCtrl, Icons.low_priority,
+                isNumber: true, prefix: CurrencyHelper.symbol),
+            _buildField("Statement Generation Date", genDateCtrl, Icons.event,
                 readOnly: true, onTap: _pickGenDate),
-            _buildField(
-                "Payment Due Date", dueDateCtrl, Icons.calendar_today,
+            _buildField("Payment Due Date", dueDateCtrl, Icons.calendar_today,
                 readOnly: true, onTap: _pickDueDate),
             const SizedBox(height: 40),
             SizedBox(
@@ -99,7 +101,10 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen> {
   }
 
   Widget _buildField(String label, TextEditingController ctrl, IconData icon,
-      {bool isNumber = false, String? prefix, bool readOnly = false, VoidCallback? onTap}) {
+      {bool isNumber = false,
+      String? prefix,
+      bool readOnly = false,
+      VoidCallback? onTap}) {
     final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -135,8 +140,8 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen> {
 
     // Trigger notification
     if (_selectedGenDate != null) {
-      await NotificationService().scheduleCreditCardReminder(
-          bankCtrl.text, _selectedGenDate!.day);
+      await NotificationService()
+          .scheduleCreditCardReminder(bankCtrl.text, _selectedGenDate!.day);
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

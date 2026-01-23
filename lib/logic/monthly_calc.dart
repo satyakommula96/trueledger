@@ -14,11 +14,13 @@ class MonthlySummary {
     this.netWorth = 0,
     this.creditCardDebt = 0,
     this.loansTotal = 0,
+    this.totalMonthlyEMI = 0,
   });
 
   final int netWorth;
   final int creditCardDebt;
   final int loansTotal;
+  final int totalMonthlyEMI;
 
   int get net =>
       totalIncome -

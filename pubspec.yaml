@@ -1,6 +1,7 @@
 name: truecash
 description: "True Cash: Premium Financial Management"
 publish_to: "none"
+version: 1.0.0
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -25,6 +26,7 @@ dependencies:
   share_plus: ^12.0.1
   web: ^1.1.1
   google_fonts: ^6.1.0
+  local_auth: ^3.0.0
 
 dev_dependencies:
   flutter_test:

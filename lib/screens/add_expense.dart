@@ -21,7 +21,8 @@ class _AddExpenseState extends State<AddExpense> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialType != null && categoryMap.containsKey(widget.initialType)) {
+    if (widget.initialType != null &&
+        categoryMap.containsKey(widget.initialType)) {
       type = widget.initialType!;
       selectedCategory = categoryMap[type]!.first;
     }
@@ -30,7 +31,14 @@ class _AddExpenseState extends State<AddExpense> {
   final Map<String, List<String>> categoryMap = {
     'Variable': ['Food', 'Transport', 'Shopping', 'Entertainment', 'Others'],
     'Fixed': ['Rent', 'Utility', 'Insurance', 'EMI'],
-    'Investment': ['Stocks', 'Mutual Funds', 'SIP', 'Crypto', 'Gold', 'Lending'],
+    'Investment': [
+      'Stocks',
+      'Mutual Funds',
+      'SIP',
+      'Crypto',
+      'Gold',
+      'Lending'
+    ],
     'Income': ['Salary', 'Freelance', 'Dividends'],
     'Subscription': ['OTT', 'Software', 'Gym'],
   };

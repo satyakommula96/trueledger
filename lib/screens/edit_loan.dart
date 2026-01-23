@@ -34,7 +34,7 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
     rateCtrl = TextEditingController(text: widget.loan.interestRate.toString());
     dueCtrl = TextEditingController(text: widget.loan.dueDate);
     selectedType = widget.loan.loanType;
-    
+
     // Try to parse existing date if it looks like a full date (e.g. 15 Feb 2026)
     try {
       _selectedDate = DateFormat('dd MMM yyyy').parse(widget.loan.dueDate);
@@ -108,11 +108,13 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
               children: [
                 Expanded(
                     child: _buildField("REMAINING BALANCE", remainingCtrl,
-                        type: TextInputType.number, prefix: CurrencyHelper.symbol)),
+                        type: TextInputType.number,
+                        prefix: CurrencyHelper.symbol)),
                 const SizedBox(width: 16),
                 Expanded(
                     child: _buildField("TOTAL LOAN", totalCtrl,
-                        type: TextInputType.number, prefix: CurrencyHelper.symbol)),
+                        type: TextInputType.number,
+                        prefix: CurrencyHelper.symbol)),
               ],
             ),
             const SizedBox(height: 24),
@@ -121,7 +123,8 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
                 children: [
                   Expanded(
                       child: _buildField("MONTHLY EMI", emiCtrl,
-                          type: TextInputType.number, prefix: CurrencyHelper.symbol)),
+                          type: TextInputType.number,
+                          prefix: CurrencyHelper.symbol)),
                   const SizedBox(width: 16),
                   Expanded(
                       child: _buildField("INTEREST RATE", rateCtrl,
@@ -147,7 +150,8 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 20),
                     child: TextButton(
-                      onPressed: () => setState(() => dueCtrl.text = "Flexible"),
+                      onPressed: () =>
+                          setState(() => dueCtrl.text = "Flexible"),
                       child: const Text("FLEXIBLE"),
                     ),
                   ),
@@ -265,7 +269,10 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
   }
 
   Widget _buildField(String label, TextEditingController ctrl,
-      {TextInputType type = TextInputType.text, String? prefix, bool readOnly = false, VoidCallback? onTap}) {
+      {TextInputType type = TextInputType.text,
+      String? prefix,
+      bool readOnly = false,
+      VoidCallback? onTap}) {
     final semantic = Theme.of(context).extension<AppColors>()!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

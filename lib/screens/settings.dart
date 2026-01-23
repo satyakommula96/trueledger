@@ -347,6 +347,74 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _setupPin(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentPin = prefs.getString('app_pin');
+
+    // Simple flow: If PIN set, ask to remove. If not, ask to set (input dialog for MVP)
+    // For a real app, you'd navigate to a dedicated PIN entry screen.
+    // Here we'll show a dialog to enter 4 digits.
+
+    if (!context.mounted) return;
+
+    if (currentPin != null) {
+      final confirm = await showDialog<bool>(
+          context: context,
+          builder: (ctx) =>
+              AlertDialog(title: const Text("Remove Security PIN?"), actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text("CANCEL")),
+                TextButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text("REMOVE",
+                        style: TextStyle(color: Colors.red))),
+              ]));
+
+      if (confirm == true) {
+        await prefs.remove('app_pin');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text("PIN Removed")));
+        }
+      }
+    } else {
+      // Set new PIN
+      String newPin = "";
+      await showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              title: const Text("Set 4-Digit PIN"),
+              content: TextField(
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                obscureText: true,
+                onChanged: (val) => newPin = val,
+                decoration: const InputDecoration(hintText: "Enter PIN"),
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text("CANCEL")),
+                TextButton(
+                    onPressed: () {
+                      if (newPin.length == 4) {
+                        prefs.setString('app_pin', newPin);
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text("PIN Set Successfully")));
+                      }
+                    },
+                    child: const Text("SAVE")),
+              ],
+            );
+          });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -363,6 +431,15 @@ class SettingsScreen extends StatelessWidget {
             Icons.dark_mode_outlined,
             Colors.indigo,
             () => _showThemePicker(context),
+          ),
+          const SizedBox(height: 16),
+          _buildOption(
+            context,
+            "App Security",
+            "Set PIN for access",
+            Icons.lock_outline_rounded,
+            Colors.deepPurple,
+            () => _setupPin(context),
           ),
           const SizedBox(height: 16),
           _buildOption(

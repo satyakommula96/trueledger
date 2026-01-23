@@ -130,7 +130,10 @@ class _LoansScreenState extends State<LoansScreen> {
                                   ],
                                 ),
                                 Text(
-                                    DateHelper.formatDue(l.dueDate, prefix: l.loanType == 'Individual' ? "DUE" : "NEXT EMI"),
+                                    DateHelper.formatDue(l.dueDate,
+                                        prefix: l.loanType == 'Individual'
+                                            ? "DUE"
+                                            : "NEXT EMI"),
                                     style: TextStyle(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w900,
@@ -148,7 +151,9 @@ class _LoansScreenState extends State<LoansScreen> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(CurrencyHelper.format(remaining.toInt()),
+                                    Text(
+                                        CurrencyHelper.format(
+                                            remaining.toInt()),
                                         style: const TextStyle(
                                             fontSize: 24,
                                             fontWeight: FontWeight.w800,
@@ -200,7 +205,8 @@ class _LoansScreenState extends State<LoansScreen> {
                                           fontSize: 9,
                                           fontWeight: FontWeight.w900,
                                           color: semantic.secondaryText)),
-                                Text("TOTAL: ${CurrencyHelper.format(total.toInt())}",
+                                Text(
+                                    "TOTAL: ${CurrencyHelper.format(total.toInt())}",
                                     style: TextStyle(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w900,

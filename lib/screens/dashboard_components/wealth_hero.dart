@@ -93,7 +93,6 @@ class WealthHero extends StatelessWidget {
                             fontWeight: FontWeight.w900,
                             letterSpacing: -1.5,
                             height: 1.0)),
-
                   ],
                 ),
               ],

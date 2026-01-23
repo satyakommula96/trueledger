@@ -45,4 +45,8 @@ class Schema {
 
   // Budgets
   static const String colMonthlyLimit = 'monthly_limit';
+  static const String colTags = 'tags'; // Comma separated tags
+  static const String colPin =
+      'app_pin'; // Stored in separate secure table or preferences but keeping simple
+  static const String colLastProcessed = 'last_processed'; // For automation
 }
