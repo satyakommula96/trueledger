@@ -8,7 +8,7 @@
 PRODUCT_NAME = TrueCash
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.truecash
+PRODUCT_BUNDLE_IDENTIFIER = com.satyakommula.truecash
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.truecash. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.satyakommula.truecash. All rights reserved.
