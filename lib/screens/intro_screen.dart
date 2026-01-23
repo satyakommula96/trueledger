@@ -19,19 +19,19 @@ class _IntroScreenState extends State<IntroScreen> {
     {
       'title': 'Track Your Wealth',
       'description':
-          'Monitor your income and expenses with ease. Get a clear view of your financial health at a glance.',
+          'See exactly where your money goes. Build your net worth with crystal-clear insights.',
       'icon': Icons.trending_up_rounded,
     },
     {
       'title': 'Smart Budgeting',
       'description':
-          'Set monthly budgets and track your spending. Stay on top of financial goals without the stress.',
+          'Spend smarter, not harder. Set goals and limits that help you save without the sacrifice.',
       'icon': Icons.pie_chart_rounded,
     },
     {
       'title': 'Secure & Private',
       'description':
-          'Your financial data is stored locally on your device. We respect your privacy and security.',
+          'Your financial life stays on this device. No cloud uploads, no tracking, just 100% privacy.',
       'icon': Icons.security_rounded,
     },
   ];

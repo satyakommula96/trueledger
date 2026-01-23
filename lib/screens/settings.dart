@@ -17,7 +17,10 @@ import '../main.dart';
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
   
-  void _showThemePicker(BuildContext context) {
+  Future<void> _showThemePicker(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!context.mounted) return;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -30,6 +33,7 @@ class SettingsScreen extends StatelessWidget {
               leading: const Icon(Icons.settings_suggest_rounded),
               onTap: () {
                 themeNotifier.value = ThemeMode.system;
+                prefs.setString('theme_mode', 'system');
                 Navigator.pop(context);
               },
               trailing: themeNotifier.value == ThemeMode.system ? const Icon(Icons.check, color: Colors.blue) : null,
@@ -39,6 +43,7 @@ class SettingsScreen extends StatelessWidget {
               leading: const Icon(Icons.light_mode_rounded),
               onTap: () {
                 themeNotifier.value = ThemeMode.light;
+                prefs.setString('theme_mode', 'light');
                 Navigator.pop(context);
               },
                trailing: themeNotifier.value == ThemeMode.light ? const Icon(Icons.check, color: Colors.blue) : null,
@@ -48,6 +53,7 @@ class SettingsScreen extends StatelessWidget {
               leading: const Icon(Icons.dark_mode_rounded),
               onTap: () {
                 themeNotifier.value = ThemeMode.dark;
+                prefs.setString('theme_mode', 'dark');
                 Navigator.pop(context);
               },
                trailing: themeNotifier.value == ThemeMode.dark ? const Icon(Icons.check, color: Colors.blue) : null,

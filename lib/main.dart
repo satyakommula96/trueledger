@@ -40,6 +40,17 @@ Future<void> main() async {
     final bool seen = prefs.getBool('intro_seen') ?? false;
     debugPrint('Check Intro: seen=$seen');
     showIntro = !seen;
+
+    // Load Theme Preference
+    final String? themePref = prefs.getString('theme_mode');
+    if (themePref == 'light') {
+      themeNotifier.value = ThemeMode.light;
+    } else if (themePref == 'dark') {
+      themeNotifier.value = ThemeMode.dark;
+    } else {
+      themeNotifier.value = ThemeMode.system;
+    }
+
   } catch (e) {
     debugPrint('Error accessing shared preferences: $e');
     // Default to handling it gracefully, maybe show intro if unsure or dashboard
