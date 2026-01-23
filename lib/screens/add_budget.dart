@@ -17,7 +17,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("New Budget")),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             TextField(

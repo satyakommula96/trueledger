@@ -17,7 +17,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("New Saving Goal")),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             TextField(

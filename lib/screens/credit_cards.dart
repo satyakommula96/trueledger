@@ -104,7 +104,7 @@ class _CreditCardsScreenState extends State<CreditCardsScreen> {
         : cards.isEmpty 
           ? Center(child: Text("NO CARDS REGISTERED.", style: TextStyle(color: semantic.secondaryText, fontSize: 10, fontWeight: FontWeight.bold)))
           : ListView.builder(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.fromLTRB(24, 24, 24, 100 + MediaQuery.of(context).padding.bottom),
             itemCount: cards.length,
             itemBuilder: (_, i) {
               final c = cards[i];

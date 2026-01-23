@@ -10,7 +10,7 @@ import '../utils/web_saver.dart';
 import '../logic/financial_repository.dart';
 import '../db/database.dart';
 
-import '../services/notification_service.dart';
+
 import '../main.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -363,49 +363,7 @@ class SettingsScreen extends StatelessWidget {
             Colors.redAccent,
             () => _resetData(context),
           ),
-          const SizedBox(height: 16),
-          _buildOption(
-            context,
-            "Test Notification",
-            "Send a test notification now",
-            Icons.notifications_active_rounded,
-            Colors.purple,
-            () async {
-              await NotificationService().requestPermissions();
-              await NotificationService().showNotification(
-                id: 1,
-                title: 'Test Notification',
-                body: 'This is a test notification from TrueCash',
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          _buildOption(
-            context,
-            "Schedule Notification",
-            "Schedule a notification for 5 seconds later",
-            Icons.schedule_rounded,
-            Colors.deepPurple,
-            () async {
-              await NotificationService().requestPermissions();
 
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content:
-                          Text('Notification scheduled for 5 seconds later')),
-                );
-              }
-
-              await Future.delayed(const Duration(seconds: 5));
-
-              await NotificationService().showNotification(
-                id: 2,
-                title: 'Scheduled Notification',
-                body: 'This notification was scheduled 5 seconds ago',
-              );
-            },
-          ),
           const SizedBox(height: 48),
           const Center(
             child: Column(

@@ -32,7 +32,7 @@ class _AddExpenseState extends State<AddExpense> {
     return Scaffold(
       appBar: AppBar(title: const Text("NEW LEDGER ENTRY")),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.fromLTRB(32, 32, 32, 32 + MediaQuery.of(context).padding.bottom),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

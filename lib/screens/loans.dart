@@ -60,7 +60,7 @@ class _LoansScreenState extends State<LoansScreen> {
                           fontSize: 10,
                           fontWeight: FontWeight.bold)))
               : ListView.builder(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.fromLTRB(24, 24, 24, 100 + MediaQuery.of(context).padding.bottom),
                   itemCount: loans.length,
                   itemBuilder: (_, i) {
                     final l = loans[i];

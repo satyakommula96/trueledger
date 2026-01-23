@@ -18,7 +18,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("New Subscription")),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             TextField(

@@ -22,7 +22,7 @@ class _AddCreditCardScreenState extends State<AddCreditCardScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("Add Credit Card")),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             _buildField("Bank Name", bankCtrl, Icons.account_balance),
