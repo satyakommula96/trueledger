@@ -20,11 +20,19 @@ class _MonthlyHistoryScreenState extends State<MonthlyHistoryScreen> {
   Future<void> load() async {
     final repo = FinancialRepository();
     final summaries = await repo.getMonthlyHistory();
-    if (mounted) setState(() { monthSummaries = summaries; _isLoading = false; });
+    if (mounted) {
+      setState(() {
+        monthSummaries = summaries;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
-  void initState() { super.initState(); load(); }
+  void initState() {
+    super.initState();
+    load();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,57 +40,95 @@ class _MonthlyHistoryScreenState extends State<MonthlyHistoryScreen> {
     final semantic = Theme.of(context).extension<AppColors>()!;
     return Scaffold(
       appBar: AppBar(title: const Text("LEDGER HISTORY")),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : monthSummaries.isEmpty
-          ? Center(child: Text("NO PERIODS TRACKED.", style: TextStyle(color: semantic.secondaryText, fontSize: 10, fontWeight: FontWeight.bold)))
-          : ListView.builder(
-            padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
-            itemCount: monthSummaries.length,
-            itemBuilder: (_, i) {
-              final s = monthSummaries[i];
-              final positive = s['net'] >= 0;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface, 
-                  borderRadius: BorderRadius.circular(16), 
-                  border: Border.all(color: semantic.divider)
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : monthSummaries.isEmpty
+              ? Center(
+                  child: Text("NO PERIODS TRACKED.",
+                      style: TextStyle(
+                          color: semantic.secondaryText,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold)))
+              : ListView.builder(
+                  padding: EdgeInsets.fromLTRB(
+                      24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
+                  itemCount: monthSummaries.length,
+                  itemBuilder: (_, i) {
+                    final s = monthSummaries[i];
+                    final positive = s['net'] >= 0;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: semantic.divider)),
+                      child: InkWell(
+                        onTap: () async {
+                          await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      MonthDetailScreen(month: s['month'])));
+                          load();
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            children: [
+                              Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(_formatMonth(s['month']),
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 18,
+                                            letterSpacing: -0.5,
+                                            color: colorScheme.onSurface)),
+                                    Text("₹${s['net']}",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w800,
+                                            color: positive
+                                                ? semantic.income
+                                                : semantic.warning,
+                                            fontSize: 16)),
+                                  ]),
+                              const SizedBox(height: 20),
+                              Divider(height: 1, color: semantic.divider),
+                              const SizedBox(height: 20),
+                              Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    _buildStatItem(
+                                        "INCOME", "₹${s['income']}", semantic),
+                                    _buildStatItem("EXPENDITURE",
+                                        "₹${s['expenses']}", semantic),
+                                    _buildStatItem("INVESTED",
+                                        "₹${s['invested']}", semantic),
+                                  ]),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                child: InkWell(
-                  onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => MonthDetailScreen(month: s['month']))); load(); },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          Text(_formatMonth(s['month']), style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, letterSpacing: -0.5, color: colorScheme.onSurface)),
-                          Text("₹${s['net']}", style: TextStyle(fontWeight: FontWeight.w800, color: positive ? semantic.income : semantic.warning, fontSize: 16)),
-                        ]),
-                        const SizedBox(height: 20),
-                        Divider(height: 1, color: semantic.divider),
-                        const SizedBox(height: 20),
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          _buildStatItem("INCOME", "₹${s['income']}", semantic),
-                          _buildStatItem("EXPENDITURE", "₹${s['expenses']}", semantic),
-                          _buildStatItem("INVESTED", "₹${s['invested']}", semantic),
-                        ]),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
     );
   }
 
   Widget _buildStatItem(String label, String value, AppColors semantic) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: semantic.secondaryText, letterSpacing: 1.2)),
+      Text(label,
+          style: TextStyle(
+              fontSize: 8,
+              fontWeight: FontWeight.w900,
+              color: semantic.secondaryText,
+              letterSpacing: 1.2)),
       const SizedBox(height: 6),
-      Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+      Text(value,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
     ]);
   }
 
@@ -90,6 +136,8 @@ class _MonthlyHistoryScreenState extends State<MonthlyHistoryScreen> {
     try {
       final date = DateTime.parse('$yyyyMm-01');
       return DateFormat('MMMM yyyy').format(date).toUpperCase();
-    } catch (e) { return yyyyMm; }
+    } catch (e) {
+      return yyyyMm;
+    }
   }
 }

@@ -17,15 +17,23 @@ class BudgetSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (budgets.isEmpty) return const Text("No active budgets", style: TextStyle(color: Colors.grey));
+    if (budgets.isEmpty) {
+      return const Text("No active budgets",
+          style: TextStyle(color: Colors.grey));
+    }
     final colorScheme = Theme.of(context).colorScheme;
-    
-    return Column(children: budgets.map((b) {
+
+    return Column(
+        children: budgets.map((b) {
       final double progress = (b.spent / b.monthlyLimit).clamp(0.0, 1.0);
       final bool isOver = b.spent > b.monthlyLimit;
-      
+
       return InkWell(
-        onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => EditBudgetScreen(budget: b))); onLoad(); },
+        onTap: () async {
+          await Navigator.push(context,
+              MaterialPageRoute(builder: (_) => EditBudgetScreen(budget: b)));
+          onLoad();
+        },
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(20),
@@ -54,8 +62,16 @@ class BudgetSection extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(b.category.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                  Text("₹${b.spent} / ₹${b.monthlyLimit}", style: TextStyle(fontSize: 12, color: isOver ? semantic.overspent : semantic.secondaryText, fontWeight: FontWeight.w700)),
+                  Text(b.category.toUpperCase(),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 12)),
+                  Text("₹${b.spent} / ₹${b.monthlyLimit}",
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: isOver
+                              ? semantic.overspent
+                              : semantic.secondaryText,
+                          fontWeight: FontWeight.w700)),
                 ],
               ),
               const SizedBox(height: 12),

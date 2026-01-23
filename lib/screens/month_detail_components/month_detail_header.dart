@@ -35,7 +35,8 @@ class MonthDetailHeader extends StatelessWidget {
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1),
-                prefixIcon: Icon(Icons.search, size: 16, color: semantic.secondaryText),
+                prefixIcon:
+                    Icon(Icons.search, size: 16, color: semantic.secondaryText),
                 filled: true,
                 fillColor: colorScheme.surface,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -58,13 +59,16 @@ class MonthDetailHeader extends StatelessWidget {
             child: DropdownButton<String>(
               value: typeFilter,
               underline: const SizedBox(),
-              icon: Icon(Icons.filter_list, size: 14, color: semantic.secondaryText),
+              icon: Icon(Icons.filter_list,
+                  size: 14, color: semantic.secondaryText),
               items: ['All', 'Variable', 'Income', 'Fixed', 'Investment']
                   .map((c) => DropdownMenuItem(
                       value: c,
                       child: Text(c.toUpperCase(),
                           style: const TextStyle(
-                              fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1))))
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1))))
                   .toList(),
               onChanged: (v) => onFilterChanged(v!),
             ),

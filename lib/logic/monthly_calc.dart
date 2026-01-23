@@ -20,9 +20,18 @@ class MonthlySummary {
   final int creditCardDebt;
   final int loansTotal;
 
-  int get net => totalIncome - totalFixed - totalVariable - totalSubscriptions - totalInvestments;
+  int get net =>
+      totalIncome -
+      totalFixed -
+      totalVariable -
+      totalSubscriptions -
+      totalInvestments;
 
-  double get savingsRate => totalIncome == 0 ? 0 : ((totalIncome - (totalFixed + totalVariable + totalSubscriptions)) / totalIncome) * 100;
+  double get savingsRate => totalIncome == 0
+      ? 0
+      : ((totalIncome - (totalFixed + totalVariable + totalSubscriptions)) /
+              totalIncome) *
+          100;
 
   String get status {
     if (net > 25000) return "PROSPEROUS";

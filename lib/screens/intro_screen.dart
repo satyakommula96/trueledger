@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dashboard.dart';
 import '../services/notification_service.dart';
-import '../theme/theme.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
@@ -93,12 +92,14 @@ class _IntroScreenState extends State<IntroScreen> {
               onPressed: _finishIntro,
               style: TextButton.styleFrom(
                 backgroundColor: colorScheme.surface.withValues(alpha: 0.5),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
               ),
               child: Text('SKIP',
                   style: TextStyle(
-                    fontWeight: FontWeight.w800, 
+                    fontWeight: FontWeight.w800,
                     color: colorScheme.secondary,
                     fontSize: 12,
                     letterSpacing: 1.0,
@@ -148,7 +149,9 @@ class _IntroScreenState extends State<IntroScreen> {
                       child: const Text(
                         'GET STARTED',
                         style: TextStyle(
-                            fontWeight: FontWeight.w800, fontSize: 16, letterSpacing: 1),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            letterSpacing: 1),
                       ),
                     ),
                   )
@@ -164,17 +167,19 @@ class _IntroScreenState extends State<IntroScreen> {
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.4), width: 1.5),
+                        side: BorderSide(
+                            color: colorScheme.outline.withValues(alpha: 0.4),
+                            width: 1.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                      child: Text('NEXT', style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                        letterSpacing: 1,
-                        color: colorScheme.primary
-                      )),
+                      child: Text('NEXT',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 16,
+                              letterSpacing: 1,
+                              color: colorScheme.primary)),
                     ),
                   ),
               ],
@@ -200,7 +205,6 @@ class _IntroPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final semantic = Theme.of(context).extension<AppColors>(); // May be null if not provided in theme, but standard is there
 
     return Padding(
       padding: const EdgeInsets.all(40.0),

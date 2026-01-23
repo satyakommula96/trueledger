@@ -42,7 +42,8 @@ class _MonthDetailScreenState extends State<MonthDetailScreen> {
       debugPrint("Error loading month details: $e");
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     }
   }
@@ -56,7 +57,8 @@ class _MonthDetailScreenState extends State<MonthDetailScreen> {
       items = items.where((e) {
         final label = e.label.toLowerCase();
         final note = (e.note ?? "").toLowerCase();
-        return label.contains(searchQuery.toLowerCase()) || note.contains(searchQuery.toLowerCase());
+        return label.contains(searchQuery.toLowerCase()) ||
+            note.contains(searchQuery.toLowerCase());
       }).toList();
     }
     return items;
@@ -78,52 +80,82 @@ class _MonthDetailScreenState extends State<MonthDetailScreen> {
             semantic: semantic,
           ),
           Expanded(
-            child: _isLoading 
-              ? const Center(child: CircularProgressIndicator())
-              : Builder(
-                  builder: (context) {
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Builder(builder: (context) {
                     final items = _getFilteredItems();
-                    if (items.isEmpty) return Center(child: Text("NO ENTRIES FOUND", style: TextStyle(color: semantic.secondaryText, fontSize: 10, fontWeight: FontWeight.bold)));
-                    
+                    if (items.isEmpty) {
+                      return Center(
+                          child: Text("NO ENTRIES FOUND",
+                              style: TextStyle(
+                                  color: semantic.secondaryText,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold)));
+                    }
+
                     return ListView.builder(
-                      padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.of(context).padding.bottom),
+                      padding: EdgeInsets.fromLTRB(24, 0, 24,
+                          24 + MediaQuery.of(context).padding.bottom),
                       itemCount: items.length,
                       itemBuilder: (context, i) {
                         final item = items[i];
                         final String type = item.type;
                         final isIncome = type == 'Income';
                         final label = item.label;
-    
+
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
-                            color: colorScheme.surface, 
-                            borderRadius: BorderRadius.circular(12), 
-                            border: Border.all(color: semantic.divider)
-                          ),
+                              color: colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: semantic.divider)),
                           child: InkWell(
-                            onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => EditEntryScreen(entry: item))); _loadData(); },
+                            onTap: () async {
+                              await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          EditEntryScreen(entry: item)));
+                              _loadData();
+                            },
                             borderRadius: BorderRadius.circular(12),
                             child: Padding(
                               padding: const EdgeInsets.all(16),
                               child: Row(
                                 children: [
-                                  CategoryIcon(type: type, label: label, semantic: semantic),
+                                  CategoryIcon(
+                                      type: type,
+                                      label: label,
+                                      semantic: semantic),
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text(label.toString().toUpperCase(), style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5, color: colorScheme.onSurface)),
+                                        Text(label.toString().toUpperCase(),
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 13,
+                                                letterSpacing: 0.5,
+                                                color: colorScheme.onSurface)),
                                         const SizedBox(height: 6),
-                                        Text(type.toUpperCase(), style: TextStyle(fontSize: 9, color: semantic.secondaryText, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                        Text(type.toUpperCase(),
+                                            style: TextStyle(
+                                                fontSize: 9,
+                                                color: semantic.secondaryText,
+                                                fontWeight: FontWeight.w900,
+                                                letterSpacing: 1)),
                                       ],
                                     ),
                                   ),
-                                  Text(
-                                    "₹${item.amount}", 
-                                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: isIncome ? semantic.income : colorScheme.onSurface)
-                                  ),
+                                  Text("₹${item.amount}",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16,
+                                          color: isIncome
+                                              ? semantic.income
+                                              : colorScheme.onSurface)),
                                 ],
                               ),
                             ),
@@ -131,8 +163,7 @@ class _MonthDetailScreenState extends State<MonthDetailScreen> {
                         );
                       },
                     );
-                  }
-                ),
+                  }),
           ),
         ],
       ),
@@ -143,6 +174,8 @@ class _MonthDetailScreenState extends State<MonthDetailScreen> {
     try {
       final date = DateTime.parse('$yyyyMm-01');
       return DateFormat('MMMM yyyy').format(date).toUpperCase();
-    } catch (e) { return yyyyMm; }
+    } catch (e) {
+      return yyyyMm;
+    }
   }
 }

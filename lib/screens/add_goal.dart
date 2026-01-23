@@ -17,12 +17,14 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("New Saving Goal")),
       body: Padding(
-        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(
+            24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             TextField(
               controller: nameCtrl,
-              decoration: const InputDecoration(labelText: "Goal Name (e.g. Car)"),
+              decoration:
+                  const InputDecoration(labelText: "Goal Name (e.g. Car)"),
             ),
             const SizedBox(height: 20),
             TextField(

@@ -21,7 +21,8 @@ class DashboardBottomBar extends StatelessWidget {
     final semantic = Theme.of(context).extension<AppColors>()!;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(24, 0, 24, 32 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(
+          24, 0, 24, 32 + MediaQuery.of(context).padding.bottom),
       child: SizedBox(
         height: 80,
         child: Stack(
@@ -38,7 +39,8 @@ class DashboardBottomBar extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: colorScheme.surface.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.2)),
                     boxShadow: [
                       BoxShadow(
                           color: Colors.black.withValues(alpha: 0.05),
@@ -49,50 +51,54 @@ class DashboardBottomBar extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                  Expanded(
-                    child: _buildActionIcon(
-                        context,
-                        Icons.handshake_outlined,
-                        "LOANS",
-                        () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const LoansScreen())),
-                        semantic),
-                  ),
-                  Expanded(
-                    child: _buildActionIcon(
-                        context,
-                        Icons.credit_card_outlined,
-                        "CARDS",
-                        () => Navigator.push(
+                      Expanded(
+                        child: _buildActionIcon(
                             context,
-                            MaterialPageRoute(
-                                builder: (_) => const CreditCardsScreen())),
-                        semantic),
-                  ),
-                  const SizedBox(width: 60),
-                  Expanded(
-                    child: _buildActionIcon(
-                        context,
-                        Icons.event_repeat,
-                        "SUBS",
-                        () => Navigator.push(
+                            Icons.handshake_outlined,
+                            "LOANS",
+                            () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const LoansScreen())),
+                            semantic),
+                      ),
+                      Expanded(
+                        child: _buildActionIcon(
                             context,
-                            MaterialPageRoute(
-                                builder: (_) => const SubscriptionsScreen())),
-                        semantic),
-                  ),
-                  Expanded(
-                    child: _buildActionIcon(
-                        context,
-                        Icons.history_outlined,
-                        "HISTORY",
-                        () => Navigator.push(
+                            Icons.credit_card_outlined,
+                            "CARDS",
+                            () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const CreditCardsScreen())),
+                            semantic),
+                      ),
+                      const SizedBox(width: 60),
+                      Expanded(
+                        child: _buildActionIcon(
                             context,
-                            MaterialPageRoute(
-                                builder: (_) => const MonthlyHistoryScreen())),
-                        semantic),
-                  ),
-                ],
+                            Icons.event_repeat,
+                            "SUBS",
+                            () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const SubscriptionsScreen())),
+                            semantic),
+                      ),
+                      Expanded(
+                        child: _buildActionIcon(
+                            context,
+                            Icons.history_outlined,
+                            "HISTORY",
+                            () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) =>
+                                        const MonthlyHistoryScreen())),
+                            semantic),
+                      ),
+                    ],
                   ),
                 ),
               ),

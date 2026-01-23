@@ -68,11 +68,16 @@ class _DashboardState extends State<Dashboard> {
   }
 
   @override
-  void initState() { super.initState(); load(); }
+  void initState() {
+    super.initState();
+    load();
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (summary == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (summary == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final colorScheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<AppColors>()!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -96,71 +101,89 @@ class _DashboardState extends State<Dashboard> {
                     const SizedBox(height: 20),
                     Row(
                       children: [
-                        Expanded(child: SummaryCard(
-                          label: "Income",
-                          value: "₹${NumberFormat.compact(locale: 'en_IN').format(summary!.totalIncome)}",
-                          valueColor: semantic.income,
-                          semantic: semantic,
-                          icon: Icons.arrow_downward
-                        )),
+                        Expanded(
+                            child: SummaryCard(
+                                label: "Income",
+                                value:
+                                    "₹${NumberFormat.compact(locale: 'en_IN').format(summary!.totalIncome)}",
+                                valueColor: semantic.income,
+                                semantic: semantic,
+                                icon: Icons.arrow_downward)),
                         const SizedBox(width: 12),
-                        Expanded(child: SummaryCard(
-                          label: "Expenses",
-                          value: "₹${NumberFormat.compact(locale: 'en_IN').format(summary!.totalFixed + summary!.totalVariable + summary!.totalSubscriptions)}",
-                          valueColor: semantic.overspent,
-                          semantic: semantic,
-                          icon: Icons.arrow_upward
-                        )),
+                        Expanded(
+                            child: SummaryCard(
+                                label: "Expenses",
+                                value:
+                                    "₹${NumberFormat.compact(locale: 'en_IN').format(summary!.totalFixed + summary!.totalVariable + summary!.totalSubscriptions)}",
+                                valueColor: semantic.overspent,
+                                semantic: semantic,
+                                icon: Icons.arrow_upward)),
                       ],
                     ),
                     const SizedBox(height: 12),
                     FullWidthSummaryCard(
-                      label: "Net Balance",
-                      value: "₹${summary!.net}",
-                      valueColor: summary!.net >= 0 ? semantic.income : semantic.warning,
-                      semantic: semantic
-                    ),
+                        label: "Net Balance",
+                        value: "₹${summary!.net}",
+                        valueColor: summary!.net >= 0
+                            ? semantic.income
+                            : semantic.warning,
+                        semantic: semantic),
                     const SizedBox(height: 32),
                     SectionHeader(
-                      title: "Financial Overview",
-                      sub: "Assets vs Liabilities",
-                      semantic: semantic
-                    ),
+                        title: "Financial Overview",
+                        sub: "Assets vs Liabilities",
+                        semantic: semantic),
                     const SizedBox(height: 16),
                     AssetLiabilityCard(summary: summary!, semantic: semantic),
                     const SizedBox(height: 32),
                     SectionHeader(
-                      title: "Borrowings",
-                      sub: "Active loans & debts",
-                      semantic: semantic, 
-                      onAdd: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const LoansScreen())); load(); }
-                    ),
+                        title: "Borrowings",
+                        sub: "Active loans & debts",
+                        semantic: semantic,
+                        onAdd: () async {
+                          await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const LoansScreen()));
+                          load();
+                        }),
                     const SizedBox(height: 16),
-                    BorrowingSummary(summary: summary!, semantic: semantic, onLoad: load),
+                    BorrowingSummary(
+                        summary: summary!, semantic: semantic, onLoad: load),
                     const SizedBox(height: 32),
                     SectionHeader(
-                      title: "Spending Trend",
-                      sub: "6-month activity",
-                      semantic: semantic
-                    ),
+                        title: "Spending Trend",
+                        sub: "6-month activity",
+                        semantic: semantic),
                     const SizedBox(height: 24),
                     TrendChart(trendData: trendData, semantic: semantic),
                     const SizedBox(height: 32),
                     SectionHeader(
-                      title: "Active Budgets",
-                      sub: "Target monitoring",
-                      semantic: semantic, 
-                      onAdd: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBudgetScreen())); load(); }
-                    ),
+                        title: "Active Budgets",
+                        sub: "Target monitoring",
+                        semantic: semantic,
+                        onAdd: () async {
+                          await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const AddBudgetScreen()));
+                          load();
+                        }),
                     const SizedBox(height: 16),
-                    BudgetSection(budgets: budgets, semantic: semantic, onLoad: load),
+                    BudgetSection(
+                        budgets: budgets, semantic: semantic, onLoad: load),
                     const SizedBox(height: 32),
                     SectionHeader(
-                      title: "Obligations",
-                      sub: "Bills and recurring",
-                      semantic: semantic, 
-                      onAdd: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionsScreen())); load(); }
-                    ),
+                        title: "Obligations",
+                        sub: "Bills and recurring",
+                        semantic: semantic,
+                        onAdd: () async {
+                          await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const SubscriptionsScreen()));
+                          load();
+                        }),
                     const SizedBox(height: 16),
                     UpcomingBills(bills: upcomingBills, semantic: semantic),
                     const SizedBox(height: 120),

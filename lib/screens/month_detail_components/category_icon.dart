@@ -6,24 +6,60 @@ class CategoryIcon extends StatelessWidget {
   final String label;
   final AppColors semantic;
 
-  const CategoryIcon({super.key, required this.type, required this.label, required this.semantic});
+  const CategoryIcon(
+      {super.key,
+      required this.type,
+      required this.label,
+      required this.semantic});
 
   IconData _getIcon() {
-    if (type == 'Income') return Icons.arrow_downward;
-    if (type == 'Investment') return Icons.trending_up;
-    
+    if (type == 'Income') {
+      return Icons.arrow_downward;
+    }
+    if (type == 'Investment') {
+      return Icons.trending_up;
+    }
+
     final l = label.toLowerCase();
-    if (l.contains('food') || l.contains('grocer') || l.contains('restaurant')) return Icons.restaurant;
-    if (l.contains('travel') || l.contains('transport') || l.contains('fuel') || l.contains('gas')) return Icons.directions_car;
-    if (l.contains('shop') || l.contains('clothes')) return Icons.shopping_bag;
-    if (l.contains('bill') || l.contains('utilit')) return Icons.receipt_long;
-    if (l.contains('entert') || l.contains('movie')) return Icons.movie;
-    if (l.contains('health') || l.contains('doctor') || l.contains('medic')) return Icons.medical_services;
-    if (l.contains('educ') || l.contains('school') || l.contains('fee')) return Icons.school;
-    if (l.contains('rent') || l.contains('home')) return Icons.home;
-    if (l.contains('salary') || l.contains('wage')) return Icons.work;
-    
-    if (l.contains('investment') || l.contains('stock') || l.contains('sip') || l.contains('mutual')) return Icons.trending_up;
+    if (l.contains('food') ||
+        l.contains('grocer') ||
+        l.contains('restaurant')) {
+      return Icons.restaurant;
+    }
+    if (l.contains('travel') ||
+        l.contains('transport') ||
+        l.contains('fuel') ||
+        l.contains('gas')) {
+      return Icons.directions_car;
+    }
+    if (l.contains('shop') || l.contains('clothes')) {
+      return Icons.shopping_bag;
+    }
+    if (l.contains('bill') || l.contains('utilit')) {
+      return Icons.receipt_long;
+    }
+    if (l.contains('entert') || l.contains('movie')) {
+      return Icons.movie;
+    }
+    if (l.contains('health') || l.contains('doctor') || l.contains('medic')) {
+      return Icons.medical_services;
+    }
+    if (l.contains('educ') || l.contains('school') || l.contains('fee')) {
+      return Icons.school;
+    }
+    if (l.contains('rent') || l.contains('home')) {
+      return Icons.home;
+    }
+    if (l.contains('salary') || l.contains('wage')) {
+      return Icons.work;
+    }
+
+    if (l.contains('investment') ||
+        l.contains('stock') ||
+        l.contains('sip') ||
+        l.contains('mutual')) {
+      return Icons.trending_up;
+    }
     return type == 'Fixed' ? Icons.calendar_today : Icons.category;
   }
 

@@ -33,7 +33,8 @@ class _EditBudgetScreenState extends State<EditBudgetScreen> {
         ],
       ),
       body: Padding(
-        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(
+            24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             TextField(

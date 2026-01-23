@@ -37,7 +37,8 @@ class _EditGoalScreenState extends State<EditGoalScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(
+            24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             _buildField("Goal Name", nameCtrl),

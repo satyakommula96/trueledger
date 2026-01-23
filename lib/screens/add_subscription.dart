@@ -18,23 +18,27 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("New Subscription")),
       body: Padding(
-        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(
+            24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             TextField(
               controller: nameCtrl,
-              decoration: const InputDecoration(labelText: "Service Name (e.g. Netflix)"),
+              decoration: const InputDecoration(
+                  labelText: "Service Name (e.g. Netflix)"),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: amountCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Monthly Amount (₹)"),
+              decoration:
+                  const InputDecoration(labelText: "Monthly Amount (₹)"),
             ),
             const SizedBox(height: 20),
             TextField(
               controller: dateCtrl,
-              decoration: const InputDecoration(labelText: "Billing Date (e.g. 5th)"),
+              decoration:
+                  const InputDecoration(labelText: "Billing Date (e.g. 5th)"),
             ),
             const SizedBox(height: 40),
             SizedBox(
@@ -55,10 +59,7 @@ class _AddSubscriptionScreenState extends State<AddSubscriptionScreen> {
     if (nameCtrl.text.isEmpty || amountCtrl.text.isEmpty) return;
     final repo = FinancialRepository();
     await repo.addSubscription(
-      nameCtrl.text,
-      int.parse(amountCtrl.text),
-      dateCtrl.text
-    );
+        nameCtrl.text, int.parse(amountCtrl.text), dateCtrl.text);
     if (mounted) Navigator.pop(context);
   }
 }

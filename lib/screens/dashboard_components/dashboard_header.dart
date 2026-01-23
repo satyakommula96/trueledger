@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../main.dart'; // For themeNotifier
+
 import '../../theme/theme.dart';
 import '../settings.dart';
 
@@ -18,7 +18,7 @@ class DashboardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<AppColors>()!;
-    
+
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
@@ -38,19 +38,30 @@ class DashboardHeader extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("TrueCash", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: colorScheme.onSurface)),
-                    Text("Your Financial Outlook", style: TextStyle(fontSize: 12, color: semantic.secondaryText, fontWeight: FontWeight.w500)),
+                    Text("TrueCash",
+                        style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: colorScheme.onSurface)),
+                    Text("Your Financial Outlook",
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: semantic.secondaryText,
+                            fontWeight: FontWeight.w500)),
                   ],
                 ),
               ],
             ),
             Row(
               children: [
-
                 IconButton(
-                  icon: Icon(Icons.settings_outlined, size: 22, color: colorScheme.onSurface),
+                  icon: Icon(Icons.settings_outlined,
+                      size: 22, color: colorScheme.onSurface),
                   onPressed: () async {
-                    await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                    await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const SettingsScreen()));
                     onLoad();
                   },
                 ),

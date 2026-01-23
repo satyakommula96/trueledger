@@ -23,7 +23,7 @@ class Schema {
   static const String colSource = 'source'; // income_sources
   static const String colNote = 'note'; // variable_expenses
   static const String colBillingDate = 'billing_date'; // subscriptions
-  
+
   // Credit Cards
   static const String colBank = 'bank';
   static const String colCreditLimit = 'credit_limit';

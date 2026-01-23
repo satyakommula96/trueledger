@@ -35,7 +35,8 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("NEW BORROWING")),
       body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(32, 32, 32, 32 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(
+            32, 32, 32, 32 + MediaQuery.of(context).padding.bottom),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -176,11 +177,11 @@ class _AddLoanScreenState extends State<AddLoanScreen> {
 
   Future<void> _save() async {
     if (nameCtrl.text.isEmpty) return;
-    
+
     final total = int.tryParse(totalCtrl.text) ?? 0;
     // If remaining is left empty, assume it's a new loan equal to the total amount
-    final remaining = remainingCtrl.text.isEmpty 
-        ? total 
+    final remaining = remainingCtrl.text.isEmpty
+        ? total
         : (int.tryParse(remainingCtrl.text) ?? 0);
 
     final repo = FinancialRepository();

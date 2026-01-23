@@ -58,9 +58,7 @@ class SummaryCard extends StatelessWidget {
                   color: valueColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon,
-                    size: 14,
-                    color: valueColor),
+                child: Icon(icon, size: 14, color: valueColor),
               ),
             ],
           ),
@@ -106,7 +104,7 @@ class FullWidthSummaryCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: valueColor.withValues(alpha: 0.2)),
-         boxShadow: [
+        boxShadow: [
           BoxShadow(
             color: valueColor.withValues(alpha: 0.05),
             blurRadius: 10,
@@ -117,7 +115,7 @@ class FullWidthSummaryCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-           Row(
+          Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
@@ -126,7 +124,9 @@ class FullWidthSummaryCard extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  valueColor == semantic.income ? Icons.account_balance_wallet_outlined : Icons.receipt_long_outlined,
+                  valueColor == semantic.income
+                      ? Icons.account_balance_wallet_outlined
+                      : Icons.receipt_long_outlined,
                   size: 16,
                   color: valueColor,
                 ),

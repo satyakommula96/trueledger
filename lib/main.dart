@@ -50,7 +50,6 @@ Future<void> main() async {
     } else {
       themeNotifier.value = ThemeMode.system;
     }
-
   } catch (e) {
     debugPrint('Error accessing shared preferences: $e');
     // Default to handling it gracefully, maybe show intro if unsure or dashboard

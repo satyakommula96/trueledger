@@ -17,12 +17,14 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("New Budget")),
       body: Padding(
-        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(
+            24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             TextField(
               controller: categoryCtrl,
-              decoration: const InputDecoration(labelText: "Category (e.g. Food)"),
+              decoration:
+                  const InputDecoration(labelText: "Category (e.g. Food)"),
             ),
             const SizedBox(height: 20),
             TextField(

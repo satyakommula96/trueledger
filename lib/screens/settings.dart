@@ -11,17 +11,16 @@ import '../utils/web_saver.dart';
 import '../logic/financial_repository.dart';
 import '../db/database.dart';
 
-
 import '../config/version.dart';
 import '../main.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-  
+
   Future<void> _showThemePicker(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     if (!context.mounted) return;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -37,7 +36,9 @@ class SettingsScreen extends StatelessWidget {
                 prefs.setString('theme_mode', 'system');
                 Navigator.pop(context);
               },
-              trailing: themeNotifier.value == ThemeMode.system ? const Icon(Icons.check, color: Colors.blue) : null,
+              trailing: themeNotifier.value == ThemeMode.system
+                  ? const Icon(Icons.check, color: Colors.blue)
+                  : null,
             ),
             ListTile(
               title: const Text("Light Mode"),
@@ -47,7 +48,9 @@ class SettingsScreen extends StatelessWidget {
                 prefs.setString('theme_mode', 'light');
                 Navigator.pop(context);
               },
-               trailing: themeNotifier.value == ThemeMode.light ? const Icon(Icons.check, color: Colors.blue) : null,
+              trailing: themeNotifier.value == ThemeMode.light
+                  ? const Icon(Icons.check, color: Colors.blue)
+                  : null,
             ),
             ListTile(
               title: const Text("Dark Mode"),
@@ -57,7 +60,9 @@ class SettingsScreen extends StatelessWidget {
                 prefs.setString('theme_mode', 'dark');
                 Navigator.pop(context);
               },
-               trailing: themeNotifier.value == ThemeMode.dark ? const Icon(Icons.check, color: Colors.blue) : null,
+              trailing: themeNotifier.value == ThemeMode.dark
+                  ? const Icon(Icons.check, color: Colors.blue)
+                  : null,
             ),
           ],
         ),
@@ -316,7 +321,8 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Settings & Tools")),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(
+            24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         children: [
           _buildOption(
             context,
@@ -371,7 +377,6 @@ class SettingsScreen extends StatelessWidget {
             Colors.redAccent,
             () => _resetData(context),
           ),
-
           const SizedBox(height: 48),
           const Center(
             child: Column(

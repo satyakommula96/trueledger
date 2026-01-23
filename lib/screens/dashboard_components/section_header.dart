@@ -23,13 +23,20 @@ class SectionHeader extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-            Text(sub, style: TextStyle(fontSize: 11, color: semantic.secondaryText, fontWeight: FontWeight.w500)),
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            Text(sub,
+                style: TextStyle(
+                    fontSize: 11,
+                    color: semantic.secondaryText,
+                    fontWeight: FontWeight.w500)),
           ],
         ),
         if (onAdd != null)
           IconButton(
-            icon: const Icon(Icons.add_circle_outline, size: 20, color: Colors.grey),
+            icon: const Icon(Icons.add_circle_outline,
+                size: 20, color: Colors.grey),
             onPressed: onAdd,
           ),
       ],

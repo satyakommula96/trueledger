@@ -49,7 +49,8 @@ class _EditLoanScreenState extends State<EditLoanScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(32, 32, 32, 32 + MediaQuery.of(context).padding.bottom),
+        padding: EdgeInsets.fromLTRB(
+            32, 32, 32, 32 + MediaQuery.of(context).padding.bottom),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

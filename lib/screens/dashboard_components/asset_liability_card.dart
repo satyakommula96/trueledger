@@ -30,7 +30,8 @@ class AssetLiabilityCard extends StatelessWidget {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: semantic.income.withValues(alpha: 0.2)),
+                border:
+                    Border.all(color: semantic.income.withValues(alpha: 0.2)),
                 boxShadow: [
                   BoxShadow(
                     color: semantic.income.withValues(alpha: 0.05),
@@ -69,7 +70,8 @@ class AssetLiabilityCard extends StatelessWidget {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: semantic.overspent.withValues(alpha: 0.2)),
+                border: Border.all(
+                    color: semantic.overspent.withValues(alpha: 0.2)),
                 boxShadow: [
                   BoxShadow(
                     color: semantic.overspent.withValues(alpha: 0.05),

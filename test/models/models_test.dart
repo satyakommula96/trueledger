@@ -47,13 +47,12 @@ void main() {
   group('CreditCard Model Tests', () {
     test('CreditCard serialization', () {
       final card = CreditCard(
-        id: 101,
-        bank: 'HDFC',
-        creditLimit: 50000,
-        statementBalance: 12000,
-        minDue: 600,
-        dueDate: '15th'
-      );
+          id: 101,
+          bank: 'HDFC',
+          creditLimit: 50000,
+          statementBalance: 12000,
+          minDue: 600,
+          dueDate: '15th');
 
       final map = card.toMap();
       expect(map['bank'], 'HDFC');
@@ -74,11 +73,11 @@ void main() {
         'date': '2023-01-01',
         'entryType': 'Income'
       };
-      
+
       final item = LedgerItem.fromMap(map);
       expect(item.label, 'Salary');
       expect(item.type, 'Income');
-      
+
       final reconMap = item.toOriginalMap();
       expect(reconMap['source'], 'Salary');
     });
@@ -91,7 +90,7 @@ void main() {
         'date': '2023-01-02',
         'entryType': 'Variable'
       };
-      
+
       final item = LedgerItem.fromMap(map);
       expect(item.label, 'Food');
       expect(item.type, 'Variable');
@@ -101,16 +100,11 @@ void main() {
   group('Subscription Model Tests', () {
     test('Subscription serialization', () {
       final sub = Subscription(
-        id: 1, 
-        name: 'Netflix', 
-        amount: 800, 
-        billingDate: '10th', 
-        active: 1
-      );
-      
+          id: 1, name: 'Netflix', amount: 800, billingDate: '10th', active: 1);
+
       final map = sub.toMap();
       expect(map['billing_date'], '10th');
-      
+
       final newSub = Subscription.fromMap(map);
       expect(newSub.name, 'Netflix');
     });
@@ -118,15 +112,11 @@ void main() {
 
   group('Budget Model Tests', () {
     test('Budget serialization', () {
-      final budget = Budget(
-        id: 1, 
-        category: 'Travel', 
-        monthlyLimit: 10000
-      );
-      
+      final budget = Budget(id: 1, category: 'Travel', monthlyLimit: 10000);
+
       final map = budget.toMap();
       expect(map['monthly_limit'], 10000);
-      
+
       final newBudget = Budget.fromMap({...map, 'spent': 5000});
       expect(newBudget.category, 'Travel');
       expect(newBudget.spent, 5000);
@@ -135,19 +125,15 @@ void main() {
 
   group('SavingGoal Model Tests', () {
     test('SavingGoal progress calculation', () {
-       // Since logic is often in UI, we just test data integrity here
-       final goal = SavingGoal(
-         id: 1,
-         name: 'Trip',
-         targetAmount: 10000,
-         currentAmount: 5000
-       );
-       
-       expect(goal.targetAmount, 10000);
-       expect(goal.currentAmount, 5000);
-       
-       final map = goal.toMap();
-       expect(map['target_amount'], 10000);
+      // Since logic is often in UI, we just test data integrity here
+      final goal = SavingGoal(
+          id: 1, name: 'Trip', targetAmount: 10000, currentAmount: 5000);
+
+      expect(goal.targetAmount, 10000);
+      expect(goal.currentAmount, 5000);
+
+      final map = goal.toMap();
+      expect(map['target_amount'], 10000);
     });
   });
 }

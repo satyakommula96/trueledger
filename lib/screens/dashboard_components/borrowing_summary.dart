@@ -18,19 +18,35 @@ class BorrowingSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const LoansScreen())); onLoad(); },
+      onTap: () async {
+        await Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const LoansScreen()));
+        onLoad();
+      },
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: semantic.divider)),
+        decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: semantic.divider)),
         child: Row(
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("REMAINING DEBT", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: semantic.secondaryText, letterSpacing: 1)),
+                Text("REMAINING DEBT",
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: semantic.secondaryText,
+                        letterSpacing: 1)),
                 const SizedBox(height: 8),
-                Text("₹${summary.loansTotal}", style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: semantic.overspent)),
+                Text("₹${summary.loansTotal}",
+                    style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: semantic.overspent)),
               ],
             ),
             const Spacer(),
