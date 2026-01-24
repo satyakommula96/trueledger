@@ -1,0 +1,16 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:truecash/main.dart' as app;
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('App smoke test - verifies app launches', (tester) async {
+    app.main();
+    await tester.pumpAndSettle();
+    
+    // Add basic verification here once we confirm the app structure
+    // For now, just ensuring it starts without crashing is a good first step
+    expect(find.text('TrueCash').or(find.text('Dashboard')), findsOneWidget);
+  });
+}
