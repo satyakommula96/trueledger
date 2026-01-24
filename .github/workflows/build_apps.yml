@@ -32,7 +32,7 @@ jobs:
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk truecash.apk
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: android-release-apk
           path: truecash.apk
@@ -56,7 +56,7 @@ jobs:
           cp -r Runner.app Payload/
           zip -r ../../../truecash.ipa Payload
       - name: Upload IPA
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ios-release-ipa
           path: truecash.ipa
@@ -81,7 +81,7 @@ jobs:
       - name: Build Debian Package
         run: ./scripts/create_deb.sh
       - name: Upload Linux .deb
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: truecash-linux-deb
           path: truecash_*.deb
@@ -103,7 +103,7 @@ jobs:
       - name: Build DMG
         run: ./scripts/create_dmg.sh
       - name: Upload macOS DMG
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: truecash-macos-dmg
           path: truecash_*.dmg
@@ -123,7 +123,7 @@ jobs:
       - name: Build Installer (Inno Setup)
         run: iscc scripts/windows_setup.iss
       - name: Upload Windows Setup
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: windows-setup-exe
           path: build/windows/x64/installer/truecash_setup.exe
