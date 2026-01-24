@@ -1,25 +1,23 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'screens/dashboard.dart';
 import 'theme/theme.dart';
 import 'services/notification_service.dart';
 import 'logic/currency_helper.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/intro_screen.dart';
 import 'screens/lock_screen.dart';
 import 'logic/financial_repository.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite/sqflite.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (kIsWeb) {
-    databaseFactory = databaseFactoryFfiWeb;
-  } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
@@ -85,7 +83,7 @@ Future<void> main() async {
     }
   } catch (_) {}
 
-  runApp(TrueCashApp(home: home));
+  runApp(ProviderScope(child: TrueCashApp(home: home)));
 }
 
 // Global theme notifier

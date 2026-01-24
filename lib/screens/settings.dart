@@ -15,7 +15,10 @@ import '../config/version.dart';
 import '../main.dart';
 import '../logic/currency_helper.dart';
 
-class SettingsScreen extends StatelessWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../presentation/providers/repository_providers.dart';
+
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   Future<void> _showThemePicker(BuildContext context) async {
@@ -102,8 +105,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _exportToCSV(BuildContext context) async {
-    final repo = FinancialRepository();
+  Future<void> _exportToCSV(BuildContext context, WidgetRef ref) async {
+    final repo = ref.read(financialRepositoryProvider);
     final txs = await repo.getAllValues('variable_expenses');
 
     if (txs.isEmpty) {
@@ -135,7 +138,7 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _seedData(BuildContext context) async {
+  Future<void> _seedData(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -153,7 +156,7 @@ class SettingsScreen extends StatelessWidget {
             ));
 
     if (confirmed == true) {
-      final repo = FinancialRepository();
+      final repo = ref.read(financialRepositoryProvider);
       await repo.seedData();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -163,8 +166,8 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _backupData(BuildContext context) async {
-    final repo = FinancialRepository();
+  Future<void> _backupData(BuildContext context, WidgetRef ref) async {
+    final repo = ref.read(financialRepositoryProvider);
 
     // Gather all data
     final data = {
@@ -227,7 +230,7 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _restoreData(BuildContext context) async {
+  Future<void> _restoreData(BuildContext context, WidgetRef ref) async {
     final result = await FilePicker.platform.pickFiles(type: FileType.any);
     if (result == null || result.files.isEmpty) return;
 
@@ -267,10 +270,11 @@ class SettingsScreen extends StatelessWidget {
               ));
 
       if (confirmed == true) {
-        final repo = FinancialRepository();
+        final repo = ref.read(financialRepositoryProvider);
         await repo.clearData();
 
-        // Restore tables
+        // Restore tables directly via AppDatabase for batch efficiency (Pragmatic concession until Repo expanded)
+        // Ideally this moves to Repo.
         final db = await AppDatabase.db;
         final batch = db.batch();
 
@@ -318,7 +322,7 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _resetData(BuildContext context) async {
+  Future<void> _resetData(BuildContext context, WidgetRef ref) async {
     final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -337,7 +341,7 @@ class SettingsScreen extends StatelessWidget {
             ));
 
     if (confirmed == true) {
-      final repo = FinancialRepository();
+      final repo = ref.read(financialRepositoryProvider);
       await repo.clearData();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -348,12 +352,9 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _setupPin(BuildContext context) async {
+    // ... (unchanged)
     final prefs = await SharedPreferences.getInstance();
     final currentPin = prefs.getString('app_pin');
-
-    // Simple flow: If PIN set, ask to remove. If not, ask to set (input dialog for MVP)
-    // For a real app, you'd navigate to a dedicated PIN entry screen.
-    // Here we'll show a dialog to enter 4 digits.
 
     if (!context.mounted) return;
 
@@ -416,7 +417,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(title: const Text("Settings & Tools")),
@@ -457,7 +458,7 @@ class SettingsScreen extends StatelessWidget {
             "Download your transaction history",
             Icons.download_rounded,
             colorScheme.primary,
-            () => _exportToCSV(context),
+            () => _exportToCSV(context, ref),
           ),
           const SizedBox(height: 16),
           _buildOption(
@@ -466,7 +467,7 @@ class SettingsScreen extends StatelessWidget {
             "Save full backup to file",
             Icons.cloud_upload_outlined,
             Colors.blueAccent,
-            () => _backupData(context),
+            () => _backupData(context, ref),
           ),
           const SizedBox(height: 16),
           _buildOption(
@@ -475,7 +476,7 @@ class SettingsScreen extends StatelessWidget {
             "Import backup file",
             Icons.restore_page_outlined,
             Colors.orange,
-            () => _restoreData(context),
+            () => _restoreData(context, ref),
           ),
           const SizedBox(height: 16),
           _buildOption(
@@ -484,7 +485,7 @@ class SettingsScreen extends StatelessWidget {
             "Populate app with demo entries",
             Icons.science_rounded,
             Colors.amber,
-            () => _seedData(context),
+            () => _seedData(context, ref),
           ),
           const SizedBox(height: 16),
           _buildOption(
@@ -493,9 +494,10 @@ class SettingsScreen extends StatelessWidget {
             "Clear all data and start fresh",
             Icons.refresh_rounded,
             Colors.redAccent,
-            () => _resetData(context),
+            () => _resetData(context, ref),
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: 48), // ... rest of build
+
           const Center(
             child: Column(
               children: [

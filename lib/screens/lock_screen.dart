@@ -197,7 +197,10 @@ class _LockScreenState extends State<LockScreen> {
                 ],
               ),
             ).animate().slideY(
-                begin: 0.3, end: 0, duration: 600.ms, curve: Curves.easeOutQuint),
+                begin: 0.3,
+                end: 0,
+                duration: 600.ms,
+                curve: Curves.easeOutQuint),
           ],
         ),
       ),

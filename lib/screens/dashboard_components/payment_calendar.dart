@@ -225,8 +225,8 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
               children: [
                 Text(
                   DateFormat('EEEE, dd MMMM yyyy')
-                      .format(
-                          DateTime(_focusedMonth.year, _focusedMonth.month, day))
+                      .format(DateTime(
+                          _focusedMonth.year, _focusedMonth.month, day))
                       .toUpperCase(),
                   style: TextStyle(
                       fontSize: 12,

@@ -1,10 +1,12 @@
-import '../db/database.dart';
-import '../models/models.dart';
-import 'monthly_calc.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:flutter/material.dart';
+import 'package:sqflite_sqlcipher/sqflite.dart';
+import '../../db/database.dart';
+import '../../models/models.dart';
+import '../../domain/entities/monthly_summary.dart';
+import '../../domain/repositories/i_financial_repository.dart';
 
-class FinancialRepository {
+class FinancialRepositoryImpl implements IFinancialRepository {
+  @override
   Future<MonthlySummary> getMonthlySummary() async {
     final db = await AppDatabase.db;
     final income = Sqflite.firstIntValue(
@@ -48,8 +50,6 @@ class FinancialRepository {
     final netWorth = (investmentsTotal + npsTotal + pfTotal + otherRetirement) -
         (creditCardDebt + loansTotal);
 
-    // We can extend MonthlySummary to include net worth if needed, or return a composite object.
-    // For now, let's keep it compatible but maybe we should update MonthlySummary model in logic/monthly_calc.dart too.
     return MonthlySummary(
       totalIncome: income,
       totalFixed: fixed,
@@ -63,6 +63,7 @@ class FinancialRepository {
     );
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getSpendingTrend() async {
     final db = await AppDatabase.db;
     final trendRaw = await db.rawQuery(
@@ -70,6 +71,7 @@ class FinancialRepository {
     return trendRaw.reversed.toList();
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getUpcomingBills() async {
     final db = await AppDatabase.db;
     final subBills = await db.query('subscriptions', where: 'active = 1');
@@ -98,18 +100,21 @@ class FinancialRepository {
     ];
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getCategorySpending() async {
     final db = await AppDatabase.db;
     return await db.rawQuery(
         'SELECT category, SUM(amount) as total FROM variable_expenses GROUP BY category ORDER BY total DESC');
   }
 
+  @override
   Future<List<SavingGoal>> getSavingGoals() async {
     final db = await AppDatabase.db;
     final list = await db.query('saving_goals');
     return list.map((e) => SavingGoal.fromMap(e)).toList();
   }
 
+  @override
   Future<List<Budget>> getBudgets() async {
     final db = await AppDatabase.db;
     final budgetData = await db.query('budgets');
@@ -124,6 +129,7 @@ class FinancialRepository {
     return processedBudgets;
   }
 
+  @override
   Future<void> addEntry(String type, int amount, String category, String note,
       String date) async {
     final db = await AppDatabase.db;
@@ -176,6 +182,7 @@ class FinancialRepository {
     return matches.map((m) => m.group(0)).join(',');
   }
 
+  @override
   Future<void> checkAndProcessRecurring() async {
     final db = await AppDatabase.db;
     final now = DateTime.now();
@@ -223,6 +230,7 @@ class FinancialRepository {
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getMonthlyHistory() async {
     final db = await AppDatabase.db;
     final monthsQuery = await db.rawQuery('''
@@ -263,54 +271,64 @@ class FinancialRepository {
     return summaries;
   }
 
+  @override
   Future<List<Loan>> getLoans() async {
     final db = await AppDatabase.db;
     final list = await db.query('loans');
     return list.map((e) => Loan.fromMap(e)).toList();
   }
 
+  @override
   Future<List<Subscription>> getSubscriptions() async {
     final db = await AppDatabase.db;
     final list = await db.query('subscriptions');
     return list.map((e) => Subscription.fromMap(e)).toList();
   }
 
+  @override
   Future<List<CreditCard>> getCreditCards() async {
     final db = await AppDatabase.db;
     final list = await db.query('credit_cards');
     return list.map((e) => CreditCard.fromMap(e)).toList();
   }
 
+  @override
   Future<void> deleteItem(String table, int id) async {
     final db = await AppDatabase.db;
     await db.delete(table, where: 'id = ?', whereArgs: [id]);
   }
 
+  @override
   Future<void> addBudget(String category, int monthlyLimit) async {
     final db = await AppDatabase.db;
     await db.insert(
         'budgets', {'category': category, 'monthly_limit': monthlyLimit});
   }
 
+  @override
   Future<void> updateBudget(int id, int monthlyLimit) async {
     final db = await AppDatabase.db;
     await db.update('budgets', {'monthly_limit': monthlyLimit},
         where: 'id = ?', whereArgs: [id]);
   }
 
+  @override
   Future<List<Map<String, dynamic>>> getAllValues(String table) async {
     final db = await AppDatabase.db;
     return await db.query(table);
   }
 
+  @override
   Future<void> seedData() async {
     await AppDatabase.seedDummyData();
   }
 
+  @override
   Future<void> clearData() async {
     await AppDatabase.clearData();
   }
 
+  @override
   Future<void> addCreditCard(String bank, int creditLimit, int statementBalance,
       int minDue, String dueDate, String generationDate) async {
     final db = await AppDatabase.db;
@@ -324,6 +342,7 @@ class FinancialRepository {
     });
   }
 
+  @override
   Future<void> updateCreditCard(
       int id,
       String bank,
@@ -348,6 +367,7 @@ class FinancialRepository {
     );
   }
 
+  @override
   Future<void> payCreditCardBill(int id, int amount) async {
     final db = await AppDatabase.db;
     final cardList =
@@ -369,12 +389,14 @@ class FinancialRepository {
     }
   }
 
+  @override
   Future<void> addGoal(String name, int targetAmount) async {
     final db = await AppDatabase.db;
     await db.insert('saving_goals',
         {'name': name, 'target_amount': targetAmount, 'current_amount': 0});
   }
 
+  @override
   Future<void> updateGoal(
       int id, String name, int targetAmount, int currentAmount) async {
     final db = await AppDatabase.db;
@@ -389,6 +411,7 @@ class FinancialRepository {
         whereArgs: [id]);
   }
 
+  @override
   Future<void> addLoan(String name, String type, int total, int remaining,
       int emi, double rate, String due, String date) async {
     final db = await AppDatabase.db;
@@ -404,6 +427,7 @@ class FinancialRepository {
     });
   }
 
+  @override
   Future<void> updateLoan(int id, String name, String type, int total,
       int remaining, int emi, double rate, String due) async {
     final db = await AppDatabase.db;
@@ -422,6 +446,7 @@ class FinancialRepository {
         whereArgs: [id]);
   }
 
+  @override
   Future<void> addSubscription(
       String name, int amount, String billingDate) async {
     final db = await AppDatabase.db;
@@ -433,6 +458,7 @@ class FinancialRepository {
     });
   }
 
+  @override
   Future<void> updateEntry(
       String type, int id, Map<String, dynamic> values) async {
     final db = await AppDatabase.db;
@@ -457,6 +483,7 @@ class FinancialRepository {
     await db.update(table, values, where: 'id = ?', whereArgs: [id]);
   }
 
+  @override
   Future<List<LedgerItem>> getMonthDetails(String month) async {
     final db = await AppDatabase.db;
     List<Map<String, dynamic>> allItems = [];

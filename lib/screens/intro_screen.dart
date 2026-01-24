@@ -105,7 +105,7 @@ class _IntroScreenState extends State<IntroScreen> {
                     fontSize: 12,
                     letterSpacing: 1.0,
                   )),
-            ) .animate().fade(delay: 500.ms),
+            ).animate().fade(delay: 500.ms),
           ),
           Positioned(
             bottom: 40 + MediaQuery.of(context).padding.bottom,
