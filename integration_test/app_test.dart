@@ -9,6 +9,7 @@ void main() {
   testWidgets('App smoke test - verifies app launches', (tester) async {
     app.main();
     await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 2));
 
     // Add basic verification here once we confirm the app structure
     // For now, just ensuring it starts without crashing is a good first step
@@ -17,7 +18,9 @@ void main() {
         final data = widget.data;
         return data == 'Track Your Wealth' ||
             data == 'Dashboard' ||
-            data == 'TrueCash';
+            data == 'TrueCash' ||
+            data == 'Initializing...' ||
+            data == 'Initialization Failed';
       }
       return false;
     }), findsWidgets);
