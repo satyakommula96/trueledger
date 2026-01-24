@@ -1,75 +1,154 @@
-# TrueCash 💎
+# TrueCash
 
-**TrueCash** is a premium, personal financial management application built with **Flutter**. It is designed to provide users with a crystal-clear "financial outlook" through a modern, **glassmorphic UI**, intuitive dashboards, and robust tracking capabilities.
+A privacy-first personal finance tracker with AI-powered insights.
 
-## ✨ Features
+[![CI](https://github.com/satyakommula96/truecash/actions/workflows/ci.yml/badge.svg)](https://github.com/satyakommula96/truecash/actions/workflows/ci.yml)
+[![Documentation](https://github.com/satyakommula96/truecash/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/satyakommula96/truecash/actions/workflows/deploy-docs.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-### 🧠 AI-Powered "Intelligent Insights"
-- **Spending Velocity Forecast**: Uses **Linear Regression** statistical modeling to predict next month's total outflows.
-- **Wealth Projections**: Dynamic 1-year wealth growth estimates based on your current net monthly surplus.
-- **Smart Savings Tiering**: Automatic categorization into efficiency tiers with tailored advice on optimizing surplus cash.
-- **Leakage Detection**: Proactively identifies high subscription-to-income ratios and "budget drains."
+## 🌟 Features
 
-### 🛎️ Proactive Notifications
-- **Credit Card Cycle Reminders**: Automated reminders scheduled exactly on your **Statement Generation Date**.
-- **Payment Due Alerts**: Timely notifications to ensure you never miss a credit card or loan payment.
+- **💰 Complete Financial Tracking**: Track income, expenses, budgets, and saving goals
+- **🤖 AI-Powered Insights**: Get intelligent forecasts and personalized financial advice
+- **🔒 Privacy First**: All data stored locally with optional encryption
+- **📊 Beautiful Analytics**: Visualize your financial health with interactive charts
+- **🌙 Modern UI**: Dark mode, smooth animations, and premium design
+- **📱 Cross-Platform**: Available on Android, iOS, Linux, macOS, Windows, and Web
 
-### 📊 Enhanced Financial Breakup
-- **Sliver-Based Sticky Headers**: A premium, native-feeling scrolling experience in Assets and Liabilities views.
-- **Categorized Liability Views**: Separate tracking for "Bank Loans" vs. "Individual Borrowings."
-- **Asset Deep-Dive**: Dedicated tracking for "Retirement Savings" (EPF, NPS, PPF) and "Individual Lending."
+## 📖 Documentation
 
-## ✨ Existing Features
+**📚 [View Live Documentation](https://satyakommula96.github.io/truecash/)**
 
-### 📊 Comprehensive Dashboard
-- **Financial Outlook**: Real-time summary of your Net Worth (Assets - Liabilities).
-- **Trend Analysis**: Interactive charts to visualize your spending and wealth trends over time.
+Comprehensive documentation is available in the `docs/` folder and can be viewed using MkDocs:
 
-### 💰 Expense & Income Tracking
-- **Smart Ledger**: Easily record Income, Variable Expenses (Food, Shopping), and Fixed Expenses (Rent, EMI).
-- **Categories**: Organize transactions with built-in or custom categories.
+```bash
+# Install MkDocs
+pip install mkdocs-material mkdocs-git-revision-date-localized-plugin
 
-### 🏦 Asset & Liability Management
-- **Credit Cards**: Track multiple cards, view utilization rates, and record bill payments.
-- **Loans & Borrowings**: Manage personal loans with EMI tracking and amortization details.
-- **Investments**: Keep tabs on your portfolio (Stocks, Gold, Mutual Funds).
+# Serve documentation locally
+mkdocs serve
 
-### 🎯 Budgeting & Goals
-- **Smart Budgets**: Set monthly limits for specific categories and track your burn rate.
-- **Saving Goals**: Create goals (e.g., "New Car") and track your progress.
+# View at http://127.0.0.1:8000/
+```
 
-## 🛠️ Tech Stack
+### Quick Links
 
-- **Framework**: [Flutter](https://flutter.dev) (Dart)
-- **Intelligence**: Custom Statistical Models (Linear Regression, Ratio Analysis)
-- **Database**: [sqflite](https://pub.dev/packages/sqflite) (Local Storage)
-- **State Management**: `setState` & `ValueNotifier`
-- **Design**: Custom Glassmorphic Component Library
+- [Installation Guide](docs/getting-started/installation.md)
+- [Quick Start](docs/getting-started/quick-start.md)
+- [Architecture Overview](docs/architecture/overview.md)
+- [Adding Features](docs/development/adding-features.md)
+- [Contributing Guidelines](docs/contributing/guidelines.md)
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/satyakommula96/truecash.git
-    cd truecash
-    ```
+### Prerequisites
 
-2.  **Install dependencies**:
-    ```bash
-    flutter pub get
-    ```
+- Flutter SDK 3.0+
+- Dart SDK 3.0+
 
-3.  **Run the app**:
-    ```bash
-    flutter run -d linux
-    ```
+### Installation
 
-## 📱 Supported Platforms
+```bash
+# Clone the repository
+git clone https://github.com/satyakommula96/truecash.git
+cd truecash
 
-- **Linux** (Desktop) - *Optimized*
-- **macOS** & **Windows**
-- **Android** & **iOS**
-- **Web**
+# Install dependencies
+flutter pub get
+
+# Run the app
+flutter run
+```
+
+### Platform-Specific Setup
+
+#### Linux
+```bash
+sudo apt-get install libsecret-1-dev libjsoncpp-dev libsqlite3-dev
+```
+
+#### macOS
+```bash
+xcode-select --install
+```
+
+#### Windows
+Ensure Visual Studio 2022 with C++ tools is installed.
+
+## 🏗️ Architecture
+
+TrueCash follows **Clean Architecture** principles with four distinct layers:
+
+```
+┌─────────────────────────────────────┐
+│      Presentation Layer             │  (UI, Providers, Screens)
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼──────────────────────┐
+│        Domain Layer                 │  (Use Cases, Entities, Interfaces)
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼──────────────────────┐
+│         Data Layer                  │  (Repositories, Data Sources)
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼──────────────────────┐
+│         Core Layer                  │  (Utils, Services, Theme)
+└─────────────────────────────────────┘
+```
+
+See [Architecture Documentation](docs/architecture/overview.md) for details.
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+flutter test
+
+# Run with coverage
+flutter test --coverage
+
+# Run specific test
+flutter test test/unit/domain/usecases/
+```
+
+**Test Results**: All 21 tests passing ✅
+- 19 Unit tests
+- 1 Widget test
+- 1 Integration test
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](docs/contributing/guidelines.md) for details.
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests (`flutter test`)
+5. Run analyzer (`flutter analyze`)
+6. Format code (`dart format .`)
+7. Commit changes (`git commit -m 'feat: add amazing feature'`)
+8. Push to branch (`git push origin feature/amazing-feature`)
+9. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [Flutter](https://flutter.dev/)
+- State management with [Riverpod](https://riverpod.dev/)
+- Database with [SQLite](https://www.sqlite.org/)
+- Icons from [Material Icons](https://fonts.google.com/icons)
+
+## 📧 Contact
+
+- GitHub: [@satyakommula96](https://github.com/satyakommula96)
+- Issues: [GitHub Issues](https://github.com/satyakommula96/truecash/issues)
 
 ---
-*Built with ❤️ for a better financial future.*
+
+**Made with ❤️ for privacy-conscious users**
