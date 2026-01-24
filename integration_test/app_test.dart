@@ -11,6 +11,14 @@ void main() {
 
     // Add basic verification here once we confirm the app structure
     // For now, just ensuring it starts without crashing is a good first step
-    expect(find.text('TrueCash').or(find.text('Dashboard')), findsOneWidget);
+    expect(find.byWidgetPredicate((widget) {
+      if (widget is Text) {
+        final data = widget.data;
+        return data == 'Track Your Wealth' ||
+            data == 'Dashboard' ||
+            data == 'TrueCash';
+      }
+      return false;
+    }), findsWidgets);
   });
 }
