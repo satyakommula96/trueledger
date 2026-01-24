@@ -100,18 +100,25 @@ jobs:
       - name: Run Linux Integration Test
         if: matrix.target == 'linux'
         run: |
-          xvfb-run flutter test integration_test/app_test.dart -d linux
+          flutter clean
+          flutter pub get
+          xvfb-run flutter test integration_test/app_test.dart -d linux -v
 
       # Desktop Tests (macOS)
       - name: Run macOS Integration Test
         if: matrix.target == 'macos'
         run: |
-          flutter test integration_test/app_test.dart -d macos
+          flutter clean
+          flutter pub get
+          flutter test integration_test/app_test.dart -d macos -v
 
       # Desktop Tests (Windows)
       - name: Run Windows Integration Test
         if: matrix.target == 'windows'
-        run: flutter test integration_test/app_test.dart -d windows
+        run: |
+          flutter clean
+          flutter pub get
+          flutter test integration_test/app_test.dart -d windows -v
 
       # Mobile Tests (iOS)
       - name: Run iOS Integration Test
