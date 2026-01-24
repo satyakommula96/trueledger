@@ -35,15 +35,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install MkDocs and dependencies
+      - name: Install dependencies
         run: |
-          pip install mkdocs-material
-          pip install mkdocs-git-revision-date-localized-plugin
+          pip install -r requirements.txt
 
       - name: Build documentation
         run: mkdocs build --strict
 
       - name: Deploy to GitHub Pages
-        run: mkdocs gh-deploy --force
+        run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          mkdocs gh-deploy --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
