@@ -1,14 +1,14 @@
 #!/bin/bash
 set -e
 
-APP_NAME="truecash"
+APP_NAME="TrueCash"
 VERSION="1.1.0"
 DMG_NAME="${APP_NAME}_${VERSION}_macos.dmg"
 
 echo "Building macOS app..."
 flutter build macos --release
 
-APP_PATH="build/macos/Build/Products/Release/truecash.app"
+APP_PATH="build/macos/Build/Products/Release/TrueCash.app"
 
 if [ ! -d "$APP_PATH" ]; then
   echo "Error: App bundle not found at $APP_PATH"
@@ -38,8 +38,8 @@ create-dmg \
   --window-pos 200 120 \
   --window-size 800 400 \
   --icon-size 100 \
-  --icon "truecash.app" 200 190 \
-  --hide-extension "truecash.app" \
+  --icon "TrueCash.app" 200 190 \
+  --hide-extension "TrueCash.app" \
   --app-drop-link 600 185 \
   "$DMG_NAME" \
   "$APP_PATH"

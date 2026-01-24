@@ -52,7 +52,7 @@ cat > "$DESKTOP_DIR/$APP_NAME.desktop" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=True Cash
+Name=TrueCash
 Comment=$DESCRIPTION
 Exec=$APP_NAME
 Icon=$APP_NAME

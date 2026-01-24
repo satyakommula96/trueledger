@@ -1,6 +1,6 @@
 [Setup]
 AppId={{C0F22A12-B5D1-4F2B-9B5D-1F2B9B5D1F2B}}
-AppName=True Cash
+AppName=TrueCash
 AppVersion=1.1.0
 ;AppVerName=True Cash 1.1.0
 AppPublisher=Satya Kommula
@@ -29,8 +29,8 @@ Source: "..\build\windows\x64\runner\Release\data\*"; DestDir: "{app}\data"; Fla
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{autoprograms}\True Cash"; Filename: "{app}\truecash.exe"
-Name: "{autodesktop}\True Cash"; Filename: "{app}\truecash.exe"; Tasks: desktopicon
+Name: "{autoprograms}\TrueCash"; Filename: "{app}\truecash.exe"
+Name: "{autodesktop}\TrueCash"; Filename: "{app}\truecash.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\truecash.exe"; Description: "{cm:LaunchProgram,True Cash}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\truecash.exe"; Description: "{cm:LaunchProgram,TrueCash}"; Flags: nowait postinstall skipifsilent
