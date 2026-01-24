@@ -215,26 +215,29 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                DateFormat('EEEE, dd MMMM yyyy')
-                    .format(
-                        DateTime(_focusedMonth.year, _focusedMonth.month, day))
-                    .toUpperCase(),
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1,
-                    color: widget.semantic.secondaryText),
-              ),
-              const SizedBox(height: 16),
-              ...events.map((e) => _buildDetailItem(e)),
-            ],
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  DateFormat('EEEE, dd MMMM yyyy')
+                      .format(
+                          DateTime(_focusedMonth.year, _focusedMonth.month, day))
+                      .toUpperCase(),
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1,
+                      color: widget.semantic.secondaryText),
+                ),
+                const SizedBox(height: 16),
+                ...events.map((e) => _buildDetailItem(e)),
+              ],
+            ),
           ),
         );
       },

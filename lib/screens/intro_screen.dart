@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dashboard.dart';
 import '../services/notification_service.dart';
@@ -104,7 +105,7 @@ class _IntroScreenState extends State<IntroScreen> {
                     fontSize: 12,
                     letterSpacing: 1.0,
                   )),
-            ),
+            ) .animate().fade(delay: 500.ms),
           ),
           Positioned(
             bottom: 40 + MediaQuery.of(context).padding.bottom,
@@ -155,6 +156,9 @@ class _IntroScreenState extends State<IntroScreen> {
                       ),
                     ),
                   )
+                      .animate()
+                      .scale(duration: 300.ms, curve: Curves.easeOutBack)
+                      .fadeIn()
                 else
                   SizedBox(
                     width: double.infinity,
@@ -241,7 +245,10 @@ class _IntroPage extends StatelessWidget {
               size: 72,
               color: colorScheme.primary,
             ),
-          ),
+          )
+              .animate()
+              .scale(duration: 600.ms, curve: Curves.easeOutBack)
+              .fadeIn(duration: 600.ms),
           const SizedBox(height: 60),
           Text(
             title,
@@ -251,7 +258,10 @@ class _IntroPage extends StatelessWidget {
               letterSpacing: -1,
             ),
             textAlign: TextAlign.center,
-          ),
+          )
+              .animate(delay: 200.ms)
+              .fadeIn(duration: 600.ms)
+              .slideY(begin: 0.3, end: 0, curve: Curves.easeOutQuint),
           const SizedBox(height: 16),
           Text(
             description,
@@ -262,7 +272,10 @@ class _IntroPage extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
-          ),
+          )
+              .animate(delay: 400.ms)
+              .fadeIn(duration: 600.ms)
+              .slideY(begin: 0.3, end: 0, curve: Curves.easeOutQuint),
         ],
       ),
     );

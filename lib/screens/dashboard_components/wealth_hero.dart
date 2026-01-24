@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../logic/monthly_calc.dart';
 import '../../theme/theme.dart';
 import '../../logic/currency_helper.dart';
@@ -79,7 +80,7 @@ class WealthHero extends StatelessWidget {
                                   letterSpacing: 1)),
                         ],
                       ),
-                    ),
+                    ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
                   ],
                 ),
                 Column(
@@ -94,12 +95,14 @@ class WealthHero extends StatelessWidget {
                             letterSpacing: -1.5,
                             height: 1.0)),
                   ],
-                ),
+                ).animate().fadeIn(duration: 600.ms).moveY(begin: 10, end: 0, curve: Curves.easeOutQuint),
               ],
             ),
           ),
         ],
       ),
-    );
+    )
+    .animate(onPlay: (controller) => controller.repeat(reverse: true))
+    .shimmer(duration: 3.seconds, delay: 2.seconds, color: Colors.white.withValues(alpha: 0.1));
   }
 }

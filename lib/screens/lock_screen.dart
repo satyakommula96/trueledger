@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../screens/dashboard.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -21,18 +20,17 @@ class _LockScreenState extends State<LockScreen> {
   @override
   void initState() {
     super.initState();
-    _checkBiometrics();
+    _initBiometrics();
   }
 
-  Future<void> _checkBiometrics() async {
+  Future<void> _initBiometrics() async {
     try {
       final canCheck = await auth.canCheckBiometrics;
       setState(() {
         _canCheckBiometrics = canCheck;
       });
-      if (canCheck) {
-        _authenticate();
-      }
+      // We do not auto-authenticate anymore to avoid the dual-window issue on desktop.
+      // User can tap the fingerprint icon to authenticate.
     } catch (e) {
       debugPrint("Biometric check failed: $e");
     }
@@ -97,8 +95,9 @@ class _LockScreenState extends State<LockScreen> {
         child: Column(
           children: [
             const Spacer(),
-            const Icon(Icons.lock_outline_rounded,
-                size: 64, color: Colors.grey),
+            const Icon(Icons.lock_outline_rounded, size: 64, color: Colors.grey)
+                .animate()
+                .scale(duration: 400.ms, curve: Curves.easeOutBack),
             const SizedBox(height: 24),
             Text(
               "Enter PIN",
@@ -107,7 +106,7 @@ class _LockScreenState extends State<LockScreen> {
                 fontWeight: FontWeight.bold,
                 color: colorScheme.onSurface,
               ),
-            ),
+            ).animate().fadeIn(delay: 200.ms),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -124,13 +123,15 @@ class _LockScreenState extends State<LockScreen> {
                   ),
                 );
               }),
-            ),
+            )
+                .animate(target: _isError ? 1 : 0)
+                .shakeX(duration: 500.ms, hz: 4, amount: 20),
             if (_isError)
               const Padding(
                 padding: EdgeInsets.only(top: 16),
                 child:
                     Text("Incorrect PIN", style: TextStyle(color: Colors.red)),
-              ),
+              ).animate().fadeIn().slideY(begin: -0.5),
             const Spacer(),
             Container(
               padding: const EdgeInsets.only(bottom: 40),
@@ -195,7 +196,8 @@ class _LockScreenState extends State<LockScreen> {
                   ),
                 ],
               ),
-            ),
+            ).animate().slideY(
+                begin: 0.3, end: 0, duration: 600.ms, curve: Curves.easeOutQuint),
           ],
         ),
       ),

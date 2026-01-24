@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../logic/financial_repository.dart';
 import '../logic/monthly_calc.dart';
@@ -97,7 +98,10 @@ class _DashboardState extends State<Dashboard> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       sliver: SliverList(
                         delegate: SliverChildListDelegate([
-                          WealthHero(summary: summary!),
+                          WealthHero(summary: summary!)
+                              .animate()
+                              .fade(duration: 600.ms)
+                              .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuint),
                           const SizedBox(height: 24),
                           HealthMeter(
                             score: IntelligenceService.calculateHealthScore(
@@ -105,7 +109,10 @@ class _DashboardState extends State<Dashboard> {
                               budgets: budgets,
                             ),
                             semantic: semantic,
-                          ),
+                          )
+                              .animate(delay: 100.ms)
+                              .fade(duration: 600.ms)
+                              .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuint),
                           const SizedBox(height: 24),
                           Row(
                             children: [
@@ -129,26 +136,39 @@ class _DashboardState extends State<Dashboard> {
                                       semantic: semantic,
                                       icon: Icons.arrow_upward)),
                             ],
-                          ),
+                          )
+                              .animate(delay: 200.ms)
+                              .fade(duration: 600.ms)
+                              .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuint),
                           const SizedBox(height: 32),
                           SectionHeader(
-                              title: "Financial Overview",
-                              sub: "Assets vs Liabilities",
-                              semantic: semantic),
+                                  title: "Financial Overview",
+                                  sub: "Assets vs Liabilities",
+                                  semantic: semantic)
+                              .animate(delay: 300.ms)
+                              .fade(duration: 600.ms),
                           const SizedBox(height: 16),
                           AssetLiabilityCard(
-                              summary: summary!,
-                              semantic: semantic,
-                              onLoad: load),
+                                  summary: summary!,
+                                  semantic: semantic,
+                                  onLoad: load)
+                              .animate(delay: 400.ms)
+                              .fade(duration: 600.ms)
+                              .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuint),
                           const SizedBox(height: 32),
                           const SizedBox(height: 32),
                           SectionHeader(
-                              title: "Payment Calendar",
-                              sub: "Month view",
-                              semantic: semantic),
+                                  title: "Payment Calendar",
+                                  sub: "Month view",
+                                  semantic: semantic)
+                              .animate(delay: 500.ms)
+                              .fade(duration: 600.ms),
                           const SizedBox(height: 16),
                           PaymentCalendar(
-                              bills: upcomingBills, semantic: semantic),
+                                  bills: upcomingBills, semantic: semantic)
+                              .animate(delay: 600.ms)
+                              .fade(duration: 600.ms)
+                              .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuint),
                           const SizedBox(height: 32),
                           SmartInsightsCard(
                             insights: IntelligenceService.generateInsights(
@@ -157,7 +177,10 @@ class _DashboardState extends State<Dashboard> {
                               budgets: budgets,
                             ),
                             semantic: semantic,
-                          ),
+                          )
+                              .animate(delay: 700.ms)
+                              .fade(duration: 600.ms)
+                              .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuint),
                           const SizedBox(height: 120),
                         ]),
                       ),
