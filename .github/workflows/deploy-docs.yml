@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'docs/**'
-      - 'mkdocs.yml'
+      - 'docs/mkdocs.yml'
       - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
 
@@ -40,12 +40,12 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build documentation
-        run: mkdocs build --strict
+        run: mkdocs build --strict -f docs/mkdocs.yml
 
       - name: Deploy to GitHub Pages
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          mkdocs gh-deploy --force
+          mkdocs gh-deploy --force -f docs/mkdocs.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
