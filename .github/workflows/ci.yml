@@ -70,12 +70,12 @@ jobs:
       - run: flutter pub get
       - run: flutter build apk --release
       - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk truecash.apk
+        run: mv build/app/outputs/flutter-apk/app-release.apk TrueCash.apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-release-apk
-          path: truecash.apk
+          path: TrueCash.apk
 
   # Build iOS IPA
   build_ios:
@@ -97,12 +97,12 @@ jobs:
           cd build/ios/iphoneos
           mkdir Payload
           cp -r Runner.app Payload/
-          zip -r ../../../truecash.ipa Payload
+          zip -r ../../../TrueCash.ipa Payload
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: ios-release-ipa
-          path: truecash.ipa
+          path: TrueCash.ipa
 
   # Build Linux
   build_linux:
@@ -130,7 +130,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: truecash-linux-deb
-          path: truecash_*.deb
+          path: TrueCash.deb
 
   # Build macOS
   build_macos:
@@ -155,7 +155,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: truecash-macos-dmg
-          path: truecash_*.dmg
+          path: TrueCash.dmg
 
   # Build Windows
   build_windows:
@@ -178,7 +178,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-setup-exe
-          path: build/windows/x64/installer/truecash_setup.exe
+          path: build/windows/x64/installer/TrueCash.exe
 
   # Create Release
   release:

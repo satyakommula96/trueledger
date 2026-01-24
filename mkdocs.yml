@@ -65,6 +65,7 @@ nav:
       - Installation: getting-started/installation.md
       - Quick Start: getting-started/quick-start.md
       - Configuration: getting-started/configuration.md
+      - Deployment: DEPLOYMENT.md
   - Architecture:
       - Overview: architecture/overview.md
       - Clean Architecture: architecture/clean-architecture.md

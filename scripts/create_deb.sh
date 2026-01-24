@@ -72,6 +72,6 @@ Depends: libgtk-3-0, libblkid1, liblzma5
 EOF
 
 echo "Building .deb package..."
-dpkg-deb --build "$DEB_DIR" "${APP_NAME}_${VERSION}_${ARCH}.deb"
+dpkg-deb --build "$DEB_DIR" "TrueCash.deb"
 
-echo "Done! Package saved as ${APP_NAME}_${VERSION}_${ARCH}.deb"
+echo "Done! Package saved as TrueCash.deb"

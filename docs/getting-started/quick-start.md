@@ -150,6 +150,6 @@ The dashboard displays **Smart Insights** powered by AI:
 
 ## Need Help?
 
-- Check the [Troubleshooting Guide](../architecture/overview.md#troubleshooting)
+- Check the [Troubleshooting Guide](installation.md#troubleshooting)
 - Visit [GitHub Issues](https://github.com/satyakommula96/truecash/issues)
 - Read the [Architecture Documentation](../architecture/overview.md)

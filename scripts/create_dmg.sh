@@ -3,7 +3,7 @@ set -e
 
 APP_NAME="TrueCash"
 VERSION="1.1.0"
-DMG_NAME="${APP_NAME}_${VERSION}_macos.dmg"
+DMG_NAME="TrueCash.dmg"
 
 echo "Building macOS app..."
 flutter build macos --release

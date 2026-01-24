@@ -10,7 +10,7 @@ DisableProgramGroupPage=yes
 ; Remove the following line to run in administrative install mode (install for all users.)
 PrivilegesRequired=lowest
 OutputDir=..\build\windows\x64\installer
-OutputBaseFilename=truecash_setup
+OutputBaseFilename=TrueCash
 SetupIconFile=..\windows\runner\resources\app_icon.ico
 Compression=lzma
 SolidCompression=yes
