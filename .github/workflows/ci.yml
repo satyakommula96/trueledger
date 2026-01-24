@@ -61,7 +61,7 @@ jobs:
         target: [android, ios, linux, macos, windows]
         include:
           - target: android
-            os: macos-latest # macOS is often faster/stable for Android emulators on GHA
+            os: ubuntu-latest # KVM is reliable on Ubuntu runners
           - target: ios
             os: macos-latest
           - target: linux

@@ -7,9 +7,10 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('App smoke test - verifies app launches', (tester) async {
+    await app.main();
     // Use pump with duration instead of pumpAndSettle to avoid hanging on infinite animations (loaders)
     await tester.pump(const Duration(seconds: 5));
-    
+
     try {
       expect(find.byWidgetPredicate((widget) {
         if (widget is Text) {
