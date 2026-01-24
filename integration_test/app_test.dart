@@ -8,7 +8,7 @@ void main() {
   testWidgets('App smoke test - verifies app launches', (tester) async {
     app.main();
     await tester.pumpAndSettle();
-    
+
     // Add basic verification here once we confirm the app structure
     // For now, just ensuring it starts without crashing is a good first step
     expect(find.text('TrueCash').or(find.text('Dashboard')), findsOneWidget);
