@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 import '../models/models.dart';
 import '../logic/currency_helper.dart';
 import '../logic/date_helper.dart';
@@ -13,7 +12,8 @@ class SubscriptionsScreen extends ConsumerStatefulWidget {
   const SubscriptionsScreen({super.key});
 
   @override
-  ConsumerState<SubscriptionsScreen> createState() => _SubscriptionsScreenState();
+  ConsumerState<SubscriptionsScreen> createState() =>
+      _SubscriptionsScreenState();
 }
 
 class _SubscriptionsScreenState extends ConsumerState<SubscriptionsScreen> {

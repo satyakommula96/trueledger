@@ -17,7 +17,8 @@ class NetWorthDetailsScreen extends ConsumerStatefulWidget {
   const NetWorthDetailsScreen({super.key, required this.viewMode});
 
   @override
-  ConsumerState<NetWorthDetailsScreen> createState() => _NetWorthDetailsScreenState();
+  ConsumerState<NetWorthDetailsScreen> createState() =>
+      _NetWorthDetailsScreenState();
 }
 
 class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
@@ -426,7 +427,10 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
               fontSize: 32,
               fontWeight: FontWeight.w900,
             ),
-          ).animate().fadeIn(delay: 200.ms).scale(duration: 600.ms, curve: Curves.easeOutBack),
+          )
+              .animate()
+              .fadeIn(delay: 200.ms)
+              .scale(duration: 600.ms, curve: Curves.easeOutBack),
         ],
       ),
     ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2, end: 0);
@@ -496,7 +500,10 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
                   color: amountColor)),
         ],
       ),
-    ).animate().fadeIn(duration: 400.ms).slideX(begin: 0.05, end: 0, curve: Curves.easeOutQuint);
+    )
+        .animate()
+        .fadeIn(duration: 400.ms)
+        .slideX(begin: 0.05, end: 0, curve: Curves.easeOutQuint);
   }
 }
 

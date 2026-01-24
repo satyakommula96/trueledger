@@ -91,7 +91,9 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
 
               Navigator.pop(ctx);
               setState(() => _isLoading = true);
-              await ref.read(financialRepositoryProvider).payCreditCardBill(card.id, amount);
+              await ref
+                  .read(financialRepositoryProvider)
+                  .payCreditCardBill(card.id, amount);
               load();
             },
             child: const Text("RECORD"),

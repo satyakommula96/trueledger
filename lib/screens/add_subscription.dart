@@ -12,7 +12,8 @@ class AddSubscriptionScreen extends ConsumerStatefulWidget {
   const AddSubscriptionScreen({super.key, this.subscription});
 
   @override
-  ConsumerState<AddSubscriptionScreen> createState() => _AddSubscriptionScreenState();
+  ConsumerState<AddSubscriptionScreen> createState() =>
+      _AddSubscriptionScreenState();
 }
 
 class _AddSubscriptionScreenState extends ConsumerState<AddSubscriptionScreen> {

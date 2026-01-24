@@ -30,8 +30,8 @@ void main() {
     test('Calculates correct savings rate', () {
       final summary = MonthlySummary(
         totalIncome: 1000, // Income
-        totalFixed: 200,   // Expense
-        totalVariable: 200,// Expense
+        totalFixed: 200, // Expense
+        totalVariable: 200, // Expense
         totalSubscriptions: 100, // Expense
         totalInvestments: 0,
         // Expenses = 500. Remaining = 500. Savings Rate = 50%
@@ -62,7 +62,7 @@ void main() {
         'STABLE',
       );
 
-           expect(
+      expect(
         MonthlySummary(
           totalIncome: 5000,
           totalFixed: 0,

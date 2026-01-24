@@ -124,36 +124,36 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
                               _loadData();
                             },
                             borderRadius: BorderRadius.circular(12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                CategoryIcon(
-                                    type: type,
-                                    label: label,
-                                    semantic: semantic),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(label.toString().toUpperCase(),
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 13,
-                                              letterSpacing: 0.5,
-                                              color: colorScheme.onSurface)),
-                                      const SizedBox(height: 6),
-                                      Text(type.toUpperCase(),
-                                          style: TextStyle(
-                                              fontSize: 9,
-                                              color: semantic.secondaryText,
-                                              fontWeight: FontWeight.w900,
-                                              letterSpacing: 1)),
-                                    ],
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  CategoryIcon(
+                                      type: type,
+                                      label: label,
+                                      semantic: semantic),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(label.toString().toUpperCase(),
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 13,
+                                                letterSpacing: 0.5,
+                                                color: colorScheme.onSurface)),
+                                        const SizedBox(height: 6),
+                                        Text(type.toUpperCase(),
+                                            style: TextStyle(
+                                                fontSize: 9,
+                                                color: semantic.secondaryText,
+                                                fontWeight: FontWeight.w900,
+                                                letterSpacing: 1)),
+                                      ],
+                                    ),
                                   ),
-                                ),
                                   Text(CurrencyHelper.format(item.amount),
                                       style: TextStyle(
                                           fontWeight: FontWeight.w800,
@@ -165,8 +165,13 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
                               ),
                             ),
                           ),
-                        ).animate().fadeIn(delay: (20 * i).ms, duration: 400.ms).slideX(
-                            begin: 0.05, end: 0, curve: Curves.easeOutQuint);
+                        )
+                            .animate()
+                            .fadeIn(delay: (20 * i).ms, duration: 400.ms)
+                            .slideX(
+                                begin: 0.05,
+                                end: 0,
+                                curve: Curves.easeOutQuint);
                       },
                     );
                   }),

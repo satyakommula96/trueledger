@@ -45,10 +45,10 @@ class AppDatabase {
     // Use Application Documents Directory for reliable storage on Linux/Desktop
     final docsDir = await getApplicationDocumentsDirectory();
     final path = join(docsDir.path, 'tracker_enc_v11.db');
-    
+
     // Ensure FFI is initialized for Desktop (safe to call multiple times)
     if (kIsWeb) {
-       // Handle web factory if needed
+      // Handle web factory if needed
     } else if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
       sqfliteFfiInit();
       sqflite.databaseFactory = databaseFactoryFfi;
@@ -57,18 +57,18 @@ class AppDatabase {
     final key = await _getOrGenerateKey();
 
     if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
-      debugPrint('WARNING: Using unencrypted database on Desktop due to missing SQLCipher FFI support.');
+      debugPrint(
+          'WARNING: Using unencrypted database on Desktop due to missing SQLCipher FFI support.');
       return sqflite.databaseFactory.openDatabase(
         path,
         options: sqflite.OpenDatabaseOptions(
-          version: AppVersion.databaseVersion,
-          onCreate: (db, version) async {
-             await _createDb(db);
-          },
-          onUpgrade: (db, oldVersion, newVersion) async {
-             await _upgradeDb(db, oldVersion, newVersion);
-          }
-        ),
+            version: AppVersion.databaseVersion,
+            onCreate: (db, version) async {
+              await _createDb(db);
+            },
+            onUpgrade: (db, oldVersion, newVersion) async {
+              await _upgradeDb(db, oldVersion, newVersion);
+            }),
       );
     } else {
       return sqlcipher.openDatabase(
@@ -81,21 +81,20 @@ class AppDatabase {
     }
   }
 
-
   static Future<void> _createDb(sqflite.DatabaseExecutor db) async {
-        await db.execute(
-            'CREATE TABLE ${Schema.incomeSourcesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colSource} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colDate} TEXT)');
-        await db.execute(
-            'CREATE TABLE ${Schema.fixedExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colCategory} TEXT, ${Schema.colDate} TEXT)');
-        await db.execute(
-            'CREATE TABLE ${Schema.variableExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colDate} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colCategory} TEXT, ${Schema.colNote} TEXT, ${Schema.colTags} TEXT)');
-        await db.execute(
-            'CREATE TABLE ${Schema.investmentsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colActive} INTEGER, ${Schema.colType} TEXT, ${Schema.colDate} TEXT)');
-        await db.execute(
-            'CREATE TABLE ${Schema.subscriptionsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colBillingDate} TEXT, ${Schema.colActive} INTEGER, ${Schema.colDate} TEXT)');
-        await db.execute(
-            'CREATE TABLE ${Schema.retirementContributionsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colType} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colDate} TEXT)');
-        await db.execute('''
+    await db.execute(
+        'CREATE TABLE ${Schema.incomeSourcesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colSource} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colDate} TEXT)');
+    await db.execute(
+        'CREATE TABLE ${Schema.fixedExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colCategory} TEXT, ${Schema.colDate} TEXT)');
+    await db.execute(
+        'CREATE TABLE ${Schema.variableExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colDate} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colCategory} TEXT, ${Schema.colNote} TEXT, ${Schema.colTags} TEXT)');
+    await db.execute(
+        'CREATE TABLE ${Schema.investmentsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colActive} INTEGER, ${Schema.colType} TEXT, ${Schema.colDate} TEXT)');
+    await db.execute(
+        'CREATE TABLE ${Schema.subscriptionsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colBillingDate} TEXT, ${Schema.colActive} INTEGER, ${Schema.colDate} TEXT)');
+    await db.execute(
+        'CREATE TABLE ${Schema.retirementContributionsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colType} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colDate} TEXT)');
+    await db.execute('''
           CREATE TABLE ${Schema.creditCardsTable} (
             ${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT,
             ${Schema.colBank} TEXT,
@@ -106,7 +105,7 @@ class AppDatabase {
             ${Schema.colGenerationDate} TEXT
           )
         ''');
-        await db.execute('''
+    await db.execute('''
           CREATE TABLE ${Schema.loansTable} (
             ${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT,
             ${Schema.colName} TEXT,
@@ -119,32 +118,33 @@ class AppDatabase {
             ${Schema.colDate} TEXT
           )
         ''');
-        await db.execute(
-            'CREATE TABLE ${Schema.savingGoalsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colTargetAmount} INTEGER, ${Schema.colCurrentAmount} INTEGER)');
-        await db.execute(
-            'CREATE TABLE ${Schema.budgetsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colCategory} TEXT, ${Schema.colMonthlyLimit} INTEGER)');
+    await db.execute(
+        'CREATE TABLE ${Schema.savingGoalsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colTargetAmount} INTEGER, ${Schema.colCurrentAmount} INTEGER)');
+    await db.execute(
+        'CREATE TABLE ${Schema.budgetsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colCategory} TEXT, ${Schema.colMonthlyLimit} INTEGER)');
 
-        // Automation & Settings Table (v4)
-        await db.execute(
-            'CREATE TABLE sys_config (key TEXT PRIMARY KEY, value TEXT)');
+    // Automation & Settings Table (v4)
+    await db
+        .execute('CREATE TABLE sys_config (key TEXT PRIMARY KEY, value TEXT)');
   }
 
-  static Future<void> _upgradeDb(sqflite.DatabaseExecutor db, int oldVersion, int newVersion) async {
-        if (oldVersion < 3) {
-          try {
-            await db.execute(
-                "ALTER TABLE ${Schema.creditCardsTable} ADD COLUMN ${Schema.colGenerationDate} TEXT");
-          } catch (_) {}
-        }
+  static Future<void> _upgradeDb(
+      sqflite.DatabaseExecutor db, int oldVersion, int newVersion) async {
+    if (oldVersion < 3) {
+      try {
+        await db.execute(
+            "ALTER TABLE ${Schema.creditCardsTable} ADD COLUMN ${Schema.colGenerationDate} TEXT");
+      } catch (_) {}
+    }
 
-        if (oldVersion < 4) {
-          try {
-            await db.execute(
-                "ALTER TABLE ${Schema.variableExpensesTable} ADD COLUMN ${Schema.colTags} TEXT");
-            await db.execute(
-                'CREATE TABLE IF NOT EXISTS sys_config (key TEXT PRIMARY KEY, value TEXT)');
-          } catch (_) {}
-        }
+    if (oldVersion < 4) {
+      try {
+        await db.execute(
+            "ALTER TABLE ${Schema.variableExpensesTable} ADD COLUMN ${Schema.colTags} TEXT");
+        await db.execute(
+            'CREATE TABLE IF NOT EXISTS sys_config (key TEXT PRIMARY KEY, value TEXT)');
+      } catch (_) {}
+    }
   }
 
   static Future<void> clearData() async {
@@ -327,7 +327,14 @@ class AppDatabase {
     });
 
     // 8. Variable Expenses
-    final categories = ['Food', 'Transport', 'Shopping', 'Utility', 'Entertainment', 'Travel'];
+    final categories = [
+      'Food',
+      'Transport',
+      'Shopping',
+      'Utility',
+      'Entertainment',
+      'Travel'
+    ];
     for (int i = 0; i < 6; i++) {
       final monthDate = DateTime(now.year, now.month - i, 1);
       double multiplier = 1.0;
@@ -343,7 +350,8 @@ class AppDatabase {
           if (cat == 'Food') base = 800;
 
           final amount = (base * (0.8 + (0.4 * (j % 2))) * multiplier).toInt();
-          final entryDate = DateTime(monthDate.year, monthDate.month, 1 + (j * 5));
+          final entryDate =
+              DateTime(monthDate.year, monthDate.month, 1 + (j * 5));
 
           await database.insert(Schema.variableExpensesTable, {
             Schema.colDate: entryDate.toIso8601String(),
@@ -356,10 +364,14 @@ class AppDatabase {
     }
 
     // 9. Budgets
-    await database.insert(Schema.budgetsTable, {Schema.colCategory: 'Food', Schema.colMonthlyLimit: 25000});
-    await database.insert(Schema.budgetsTable, {Schema.colCategory: 'Transport', Schema.colMonthlyLimit: 15000});
-    await database.insert(Schema.budgetsTable, {Schema.colCategory: 'Shopping', Schema.colMonthlyLimit: 30000});
-    await database.insert(Schema.budgetsTable, {Schema.colCategory: 'Entertainment', Schema.colMonthlyLimit: 10000});
+    await database.insert(Schema.budgetsTable,
+        {Schema.colCategory: 'Food', Schema.colMonthlyLimit: 25000});
+    await database.insert(Schema.budgetsTable,
+        {Schema.colCategory: 'Transport', Schema.colMonthlyLimit: 15000});
+    await database.insert(Schema.budgetsTable,
+        {Schema.colCategory: 'Shopping', Schema.colMonthlyLimit: 30000});
+    await database.insert(Schema.budgetsTable,
+        {Schema.colCategory: 'Entertainment', Schema.colMonthlyLimit: 10000});
 
     // 10. Goals
     await database.insert(Schema.savingGoalsTable, {

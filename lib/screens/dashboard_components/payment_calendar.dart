@@ -200,7 +200,13 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
                     ],
                   ),
                 ),
-              ).animate().fadeIn(delay: (index % 7 * 50).ms, duration: 400.ms).scale(begin: const Offset(0.8, 0.8), end: const Offset(1, 1), curve: Curves.easeOutBack);
+              )
+                  .animate()
+                  .fadeIn(delay: (index % 7 * 50).ms, duration: 400.ms)
+                  .scale(
+                      begin: const Offset(0.8, 0.8),
+                      end: const Offset(1, 1),
+                      curve: Curves.easeOutBack);
             },
           )
         ],

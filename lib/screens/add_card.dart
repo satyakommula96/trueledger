@@ -11,7 +11,8 @@ class AddCreditCardScreen extends ConsumerStatefulWidget {
   const AddCreditCardScreen({super.key});
 
   @override
-  ConsumerState<AddCreditCardScreen> createState() => _AddCreditCardScreenState();
+  ConsumerState<AddCreditCardScreen> createState() =>
+      _AddCreditCardScreenState();
 }
 
 class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {

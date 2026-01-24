@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-
 import '../logic/currency_helper.dart';
 import '../theme/theme.dart';
 import 'month_detail.dart';
@@ -14,7 +13,8 @@ class MonthlyHistoryScreen extends ConsumerStatefulWidget {
   const MonthlyHistoryScreen({super.key});
 
   @override
-  ConsumerState<MonthlyHistoryScreen> createState() => _MonthlyHistoryScreenState();
+  ConsumerState<MonthlyHistoryScreen> createState() =>
+      _MonthlyHistoryScreenState();
 }
 
 class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
@@ -123,8 +123,10 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
                           ),
                         ),
                       ),
-                    ).animate().fadeIn(delay: (100 * i).ms, duration: 600.ms).slideY(
-                        begin: 0.1, end: 0, curve: Curves.easeOutQuint);
+                    )
+                        .animate()
+                        .fadeIn(delay: (100 * i).ms, duration: 600.ms)
+                        .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint);
                   },
                 ),
     );

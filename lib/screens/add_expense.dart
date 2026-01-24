@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 import '../logic/currency_helper.dart';
 import '../theme/theme.dart';
 

@@ -65,10 +65,12 @@ class HealthMeter extends StatelessWidget {
                       tween: Tween<double>(begin: 0, end: score / 100),
                       duration: 1500.ms,
                       curve: Curves.easeOutCubic,
-                      builder: (context, value, child) => CircularProgressIndicator(
+                      builder: (context, value, child) =>
+                          CircularProgressIndicator(
                         value: value,
                         strokeWidth: 8,
-                        backgroundColor: semantic.divider.withValues(alpha: 0.2),
+                        backgroundColor:
+                            semantic.divider.withValues(alpha: 0.2),
                         valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
                         strokeCap: StrokeCap.round,
                       ),
@@ -83,7 +85,10 @@ class HealthMeter extends StatelessWidget {
                       fontWeight: FontWeight.w900,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
-                  ).animate().scale(delay: 400.ms, duration: 400.ms, curve: Curves.easeOutBack),
+                  ).animate().scale(
+                      delay: 400.ms,
+                      duration: 400.ms,
+                      curve: Curves.easeOutBack),
                 ),
               ],
             ),
@@ -95,7 +100,9 @@ class HealthMeter extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(icon, size: 14, color: scoreColor).animate().fadeIn(delay: 600.ms),
+                    Icon(icon, size: 14, color: scoreColor)
+                        .animate()
+                        .fadeIn(delay: 600.ms),
                     const SizedBox(width: 6),
                     Text(
                       label,

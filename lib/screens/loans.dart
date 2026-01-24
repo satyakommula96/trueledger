@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 import '../models/models.dart';
 import '../logic/currency_helper.dart';
 import '../logic/date_helper.dart';

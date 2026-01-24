@@ -24,7 +24,7 @@ void main() {
   setUp(() {
     mockRepo = MockFinancialRepository();
     // Initialize static notifier for test
-    CurrencyHelper.currencyNotifier.value = '₹'; 
+    CurrencyHelper.currencyNotifier.value = '₹';
   });
 
   testWidgets('Dashboard renders loading state then data',
@@ -41,8 +41,7 @@ void main() {
 
     // 2. Stub the repository
     // IMPORTANT: Provide answers for ALL calls made by dashboardProvider
-    when(() => mockRepo.getMonthlySummary())
-        .thenAnswer((_) async => summary);
+    when(() => mockRepo.getMonthlySummary()).thenAnswer((_) async => summary);
     when(() => mockRepo.getCategorySpending())
         .thenAnswer((_) => Future.value(<Map<String, dynamic>>[]));
     when(() => mockRepo.getBudgets())
@@ -72,20 +71,20 @@ void main() {
 
     // 5. Allow AsyncValue to resolve
     await tester.runAsync(() async {
-      await tester.pump(); 
+      await tester.pump();
       await tester.pump(const Duration(seconds: 2));
     });
-    
+
     await tester.pump(); // Frame
 
     // Debugging: Verify high-level widgets
     expect(find.byType(Dashboard), findsOneWidget);
     expect(find.byType(Scaffold), findsOneWidget);
     expect(find.byType(CustomScrollView), findsOneWidget);
-    
+
     // Check if Animate widgets are present (WealthHero is wrapped in one)
     // There are multiple Animate widgets in the list
-    expect(find.byType(Animate), findsWidgets); 
+    expect(find.byType(Animate), findsWidgets);
 
     // Scroll just in case layout is weird
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -100));

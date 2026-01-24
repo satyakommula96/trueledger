@@ -13,7 +13,8 @@ class EditCreditCardScreen extends ConsumerStatefulWidget {
   const EditCreditCardScreen({super.key, required this.card});
 
   @override
-  ConsumerState<EditCreditCardScreen> createState() => _EditCreditCardScreenState();
+  ConsumerState<EditCreditCardScreen> createState() =>
+      _EditCreditCardScreenState();
 }
 
 class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
