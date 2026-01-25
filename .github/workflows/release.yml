@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libsecret-1-dev libjsoncpp-dev
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -46,6 +46,34 @@ jobs:
         with:
           name: TrueCash-Linux-deb
           path: TrueCash.deb
+
+  build-android:
+    name: Build Android (APK)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrueCash-Android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
 
   build-windows:
     name: Build Windows (Exe)
@@ -121,7 +149,7 @@ jobs:
 
   release:
     name: Create Release
-    needs: [build-linux, build-windows, build-macos]
+    needs: [build-linux, build-android, build-windows, build-macos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -134,6 +162,11 @@ jobs:
         with:
           name: TrueCash-Linux-deb
 
+      - name: Download Android Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: TrueCash-Android-apk
+
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
@@ -144,12 +177,16 @@ jobs:
         with:
           name: TrueCash-macOS-dmg
 
+      - name: Rename APK
+        run: mv app-release.apk TrueCash.apk
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             TrueCash.deb
+            TrueCash.apk
             TrueCash.exe
             TrueCash.dmg
           generate_release_notes: true
