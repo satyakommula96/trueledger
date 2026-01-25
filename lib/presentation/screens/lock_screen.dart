@@ -9,7 +9,8 @@ import 'package:truecash/presentation/providers/dashboard_provider.dart';
 import 'package:truecash/presentation/providers/analysis_provider.dart';
 
 class LockScreen extends ConsumerStatefulWidget {
-  const LockScreen({super.key});
+  final int? expectedPinLength;
+  const LockScreen({super.key, this.expectedPinLength});
 
   @override
   ConsumerState<LockScreen> createState() => _LockScreenState();
@@ -18,12 +19,15 @@ class LockScreen extends ConsumerStatefulWidget {
 class _LockScreenState extends ConsumerState<LockScreen> {
   String _pin = "";
   bool _isError = false;
-  int _pinLength = 4;
+  late int _pinLength;
 
   @override
   void initState() {
     super.initState();
-    _loadPinLength();
+    _pinLength = widget.expectedPinLength ?? 4;
+    if (widget.expectedPinLength == null) {
+      _loadPinLength();
+    }
   }
 
   Future<void> _loadPinLength() async {

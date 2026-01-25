@@ -21,8 +21,8 @@ class StartupScreen extends ConsumerWidget {
 
         if (!seen) {
           return const IntroScreen();
-        } else if (pin != null && pin.length == 4) {
-          return const LockScreen();
+        } else if (pin != null && pin.isNotEmpty) {
+          return LockScreen(expectedPinLength: pin.length);
         } else {
           return const Dashboard();
         }
