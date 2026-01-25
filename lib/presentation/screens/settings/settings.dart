@@ -906,7 +906,7 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 InkWell(
                   onTap: () => launchUrl(Uri.parse(
-                      "https://satyakommula.github.io/truecash/privacy")),
+                      "https://satyakommula96.github.io/truecash/privacy/")),
                   child: const Text(
                     "Privacy Policy",
                     style: TextStyle(
