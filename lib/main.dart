@@ -12,8 +12,13 @@ import 'package:truecash/presentation/screens/startup/startup_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Initial Desktop Setup
-  if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+  // 1. Initial Desktop Setup (Linux & Windows)
+  if (Platform.isLinux || Platform.isWindows) {
+
+    // Note: For Windows, we assume sqlcipher.dll is in the same directory or path
+    // If you want to force it, use:
+    // open.overrideFor(OperatingSystem.windows, () => DynamicLibrary.open('sqlcipher.dll'));
+
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }

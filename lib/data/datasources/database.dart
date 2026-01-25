@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:sqflite_sqlcipher/sqflite.dart' as sqlcipher;
-import 'package:sqflite/sqflite.dart' as sqflite;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart' as sqflite_ffi;
+import 'package:sqflite_common/sqlite_api.dart' as common;
 import 'package:path/path.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
@@ -13,12 +14,12 @@ import 'database_migrations.dart';
 import 'package:truecash/core/config/version.dart';
 
 class AppDatabase {
-  static sqlcipher.Database? _db;
-  static Future<sqlcipher.Database>? _initializationInstance;
+  static common.Database? _db;
+  static Future<common.Database>? _initializationInstance;
   static const _storage = FlutterSecureStorage();
   static const _keyParams = 'db_key';
 
-  static Future<sqlcipher.Database> get db async {
+  static Future<common.Database> get db async {
     if (_db != null) return _db!;
     _initializationInstance ??= _initDb();
     _db = await _initializationInstance;
@@ -42,7 +43,7 @@ class AppDatabase {
     }
   }
 
-  static Future<sqlcipher.Database> _initDb() async {
+  static Future<common.Database> _initDb() async {
     // Use Application Documents Directory for reliable storage on Linux/Desktop
     final docsDir = await getApplicationDocumentsDirectory();
     final path =
@@ -54,9 +55,9 @@ class AppDatabase {
 
     if (Platform.isLinux || Platform.isWindows) {
       try {
-        return await sqflite.databaseFactory.openDatabase(
+        return await sqflite_ffi.databaseFactoryFfi.openDatabase(
           path,
-          options: sqflite.OpenDatabaseOptions(
+          options: common.OpenDatabaseOptions(
               version: AppVersion.databaseVersion,
               onConfigure: (db) async {
                 // This sets the encryption key for SQLCipher on Desktop (Linux/Windows)
@@ -102,7 +103,7 @@ class AppDatabase {
     }
   }
 
-  static Future<sqlcipher.Database> _handleDatabaseReset(
+  static Future<common.Database> _handleDatabaseReset(
       String path, String key,
       {required bool isDesktop}) async {
     try {
@@ -116,9 +117,9 @@ class AppDatabase {
     }
 
     if (isDesktop) {
-      return await sqflite.databaseFactory.openDatabase(
+      return await sqflite_ffi.databaseFactoryFfi.openDatabase(
         path,
-        options: sqflite.OpenDatabaseOptions(
+        options: common.OpenDatabaseOptions(
             version: AppVersion.databaseVersion,
             onConfigure: (db) async {
               await db.execute("PRAGMA key = '$key';");
@@ -137,7 +138,7 @@ class AppDatabase {
     }
   }
 
-  static Future<void> _createDb(sqflite.DatabaseExecutor db) async {
+  static Future<void> _createDb(common.DatabaseExecutor db) async {
     await db.execute(
         'CREATE TABLE ${Schema.incomeSourcesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colSource} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colDate} TEXT)');
     await db.execute(
@@ -180,8 +181,8 @@ class AppDatabase {
   }
 
   static Future<void> _upgradeDb(
-      sqflite.DatabaseExecutor db, int oldVersion, int newVersion) async {
-    final database = db as sqflite.Database;
+      common.DatabaseExecutor db, int oldVersion, int newVersion) async {
+    final database = db as common.Database;
     for (var migration in appMigrations) {
       if (migration.version > oldVersion && migration.version <= newVersion) {
         try {
