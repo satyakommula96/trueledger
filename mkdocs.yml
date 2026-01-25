@@ -8,6 +8,8 @@ repo_name: satyakommula96/truecash
 docs_dir: .
 site_dir: ../site
 use_directory_urls: true
+extra_css:
+  - stylesheets/extra.css
 
 theme:
   name: material
@@ -15,19 +17,21 @@ theme:
     # Light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: indigo
+      primary: emerald
+      accent: emerald
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     # Dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: emerald
+      accent: emerald
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
   features:
     - navigation.instant
     - navigation.tracking
@@ -41,6 +45,9 @@ theme:
     - content.code.annotate
   icon:
     repo: fontawesome/brands/github
+  font:
+    text: Outfit
+    code: Roboto Mono
 
 markdown_extensions:
   - admonition
@@ -55,6 +62,9 @@ markdown_extensions:
   - tables
   - attr_list
   - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - toc:
       permalink: true
 
