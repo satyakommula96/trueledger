@@ -78,16 +78,24 @@ flutter run
 
 #### Linux
 ```bash
-sudo apt-get install libsecret-1-dev libjsoncpp-dev libsqlite3-dev
+sudo apt-get install libsecret-1-dev libjsoncpp-dev libsqlite3-dev libsqlcipher-dev libssl-dev
 ```
 
 #### macOS
 ```bash
+# Ensure Xcode Command Line Tools are installed
 xcode-select --install
+
+# Install SQLCipher for database encryption
+brew install sqlcipher
 ```
 
 #### Windows
-Ensure Visual Studio 2022 with C++ tools is installed.
+1. Ensure Visual Studio 2022 with C++ tools is installed.
+2. For database encryption, ensure a **`sqlcipher.dll`** is available. This can be:
+   - Obtained from a prebuilt binary distribution (e.g., [Zetetic](https://www.zetetic.net/sqlcipher/))
+   - Installed via a package manager like `vcpkg`
+   - Bundled in your application directory for release.
 
 ## 🏗️ Architecture
 

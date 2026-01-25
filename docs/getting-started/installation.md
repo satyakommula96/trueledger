@@ -55,7 +55,9 @@ flutter pub get
     sudo apt-get install -y \
       libsecret-1-dev \
       libjsoncpp-dev \
-      libsqlite3-dev
+      libsqlite3-dev \
+      libsqlcipher-dev \
+      libssl-dev
     
     flutter run -d linux
     ```
@@ -66,6 +68,9 @@ flutter pub get
     # Ensure Xcode Command Line Tools are installed
     xcode-select --install
     
+    # Install SQLCipher for database encryption
+    brew install sqlcipher
+    
     flutter run -d macos
     ```
 
@@ -73,6 +78,7 @@ flutter pub get
 
     ```bash
     # Ensure Visual Studio 2022 with C++ tools is installed
+    # Note: For encryption, provide sqlcipher.dll (e.g., from Zetetic or vcpkg) in the application directory
     flutter run -d windows
     ```
 

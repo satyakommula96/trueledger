@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:math';
 import 'dart:convert';
+
 import 'schema.dart';
 import 'database_migrations.dart';
 import 'package:truecash/core/config/version.dart';
@@ -47,53 +48,92 @@ class AppDatabase {
     final path =
         join(docsDir.path, 'tracker_enc_v${AppVersion.databaseVersion}.db');
 
+    debugPrint('Initializing database at: $path');
+
     final key = await _getOrGenerateKey();
 
-    if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
-      debugPrint(
-          'WARNING: Using unencrypted database on Desktop due to missing SQLCipher FFI support.');
-      return sqflite.databaseFactory.openDatabase(
-        path,
-        options: sqflite.OpenDatabaseOptions(
-            version: AppVersion.databaseVersion,
-            onCreate: (db, version) async {
-              await _createDb(db);
-            },
-            onUpgrade: (db, oldVersion, newVersion) async {
-              await _upgradeDb(db, oldVersion, newVersion);
-            }),
-      );
-    } else {
+    if (Platform.isLinux || Platform.isWindows) {
       try {
-        return await sqlcipher.openDatabase(
+        return await sqflite.databaseFactory.openDatabase(
           path,
-          password: key, // ENCRYPTION ENABLED
-          version: AppVersion.databaseVersion,
-          onCreate: (db, _) => _createDb(db),
-          onUpgrade: (db, old, newV) => _upgradeDb(db, old, newV),
+          options: sqflite.OpenDatabaseOptions(
+              version: AppVersion.databaseVersion,
+              onConfigure: (db) async {
+                // This sets the encryption key for SQLCipher on Desktop (Linux/Windows)
+                await db.execute("PRAGMA key = '$key';");
+                debugPrint(
+                    'SQLCipher encryption applied to ${Platform.operatingSystem} database.');
+              },
+              onCreate: (db, version) async {
+                await _createDb(db);
+                debugPrint('Database tables created successfully.');
+              },
+              onUpgrade: (db, oldVersion, newVersion) async {
+                await _upgradeDb(db, oldVersion, newVersion);
+              }),
         );
       } catch (e) {
         debugPrint(
-            'CRITICAL: Database open failed ($e). Attempting recovery by resetting database...');
-        try {
-          final file = File(path);
-          if (await file.exists()) {
-            await file.delete();
-            debugPrint('Corrupted database file deleted.');
-          }
-        } catch (delErr) {
-          debugPrint('Failed to delete database file: $delErr');
-        }
-
-        // Retry creating a fresh database
-        return await sqlcipher.openDatabase(
+            'CRITICAL: Desktop database open failed ($e). Attempting recovery...');
+        return await _handleDatabaseReset(path, key, isDesktop: true);
+      }
+    } else {
+      // Android / iOS / macOS
+      try {
+        final db = await sqlcipher.openDatabase(
           path,
-          password: key,
+          password: key, // ENCRYPTION ENABLED
           version: AppVersion.databaseVersion,
-          onCreate: (db, _) => _createDb(db),
+          onCreate: (db, _) async {
+            await _createDb(db);
+            debugPrint('Database tables created successfully.');
+          },
           onUpgrade: (db, old, newV) => _upgradeDb(db, old, newV),
         );
+        debugPrint(
+            'Secure SQLCipher database opened successfully on ${Platform.operatingSystem}.');
+        return db;
+      } catch (e) {
+        debugPrint(
+            'CRITICAL: ${Platform.operatingSystem} database open failed ($e). Attempting recovery...');
+        return await _handleDatabaseReset(path, key,
+            isDesktop: Platform.isWindows || Platform.isLinux);
       }
+    }
+  }
+
+  static Future<sqlcipher.Database> _handleDatabaseReset(
+      String path, String key,
+      {required bool isDesktop}) async {
+    try {
+      final file = File(path);
+      if (await file.exists()) {
+        await file.delete();
+        debugPrint('Corrupted database file deleted at: $path');
+      }
+    } catch (delErr) {
+      debugPrint('Failed to delete database file: $delErr');
+    }
+
+    if (isDesktop) {
+      return await sqflite.databaseFactory.openDatabase(
+        path,
+        options: sqflite.OpenDatabaseOptions(
+            version: AppVersion.databaseVersion,
+            onConfigure: (db) async {
+              await db.execute("PRAGMA key = '$key';");
+            },
+            onCreate: (db, version) => _createDb(db),
+            onUpgrade: (db, old, newV) => _upgradeDb(db, old, newV)),
+      );
+    } else {
+      return await sqlcipher.openDatabase(
+        path,
+        password: key,
+        version: AppVersion.databaseVersion,
+        onCreate: (db, _) => _createDb(db),
+        onUpgrade: (db, old, newV) => _upgradeDb(db, old, newV),
+      );
     }
   }
 
