@@ -1,9 +1,3 @@
-Here’s a **Google Play + Apple App Store–optimized Privacy Policy**.
-It is concise, compliant, reviewer-friendly, and aligned with your actual implementation.
-You can copy-paste this as-is.
-
----
-
 # Privacy Policy
 
 TrueCash is designed with a **privacy-first, offline-only** architecture. Your financial data remains entirely on your device and under your control at all times.
