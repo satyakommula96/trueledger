@@ -116,16 +116,13 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
   Future<List<Budget>> getBudgets() async {
     final db = await AppDatabase.db;
-    final budgetData = await db.query('budgets');
-    List<Budget> processedBudgets = [];
-    for (var b in budgetData) {
-      final spent = Sqflite.firstIntValue(await db.rawQuery(
-              'SELECT SUM(amount) FROM variable_expenses WHERE category = ?',
-              [b['category']])) ??
-          0;
-      processedBudgets.add(Budget.fromMap({...b, 'spent': spent}));
-    }
-    return processedBudgets;
+    final res = await db.rawQuery('''
+      SELECT b.*, COALESCE(SUM(ve.amount), 0) as spent
+      FROM budgets b
+      LEFT JOIN variable_expenses ve ON b.category = ve.category
+      GROUP BY b.id
+    ''');
+    return res.map((e) => Budget.fromMap(e)).toList();
   }
 
   @override
@@ -245,59 +242,50 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
   Future<List<Map<String, dynamic>>> getMonthlyHistory([int? year]) async {
     final db = await AppDatabase.db;
+    final yearStr = year?.toString() ?? "";
 
-    // Construct query dynamically to filter efficiently
-    final tables = [
-      'variable_expenses',
-      'income_sources',
-      'fixed_expenses',
-      'investments'
-    ];
-    List<String> parts = [];
-    List<dynamic> args = [];
-    String yearStr = year?.toString() ?? "";
+    final query = '''
+      SELECT 
+        month,
+        SUM(income) as income,
+        SUM(expenses) as expenses,
+        SUM(invested) as invested
+      FROM (
+        SELECT substr(date, 1, 7) as month, amount as income, 0 as expenses, 0 as invested FROM income_sources WHERE ? = '' OR substr(date, 1, 4) = ?
+        UNION ALL
+        SELECT substr(date, 1, 7) as month, 0 as income, amount as expenses, 0 as invested FROM variable_expenses WHERE ? = '' OR substr(date, 1, 4) = ?
+        UNION ALL
+        SELECT substr(date, 1, 7) as month, 0 as income, amount as expenses, 0 as invested FROM fixed_expenses WHERE ? = '' OR substr(date, 1, 4) = ?
+        UNION ALL
+        SELECT substr(date, 1, 7) as month, 0 as income, 0 as expenses, amount as invested FROM investments WHERE ? = '' OR substr(date, 1, 4) = ?
+      )
+      GROUP BY month
+      ORDER BY month DESC
+    ''';
 
-    for (var t in tables) {
-      if (year != null) {
-        parts.add(
-            "SELECT DISTINCT substr(date, 1, 7) as month FROM $t WHERE substr(date, 1, 4) = ?");
-        args.add(yearStr);
-      } else {
-        parts.add("SELECT DISTINCT substr(date, 1, 7) as month FROM $t");
-      }
-    }
+    final res = await db.rawQuery(query, [
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr
+    ]);
 
-    final fullQuery = "${parts.join(' UNION ')} ORDER BY month DESC";
-    final monthsQuery = await db.rawQuery(fullQuery, args);
-
-    List<Map<String, dynamic>> summaries = [];
-    for (var m in monthsQuery) {
-      final month = m['month'].toString();
-      final income = Sqflite.firstIntValue(await db.rawQuery(
-              'SELECT SUM(amount) FROM income_sources WHERE substr(date, 1, 7) = ?',
-              [month])) ??
-          0;
-      final variable = Sqflite.firstIntValue(await db.rawQuery(
-              'SELECT SUM(amount) FROM variable_expenses WHERE substr(date, 1, 7) = ?',
-              [month])) ??
-          0;
-      final fixed = Sqflite.firstIntValue(await db.rawQuery(
-              'SELECT SUM(amount) FROM fixed_expenses WHERE substr(date, 1, 7) = ?',
-              [month])) ??
-          0;
-      final invested = Sqflite.firstIntValue(await db.rawQuery(
-              'SELECT SUM(amount) FROM investments WHERE substr(date, 1, 7) = ?',
-              [month])) ??
-          0;
-      summaries.add({
-        'month': month,
-        'income': income,
-        'expenses': variable + fixed,
-        'invested': invested,
-        'net': income - (variable + fixed + invested)
-      });
-    }
-    return summaries;
+    return res.map((row) {
+      final income = row['income'] as num? ?? 0;
+      final expenses = row['expenses'] as num? ?? 0;
+      final invested = row['invested'] as num? ?? 0;
+      return {
+        'month': row['month'],
+        'income': income.toInt(),
+        'expenses': expenses.toInt(),
+        'invested': invested.toInt(),
+        'net': (income - (expenses + invested)).toInt(),
+      };
+    }).toList();
   }
 
   @override
