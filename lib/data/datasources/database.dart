@@ -53,7 +53,7 @@ class AppDatabase {
 
     final key = await _getOrGenerateKey();
 
-    if (Platform.isLinux || Platform.isWindows) {
+    if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
       try {
         return await sqflite_ffi.databaseFactoryFfi.openDatabase(
           path,
@@ -98,7 +98,8 @@ class AppDatabase {
         debugPrint(
             'CRITICAL: ${Platform.operatingSystem} database open failed ($e). Attempting recovery...');
         return await _handleDatabaseReset(path, key,
-            isDesktop: Platform.isWindows || Platform.isLinux);
+            isDesktop:
+                Platform.isWindows || Platform.isLinux || Platform.isMacOS);
       }
     }
   }
