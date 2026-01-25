@@ -7,7 +7,7 @@ repo_name: satyakommula96/truecash
 
 docs_dir: .
 site_dir: ../site
-use_directory_urls: false
+use_directory_urls: true
 
 theme:
   name: material
@@ -65,6 +65,7 @@ plugins:
 
 nav:
   - Home: index.md
+  - Privacy Policy: privacy.md
   - Getting Started:
       - Installation: getting-started/installation.md
       - Quick Start: getting-started/quick-start.md

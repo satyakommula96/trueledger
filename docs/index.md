@@ -6,7 +6,7 @@ Welcome to the **TrueCash** documentation! TrueCash is a privacy-first, offline-
 
 - **💰 Complete Financial Tracking**: Track income, expenses, budgets, and saving goals
 - **🤖 AI-Powered Insights**: Get intelligent forecasts and personalized financial advice
-- **🔒 Privacy First**: All data stored locally with optional encryption
+- **🔒 Privacy First**: All data stored locally with optional encryption ([View Policy](privacy.md))
 - **📊 Beautiful Analytics**: Visualize your financial health with interactive charts
 - **🌙 Modern UI**: Dark mode, smooth animations, and premium design
 - **📱 Cross-Platform**: Available on Android, iOS, Linux, macOS, Windows, and Web

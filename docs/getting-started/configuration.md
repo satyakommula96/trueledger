@@ -50,6 +50,7 @@ Toggle the global privacy mask to hide sensitive financial numbers in public.
 - **Enabled**: All monetary values are masked (e.g., `****`)
 - **Disabled**: Values are shown normally
 - **Persistence**: Setting is remembered across app restarts
+- **Policy**: For full details, see the [Privacy Policy](../privacy.md).
 
 ## Security Settings
 
