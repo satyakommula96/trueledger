@@ -5,9 +5,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:truecash/domain/models/models.dart';
 import 'package:truecash/domain/repositories/i_financial_repository.dart';
 import 'package:truecash/presentation/providers/repository_providers.dart';
-import 'package:truecash/presentation/screens/dashboard.dart';
+import 'package:truecash/presentation/screens/dashboard/dashboard.dart';
 import 'package:truecash/core/theme/theme.dart';
-import 'package:truecash/core/utils/currency_helper.dart';
+import 'package:truecash/core/utils/currency_formatter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 // Mocks
@@ -24,7 +24,7 @@ void main() {
   setUp(() {
     mockRepo = MockFinancialRepository();
     // Initialize static notifier for test
-    CurrencyHelper.currencyNotifier.value = '₹';
+    CurrencyFormatter.currencyNotifier.value = '₹';
   });
 
   testWidgets('Dashboard renders loading state then data',

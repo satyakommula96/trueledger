@@ -7,7 +7,7 @@ import 'dart:ui';
 
 import 'package:truecash/core/theme/theme.dart';
 import 'package:truecash/core/providers/shared_prefs_provider.dart';
-import 'package:truecash/presentation/screens/startup_screen.dart';
+import 'package:truecash/presentation/screens/startup/startup_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

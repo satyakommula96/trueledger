@@ -1,7 +1,7 @@
 import 'package:truecash/core/error/failure.dart';
 import 'package:truecash/core/utils/result.dart';
 import 'package:truecash/data/datasources/database.dart';
-import 'package:truecash/core/utils/currency_helper.dart';
+import 'package:truecash/core/utils/currency_formatter.dart';
 import 'package:truecash/core/services/notification_service.dart';
 import 'package:truecash/domain/repositories/i_financial_repository.dart';
 import 'usecase_base.dart';
@@ -21,7 +21,7 @@ class StartupUseCase extends UseCase<void, NoParams> {
       await NotificationService().init();
 
       // 3. Load Currency Preference
-      await CurrencyHelper.load();
+      await CurrencyFormatter.load();
 
       // 4. Check for recurring transactions
       await repository.checkAndProcessRecurring();
