@@ -106,7 +106,8 @@ class _EditAssetScreenState extends ConsumerState<EditAssetScreen> {
     final amount = int.tryParse(amountText);
     if (amount == null || amount < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a valid non-negative value")),
+        const SnackBar(
+            content: Text("Please enter a valid non-negative value")),
       );
       return;
     }
