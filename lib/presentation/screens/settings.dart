@@ -142,25 +142,48 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _seedData(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+    final option = await showDialog<String>(
         context: context,
-        builder: (context) => AlertDialog(
-              title: const Text("Generate Sample Data?"),
-              content: const Text(
-                  "This will add professional demo entries to your ledger. Existing data will not be deleted."),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text("CANCEL")),
-                TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text("CONTINUE")),
+        builder: (context) => SimpleDialog(
+              title: const Text("Select Data Scenario"),
+              children: [
+                SimpleDialogOption(
+                  onPressed: () => Navigator.pop(context, 'standard'),
+                  child: const ListTile(
+                    leading: Icon(Icons.dvr_rounded, color: Colors.blue),
+                    title: Text("Standard Demo"),
+                    subtitle: Text("Mixed data over 2 years"),
+                  ),
+                ),
+                SimpleDialogOption(
+                  onPressed: () => Navigator.pop(context, 'positive'),
+                  child: const ListTile(
+                    leading: Icon(Icons.trending_up, color: Colors.green),
+                    title: Text("Wealth Builder"),
+                    subtitle: Text("High Income, Low Expense"),
+                  ),
+                ),
+                SimpleDialogOption(
+                  onPressed: () => Navigator.pop(context, 'negative'),
+                  child: const ListTile(
+                    leading: Icon(Icons.trending_down, color: Colors.red),
+                    title: Text("Debt Crisis"),
+                    subtitle: Text("Low Income, High Expense"),
+                  ),
+                ),
               ],
             ));
 
-    if (confirmed == true) {
+    if (option != null) {
       final repo = ref.read(financialRepositoryProvider);
-      await repo.seedData();
+
+      if (option == 'standard') {
+        await repo.seedData();
+      } else if (option == 'positive') {
+        await repo.seedPositiveData();
+      } else if (option == 'negative') {
+        await repo.seedNegativeData();
+      }
 
       // Refresh providers
       ref.invalidate(dashboardProvider);
@@ -174,8 +197,8 @@ class SettingsScreen extends ConsumerWidget {
       }
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("Sample data generated successfully")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("Generated ${option.toUpperCase()} data scenario")));
         Navigator.pop(context);
       }
     }

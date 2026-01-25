@@ -353,6 +353,16 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
+  Future<void> seedPositiveData() async {
+    await AppDatabase.seedPositiveData();
+  }
+
+  @override
+  Future<void> seedNegativeData() async {
+    await AppDatabase.seedNegativeData();
+  }
+
+  @override
   Future<void> seedLargeData(int count) async {
     await AppDatabase.seedLargeData(count: count);
   }

@@ -20,6 +20,8 @@ abstract class IFinancialRepository {
   Future<void> updateBudget(int id, int monthlyLimit);
   Future<List<Map<String, dynamic>>> getAllValues(String table);
   Future<void> seedData();
+  Future<void> seedPositiveData();
+  Future<void> seedNegativeData();
   Future<void> seedLargeData(int count);
   Future<void> clearData();
   Future<void> addCreditCard(String bank, int creditLimit, int statementBalance,

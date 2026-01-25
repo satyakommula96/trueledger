@@ -431,6 +431,132 @@ class AppDatabase {
     debugPrint("Seeded 2 years of financial data successfully.");
   }
 
+  static Future<void> seedPositiveData() async {
+    await clearData();
+    final database = await db;
+    final now = DateTime.now();
+    final batch = database.batch();
+
+    // 1. High Income Profile
+    batch.insert(Schema.incomeSourcesTable, {
+      Schema.colSource: 'High Tech Salary',
+      Schema.colAmount: 850000, // Very High Income
+      Schema.colDate: now.toIso8601String()
+    });
+    batch.insert(Schema.incomeSourcesTable, {
+      Schema.colSource: 'Side Business',
+      Schema.colAmount: 120000,
+      Schema.colDate: now.toIso8601String()
+    });
+
+    // 2. Controlled Expenses
+    // Fixed
+    batch.insert(Schema.fixedExpensesTable, {
+      Schema.colName: 'Rent',
+      Schema.colAmount: 45000,
+      Schema.colCategory: 'Housing',
+      Schema.colDate: now.toIso8601String()
+    });
+
+    // Some variable expenses
+    for (int i = 0; i < 15; i++) {
+      batch.insert(Schema.variableExpensesTable, {
+        Schema.colDate: now.subtract(Duration(days: i * 2)).toIso8601String(),
+        Schema.colAmount: 500 + (i * 100),
+        Schema.colCategory: 'Food',
+        Schema.colNote: 'Meal $i',
+      });
+    }
+
+    // 3. Wealth Assets (Net Worth Builders)
+    batch.insert(Schema.investmentsTable, {
+      Schema.colName: 'Growth Fund',
+      Schema.colAmount: 5000000, // 50L
+      Schema.colActive: 1,
+      Schema.colType: 'Mutual Fund',
+      Schema.colDate: now.toIso8601String()
+    });
+    batch.insert(Schema.investmentsTable, {
+      Schema.colName: 'Tech Stocks',
+      Schema.colAmount: 2500000, // 25L
+      Schema.colActive: 1,
+      Schema.colType: 'Equity',
+      Schema.colDate: now.toIso8601String()
+    });
+
+    // 4. Retirement
+    batch.insert(Schema.retirementContributionsTable, {
+      Schema.colType: 'EPF',
+      Schema.colAmount: 1500000,
+      Schema.colDate: now.toIso8601String()
+    });
+
+    await batch.commit(noResult: true);
+  }
+
+  static Future<void> seedNegativeData() async {
+    await clearData();
+    final database = await db;
+    final now = DateTime.now();
+    final batch = database.batch();
+
+    // 1. Low Income Profile
+    batch.insert(Schema.incomeSourcesTable, {
+      Schema.colSource: 'Freelance Gig',
+      Schema.colAmount: 25000, // Loow Income
+      Schema.colDate: now.toIso8601String()
+    });
+
+    // 2. High Expenses
+    // Fixed
+    batch.insert(Schema.fixedExpensesTable, {
+      Schema.colName: 'Rent',
+      Schema.colAmount: 35000,
+      Schema.colCategory: 'Housing',
+      Schema.colDate: now.toIso8601String()
+    });
+
+    batch.insert(Schema.fixedExpensesTable, {
+      Schema.colName: 'Loan EMI',
+      Schema.colAmount: 22000,
+      Schema.colCategory: 'Loan',
+      Schema.colDate: now.toIso8601String()
+    });
+
+    // Many variable expenses
+    for (int i = 0; i < 30; i++) {
+      batch.insert(Schema.variableExpensesTable, {
+        Schema.colDate: now.subtract(Duration(days: i)).toIso8601String(),
+        Schema.colAmount: 2000 + (i * 50),
+        Schema.colCategory: 'Shopping',
+        Schema.colNote: 'Splurge $i',
+      });
+    }
+
+    // 3. Huge Liabilities (Debt Crisis)
+    batch.insert(Schema.loansTable, {
+      Schema.colName: 'Personal Loan',
+      Schema.colLoanType: 'Bank',
+      Schema.colTotalAmount: 1500000,
+      Schema.colRemainingAmount: 1400000, // 14L Pending
+      Schema.colEmi: 35000,
+      Schema.colInterestRate: 14.5,
+      Schema.colDueDate: '10th',
+      Schema.colDate: now.toIso8601String()
+    });
+
+    batch.insert(Schema.creditCardsTable, {
+      Schema.colBank: 'HDFC MoneyBack',
+      Schema.colCreditLimit: 200000,
+      Schema.colStatementBalance: 195000, // Maxed out
+      Schema.colMinDue: 15000,
+      Schema.colDueDate: '15th',
+      Schema.colGenerationDate: now.toIso8601String()
+    });
+
+    await batch.commit(noResult: true);
+  }
+
   static Future<void> seedLargeData({int count = 5000}) async {
     await clearData();
     final database = await db;
