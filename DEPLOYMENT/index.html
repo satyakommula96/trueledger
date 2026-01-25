@@ -12,11 +12,13 @@
         <meta name="author" content="TrueCash Team">
       
       
-        <link rel="canonical" href="https://satyakommula96.github.io/truecash/api/">
+        <link rel="canonical" href="https://satyakommula96.github.io/truecash/DEPLOYMENT/">
       
       
-        <link rel="prev" href="../contributing/code-of-conduct/">
+        <link rel="prev" href="../getting-started/configuration/">
       
+      
+        <link rel="next" href="../architecture/overview/">
       
       
         
@@ -27,7 +29,7 @@
     
     
       
-        <title>API Reference - TrueCash Documentation</title>
+        <title>Deployment - TrueCash Documentation</title>
       
     
     
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-reference" class="md-skip">
+        <a href="#github-pages-deployment-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              API Reference
+              Deployment
             
           </span>
         </div>
@@ -261,10 +263,12 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../getting-started/installation/" class="md-tabs__link">
           
   
@@ -421,11 +425,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../api/" class="md-tabs__link">
         
   
   
@@ -541,28 +543,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -580,7 +585,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -679,10 +684,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../DEPLOYMENT/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -698,6 +730,398 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#automatic-deployment-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Automatic Deployment (Recommended)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Automatic Deployment (Recommended)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow File
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-trigger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Trigger
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#one-time-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 One-Time Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 One-Time Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-enable-github-pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Enable GitHub Pages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-configure-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Configure Permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-first-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. First Deployment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manual-deployment-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💻 Manual Deployment (Local)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💻 Manual Deployment (Local)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verify-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Verify Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Verify Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#check-build-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check Build Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#view-live-site" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View Live Site
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-gh-pages-branch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check gh-pages Branch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🛠️ Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deployment-fails" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment Fails
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Domain
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Deployment Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workflow-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 Workflow Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔄 Workflow Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Triggers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Monitoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Monitoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#view-deployment-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View Deployment History
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analytics-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analytics (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1981,37 +2405,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Reference
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
         
   
   
@@ -2027,171 +2424,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#domain-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Domain Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Domain Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Models
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Models">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#budget" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Budget
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#transaction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Transaction
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#savinggoal" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SavingGoal
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#use-cases" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Use Cases
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#repository-interfaces" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Repository Interfaces
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#presentation-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Presentation Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Presentation Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#providers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Providers
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#data-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Data Layer
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Data Layer">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#database-schema" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Database Schema
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2223,34 +2455,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#domain-layer" class="md-nav__link">
+  <a href="#automatic-deployment-recommended" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Domain Layer
+        🚀 Automatic Deployment (Recommended)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Domain Layer">
+    <nav class="md-nav" aria-label="🚀 Automatic Deployment (Recommended)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#models" class="md-nav__link">
+  <a href="#how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Models
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Models">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#budget" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Budget
+        How It Works
       
     </span>
   </a>
@@ -2258,10 +2478,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#transaction" class="md-nav__link">
+  <a href="#workflow-file" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Transaction
+        Workflow File
       
     </span>
   </a>
@@ -2269,37 +2489,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#savinggoal" class="md-nav__link">
+  <a href="#manual-trigger" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SavingGoal
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#use-cases" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Use Cases
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#repository-interfaces" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Repository Interfaces
+        Manual Trigger
       
     </span>
   </a>
@@ -2312,22 +2505,44 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#presentation-layer" class="md-nav__link">
+  <a href="#one-time-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Presentation Layer
+        🔧 One-Time Setup
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Presentation Layer">
+    <nav class="md-nav" aria-label="🔧 One-Time Setup">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#providers" class="md-nav__link">
+  <a href="#1-enable-github-pages" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Providers
+        1. Enable GitHub Pages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-configure-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Configure Permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-first-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. First Deployment
       
     </span>
   </a>
@@ -2340,22 +2555,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#data-layer" class="md-nav__link">
+  <a href="#manual-deployment-local" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Data Layer
+        💻 Manual Deployment (Local)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Data Layer">
+    <nav class="md-nav" aria-label="💻 Manual Deployment (Local)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#database-schema" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Database Schema
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deploy
       
     </span>
   </a>
@@ -2364,6 +2590,239 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verify-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Verify Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Verify Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#check-build-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check Build Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#view-live-site" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View Live Site
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-gh-pages-branch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check gh-pages Branch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🛠️ Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deployment-fails" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment Fails
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Domain
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Deployment Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workflow-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 Workflow Details
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔄 Workflow Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Triggers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Monitoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Monitoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#view-deployment-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View Deployment History
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analytics-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analytics (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Resources
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2387,47 +2846,214 @@
   
 
 
-<h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
-<p>API documentation for TrueCash.</p>
-<h2 id="domain-layer">Domain Layer<a class="headerlink" href="#domain-layer" title="Permanent link">&para;</a></h2>
-<h3 id="models">Models<a class="headerlink" href="#models" title="Permanent link">&para;</a></h3>
-<h4 id="budget">Budget<a class="headerlink" href="#budget" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">Budget</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="p">;</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="n">category</span><span class="p">;</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">monthlyLimit</span><span class="p">;</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
+<h1 id="github-pages-deployment-guide">GitHub Pages Deployment Guide<a class="headerlink" href="#github-pages-deployment-guide" title="Permanent link">&para;</a></h1>
+<p>This guide explains how to deploy the TrueCash documentation to GitHub Pages.</p>
+<h2 id="automatic-deployment-recommended">🚀 Automatic Deployment (Recommended)<a class="headerlink" href="#automatic-deployment-recommended" title="Permanent link">&para;</a></h2>
+<p>The documentation is automatically deployed to GitHub Pages whenever changes are pushed to the <code>main</code> branch.</p>
+<h3 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Trigger</strong>: Push to <code>main</code> branch with changes to <code>docs/</code> or <code>mkdocs.yml</code></li>
+<li><strong>Build</strong>: GitHub Actions builds the documentation using MkDocs</li>
+<li><strong>Deploy</strong>: The built site is deployed to the <code>gh-pages</code> branch</li>
+<li><strong>Live</strong>: Documentation is available at https://satyakommula96.github.io/truecash/</li>
+</ol>
+<h3 id="workflow-file">Workflow File<a class="headerlink" href="#workflow-file" title="Permanent link">&para;</a></h3>
+<p>The deployment is handled by <code>.github/workflows/deploy-docs.yml</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Deploy Documentation</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nt">on</span><span class="p">:</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">push</span><span class="p">:</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">branches</span><span class="p">:</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">main</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">paths</span><span class="p">:</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;docs/**&#39;</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;mkdocs.yml&#39;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="nt">workflow_dispatch</span><span class="p">:</span><span class="w">  </span><span class="c1"># Manual trigger option</span>
 </code></pre></div>
-<h4 id="transaction">Transaction<a class="headerlink" href="#transaction" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">Transaction</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="p">;</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">amount</span><span class="p">;</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="n">category</span><span class="p">;</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="n">DateTime</span><span class="w"> </span><span class="n">date</span><span class="p">;</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">String</span><span class="o">?</span><span class="w"> </span><span class="n">note</span><span class="p">;</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">tags</span><span class="p">;</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">}</span>
+<h3 id="manual-trigger">Manual Trigger<a class="headerlink" href="#manual-trigger" title="Permanent link">&para;</a></h3>
+<p>You can also manually trigger the deployment from GitHub:</p>
+<ol>
+<li>Go to <strong>Actions</strong> tab in GitHub</li>
+<li>Select <strong>Deploy Documentation</strong> workflow</li>
+<li>Click <strong>Run workflow</strong></li>
+<li>Select <code>main</code> branch</li>
+<li>Click <strong>Run workflow</strong></li>
+</ol>
+<h2 id="one-time-setup">🔧 One-Time Setup<a class="headerlink" href="#one-time-setup" title="Permanent link">&para;</a></h2>
+<h3 id="1-enable-github-pages">1. Enable GitHub Pages<a class="headerlink" href="#1-enable-github-pages" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Go to your repository on GitHub</li>
+<li>Navigate to <strong>Settings</strong> → <strong>Pages</strong></li>
+<li>Under <strong>Source</strong>, select:</li>
+<li><strong>Branch</strong>: <code>gh-pages</code></li>
+<li><strong>Folder</strong>: <code>/ (root)</code></li>
+<li>Click <strong>Save</strong></li>
+</ol>
+<h3 id="2-configure-permissions">2. Configure Permissions<a class="headerlink" href="#2-configure-permissions" title="Permanent link">&para;</a></h3>
+<p>The workflow needs write permissions to deploy:</p>
+<ol>
+<li>Go to <strong>Settings</strong> → <strong>Actions</strong> → <strong>General</strong></li>
+<li>Scroll to <strong>Workflow permissions</strong></li>
+<li>Select <strong>Read and write permissions</strong></li>
+<li>Click <strong>Save</strong></li>
+</ol>
+<h3 id="3-first-deployment">3. First Deployment<a class="headerlink" href="#3-first-deployment" title="Permanent link">&para;</a></h3>
+<p>After setup, trigger the first deployment:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Option 1: Push to main</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>git<span class="w"> </span>add<span class="w"> </span>.
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;docs: setup GitHub Pages deployment&quot;</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>main
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Option 2: Manual deployment (see below)</span>
 </code></pre></div>
-<h4 id="savinggoal">SavingGoal<a class="headerlink" href="#savinggoal" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">SavingGoal</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="p">;</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">targetAmount</span><span class="p">;</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="kd">final</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">currentAmount</span><span class="p">;</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p">}</span>
+<h2 id="manual-deployment-local">💻 Manual Deployment (Local)<a class="headerlink" href="#manual-deployment-local" title="Permanent link">&para;</a></h2>
+<p>You can also deploy manually from your local machine:</p>
+<h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Install MkDocs and dependencies</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 </code></pre></div>
-<h3 id="use-cases">Use Cases<a class="headerlink" href="#use-cases" title="Permanent link">&para;</a></h3>
-<p>See individual use case files in <code>lib/domain/usecases/</code> for detailed API documentation.</p>
-<h3 id="repository-interfaces">Repository Interfaces<a class="headerlink" href="#repository-interfaces" title="Permanent link">&para;</a></h3>
-<p>See <code>lib/domain/repositories/i_financial_repository.dart</code> for the complete repository interface.</p>
-<h2 id="presentation-layer">Presentation Layer<a class="headerlink" href="#presentation-layer" title="Permanent link">&para;</a></h2>
-<h3 id="providers">Providers<a class="headerlink" href="#providers" title="Permanent link">&para;</a></h3>
-<p>See individual provider files in <code>lib/presentation/providers/</code> for provider documentation.</p>
-<h2 id="data-layer">Data Layer<a class="headerlink" href="#data-layer" title="Permanent link">&para;</a></h2>
-<h3 id="database-schema">Database Schema<a class="headerlink" href="#database-schema" title="Permanent link">&para;</a></h3>
-<p>See <a href="../database/schema/">Database Schema</a> for complete schema documentation.</p>
+<h3 id="deploy">Deploy<a class="headerlink" href="#deploy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Build and deploy to GitHub Pages</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>mkdocs<span class="w"> </span>gh-deploy
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># With custom commit message</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>mkdocs<span class="w"> </span>gh-deploy<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;docs: update documentation&quot;</span>
+</code></pre></div>
+<p>This will:
+1. Build the documentation
+2. Push to <code>gh-pages</code> branch
+3. Make it live at https://satyakommula96.github.io/truecash/</p>
+<h2 id="verify-deployment">🔍 Verify Deployment<a class="headerlink" href="#verify-deployment" title="Permanent link">&para;</a></h2>
+<h3 id="check-build-status">Check Build Status<a class="headerlink" href="#check-build-status" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Go to <strong>Actions</strong> tab</li>
+<li>Find the latest <strong>Deploy Documentation</strong> workflow run</li>
+<li>Check if it completed successfully (green checkmark)</li>
+</ol>
+<h3 id="view-live-site">View Live Site<a class="headerlink" href="#view-live-site" title="Permanent link">&para;</a></h3>
+<p>Visit: https://satyakommula96.github.io/truecash/</p>
+<h3 id="check-gh-pages-branch">Check gh-pages Branch<a class="headerlink" href="#check-gh-pages-branch" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># View gh-pages branch</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>git<span class="w"> </span>fetch<span class="w"> </span>origin
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>git<span class="w"> </span>checkout<span class="w"> </span>gh-pages
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># Return to main</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>git<span class="w"> </span>checkout<span class="w"> </span>main
+</code></pre></div>
+<h2 id="troubleshooting">🛠️ Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="deployment-fails">Deployment Fails<a class="headerlink" href="#deployment-fails" title="Permanent link">&para;</a></h3>
+<p><strong>Problem</strong>: Workflow fails with permission error</p>
+<p><strong>Solution</strong>: 
+1. Check <strong>Settings</strong> → <strong>Actions</strong> → <strong>General</strong>
+2. Ensure <strong>Read and write permissions</strong> is selected</p>
 <hr />
-<p><strong>Note</strong>: This is a placeholder. Complete API reference documentation will be generated automatically in the future using tools like <code>dartdoc</code>.</p>
+<p><strong>Problem</strong>: Pages not updating</p>
+<p><strong>Solution</strong>:
+1. Check if workflow ran successfully in <strong>Actions</strong> tab
+2. Clear browser cache
+3. Wait a few minutes for GitHub Pages to update</p>
+<hr />
+<p><strong>Problem</strong>: 404 error on GitHub Pages</p>
+<p><strong>Solution</strong>:
+1. Verify <strong>Settings</strong> → <strong>Pages</strong> source is set to <code>gh-pages</code> branch
+2. Check that <code>site_url</code> in <code>mkdocs.yml</code> matches your GitHub Pages URL
+3. Ensure the workflow completed successfully</p>
+<h3 id="build-errors">Build Errors<a class="headerlink" href="#build-errors" title="Permanent link">&para;</a></h3>
+<p><strong>Problem</strong>: MkDocs build fails</p>
+<p><strong>Solution</strong>:
+1. Test locally first: <code>mkdocs build --strict</code>
+2. Fix any broken links or missing files
+3. Check <code>mkdocs.yml</code> for syntax errors</p>
+<h3 id="custom-domain">Custom Domain<a class="headerlink" href="#custom-domain" title="Permanent link">&para;</a></h3>
+<p>To use a custom domain (e.g., <code>docs.truecash.app</code>):</p>
+<ol>
+<li>
+<p>Create <code>docs/CNAME</code> file:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>docs.truecash.app
+</code></pre></div></p>
+</li>
+<li>
+<p>Configure DNS:</p>
+</li>
+<li>
+<p>Add CNAME record pointing to <code>satyakommula96.github.io</code></p>
+</li>
+<li>
+<p>Update <code>mkdocs.yml</code>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">site_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://docs.truecash.app/</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>In GitHub <strong>Settings</strong> → <strong>Pages</strong>, add custom domain</p>
+</li>
+</ol>
+<h2 id="deployment-checklist">📋 Deployment Checklist<a class="headerlink" href="#deployment-checklist" title="Permanent link">&para;</a></h2>
+<p>Before deploying:</p>
+<ul>
+<li>[ ] All documentation pages are complete</li>
+<li>[ ] Links are working (<code>mkdocs build --strict</code>)</li>
+<li>[ ] Images and assets are included</li>
+<li>[ ] Navigation structure is correct in <code>mkdocs.yml</code></li>
+<li>[ ] GitHub Pages is enabled in repository settings</li>
+<li>[ ] Workflow permissions are set correctly</li>
+</ul>
+<h2 id="workflow-details">🔄 Workflow Details<a class="headerlink" href="#workflow-details" title="Permanent link">&para;</a></h2>
+<h3 id="triggers">Triggers<a class="headerlink" href="#triggers" title="Permanent link">&para;</a></h3>
+<p>The workflow runs when:
+- Changes pushed to <code>main</code> branch affecting:
+  - <code>docs/**</code> (any documentation file)
+  - <code>mkdocs.yml</code> (configuration)
+  - <code>.github/workflows/deploy-docs.yml</code> (workflow itself)
+- Manually triggered via GitHub Actions UI</p>
+<h3 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Checkout</strong>: Fetches repository code</li>
+<li><strong>Setup Python</strong>: Installs Python 3.x</li>
+<li><strong>Cache</strong>: Caches pip packages for faster builds</li>
+<li><strong>Install</strong>: Installs MkDocs and plugins</li>
+<li><strong>Build</strong>: Builds documentation with <code>--strict</code> flag</li>
+<li><strong>Deploy</strong>: Pushes to <code>gh-pages</code> branch</li>
+</ol>
+<h3 id="build-time">Build Time<a class="headerlink" href="#build-time" title="Permanent link">&para;</a></h3>
+<p>Typical build time: <strong>1-2 minutes</strong></p>
+<h3 id="caching">Caching<a class="headerlink" href="#caching" title="Permanent link">&para;</a></h3>
+<p>Dependencies are cached to speed up builds. Cache is invalidated when <code>requirements.txt</code> changes.</p>
+<h2 id="monitoring">📊 Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">&para;</a></h2>
+<h3 id="view-deployment-history">View Deployment History<a class="headerlink" href="#view-deployment-history" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Go to <strong>Actions</strong> tab</li>
+<li>Filter by <strong>Deploy Documentation</strong> workflow</li>
+<li>View all past deployments</li>
+</ol>
+<h3 id="analytics-optional">Analytics (Optional)<a class="headerlink" href="#analytics-optional" title="Permanent link">&para;</a></h3>
+<p>To add Google Analytics:</p>
+<ol>
+<li>Get your GA tracking ID</li>
+<li>Update <code>mkdocs.yml</code>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">extra</span><span class="p">:</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">analytics</span><span class="p">:</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">google</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="nt">property</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">G-XXXXXXXXXX</span>
+</code></pre></div></li>
+</ol>
+<h2 id="best-practices">🎯 Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Test Locally</strong>: Always run <code>mkdocs serve</code> before pushing</li>
+<li><strong>Strict Mode</strong>: Use <code>mkdocs build --strict</code> to catch errors</li>
+<li><strong>Commit Messages</strong>: Use conventional commits (e.g., <code>docs: update installation guide</code>)</li>
+<li><strong>Review Changes</strong>: Preview changes locally before deploying</li>
+<li><strong>Incremental Updates</strong>: Deploy small, frequent updates rather than large batches</li>
+</ol>
+<h2 id="resources">📚 Resources<a class="headerlink" href="#resources" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://www.mkdocs.org/">MkDocs Documentation</a></li>
+<li><a href="https://squidfunk.github.io/mkdocs-material/">Material for MkDocs</a></li>
+<li><a href="https://docs.github.com/en/pages">GitHub Pages Documentation</a></li>
+<li><a href="https://docs.github.com/en/actions">GitHub Actions Documentation</a></li>
+</ul>
+<hr />
+<p><strong>Your documentation is now set up for automatic deployment! 🎉</strong></p>
+<p>Every push to <code>main</code> will automatically update your live documentation site.</p>
 
 
 
