@@ -230,15 +230,45 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getMonthlyHistory() async {
+  Future<List<int>> getAvailableYears() async {
     final db = await AppDatabase.db;
-    final monthsQuery = await db.rawQuery('''
-      SELECT DISTINCT substr(date, 1, 7) as month FROM variable_expenses
-      UNION SELECT DISTINCT substr(date, 1, 7) as month FROM income_sources
-      UNION SELECT DISTINCT substr(date, 1, 7) as month FROM fixed_expenses
-      UNION SELECT DISTINCT substr(date, 1, 7) as month FROM investments
-      ORDER BY month DESC
+    final res = await db.rawQuery('''
+      SELECT DISTINCT substr(date, 1, 4) as year FROM variable_expenses
+      UNION SELECT DISTINCT substr(date, 1, 4) as year FROM income_sources
+      UNION SELECT DISTINCT substr(date, 1, 4) as year FROM fixed_expenses
+      UNION SELECT DISTINCT substr(date, 1, 4) as year FROM investments
+      ORDER BY year DESC
     ''');
+    return res.map((e) => int.parse(e['year'].toString())).toList();
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getMonthlyHistory([int? year]) async {
+    final db = await AppDatabase.db;
+
+    // Construct query dynamically to filter efficiently
+    final tables = [
+      'variable_expenses',
+      'income_sources',
+      'fixed_expenses',
+      'investments'
+    ];
+    List<String> parts = [];
+    List<dynamic> args = [];
+    String yearStr = year?.toString() ?? "";
+
+    for (var t in tables) {
+      if (year != null) {
+        parts.add(
+            "SELECT DISTINCT substr(date, 1, 7) as month FROM $t WHERE substr(date, 1, 4) = ?");
+        args.add(yearStr);
+      } else {
+        parts.add("SELECT DISTINCT substr(date, 1, 7) as month FROM $t");
+      }
+    }
+
+    final fullQuery = "${parts.join(' UNION ')} ORDER BY month DESC";
+    final monthsQuery = await db.rawQuery(fullQuery, args);
 
     List<Map<String, dynamic>> summaries = [];
     for (var m in monthsQuery) {

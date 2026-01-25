@@ -6,6 +6,7 @@ import 'package:truecash/core/utils/date_helper.dart';
 import 'package:truecash/core/theme/theme.dart';
 import 'add_loan.dart';
 import 'edit_loan.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../presentation/providers/repository_providers.dart';
@@ -218,7 +219,15 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                           ],
                         ),
                       ),
-                    );
+                    )
+                        .animate()
+                        .fadeIn(
+                            delay: (100 * i).clamp(0, 500).ms, duration: 500.ms)
+                        .slideY(begin: 0.05, end: 0, curve: Curves.easeOutQuint)
+                        .shimmer(
+                            delay: (300 + 100 * i).ms,
+                            duration: 1000.ms,
+                            color: Colors.white12);
                   },
                 ),
     );

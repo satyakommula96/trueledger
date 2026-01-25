@@ -10,7 +10,8 @@ abstract class IFinancialRepository {
   Future<void> addEntry(
       String type, int amount, String category, String note, String date);
   Future<void> checkAndProcessRecurring();
-  Future<List<Map<String, dynamic>>> getMonthlyHistory();
+  Future<List<Map<String, dynamic>>> getMonthlyHistory([int? year]);
+  Future<List<int>> getAvailableYears();
   Future<List<Loan>> getLoans();
   Future<List<Subscription>> getSubscriptions();
   Future<List<CreditCard>> getCreditCards();

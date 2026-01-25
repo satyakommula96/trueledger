@@ -2,63 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:truecash/presentation/screens/dashboard.dart';
-import 'package:local_auth/local_auth.dart';
 
-class LockScreen extends StatefulWidget {
-  const LockScreen({super.key});
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:truecash/presentation/providers/repository_providers.dart';
+import 'package:truecash/presentation/providers/dashboard_provider.dart';
+import 'package:truecash/presentation/providers/analysis_provider.dart';
+
+class LockScreen extends ConsumerStatefulWidget {
+  final int? expectedPinLength;
+  const LockScreen({super.key, this.expectedPinLength});
 
   @override
-  State<LockScreen> createState() => _LockScreenState();
+  ConsumerState<LockScreen> createState() => _LockScreenState();
 }
 
-class _LockScreenState extends State<LockScreen> {
+class _LockScreenState extends ConsumerState<LockScreen> {
   String _pin = "";
   bool _isError = false;
-  final LocalAuthentication auth = LocalAuthentication();
-  bool _canCheckBiometrics = false;
+  late int _pinLength;
 
   @override
   void initState() {
     super.initState();
-    _initBiometrics();
-  }
-
-  Future<void> _initBiometrics() async {
-    try {
-      final canCheck = await auth.canCheckBiometrics;
-      setState(() {
-        _canCheckBiometrics = canCheck;
-      });
-      // We do not auto-authenticate anymore to avoid the dual-window issue on desktop.
-      // User can tap the fingerprint icon to authenticate.
-    } catch (e) {
-      debugPrint("Biometric check failed: $e");
+    _pinLength = widget.expectedPinLength ?? 4;
+    if (widget.expectedPinLength == null) {
+      _loadPinLength();
     }
   }
 
-  Future<void> _authenticate() async {
-    try {
-      final bool didAuthenticate = await auth.authenticate(
-        localizedReason: 'Please authenticate to access TrueCash',
-      );
-      if (didAuthenticate && mounted) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => const Dashboard()));
-      }
-    } catch (e) {
-      debugPrint("Auth error: $e");
+  Future<void> _loadPinLength() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString('app_pin');
+    if (stored != null && stored.length == 6) {
+      if (mounted) setState(() => _pinLength = 6);
     }
   }
 
   void _onDigitPress(String digit) async {
     setState(() {
       _isError = false;
-      if (_pin.length < 4) {
+      if (_pin.length < _pinLength) {
         _pin += digit;
       }
     });
 
-    if (_pin.length == 4) {
+    if (_pin.length == _pinLength) {
       final prefs = await SharedPreferences.getInstance();
       final storedPin = prefs.getString('app_pin');
 
@@ -82,6 +70,46 @@ class _LockScreenState extends State<LockScreen> {
         _pin = _pin.substring(0, _pin.length - 1);
         _isError = false;
       });
+    }
+  }
+
+  Future<void> _onForgotPin() async {
+    final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+              title: const Text("Reset Application?"),
+              content: const Text(
+                  "Since you forgot your PIN, you must reset the application to regain access. \n\nTHIS WILL DELETE ALL FINANCIAL DATA.\n\nAre you sure you want to proceed?"),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text("CANCEL")),
+                TextButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text("RESET EVERYTHING",
+                        style: TextStyle(
+                            color: Colors.red, fontWeight: FontWeight.bold))),
+              ],
+            ));
+
+    if (confirmed == true) {
+      // 1. Wipe Data
+      final repo = ref.read(financialRepositoryProvider);
+      await repo.clearData();
+
+      // 2. Wipe Prefs (PIN)
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // 3. Refresh Providers (just in case functionality remains)
+      ref.invalidate(dashboardProvider);
+      ref.invalidate(analysisProvider);
+
+      // 4. Navigate
+      if (mounted) {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const Dashboard()));
+      }
     }
   }
 
@@ -110,7 +138,7 @@ class _LockScreenState extends State<LockScreen> {
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(4, (index) {
+              children: List.generate(_pinLength, (index) {
                 return Container(
                   margin: const EdgeInsets.all(8),
                   width: 16,
@@ -134,7 +162,7 @@ class _LockScreenState extends State<LockScreen> {
               ).animate().fadeIn().slideY(begin: -0.5),
             const Spacer(),
             Container(
-              padding: const EdgeInsets.only(bottom: 40),
+              padding: const EdgeInsets.only(bottom: 20),
               child: Column(
                 children: [
                   Row(
@@ -167,19 +195,7 @@ class _LockScreenState extends State<LockScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _canCheckBiometrics
-                          ? InkWell(
-                              onTap: _authenticate,
-                              borderRadius: BorderRadius.circular(40),
-                              child: Container(
-                                width: 80,
-                                height: 80,
-                                alignment: Alignment.center,
-                                child: Icon(Icons.fingerprint,
-                                    size: 36, color: colorScheme.primary),
-                              ),
-                            )
-                          : const SizedBox(width: 80),
+                      const SizedBox(width: 80),
                       _buildKey("0"),
                       InkWell(
                         onTap: _onDelete,
@@ -194,6 +210,14 @@ class _LockScreenState extends State<LockScreen> {
                       )
                     ],
                   ),
+                  const SizedBox(height: 32),
+                  TextButton(
+                    onPressed: _onForgotPin,
+                    child: Text("Forgot PIN?",
+                        style: TextStyle(
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                            fontWeight: FontWeight.bold)),
+                  )
                 ],
               ),
             ).animate().slideY(

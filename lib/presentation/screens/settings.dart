@@ -16,11 +16,12 @@ import 'package:truecash/main.dart';
 import 'package:truecash/core/utils/currency_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:truecash/presentation/providers/dashboard_provider.dart';
+import 'package:truecash/presentation/providers/analysis_provider.dart';
 import 'package:truecash/presentation/providers/repository_providers.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
-
   Future<void> _showThemePicker(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     if (!context.mounted) return;
@@ -158,6 +159,18 @@ class SettingsScreen extends ConsumerWidget {
     if (confirmed == true) {
       final repo = ref.read(financialRepositoryProvider);
       await repo.seedData();
+
+      // Refresh providers
+      ref.invalidate(dashboardProvider);
+      ref.invalidate(analysisProvider);
+
+      try {
+        await ref.read(dashboardProvider.future);
+        await ref.read(analysisProvider.future);
+      } catch (e) {
+        debugPrint("Refresh failed: $e");
+      }
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text("Sample data generated successfully")));
@@ -308,6 +321,17 @@ class SettingsScreen extends ConsumerWidget {
 
         await batch.commit();
 
+        // Refresh providers
+        ref.invalidate(dashboardProvider);
+        ref.invalidate(analysisProvider);
+
+        try {
+          await ref.read(dashboardProvider.future);
+          await ref.read(analysisProvider.future);
+        } catch (e) {
+          debugPrint("Refresh failed: $e");
+        }
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Restore Successful!")));
@@ -343,6 +367,17 @@ class SettingsScreen extends ConsumerWidget {
     if (confirmed == true) {
       final repo = ref.read(financialRepositoryProvider);
       await repo.clearData();
+
+      // Refresh providers
+      ref.invalidate(dashboardProvider);
+      ref.invalidate(analysisProvider);
+
+      try {
+        await ref.read(dashboardProvider.future);
+        await ref.read(analysisProvider.future);
+      } catch (e) {
+        debugPrint("Refresh failed: $e");
+      }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("All data has been reset")));
@@ -352,7 +387,6 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _setupPin(BuildContext context) async {
-    // ... (unchanged)
     final prefs = await SharedPreferences.getInstance();
     final currentPin = prefs.getString('app_pin');
 
@@ -382,36 +416,56 @@ class SettingsScreen extends ConsumerWidget {
     } else {
       // Set new PIN
       String newPin = "";
+      int targetLength = 4;
+
       await showDialog(
           context: context,
           builder: (ctx) {
-            return AlertDialog(
-              title: const Text("Set 4-Digit PIN"),
-              content: TextField(
-                autofocus: true,
-                keyboardType: TextInputType.number,
-                maxLength: 4,
-                obscureText: true,
-                onChanged: (val) => newPin = val,
-                decoration: const InputDecoration(hintText: "Enter PIN"),
-              ),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text("CANCEL")),
-                TextButton(
-                    onPressed: () {
-                      if (newPin.length == 4) {
-                        prefs.setString('app_pin', newPin);
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text("PIN Set Successfully")));
-                      }
-                    },
-                    child: const Text("SAVE")),
-              ],
-            );
+            return StatefulBuilder(builder: (context, setState) {
+              return AlertDialog(
+                title: Text("Set $targetLength-Digit PIN"),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      autofocus: true,
+                      keyboardType: TextInputType.number,
+                      maxLength: targetLength,
+                      obscureText: true,
+                      onChanged: (val) => newPin = val,
+                      decoration: const InputDecoration(hintText: "Enter PIN"),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                        onPressed: () {
+                          setState(() {
+                            targetLength = targetLength == 4 ? 6 : 4;
+                            newPin = "";
+                          });
+                        },
+                        child: Text(targetLength == 4
+                            ? "Use 6-Digit PIN"
+                            : "Use 4-Digit PIN"))
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text("CANCEL")),
+                  TextButton(
+                      onPressed: () {
+                        if (newPin.length == targetLength) {
+                          prefs.setString('app_pin', newPin);
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text("PIN Set Successfully")));
+                        }
+                      },
+                      child: const Text("SAVE")),
+                ],
+              );
+            });
           });
     }
   }
