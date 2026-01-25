@@ -42,23 +42,13 @@ class SmartInsightsCard extends StatelessWidget {
               ],
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
+                color: const Color(0xFF00C853), // Material Green A700
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.auto_awesome,
-                      size: 12, color: Theme.of(context).colorScheme.primary),
-                  const SizedBox(width: 4),
-                  Text("BETA",
-                      style: TextStyle(
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary)),
-                ],
-              ),
+              child: const Icon(Icons.psychology_rounded,
+                  size: 16, color: Colors.white),
             ),
           ],
         ).animate().fadeIn(duration: 600.ms),

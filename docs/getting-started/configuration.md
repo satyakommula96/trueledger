@@ -41,6 +41,16 @@ SharedPreferences prefs = await SharedPreferences.getInstance();
 await prefs.setString('currency', '\$');
 ```
 
+### Privacy Mode
+
+**Location**: Dashboard Header (Eye Icon)
+
+Toggle the global privacy mask to hide sensitive financial numbers in public.
+
+- **Enabled**: All monetary values are masked (e.g., `****`)
+- **Disabled**: Values are shown normally
+- **Persistence**: Setting is remembered across app restarts
+
 ## Security Settings
 
 ### PIN Lock
@@ -58,6 +68,16 @@ The app will now require the PIN on every launch.
 SharedPreferences prefs = await SharedPreferences.getInstance();
 bool pinEnabled = prefs.getBool('pin_enabled') ?? false;
 ```
+
+### Account Recovery
+
+**Location**: Settings → Security → View Recovery Key
+
+Never lose access to your data. When setting a PIN, TrueCash generates a unique 14-character **Recovery Key** (e.g., `ABCD-1234-WX99`).
+
+- **Setup**: You must save this key when creating a PIN.
+- **Usage**: If you forget your PIN, tap "Forgot PIN?" on the lock screen and enter your key to reset security without data loss.
+- **View Key**: Authenticated users can view their key in Settings to save it again.
 
 ### Biometric Authentication
 

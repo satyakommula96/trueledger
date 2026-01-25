@@ -454,6 +454,34 @@ class SettingsScreen extends ConsumerWidget {
         });
   }
 
+  Future<bool> _verifyPin(BuildContext context, String correctPin) async {
+    String input = "";
+    return await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+                  title: const Text("Verify PIN"),
+                  content: TextField(
+                    autofocus: true,
+                    keyboardType: TextInputType.number,
+                    obscureText: true,
+                    maxLength: correctPin.length,
+                    onChanged: (v) => input = v,
+                    decoration:
+                        const InputDecoration(hintText: "Enter current PIN"),
+                  ),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text("CANCEL")),
+                    TextButton(
+                        onPressed: () =>
+                            Navigator.pop(ctx, input == correctPin),
+                        child: const Text("VERIFY")),
+                  ],
+                )) ??
+        false;
+  }
+
   Future<void> _setupPin(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final currentPin = prefs.getString('app_pin');
@@ -461,27 +489,63 @@ class SettingsScreen extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (currentPin != null) {
-      final confirm = await showDialog<bool>(
+      // PIN is set - Show management options
+      await showDialog(
           context: context,
-          builder: (ctx) =>
-              AlertDialog(title: const Text("Remove Security PIN?"), actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(ctx, false),
-                    child: const Text("CANCEL")),
-                TextButton(
-                    onPressed: () => Navigator.pop(ctx, true),
-                    child: const Text("REMOVE",
-                        style: TextStyle(color: Colors.red))),
-              ]));
+          builder: (ctx) => AlertDialog(
+                title: const Text("App Security"),
+                content: const Text("Manage your security settings."),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text("CANCEL",
+                          style: TextStyle(color: Colors.grey))),
+                  TextButton(
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        // Verify PIN first
+                        bool verified = await _verifyPin(context, currentPin);
+                        if (verified && context.mounted) {
+                          final key = prefs.getString('recovery_key') ??
+                              "No key found (Legacy)";
+                          _showRecoveryKeyDialog(context, key);
+                        }
+                      },
+                      child: const Text("VIEW RECOVERY KEY",
+                          style: TextStyle(fontWeight: FontWeight.bold))),
+                  TextButton(
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (c) => AlertDialog(
+                                    title: const Text("Remove Security PIN?"),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(c, false),
+                                          child: const Text("CANCEL")),
+                                      TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(c, true),
+                                          child: const Text("REMOVE",
+                                              style: TextStyle(
+                                                  color: Colors.red))),
+                                    ]));
 
-      if (confirm == true) {
-        await prefs.remove('app_pin');
-        await prefs.remove('recovery_key'); // Also remove key
-        if (context.mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text("PIN Removed")));
-        }
-      }
+                        if (confirm == true) {
+                          await prefs.remove('app_pin');
+                          await prefs.remove('recovery_key');
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("PIN Removed")));
+                          }
+                        }
+                      },
+                      child: const Text("REMOVE PIN",
+                          style: TextStyle(color: Colors.red))),
+                ],
+              ));
     } else {
       // Set new PIN
       String newPin = "";
