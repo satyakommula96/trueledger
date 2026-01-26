@@ -180,3 +180,14 @@ jobs:
             TrueLedger.exe
             TrueLedger.dmg
           generate_release_notes: true
+
+      - name: Deploy Direct Link to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages
+          destination_dir: downloads
+          keep_files: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
