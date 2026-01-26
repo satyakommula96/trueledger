@@ -1,9 +1,9 @@
-site_name: TrueCash Documentation
+site_name: TrueLedger Documentation
 site_description: Privacy-first personal finance tracker with AI-powered insights
-site_author: TrueCash Team
-site_url: https://satyakommula96.github.io/truecash/
-repo_url: https://github.com/satyakommula96/truecash
-repo_name: satyakommula96/truecash
+site_author: TrueLedger Team
+site_url: https://satyakommula96.github.io/trueledger/
+repo_url: https://github.com/satyakommula96/trueledger
+repo_name: satyakommula96/trueledger
 
 docs_dir: .
 site_dir: ../site
@@ -123,4 +123,4 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/satyakommula96/truecash
+      link: https://github.com/satyakommula96/trueledger
