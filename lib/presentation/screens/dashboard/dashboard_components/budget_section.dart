@@ -6,6 +6,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/screens/budget/edit_budget.dart';
+import 'package:trueledger/presentation/components/hover_wrapper.dart';
 
 class BudgetSection extends ConsumerWidget {
   final List<Budget> budgets;
@@ -35,110 +36,114 @@ class BudgetSection extends ConsumerWidget {
       final double progress = (b.spent / b.monthlyLimit).clamp(0.0, 1.0);
       final bool isOver = b.spent > b.monthlyLimit;
 
-      return InkWell(
-        onTap: () async {
-          await Navigator.push(context,
-              MaterialPageRoute(builder: (_) => EditBudgetScreen(budget: b)));
-          onLoad();
-        },
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                colorScheme.surface,
-                colorScheme.surface.withValues(alpha: 0.5),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: semantic.divider.withValues(alpha: 0.5)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(b.category.toUpperCase(),
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 12)),
-                  Text(
-                      "${CurrencyFormatter.format(b.spent, isPrivate: isPrivate)} / ${CurrencyFormatter.format(b.monthlyLimit, isPrivate: isPrivate)}",
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: isOver
-                              ? semantic.overspent
-                              : semantic.secondaryText,
-                          fontWeight: FontWeight.w700)),
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: HoverWrapper(
+          borderRadius: 20,
+          onTap: () async {
+            await Navigator.push(context,
+                MaterialPageRoute(builder: (_) => EditBudgetScreen(budget: b)));
+            onLoad();
+          },
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  colorScheme.surface,
+                  colorScheme.surface.withValues(alpha: 0.5),
                 ],
               ),
-              const SizedBox(height: 12),
-              LayoutBuilder(builder: (context, constraints) {
-                return Stack(
+              borderRadius: BorderRadius.circular(20),
+              border:
+                  Border.all(color: semantic.divider.withValues(alpha: 0.5)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      height: 10,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: semantic.divider.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    Container(
-                      height: 10,
-                      width: constraints.maxWidth * progress,
-                      decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: isOver
-                                ? [
-                                    semantic.overspent,
-                                    semantic.overspent.withValues(alpha: 0.7)
-                                  ]
-                                : [
-                                    colorScheme.primary,
-                                    colorScheme.primary.withValues(alpha: 0.7)
-                                  ],
-                          ),
-                          borderRadius: BorderRadius.circular(5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isOver
-                                      ? semantic.overspent
-                                      : colorScheme.primary)
-                                  .withValues(alpha: 0.4),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            )
-                          ]),
-                    )
-                        .animate()
-                        .shimmer(duration: 2.seconds, color: semantic.shimmer)
-                        .scaleX(
-                            begin: 0,
-                            end: 1,
-                            duration: 1.seconds,
-                            curve: Curves.easeOutQuint,
-                            alignment: Alignment.centerLeft),
+                    Text(b.category.toUpperCase(),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text(
+                        "${CurrencyFormatter.format(b.spent, isPrivate: isPrivate)} / ${CurrencyFormatter.format(b.monthlyLimit, isPrivate: isPrivate)}",
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: isOver
+                                ? semantic.overspent
+                                : semantic.secondaryText,
+                            fontWeight: FontWeight.w700)),
                   ],
-                );
-              }),
-            ],
+                ),
+                const SizedBox(height: 12),
+                LayoutBuilder(builder: (context, constraints) {
+                  return Stack(
+                    children: [
+                      Container(
+                        height: 10,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: semantic.divider.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                      Container(
+                        height: 10,
+                        width: constraints.maxWidth * progress,
+                        decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isOver
+                                  ? [
+                                      semantic.overspent,
+                                      semantic.overspent.withValues(alpha: 0.7)
+                                    ]
+                                  : [
+                                      colorScheme.primary,
+                                      colorScheme.primary.withValues(alpha: 0.7)
+                                    ],
+                            ),
+                            borderRadius: BorderRadius.circular(5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (isOver
+                                        ? semantic.overspent
+                                        : colorScheme.primary)
+                                    .withValues(alpha: 0.4),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              )
+                            ]),
+                      )
+                          .animate()
+                          .shimmer(duration: 2.seconds, color: semantic.shimmer)
+                          .scaleX(
+                              begin: 0,
+                              end: 1,
+                              duration: 1.seconds,
+                              curve: Curves.easeOutQuint,
+                              alignment: Alignment.centerLeft),
+                    ],
+                  );
+                }),
+              ],
+            ),
           ),
-        ),
-      )
-          .animate()
-          .fadeIn(delay: (100 * index).ms, duration: 600.ms)
-          .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuint);
+        )
+            .animate()
+            .fadeIn(delay: (100 * index).ms, duration: 600.ms)
+            .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuint),
+      );
     }).toList());
   }
 }

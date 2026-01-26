@@ -12,6 +12,7 @@ import 'package:trueledger/presentation/screens/loans/add_loan.dart';
 import 'package:trueledger/presentation/screens/loans/edit_loan.dart';
 import 'package:trueledger/presentation/screens/cards/edit_card.dart';
 import 'package:trueledger/presentation/screens/net_worth/edit_asset.dart';
+import 'package:trueledger/presentation/components/hover_wrapper.dart';
 
 enum NetWorthView { assets, liabilities }
 
@@ -500,56 +501,58 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
       String title, String amount, String subtitle, Color amountColor,
       {VoidCallback? onTap}) {
     final colorScheme = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Theme.of(context).dividerColor),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: colorScheme.onSurface)),
-                const SizedBox(height: 4),
-                Text(subtitle,
-                    style: TextStyle(
-                        color: Theme.of(context).hintColor, fontSize: 11)),
-              ],
-            ),
-            Row(
-              children: [
-                Text(amount,
-                    style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                        color: amountColor)),
-                if (onTap != null) ...[
-                  const SizedBox(width: 8),
-                  Icon(Icons.chevron_right,
-                      size: 16, color: Theme.of(context).hintColor),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: HoverWrapper(
+        onTap: onTap,
+        borderRadius: 12,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Theme.of(context).dividerColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: colorScheme.onSurface)),
+                  const SizedBox(height: 4),
+                  Text(subtitle,
+                      style: TextStyle(
+                          color: Theme.of(context).hintColor, fontSize: 11)),
                 ],
-              ],
-            ),
-          ],
+              ),
+              Row(
+                children: [
+                  Text(amount,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                          color: amountColor)),
+                  if (onTap != null) ...[
+                    const SizedBox(width: 8),
+                    Icon(Icons.chevron_right,
+                        size: 16, color: Theme.of(context).hintColor),
+                  ],
+                ],
+              ),
+            ],
+          ),
         ),
       )
           .animate()

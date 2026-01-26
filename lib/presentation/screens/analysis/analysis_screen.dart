@@ -10,6 +10,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:trueledger/presentation/components/hover_wrapper.dart';
 
 class AnalysisScreen extends ConsumerWidget {
   const AnalysisScreen({super.key});
@@ -204,57 +205,62 @@ class AnalysisScreen extends ConsumerWidget {
     final diff = current - last;
     final isIncrease = diff > 0;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-            colors: isIncrease
-                ? [
-                    semantic.overspent.withValues(alpha: 0.2),
-                    semantic.overspent.withValues(alpha: 0.05)
-                  ]
-                : [
-                    semantic.income.withValues(alpha: 0.2),
-                    semantic.income.withValues(alpha: 0.05)
-                  ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: isIncrease
-                ? semantic.overspent.withValues(alpha: 0.3)
-                : semantic.income.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                  isIncrease
-                      ? Icons.warning_amber_rounded
-                      : Icons.thumb_up_alt_outlined,
-                  color: isIncrease ? semantic.overspent : semantic.income),
-              const SizedBox(width: 12),
-              Text("MONTHLY INSIGHT",
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.5,
-                      color: semantic.secondaryText)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-              isIncrease
-                  ? "Spending is up by ${CurrencyFormatter.format(diff.abs(), isPrivate: isPrivate)} compared to last month."
-                  : "Great job! Spending decreased by ${CurrencyFormatter.format(diff.abs(), isPrivate: isPrivate)}.",
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface)),
-        ],
+    return HoverWrapper(
+      borderRadius: 16,
+      glowColor: isIncrease ? semantic.overspent : semantic.income,
+      glowOpacity: 0.15,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+              colors: isIncrease
+                  ? [
+                      semantic.overspent.withValues(alpha: 0.2),
+                      semantic.overspent.withValues(alpha: 0.05)
+                    ]
+                  : [
+                      semantic.income.withValues(alpha: 0.2),
+                      semantic.income.withValues(alpha: 0.05)
+                    ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+              color: isIncrease
+                  ? semantic.overspent.withValues(alpha: 0.3)
+                  : semantic.income.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                    isIncrease
+                        ? Icons.warning_amber_rounded
+                        : Icons.thumb_up_alt_outlined,
+                    color: isIncrease ? semantic.overspent : semantic.income),
+                const SizedBox(width: 12),
+                Text("MONTHLY INSIGHT",
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                        color: semantic.secondaryText)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+                isIncrease
+                    ? "Spending is up by ${CurrencyFormatter.format(diff.abs(), isPrivate: isPrivate)} compared to last month."
+                    : "Great job! Spending decreased by ${CurrencyFormatter.format(diff.abs(), isPrivate: isPrivate)}.",
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface)),
+          ],
+        ),
       ),
     );
   }

@@ -50,8 +50,42 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
-      - name: Run Tests
+      - name: Run Tests with Coverage
+        if: matrix.os == 'ubuntu-latest'
+        run: flutter test --coverage
+
+      - name: Run Tests (No Coverage)
+        if: matrix.os != 'ubuntu-latest'
         run: flutter test
+
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage/lcov.info
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Generate coverage summary
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          if [ -f coverage/lcov.info ]; then
+            echo "## 📊 Coverage Report" >> $GITHUB_STEP_SUMMARY
+            TOTAL=$(grep -c "^DA:" coverage/lcov.info || echo "0")
+            HIT=$(grep "^DA:" coverage/lcov.info | grep -v ",0$" | wc -l || echo "0")
+            if [ "$TOTAL" -gt 0 ]; then
+              PCT=$(echo "scale=2; $HIT * 100 / $TOTAL" | bc)
+              echo "**Coverage: ${PCT}%** ($HIT / $TOTAL lines)" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+      - name: Upload coverage artifact
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
 
   # Slow Integration Tests
   # Cross-Platform Integration Tests

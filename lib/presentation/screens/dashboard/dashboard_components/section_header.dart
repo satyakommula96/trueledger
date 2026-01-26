@@ -19,25 +19,40 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-            Text(sub,
+            Text(sub.toUpperCase(),
                 style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 9,
                     color: semantic.secondaryText,
-                    fontWeight: FontWeight.w500)),
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5)),
+            const SizedBox(height: 4),
+            Text(title,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  letterSpacing: -0.5,
+                )),
           ],
         ),
         if (onAdd != null)
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline,
-                size: 20, color: Colors.grey),
-            onPressed: onAdd,
+          Material(
+            color: semantic.surfaceCombined.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              onTap: onAdd,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child: Icon(Icons.add_rounded,
+                    size: 20, color: Theme.of(context).colorScheme.primary),
+              ),
+            ),
           ),
       ],
     );

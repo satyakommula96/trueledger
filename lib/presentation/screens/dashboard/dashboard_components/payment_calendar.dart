@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/utils/date_helper.dart';
+import 'package:trueledger/core/services/notification_service.dart';
 
 class PaymentCalendar extends StatefulWidget {
   final List<Map<String, dynamic>> bills;
@@ -19,6 +19,7 @@ class PaymentCalendar extends StatefulWidget {
 
 class _PaymentCalendarState extends State<PaymentCalendar> {
   late DateTime _focusedMonth;
+  bool _isHovered = false;
 
   @override
   void initState() {
@@ -59,12 +60,30 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
     final firstDayWeekday =
         DateTime(_focusedMonth.year, _focusedMonth.month, 1).weekday;
 
-    return Container(
+    final isTouch = Theme.of(context).platform == TargetPlatform.iOS ||
+        Theme.of(context).platform == TargetPlatform.android;
+
+    final mainContent = AnimatedContainer(
+      duration: 300.ms,
+      curve: Curves.easeOutQuint,
+      // ignore: deprecated_member_use
+      transform: Matrix4.identity()..scale(_isHovered ? 1.01 : 1.0),
       margin: const EdgeInsets.symmetric(horizontal: 0),
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: widget.semantic.divider),
+        border: Border.all(
+            color: _isHovered
+                ? widget.semantic.secondaryText.withValues(alpha: 0.5)
+                : widget.semantic.divider),
+        boxShadow: [
+          if (_isHovered)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+        ],
       ),
       child: Column(
         children: [
@@ -212,6 +231,17 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
         ],
       ),
     ).animate().fadeIn(duration: 800.ms);
+
+    if (isTouch) {
+      return mainContent;
+    }
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: mainContent,
+    );
   }
 
   void _showDayDetails(int day, List<Map<String, dynamic>> events) {
@@ -310,15 +340,9 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
   }
 
   Future<void> _scheduleNotifications() async {
-    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    // Initialize settings for Android and Linux
-    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    final linux = LinuxInitializationSettings(
-      defaultActionName: 'Open notification',
-      defaultIcon: AssetsLinuxIcon('assets/icon/trueledger_icon.png'),
-    );
-    final initSettings = InitializationSettings(android: android, linux: linux);
-    await flutterLocalNotificationsPlugin.initialize(initSettings);
+    final notificationService = NotificationService();
+    // Use the central service's specialized logic
+    await notificationService.requestPermissions();
 
     int count = 0;
     for (var bill in widget.bills) {

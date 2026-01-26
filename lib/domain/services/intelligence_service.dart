@@ -28,7 +28,28 @@ class IntelligenceService {
   }) {
     List<AIInsight> insights = [];
 
-    // 1. Spending Forecast (Simple Linear Projection)
+    // 1. Wealth Projection (1 Year) - MOVED TO FIRST
+    double monthlyNet = (summary.totalIncome -
+            (summary.totalFixed +
+                summary.totalVariable +
+                summary.totalSubscriptions))
+        .toDouble();
+    if (monthlyNet > 0) {
+      final projectedYearly = monthlyNet * 12;
+
+      if (projectedYearly.isFinite && projectedYearly > 0) {
+        insights.add(AIInsight(
+          title: "WEALTH PROJECTION",
+          body:
+              "At this rate, your net worth is projected to grow substantially in exactly 12 months.",
+          type: InsightType.prediction,
+          value: "Projected",
+          currencyValue: projectedYearly,
+        ));
+      }
+    }
+
+    // 2. Spending Forecast (Simple Linear Projection)
     if (trendData.length >= 2) {
       final monthlyExpenses =
           trendData.map((d) => ((d['total'] as num?) ?? 0).toDouble()).toList();
@@ -86,24 +107,6 @@ class IntelligenceService {
             "Subscriptions account for over 10% of your income. Review and prune unused services.",
         type: InsightType.warning,
         value: "Review",
-      ));
-    }
-
-    // 4. Wealth Projection (1 Year)
-    double monthlyNet = (summary.totalIncome -
-            (summary.totalFixed +
-                summary.totalVariable +
-                summary.totalSubscriptions))
-        .toDouble();
-    if (monthlyNet > 0) {
-      double projectedYearly = monthlyNet * 12;
-      insights.add(AIInsight(
-        title: "WEALTH PROJECTION",
-        body:
-            "At this rate, your net worth is projected to grow substantially in exactly 12 months.",
-        type: InsightType.prediction,
-        value: "Projected",
-        currencyValue: projectedYearly,
       ));
     }
 

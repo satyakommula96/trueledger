@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/utils/date_helper.dart';
+import 'package:trueledger/presentation/components/hover_wrapper.dart';
 
 class UpcomingBills extends StatelessWidget {
   final List<Map<String, dynamic>> bills;
@@ -28,9 +29,12 @@ class UpcomingBills extends StatelessWidget {
             children: bills.asMap().entries.map((entry) {
           final index = entry.key;
           final b = entry.value;
-          return Container(
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: HoverWrapper(
+              borderRadius: 12,
+              child: Container(
                   width: 150,
-                  margin: const EdgeInsets.only(right: 12),
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                       color: colorScheme.surface,
@@ -57,10 +61,12 @@ class UpcomingBills extends StatelessWidget {
                         Text(DateHelper.formatDue(b['due'].toString()),
                             style: TextStyle(
                                 fontSize: 9, color: semantic.secondaryText))
-                      ]))
-              .animate()
-              .fadeIn(delay: (100 * index).ms, duration: 600.ms)
-              .slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuint);
+                      ])),
+            )
+                .animate()
+                .fadeIn(delay: (100 * index).ms, duration: 600.ms)
+                .slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuint),
+          );
         }).toList()));
   }
 }

@@ -22,6 +22,14 @@ class DashboardHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final isPrivacy = ref.watch(privacyProvider);
+
+    String getGreeting() {
+      final hour = DateTime.now().hour;
+      if (hour < 12) return "Good Morning";
+      if (hour < 17) return "Good Afternoon";
+      return "Good Evening";
+    }
 
     return SliverToBoxAdapter(
       child: Padding(
@@ -32,67 +40,96 @@ class DashboardHeader extends ConsumerWidget {
             Row(
               children: [
                 SizedBox(
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
                   child: SvgPicture.asset(
                     'assets/icon/trueledger_icon.svg',
+                    placeholderBuilder: (context) => Icon(
+                      Icons.account_balance_wallet_rounded,
+                      color: colorScheme.primary,
+                      size: 32,
+                    ),
                   ),
                 ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Text(getGreeting(),
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            color: semantic.secondaryText,
+                            letterSpacing: 1.5)),
+                    const SizedBox(height: 2),
                     Text("TrueLedger",
                         style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurface)),
-                    Text("Your Financial Outlook",
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: semantic.secondaryText,
-                            fontWeight: FontWeight.w500)),
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            color: colorScheme.onSurface,
+                            letterSpacing: -0.5)),
                   ],
                 ).animate().fadeIn(delay: 200.ms).slideX(begin: 0.1, end: 0),
               ],
             ),
             Row(
               children: [
-                // Privacy Toggle
-                Tooltip(
-                  message: ref.watch(privacyProvider)
-                      ? "Show amounts"
-                      : "Tap to hide amounts",
-                  child: IconButton(
-                    icon: Icon(
-                      ref.watch(privacyProvider)
-                          ? Icons.visibility_off_outlined
-                          : Icons.visibility_outlined,
-                      size: 22,
-                      color: colorScheme.onSurface,
-                    ),
-                    onPressed: () {
-                      ref.read(privacyProvider.notifier).toggle();
-                    },
-                  ),
+                _buildHeaderAction(
+                  context,
+                  icon: isPrivacy
+                      ? Icons.visibility_off_rounded
+                      : Icons.visibility_rounded,
+                  onTap: () => ref.read(privacyProvider.notifier).toggle(),
+                  color: isPrivacy
+                      ? colorScheme.primary
+                      : colorScheme.onSurface.withValues(alpha: 0.7),
+                  semantic: semantic,
                 ),
-                Tooltip(
-                  message: "App Settings",
-                  child: IconButton(
-                    icon: Icon(Icons.settings_outlined,
-                        size: 22, color: colorScheme.onSurface),
-                    onPressed: () async {
-                      await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) => const SettingsScreen()));
-                      onLoad();
-                    },
-                  ),
+                const SizedBox(width: 12),
+                _buildHeaderAction(
+                  context,
+                  icon: Icons.settings_rounded,
+                  onTap: () async {
+                    await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const SettingsScreen()));
+                    onLoad();
+                  },
+                  semantic: semantic,
                 ),
               ],
             ).animate().fadeIn(delay: 400.ms),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderAction(
+    BuildContext context, {
+    required IconData icon,
+    required VoidCallback onTap,
+    required AppColors semantic,
+    Color? color,
+  }) {
+    return Material(
+      color: semantic.surfaceCombined.withValues(alpha: 0.4),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: semantic.divider.withValues(alpha: 0.05)),
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: color ?? Theme.of(context).colorScheme.onSurface,
+          ),
         ),
       ),
     );
