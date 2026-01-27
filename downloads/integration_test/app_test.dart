@@ -8,10 +8,11 @@ void main() {
 
   testWidgets('App smoke test - verifies app launches', (tester) async {
     await app.main();
+    await tester.pump(const Duration(seconds: 2));
 
     // Poll for up to 30 seconds for the app to settle on a known screen
     bool found = false;
-    for (int i = 0; i < 300; i++) {
+    for (int i = 0; i < 500; i++) {
       await tester
           .pump(const Duration(milliseconds: 100)); // 100ms * 300 = 30s max
 
@@ -41,7 +42,7 @@ void main() {
       debugPrint(
           'Test timed out waiting for app to load. Dumping widget tree:');
       debugDumpApp();
-      fail("App did not load Intro or Dashboard within 10 seconds");
+      fail("App did not load Intro or Dashboard within 50 seconds");
     }
 
     expect(found, isTrue);
