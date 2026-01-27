@@ -8,6 +8,8 @@ import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 
 class MonthlyHistoryScreen extends ConsumerStatefulWidget {
   const MonthlyHistoryScreen({super.key});
@@ -61,6 +63,44 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
     final semantic = Theme.of(context).extension<AppColors>()!;
     return Scaffold(
       appBar: AppBar(title: const Text("LEDGER HISTORY")),
+      floatingActionButton: HoverWrapper(
+        onTap: () async {
+          await Navigator.push(
+              context, MaterialPageRoute(builder: (_) => AddExpense()));
+          load();
+        },
+        borderRadius: 28,
+        glowColor: semantic.income,
+        glowOpacity: 0.15,
+        child: Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          decoration: BoxDecoration(
+            color: semantic.income,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: semantic.income.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add_rounded, color: Colors.white),
+              SizedBox(width: 8),
+              Text("ADD ENTRY",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                      letterSpacing: 1)),
+            ],
+          ),
+        ),
+      ),
       body: Column(
         children: [
           // Modern Year Selector
@@ -131,99 +171,121 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : monthSummaries.isEmpty
-                    ? Center(
-                        child: Text("NO PERIODS TRACKED.",
-                            style: TextStyle(
-                                color: semantic.secondaryText,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold)))
-                    : ListView.builder(
-                        padding: EdgeInsets.fromLTRB(24, 8, 24,
-                            24 + MediaQuery.of(context).padding.bottom),
-                        itemCount: monthSummaries.length,
-                        itemBuilder: (_, i) {
-                          final s = monthSummaries[i];
-                          final positive = s['net'] >= 0;
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                                color: colorScheme.surface,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: semantic.divider)),
-                            child: InkWell(
-                              onTap: () async {
-                                await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) => MonthDetailScreen(
-                                            month: s['month'])));
-                                load();
-                              },
-                              borderRadius: BorderRadius.circular(16),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(_formatMonth(s['month']),
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w800,
-                                                  fontSize: 18,
-                                                  letterSpacing: -0.5,
-                                                  color:
-                                                      colorScheme.onSurface)),
-                                          Text(
-                                              CurrencyFormatter.format(
-                                                  s['net']),
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w800,
-                                                  color: positive
-                                                      ? semantic.income
-                                                      : semantic.warning,
-                                                  fontSize: 16)),
-                                        ]),
-                                    const SizedBox(height: 20),
-                                    Divider(height: 1, color: semantic.divider),
-                                    const SizedBox(height: 20),
-                                    Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          _buildStatItem(
-                                              "INCOME",
-                                              CurrencyFormatter.format(
-                                                  s['income']),
-                                              semantic),
-                                          _buildStatItem(
-                                              "EXPENDITURE",
-                                              CurrencyFormatter.format(
-                                                  s['expenses']),
-                                              semantic),
-                                          _buildStatItem(
-                                              "INVESTED",
-                                              CurrencyFormatter.format(
-                                                  s['invested']),
-                                              semantic),
-                                        ]),
-                                  ],
-                                ),
+                : Column(
+                    children: [
+                      Expanded(
+                        child: monthSummaries.isEmpty
+                            ? Center(
+                                child: Text("NO PERIODS TRACKED.",
+                                    style: TextStyle(
+                                        color: semantic.secondaryText,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold)))
+                            : ListView.builder(
+                                padding: EdgeInsets.fromLTRB(24, 0, 24,
+                                    24 + MediaQuery.of(context).padding.bottom),
+                                itemCount: monthSummaries.length,
+                                itemBuilder: (_, i) {
+                                  final s = monthSummaries[i];
+                                  final positive = s['net'] >= 0;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: HoverWrapper(
+                                      onTap: () async {
+                                        await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (_) =>
+                                                    MonthDetailScreen(
+                                                        month: s['month'])));
+                                        load();
+                                      },
+                                      borderRadius: 16,
+                                      glowColor: positive
+                                          ? semantic.income
+                                          : semantic.warning,
+                                      glowOpacity: 0.1,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                            color: colorScheme.surface,
+                                            borderRadius:
+                                                BorderRadius.circular(16),
+                                            border: Border.all(
+                                                color: semantic.divider
+                                                    .withValues(alpha: 0.5))),
+                                        padding: const EdgeInsets.all(24),
+                                        child: Column(
+                                          children: [
+                                            Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(_formatMonth(s['month']),
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          fontSize: 18,
+                                                          letterSpacing: -0.5,
+                                                          color: colorScheme
+                                                              .onSurface)),
+                                                  Text(
+                                                      CurrencyFormatter.format(
+                                                          s['net']),
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          color: positive
+                                                              ? semantic.income
+                                                              : semantic
+                                                                  .warning,
+                                                          fontSize: 16)),
+                                                ]),
+                                            const SizedBox(height: 20),
+                                            Divider(
+                                                height: 1,
+                                                color: semantic.divider
+                                                    .withValues(alpha: 0.3)),
+                                            const SizedBox(height: 20),
+                                            Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  _buildStatItem(
+                                                      "INCOME",
+                                                      CurrencyFormatter.format(
+                                                          s['income']),
+                                                      semantic),
+                                                  _buildStatItem(
+                                                      "EXPENDITURE",
+                                                      CurrencyFormatter.format(
+                                                          s['expenses']),
+                                                      semantic),
+                                                  _buildStatItem(
+                                                      "INVESTED",
+                                                      CurrencyFormatter.format(
+                                                          s['invested']),
+                                                      semantic),
+                                                ]),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                        .animate()
+                                        .fadeIn(
+                                            delay: (100 * i).clamp(0, 500).ms,
+                                            duration: 600.ms)
+                                        .slideY(
+                                            begin: 0.1,
+                                            end: 0,
+                                            curve: Curves.easeOutQuint),
+                                  );
+                                },
                               ),
-                            ),
-                          )
-                              .animate()
-                              .fadeIn(
-                                  delay: (100 * i).clamp(0, 500).ms,
-                                  duration: 600.ms)
-                              .slideY(
-                                  begin: 0.1,
-                                  end: 0,
-                                  curve: Curves.easeOutQuint);
-                        },
                       ),
+                    ],
+                  ),
           ),
         ],
       ),

@@ -5,10 +5,11 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart'
 import 'package:timezone/data/latest.dart' as tz_data;
 
 class NotificationService {
-  static final NotificationService _instance = NotificationService._internal();
+  static NotificationService? _instance;
 
   factory NotificationService() {
-    return _instance;
+    _instance ??= NotificationService._internal();
+    return _instance!;
   }
 
   NotificationService._internal();

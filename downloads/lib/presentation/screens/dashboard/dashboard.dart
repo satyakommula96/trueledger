@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
@@ -14,8 +15,8 @@ import 'package:trueledger/presentation/screens/dashboard/dashboard_components/s
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/payment_calendar.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/wealth_hero.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/smart_insights.dart';
-import 'package:trueledger/presentation/screens/dashboard/dashboard_components/health_meter.dart';
 import 'package:trueledger/domain/services/intelligence_service.dart';
+import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
 
 class Dashboard extends ConsumerWidget {
   const Dashboard({super.key});
@@ -44,6 +45,8 @@ class Dashboard extends ConsumerWidget {
           ref.invalidate(dashboardProvider);
         }
 
+        final currentMonth = DateFormat('yyyy-MM').format(DateTime.now());
+
         return ValueListenableBuilder<String>(
             valueListenable: CurrencyFormatter.currencyNotifier,
             builder: (context, currency, _) {
@@ -70,20 +73,6 @@ class Dashboard extends ConsumerWidget {
                                       end: 0,
                                       curve: Curves.easeOutQuint),
                               const SizedBox(height: 24),
-                              HealthMeter(
-                                score: IntelligenceService.calculateHealthScore(
-                                  summary: summary,
-                                  budgets: budgets,
-                                ),
-                                semantic: semantic,
-                              )
-                                  .animate(delay: 100.ms)
-                                  .fade(duration: 600.ms)
-                                  .slideY(
-                                      begin: 0.2,
-                                      end: 0,
-                                      curve: Curves.easeOutQuint),
-                              const SizedBox(height: 24),
                               Row(
                                 children: [
                                   Expanded(
@@ -95,7 +84,19 @@ class Dashboard extends ConsumerWidget {
                                                   ref.watch(privacyProvider)),
                                           valueColor: semantic.income,
                                           semantic: semantic,
-                                          icon: Icons.payments_rounded)),
+                                          icon: Icons.payments_rounded,
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        MonthDetailScreen(
+                                                          month: currentMonth,
+                                                          initialTypeFilter:
+                                                              'Income',
+                                                          showFilters: false,
+                                                        )));
+                                          })),
                                   const SizedBox(width: 12),
                                   Expanded(
                                       child: SummaryCard(
@@ -109,7 +110,19 @@ class Dashboard extends ConsumerWidget {
                                           valueColor: semantic.overspent,
                                           semantic: semantic,
                                           icon: Icons
-                                              .shopping_cart_checkout_rounded)),
+                                              .shopping_cart_checkout_rounded,
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        MonthDetailScreen(
+                                                          month: currentMonth,
+                                                          initialTypeFilter:
+                                                              'Expenses',
+                                                          showFilters: false,
+                                                        )));
+                                          })),
                                 ],
                               )
                                   .animate(delay: 200.ms)
@@ -157,6 +170,10 @@ class Dashboard extends ConsumerWidget {
                                 insights: IntelligenceService.generateInsights(
                                   summary: summary,
                                   trendData: trendData,
+                                  budgets: budgets,
+                                ),
+                                score: IntelligenceService.calculateHealthScore(
+                                  summary: summary,
                                   budgets: budgets,
                                 ),
                                 semantic: semantic,

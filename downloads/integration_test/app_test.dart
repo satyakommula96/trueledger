@@ -21,6 +21,7 @@ void main() {
           // Check for Title of Intro OR Dashboard OR specific failure/loading states that indicate app is alive
           return data == 'Track Your Wealth' || // Intro Title
               data == 'Dashboard' || // Dashboard Title
+              data == 'Wealth Overview' || // Dashboard Section
               data == 'Smart Budgeting' || // Intro Page 2
               data == 'ANALYSIS & BUDGETS' || // Analysis Screen
               data == 'TrueLedger' || // App Bar Title

@@ -5,7 +5,7 @@ set -e
 
 APP_NAME="trueledger"
 # Extract version from pubspec.yaml (e.g., 1.0.0 from 1.0.0+1)
-VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //; s/+.*//')
+VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
 ARCH="amd64"
 MAINTAINER="Satya Kommula"
 DESCRIPTION="TrueLedger: Premium Financial Management Application"

@@ -3,7 +3,7 @@ set -e
 
 APP_NAME="TrueLedger"
 # Extract version from pubspec.yaml (e.g., 1.0.0 from 1.0.0+1)
-VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //; s/+.*//')
+VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
 DMG_NAME="TrueLedger.dmg"
 
 echo "Building macOS app..."

@@ -6,6 +6,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/screens/net_worth/net_worth_details.dart';
+import 'package:trueledger/presentation/components/hover_wrapper.dart';
 
 class AssetLiabilityCard extends ConsumerWidget {
   final MonthlySummary summary;
@@ -22,10 +23,14 @@ class AssetLiabilityCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPrivate = ref.watch(privacyProvider);
+    final totalAssets =
+        summary.netWorth + summary.creditCardDebt + summary.loansTotal;
+    final totalLiabilities = summary.creditCardDebt + summary.loansTotal;
+
     return Row(
       children: [
         Expanded(
-          child: GestureDetector(
+          child: HoverWrapper(
             onTap: () async {
               await Navigator.push(
                   context,
@@ -34,6 +39,9 @@ class AssetLiabilityCard extends ConsumerWidget {
                           viewMode: NetWorthView.assets)));
               onLoad();
             },
+            borderRadius: 20,
+            glowColor: semantic.income,
+            glowOpacity: 0.15,
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -46,15 +54,8 @@ class AssetLiabilityCard extends ConsumerWidget {
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
-                  border:
-                      Border.all(color: semantic.income.withValues(alpha: 0.2)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: semantic.income.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ]),
+                  border: Border.all(
+                      color: semantic.income.withValues(alpha: 0.2))),
               child: Stack(
                 children: [
                   Positioned(
@@ -65,21 +66,18 @@ class AssetLiabilityCard extends ConsumerWidget {
                           color: semantic.income.withValues(alpha: 0.1))),
                   _buildMiniStat(
                       "ASSETS",
-                      CurrencyFormatter.format(
-                          summary.netWorth +
-                              summary.creditCardDebt +
-                              summary.loansTotal,
+                      CurrencyFormatter.format(totalAssets,
                           isPrivate: isPrivate),
                       semantic.income,
                       semantic),
                 ],
               ),
             ),
-          ),
-        ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.1, end: 0),
+          ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.1, end: 0),
+        ),
         const SizedBox(width: 16),
         Expanded(
-          child: GestureDetector(
+          child: HoverWrapper(
             onTap: () async {
               await Navigator.push(
                   context,
@@ -88,6 +86,9 @@ class AssetLiabilityCard extends ConsumerWidget {
                           viewMode: NetWorthView.liabilities)));
               onLoad();
             },
+            borderRadius: 20,
+            glowColor: semantic.overspent,
+            glowOpacity: 0.15,
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -101,14 +102,7 @@ class AssetLiabilityCard extends ConsumerWidget {
                   ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: semantic.overspent.withValues(alpha: 0.2)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: semantic.overspent.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ]),
+                      color: semantic.overspent.withValues(alpha: 0.2))),
               child: Stack(
                 children: [
                   Positioned(
@@ -119,16 +113,15 @@ class AssetLiabilityCard extends ConsumerWidget {
                           color: semantic.overspent.withValues(alpha: 0.1))),
                   _buildMiniStat(
                       "LIABILITIES",
-                      CurrencyFormatter.format(
-                          summary.creditCardDebt + summary.loansTotal,
+                      CurrencyFormatter.format(totalLiabilities,
                           isPrivate: isPrivate),
                       semantic.overspent,
                       semantic),
                 ],
               ),
             ),
-          ),
-        ).animate().fadeIn(duration: 600.ms).slideX(begin: 0.1, end: 0),
+          ).animate().fadeIn(duration: 600.ms).slideX(begin: 0.1, end: 0),
+        ),
       ],
     );
   }
