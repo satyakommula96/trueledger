@@ -47,8 +47,7 @@ void main() {
     expect(find.text('Initializing...'), findsOneWidget);
 
     // Wait for initialization
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     // Should now show IntroScreen
     expect(find.byType(IntroScreen), findsOneWidget);
@@ -58,8 +57,7 @@ void main() {
     await tester.tap(skipButton);
 
     // Wait for navigation
-    await tester.pump(const Duration(milliseconds: 500));
-    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     // Should be on Dashboard (It might show loading if dashboardProvider is real)
     // We haven't mocked dashboardProvider, so it will try to call the real repository.
