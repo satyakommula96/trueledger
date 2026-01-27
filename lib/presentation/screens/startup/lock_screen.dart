@@ -270,51 +270,55 @@ class _LockScreenState extends ConsumerState<LockScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(_pinLength, (index) {
                 return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  width: 40,
-                  height: 40,
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  width: 24,
+                  height: 24,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: index < _pin.length
+                          ? Colors.transparent
+                          : colorScheme.onSurface.withValues(alpha: 0.2),
+                      width: 2,
+                    ),
                     color: _showPin && index < _pin.length
-                        ? colorScheme.surfaceContainerHighest
-                            .withValues(alpha: 0.5)
-                        : Colors.transparent,
+                        ? Colors.transparent
+                        : (index < _pin.length
+                            ? (_isError ? Colors.red : colorScheme.primary)
+                            : Colors.transparent),
                   ),
                   child: _showPin && index < _pin.length
                       ? Text(
                           _pin[index],
                           style: TextStyle(
-                            fontSize: 24,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: colorScheme.onSurface,
                           ),
                         )
-                      : Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: index < _pin.length
-                                ? (_isError ? Colors.red : colorScheme.primary)
-                                : colorScheme.surfaceContainerHighest,
-                          ),
-                        ),
+                      : null,
                 );
               }),
             )
                 .animate(target: _isError ? 1 : 0)
                 .shakeX(duration: 500.ms, hz: 4, amount: 20),
-            const SizedBox(height: 16),
+            const SizedBox(height: 32),
             IconButton(
               onPressed: () => setState(() => _showPin = !_showPin),
+              style: IconButton.styleFrom(
+                backgroundColor:
+                    colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                padding: const EdgeInsets.all(12),
+              ),
               icon: Icon(
                 _showPin
                     ? Icons.visibility_off_rounded
                     : Icons.visibility_rounded,
+                size: 28,
                 color: _showPin
                     ? colorScheme.primary
-                    : colorScheme.onSurface.withValues(alpha: 0.5),
+                    : colorScheme.onSurface.withValues(alpha: 0.8),
               ),
             ),
             if (_isError)
