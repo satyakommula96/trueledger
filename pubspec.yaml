@@ -51,6 +51,7 @@ dev_dependencies:
   mocktail: ^1.0.4
   integration_test:
     sdk: flutter
+  msix: ^3.16.13
 
 flutter_launcher_icons:
   android: true
@@ -79,6 +80,16 @@ flutter_launcher_icons:
   linux:
     generate: true
     image_path: assets/icon/trueledger_icon.png
+
+msix_config:
+  display_name: TrueLedger
+  publisher_display_name: Satya Kommula
+  publisher: CN=SatyaKommula, O=SatyaKommula
+  identity_name: com.satyakommula.trueledger
+  msix_version: 1.0.0.0
+  logo_path: assets/icon/trueledger_icon.png
+  capabilities: internetClient, internetClientServer, privateNetworkClientServer
+  store: true
 
 flutter:
   uses-material-design: true

@@ -99,11 +99,21 @@ jobs:
         run: |
           iscc /DAppVersion=${{ steps.version.outputs.VERSION }} scripts/windows_setup.iss
 
-      - name: Upload Artifact
+      - name: Create MSIX Package
+        run: |
+          flutter pub run msix:create --version ${{ steps.version.outputs.VERSION }}.0
+
+      - name: Upload EXE Artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrueLedger-Windows-exe
           path: build/windows/x64/installer/TrueLedger.exe
+
+      - name: Upload MSIX Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrueLedger-Windows-msix
+          path: build/windows/x64/runner/Release/TrueLedger.msix
 
   build-macos:
     name: Build macOS (DMG)
@@ -157,10 +167,15 @@ jobs:
         with:
           name: TrueLedger-Android-apk
 
-      - name: Download Windows Artifact
+      - name: Download Windows EXE Artifact
         uses: actions/download-artifact@v4
         with:
           name: TrueLedger-Windows-exe
+
+      - name: Download Windows MSIX Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: TrueLedger-Windows-msix
 
       - name: Download macOS Artifact
         uses: actions/download-artifact@v4
@@ -178,6 +193,7 @@ jobs:
             TrueLedger.deb
             TrueLedger.apk
             TrueLedger.exe
+            TrueLedger.msix
             TrueLedger.dmg
           generate_release_notes: true
 

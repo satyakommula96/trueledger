@@ -23,9 +23,47 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/analysis_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/providers/user_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
+
+  Future<void> _showNamePicker(BuildContext context, WidgetRef ref) async {
+    final currentName = ref.read(userProvider);
+    final controller = TextEditingController(text: currentName);
+
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Set User Name"),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: "Enter your name",
+            labelText: "Name",
+          ),
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("CANCEL"),
+          ),
+          TextButton(
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                ref.read(userProvider.notifier).setName(controller.text.trim());
+              }
+              Navigator.pop(context);
+            },
+            child: const Text("SAVE"),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _showThemePicker(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     if (!context.mounted) return;
@@ -822,6 +860,15 @@ class SettingsScreen extends ConsumerWidget {
         padding: EdgeInsets.fromLTRB(
             24, 24, 24, 24 + MediaQuery.of(context).padding.bottom),
         children: [
+          _buildOption(
+            context,
+            "User Name",
+            ref.watch(userProvider),
+            Icons.person_outline_rounded,
+            Colors.blue,
+            () => _showNamePicker(context, ref),
+          ),
+          const SizedBox(height: 16),
           _buildOption(
             context,
             "Appearance",

@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
+import 'package:trueledger/presentation/providers/user_provider.dart';
 import 'package:trueledger/core/theme/theme.dart';
 
 import 'package:trueledger/presentation/screens/settings/settings.dart';
@@ -22,13 +23,20 @@ class DashboardHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final userName = ref.watch(userProvider);
     final isPrivacy = ref.watch(privacyProvider);
 
     String getGreeting() {
       final hour = DateTime.now().hour;
-      if (hour < 12) return "Good Morning";
-      if (hour < 17) return "Good Afternoon";
-      return "Good Evening";
+      String greeting;
+      if (hour < 12) {
+        greeting = "Good Morning";
+      } else if (hour < 17) {
+        greeting = "Good Afternoon";
+      } else {
+        greeting = "Good Evening";
+      }
+      return "$greeting, $userName";
     }
 
     return SliverToBoxAdapter(
