@@ -303,22 +303,16 @@ class _LockScreenState extends ConsumerState<LockScreen> {
             )
                 .animate(target: _isError ? 1 : 0)
                 .shakeX(duration: 500.ms, hz: 4, amount: 20),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
             IconButton(
               onPressed: () => setState(() => _showPin = !_showPin),
-              style: IconButton.styleFrom(
-                backgroundColor:
-                    colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                padding: const EdgeInsets.all(12),
-              ),
               icon: Icon(
                 _showPin
                     ? Icons.visibility_off_rounded
                     : Icons.visibility_rounded,
-                size: 28,
                 color: _showPin
                     ? colorScheme.primary
-                    : colorScheme.onSurface.withValues(alpha: 0.8),
+                    : colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
             if (_isError)
