@@ -33,9 +33,6 @@ Future<void> main() async {
     themeNotifier.value = ThemeMode.dark;
   }
 
-  // 4. Configure fonts to work offline
-  AppTheme.initializeFonts();
-
   runApp(
     ProviderScope(
       overrides: [
