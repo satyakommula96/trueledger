@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
+  // Initialize GoogleFonts config to handle network failures gracefully
+  static void initializeFonts() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  }
+
   // Semantic Colors mapped from the USER's HTML sample tokens
   static AppColors darkColors = AppColors(
     income: const Color(0xFF34D399), // --green (Dark)
