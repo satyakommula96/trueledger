@@ -20,7 +20,6 @@ class LockScreen extends ConsumerStatefulWidget {
 class _LockScreenState extends ConsumerState<LockScreen> {
   String _pin = "";
   bool _isError = false;
-  bool _showPin = false;
   late int _pinLength;
 
   @override
@@ -270,57 +269,31 @@ class _LockScreenState extends ConsumerState<LockScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(_pinLength, (index) {
                 return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
-                  width: 24,
-                  height: 24,
-                  alignment: Alignment.center,
+                  margin: const EdgeInsets.all(8),
+                  width: 16,
+                  height: 16,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: index < _pin.length
-                          ? Colors.transparent
-                          : colorScheme.onSurface.withValues(alpha: 0.2),
-                      width: 2,
-                    ),
-                    color: _showPin && index < _pin.length
-                        ? Colors.transparent
-                        : (index < _pin.length
-                            ? (_isError ? Colors.red : colorScheme.primary)
-                            : Colors.transparent),
+                    color: index < _pin.length
+                        ? (_isError ? Colors.red : colorScheme.primary)
+                        : colorScheme.surfaceContainerHighest,
                   ),
-                  child: _showPin && index < _pin.length
-                      ? Text(
-                          _pin[index],
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
-                          ),
-                        )
-                      : null,
                 );
               }),
             )
                 .animate(target: _isError ? 1 : 0)
                 .shakeX(duration: 500.ms, hz: 4, amount: 20),
-            const SizedBox(height: 16),
-            IconButton(
-              onPressed: () => setState(() => _showPin = !_showPin),
-              icon: Icon(
-                _showPin
-                    ? Icons.visibility_off_rounded
-                    : Icons.visibility_rounded,
-                color: _showPin
-                    ? colorScheme.primary
-                    : colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
-            ),
             if (_isError)
               const Padding(
                 padding: EdgeInsets.only(top: 16),
-                child:
-                    Text("Incorrect PIN", style: TextStyle(color: Colors.red)),
-              ).animate().fadeIn().slideY(begin: -0.5),
+                child: Text("Incorrect PIN",
+                    style: TextStyle(
+                        color: Colors.red, fontWeight: FontWeight.bold)),
+              )
+                  .animate()
+                  .fadeIn()
+                  .slideY(begin: -0.5)
+                  .shake(duration: 400.ms, hz: 3),
             const Spacer(),
             Container(
               padding: const EdgeInsets.only(bottom: 20),
