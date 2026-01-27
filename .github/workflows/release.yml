@@ -186,28 +186,37 @@ jobs:
         with:
           name: TrueLedger-macOS-dmg
 
-      - name: Rename APK
-        run: mv app-release.apk TrueLedger.apk
+      - name: Get Version
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Rename Files with Version
+        run: |
+          mv app-release.apk TrueLedger-${{ steps.version.outputs.VERSION }}.apk
+          mv TrueLedger.deb TrueLedger-${{ steps.version.outputs.VERSION }}.deb
+          mv TrueLedger.exe TrueLedger-${{ steps.version.outputs.VERSION }}.exe
+          mv TrueLedger.msix TrueLedger-${{ steps.version.outputs.VERSION }}.msix
+          mv TrueLedger.dmg TrueLedger-${{ steps.version.outputs.VERSION }}.dmg
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            TrueLedger.deb
-            TrueLedger.apk
-            TrueLedger.exe
-            TrueLedger.msix
-            TrueLedger.dmg
+            TrueLedger-${{ steps.version.outputs.VERSION }}.deb
+            TrueLedger-${{ steps.version.outputs.VERSION }}.apk
+            TrueLedger-${{ steps.version.outputs.VERSION }}.exe
+            TrueLedger-${{ steps.version.outputs.VERSION }}.msix
+            TrueLedger-${{ steps.version.outputs.VERSION }}.dmg
           generate_release_notes: true
 
-      - name: Deploy Direct Link to GitHub Pages
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: .
           publish_branch: gh-pages
-          destination_dir: downloads
+          destination_dir: downloads/${{ steps.version.outputs.VERSION }}
           keep_files: true
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
