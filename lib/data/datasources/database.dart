@@ -13,6 +13,8 @@ import 'schema.dart';
 import 'database_migrations.dart';
 import 'package:trueledger/core/config/version.dart';
 
+import 'package:trueledger/core/config/app_config.dart';
+
 class AppDatabase {
   static common.Database? _db;
   static Future<common.Database>? _initializationInstance;
@@ -27,6 +29,12 @@ class AppDatabase {
   }
 
   static Future<String> _getOrGenerateKey() async {
+    // Return a dummy key for integration tests to avoid KeyChain hangs on macOS CI
+    if (AppConfig.isIntegrationTest) {
+      debugPrint('TEST MODE: Using dummy database key.');
+      return 'dummy_test_key_integration_mode_123';
+    }
+
     try {
       String? key = await _storage.read(key: _keyParams);
       if (key == null) {

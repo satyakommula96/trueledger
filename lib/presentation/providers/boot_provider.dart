@@ -4,12 +4,19 @@ import 'package:trueledger/presentation/providers/usecase_providers.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'package:trueledger/core/config/app_config.dart';
+
 final bootProvider = FutureProvider<String?>((ref) async {
   final startupUseCase = ref.watch(startupUseCaseProvider);
   final result = await startupUseCase(NoParams());
 
   if (result.isFailure) {
     throw Exception(result.failureOrThrow.message);
+  }
+
+  // Bypass Secure Storage during tests to avoid UI blocking hangs
+  if (AppConfig.isIntegrationTest) {
+    return null;
   }
 
   const storage = FlutterSecureStorage();
