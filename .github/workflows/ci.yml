@@ -136,7 +136,7 @@ jobs:
       # Linux Test
       - name: Run Linux Integration Test
         if: matrix.target == 'linux'
-        run: xvfb-run flutter test integration_test/app_test.dart -d linux -v
+        run: xvfb-run flutter test integration_test/app_test.dart -d linux
 
       # iOS Test
       - name: Run iOS Integration Test
@@ -149,7 +149,7 @@ jobs:
               UDID=$(xcrun simctl list devices available | grep "FlutterTester" | awk -F '[()]' '{print $2}' | head -n 1)
            fi
            xcrun simctl boot $UDID || true
-           flutter test integration_test/app_test.dart -d $UDID -v
+           flutter test integration_test/app_test.dart -d $UDID
 
       # Android Test
       - name: Run Android Integration Test
@@ -165,10 +165,10 @@ jobs:
       # macOS Test
       - name: Run macOS Integration Test
         if: matrix.target == 'macos'
-        run: flutter test integration_test/app_test.dart -d macos -v
+        run: flutter test integration_test/app_test.dart -d macos
 
       # Windows Test
       - name: Run Windows Integration Test
         if: matrix.target == 'windows'
-        run: flutter test integration_test/app_test.dart -d windows -v
+        run: flutter test integration_test/app_test.dart -d windows
 
