@@ -192,28 +192,29 @@ jobs:
 
       - name: Rename Files with Version
         run: |
-          mv app-release.apk TrueLedger-${{ steps.version.outputs.VERSION }}.apk
-          mv TrueLedger.deb TrueLedger-${{ steps.version.outputs.VERSION }}.deb
-          mv TrueLedger.exe TrueLedger-${{ steps.version.outputs.VERSION }}.exe
-          mv TrueLedger.msix TrueLedger-${{ steps.version.outputs.VERSION }}.msix
-          mv TrueLedger.dmg TrueLedger-${{ steps.version.outputs.VERSION }}.dmg
+          mv app-release.apk TrueLedger_${{ steps.version.outputs.VERSION }}.apk
+          mv TrueLedger.deb TrueLedger_${{ steps.version.outputs.VERSION }}.deb
+          mv TrueLedger.exe TrueLedger_${{ steps.version.outputs.VERSION }}.exe
+          mv TrueLedger.msix TrueLedger_${{ steps.version.outputs.VERSION }}.msix
+          mv TrueLedger.dmg TrueLedger_${{ steps.version.outputs.VERSION }}.dmg
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
-            TrueLedger-${{ steps.version.outputs.VERSION }}.deb
-            TrueLedger-${{ steps.version.outputs.VERSION }}.apk
-            TrueLedger-${{ steps.version.outputs.VERSION }}.exe
-            TrueLedger-${{ steps.version.outputs.VERSION }}.msix
-            TrueLedger-${{ steps.version.outputs.VERSION }}.dmg
+            TrueLedger_${{ steps.version.outputs.VERSION }}.deb
+            TrueLedger_${{ steps.version.outputs.VERSION }}.apk
+            TrueLedger_${{ steps.version.outputs.VERSION }}.exe
+            TrueLedger_${{ steps.version.outputs.VERSION }}.msix
+            TrueLedger_${{ steps.version.outputs.VERSION }}.dmg
           generate_release_notes: true
 
       - name: Prepare Pages Deployment
         run: |
           mkdir release_dist
-          cp TrueLedger-${{ steps.version.outputs.VERSION }}.* release_dist/
+          cp TrueLedger_${{ steps.version.outputs.VERSION }}.* release_dist/
+          touch release_dist/.nojekyll
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
