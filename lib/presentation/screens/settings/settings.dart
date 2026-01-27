@@ -683,27 +683,41 @@ class SettingsScreen extends ConsumerWidget {
     String input = "";
     return await showDialog<bool>(
             context: context,
-            builder: (ctx) => AlertDialog(
-                  title: const Text("Verify PIN"),
-                  content: TextField(
-                    autofocus: true,
-                    keyboardType: TextInputType.number,
-                    obscureText: true,
-                    maxLength: correctPin.length,
-                    onChanged: (v) => input = v,
-                    decoration:
-                        const InputDecoration(hintText: "Enter current PIN"),
-                  ),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text("CANCEL")),
-                    TextButton(
-                        onPressed: () =>
-                            Navigator.pop(ctx, input == correctPin),
-                        child: const Text("VERIFY")),
-                  ],
-                )) ??
+            builder: (ctx) {
+              bool obscure = true;
+              return StatefulBuilder(
+                builder: (context, setState) {
+                  return AlertDialog(
+                    title: const Text("Verify PIN"),
+                    content: TextField(
+                      autofocus: true,
+                      keyboardType: TextInputType.number,
+                      obscureText: obscure,
+                      maxLength: correctPin.length,
+                      onChanged: (v) => input = v,
+                      decoration: InputDecoration(
+                        hintText: "Enter current PIN",
+                        suffixIcon: IconButton(
+                          icon: Icon(obscure
+                              ? Icons.visibility_rounded
+                              : Icons.visibility_off_rounded),
+                          onPressed: () => setState(() => obscure = !obscure),
+                        ),
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text("CANCEL")),
+                      TextButton(
+                          onPressed: () =>
+                              Navigator.pop(ctx, input == correctPin),
+                          child: const Text("VERIFY")),
+                    ],
+                  );
+                },
+              );
+            }) ??
         false;
   }
 
@@ -788,6 +802,7 @@ class SettingsScreen extends ConsumerWidget {
       await showDialog(
           context: context,
           builder: (ctx) {
+            bool obscure = true;
             return StatefulBuilder(builder: (context, setState) {
               return AlertDialog(
                 title: Text("Set $targetLength-Digit PIN"),
@@ -798,9 +813,17 @@ class SettingsScreen extends ConsumerWidget {
                       autofocus: true,
                       keyboardType: TextInputType.number,
                       maxLength: targetLength,
-                      obscureText: true,
+                      obscureText: obscure,
                       onChanged: (val) => newPin = val,
-                      decoration: const InputDecoration(hintText: "Enter PIN"),
+                      decoration: InputDecoration(
+                        hintText: "Enter PIN",
+                        suffixIcon: IconButton(
+                          icon: Icon(obscure
+                              ? Icons.visibility_rounded
+                              : Icons.visibility_off_rounded),
+                          onPressed: () => setState(() => obscure = !obscure),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextButton(

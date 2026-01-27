@@ -20,6 +20,7 @@ class LockScreen extends ConsumerStatefulWidget {
 class _LockScreenState extends ConsumerState<LockScreen> {
   String _pin = "";
   bool _isError = false;
+  bool _showPin = false;
   late int _pinLength;
 
   @override
@@ -269,20 +270,53 @@ class _LockScreenState extends ConsumerState<LockScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(_pinLength, (index) {
                 return Container(
-                  margin: const EdgeInsets.all(8),
-                  width: 16,
-                  height: 16,
+                  margin: const EdgeInsets.symmetric(horizontal: 6),
+                  width: 40,
+                  height: 40,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: index < _pin.length
-                        ? (_isError ? Colors.red : colorScheme.primary)
-                        : colorScheme.surfaceContainerHighest,
+                    color: _showPin && index < _pin.length
+                        ? colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.5)
+                        : Colors.transparent,
                   ),
+                  child: _showPin && index < _pin.length
+                      ? Text(
+                          _pin[index],
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                          ),
+                        )
+                      : Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: index < _pin.length
+                                ? (_isError ? Colors.red : colorScheme.primary)
+                                : colorScheme.surfaceContainerHighest,
+                          ),
+                        ),
                 );
               }),
             )
                 .animate(target: _isError ? 1 : 0)
                 .shakeX(duration: 500.ms, hz: 4, amount: 20),
+            const SizedBox(height: 16),
+            IconButton(
+              onPressed: () => setState(() => _showPin = !_showPin),
+              icon: Icon(
+                _showPin
+                    ? Icons.visibility_off_rounded
+                    : Icons.visibility_rounded,
+                color: _showPin
+                    ? colorScheme.primary
+                    : colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+            ),
             if (_isError)
               const Padding(
                 padding: EdgeInsets.only(top: 16),
