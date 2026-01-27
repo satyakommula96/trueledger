@@ -952,12 +952,13 @@ class SettingsScreen extends ConsumerWidget {
                         letterSpacing: 2,
                         color: Colors.grey)),
                 ref.watch(appVersionProvider).when(
-                  data: (version) => Text("Version $version",
-                      style: const TextStyle(fontSize: 10, color: Colors.grey)),
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const Text("Version 1.1.0",
-                      style: TextStyle(fontSize: 10, color: Colors.grey)),
-                ),
+                      data: (version) => Text("Version $version",
+                          style: const TextStyle(
+                              fontSize: 10, color: Colors.grey)),
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const Text("Version 1.1.0",
+                          style: TextStyle(fontSize: 10, color: Colors.grey)),
+                    ),
                 const SizedBox(height: 12),
                 const Text(
                   "TrueLedger stores all data locally on your device.\nNo data is transmitted or stored on external servers.",
