@@ -32,9 +32,17 @@ class NotificationService {
       requestAlertPermission: false,
     );
 
-    final fln.LinuxInitializationSettings initializationSettingsLinux =
+    const fln.LinuxInitializationSettings initializationSettingsLinux =
         fln.LinuxInitializationSettings(
       defaultActionName: 'Open notification',
+    );
+
+    // Windows initialization (Required for version 17+)
+    const fln.WindowsInitializationSettings initializationSettingsWindows =
+        fln.WindowsInitializationSettings(
+      appName: 'TrueLedger',
+      appUserModelId: 'com.satyakommula.TrueLedger',
+      guid: '9f2e3a8b-1d4c-4e5f-8a0b-1c2d3e4f5a6b',
     );
 
     final fln.InitializationSettings initializationSettings =
@@ -43,6 +51,7 @@ class NotificationService {
       iOS: initializationSettingsDarwin,
       macOS: initializationSettingsDarwin,
       linux: initializationSettingsLinux,
+      windows: initializationSettingsWindows,
     );
 
     await flutterLocalNotificationsPlugin.initialize(
@@ -106,6 +115,7 @@ class NotificationService {
       iOS: fln.DarwinNotificationDetails(),
       macOS: fln.DarwinNotificationDetails(),
       linux: fln.LinuxNotificationDetails(),
+      windows: fln.WindowsNotificationDetails(),
     );
 
     await flutterLocalNotificationsPlugin.show(
@@ -140,6 +150,7 @@ class NotificationService {
         iOS: fln.DarwinNotificationDetails(),
         macOS: fln.DarwinNotificationDetails(),
         linux: fln.LinuxNotificationDetails(),
+        windows: fln.WindowsNotificationDetails(),
       ),
       androidScheduleMode: fln.AndroidScheduleMode.inexactAllowWhileIdle,
     );
