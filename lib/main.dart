@@ -6,6 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'dart:ui';
+// Windows-specific: use sqlite3_flutter_libs instead of sqlcipher_flutter_libs
+// to avoid OpenSSL linker issues on Windows CI runners
+import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
@@ -18,9 +21,13 @@ Future<void> main() async {
   if (kIsWeb) {
     // Web support via sqlite3.wasm
     databaseFactory = databaseFactoryFfiWeb;
-  } else if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
-    // Desktop support
-    // Note: For Windows, we assume sqlcipher.dll is in the same directory or path
+  } else if (Platform.isWindows) {
+    // Windows: Use sqlite3_flutter_libs (no SQLCipher encryption due to OpenSSL issues)
+    await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  } else if (Platform.isLinux || Platform.isMacOS) {
+    // Linux/macOS: Use SQLCipher via sqlcipher_flutter_libs
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }

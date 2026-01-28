@@ -33,10 +33,6 @@ set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
 # Use Unicode for all projects.
 add_definitions(-DUNICODE -D_UNICODE)
 
-# Fix for OpenSSL LINK errors LNK2019/LNK1120
-if(WIN32)
-  link_libraries(legacy_stdio_definitions.lib)
-endif()
 
 # Compilation settings that should be applied to most targets.
 #
