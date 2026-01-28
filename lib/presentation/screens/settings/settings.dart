@@ -25,6 +25,8 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/user_provider.dart';
 import 'package:trueledger/core/providers/version_provider.dart';
 
+import 'package:trueledger/core/services/backup_encryption_service.dart';
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -401,8 +403,58 @@ class SettingsScreen extends ConsumerWidget {
   Future<void> _backupData(BuildContext context, WidgetRef ref) async {
     final repo = ref.read(financialRepositoryProvider);
 
-    // Gather all data
-    final data = {
+    // 1. Ask for encryption password
+    String? password;
+    if (context.mounted) {
+      password = await showDialog<String>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) {
+          String input = "";
+          bool obscure = true;
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Encrypt Backup"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text("Enter a password to encrypt this backup file.",
+                      style: TextStyle(fontSize: 13)),
+                  const SizedBox(height: 16),
+                  TextField(
+                    autofocus: true,
+                    obscureText: obscure,
+                    onChanged: (v) => input = v,
+                    decoration: InputDecoration(
+                        labelText: "Password",
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(obscure
+                              ? Icons.visibility
+                              : Icons.visibility_off),
+                          onPressed: () => setState(() => obscure = !obscure),
+                        )),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text("CANCEL")),
+                FilledButton(
+                    onPressed: () => Navigator.pop(ctx, input),
+                    child: const Text("CREATE BACKUP")),
+              ],
+            );
+          });
+        },
+      );
+    }
+
+    if (password == null || password.isEmpty) return;
+
+    // 2. Gather Data
+    final rawData = {
       'vars': await repo.getAllValues('variable_expenses'),
       'income': await repo.getAllValues('income_sources'),
       'fixed': await repo.getAllValues('fixed_expenses'),
@@ -413,16 +465,29 @@ class SettingsScreen extends ConsumerWidget {
       'goals': await repo.getAllValues('saving_goals'),
       'budgets': await repo.getAllValues('budgets'),
       'backup_date': DateTime.now().toIso8601String(),
-      'version': '1.0'
+      'version': '1.0' // Inner version
     };
 
-    final jsonString = jsonEncode(data);
+    final jsonString = jsonEncode(rawData);
+
+    // 3. Encrypt Data
+    final encryptedData =
+        BackupEncryptionService.encryptData(jsonString, password);
+
+    // 4. Wrap in container JSON
+    final container = {
+      'version': '2.0', // Container version
+      'encrypted': true,
+      'data': encryptedData,
+      'date': DateTime.now().toIso8601String(),
+    };
+    final finalOutput = jsonEncode(container);
+
     final fileName =
-        "trueledger_backup_${DateTime.now().millisecondsSinceEpoch}.json";
+        "trueledger_backup_enc_${DateTime.now().millisecondsSinceEpoch}.json";
 
     if (kIsWeb) {
-      // Web: Create XFile from bytes and "share" it (triggers download)
-      final bytes = utf8.encode(jsonString);
+      final bytes = utf8.encode(finalOutput);
       await saveFileWeb(bytes, fileName);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -432,9 +497,8 @@ class SettingsScreen extends ConsumerWidget {
     }
 
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      // Desktop: Open "Save As" dialog
       final outputFile = await FilePicker.platform.saveFile(
-        dialogTitle: 'Save Backup',
+        dialogTitle: 'Save Encrypted Backup',
         fileName: fileName,
         type: FileType.custom,
         allowedExtensions: ['json'],
@@ -442,24 +506,23 @@ class SettingsScreen extends ConsumerWidget {
 
       if (outputFile != null) {
         final file = File(outputFile);
-        await file.writeAsString(jsonString);
+        await file.writeAsString(finalOutput);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Backup saved to $outputFile")));
+              SnackBar(content: Text("Encrypted backup saved to $outputFile")));
         }
       }
       return;
     }
 
-    // Mobile (Android/iOS)
     final directory = await getTemporaryDirectory();
     final file = File('${directory.path}/$fileName');
-    await file.writeAsString(jsonString);
+    await file.writeAsString(finalOutput);
 
     if (context.mounted) {
       // ignore: deprecated_member_use
       await Share.shareXFiles([XFile(file.path)],
-          text: 'TrueLedger Backup File');
+          text: 'TrueLedger Encrypted Backup');
     }
   }
 
@@ -467,19 +530,84 @@ class SettingsScreen extends ConsumerWidget {
     final result = await FilePicker.platform.pickFiles(type: FileType.any);
     if (result == null || result.files.isEmpty) return;
 
-    // If web, bytes should be populated; else use path
-    String jsonString;
+    String fileContent;
     if (kIsWeb) {
       final bytes = result.files.single.bytes;
       if (bytes == null) return;
-      jsonString = utf8.decode(bytes);
+      fileContent = utf8.decode(bytes);
     } else {
       final file = File(result.files.single.path!);
-      jsonString = await file.readAsString();
+      fileContent = await file.readAsString();
     }
 
     try {
-      final data = jsonDecode(jsonString) as Map<String, dynamic>;
+      final container = jsonDecode(fileContent) as Map<String, dynamic>;
+
+      // Check for encryption
+      Map<String, dynamic> data;
+      if (container['encrypted'] == true) {
+        // Ask for password
+        String? password;
+        if (context.mounted) {
+          password = await showDialog<String>(
+            context: context,
+            barrierDismissible: false,
+            builder: (ctx) {
+              String input = "";
+              bool obscure = true;
+              return StatefulBuilder(builder: (context, setState) {
+                return AlertDialog(
+                  title: const Text("Decrypt Backup"),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text("Enter password to decrypt this file.",
+                          style: TextStyle(fontSize: 13)),
+                      const SizedBox(height: 16),
+                      TextField(
+                        autofocus: true,
+                        obscureText: obscure,
+                        onChanged: (v) => input = v,
+                        decoration: InputDecoration(
+                            labelText: "Password",
+                            border: const OutlineInputBorder(),
+                            suffixIcon: IconButton(
+                              icon: Icon(obscure
+                                  ? Icons.visibility
+                                  : Icons.visibility_off),
+                              onPressed: () =>
+                                  setState(() => obscure = !obscure),
+                            )),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text("CANCEL")),
+                    FilledButton(
+                        onPressed: () => Navigator.pop(ctx, input),
+                        child: const Text("DECRYPT")),
+                  ],
+                );
+              });
+            },
+          );
+        }
+
+        if (password == null) return;
+
+        try {
+          final decryptedJson =
+              BackupEncryptionService.decryptData(container['data'], password);
+          data = jsonDecode(decryptedJson) as Map<String, dynamic>;
+        } catch (e) {
+          throw "Invalid Password or Corrupted File";
+        }
+      } else {
+        // Legacy (unencrypted) support
+        data = container;
+      }
 
       if (data['version'] != '1.0') throw "Unknown backup version";
 
@@ -506,8 +634,6 @@ class SettingsScreen extends ConsumerWidget {
         final repo = ref.read(financialRepositoryProvider);
         await repo.clearData();
 
-        // Restore tables directly via AppDatabase for batch efficiency (Pragmatic concession until Repo expanded)
-        // Ideally this moves to Repo.
         final db = await AppDatabase.db;
         final batch = db.batch();
 
@@ -541,7 +667,6 @@ class SettingsScreen extends ConsumerWidget {
 
         await batch.commit();
 
-        // Refresh providers
         ref.invalidate(dashboardProvider);
         ref.invalidate(analysisProvider);
 

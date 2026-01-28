@@ -1,7 +1,7 @@
 name: trueledger
 description: "TrueLedger - Premium Personal Finance & Expense Tracking"
 publish_to: "none"
-version: 1.2.1+1
+version: 1.2.2+1
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -42,6 +42,8 @@ dependencies:
   csv: ^6.0.0
   web: ^1.1.1
   package_info_plus: ^9.0.0
+  encrypt: ^5.0.3
+  crypto: ^3.0.7
 
 dev_dependencies:
   flutter_test:
@@ -86,7 +88,7 @@ msix_config:
   publisher_display_name: Satya Kommula
   publisher: CN=SatyaKommula, O=SatyaKommula
   identity_name: com.satyakommula.trueledger
-  msix_version: 1.2.1.0
+  msix_version: 1.2.2.0
   logo_path: assets/icon/trueledger_icon.png
   capabilities: internetClient, internetClientServer, privateNetworkClientServer
   store: true
