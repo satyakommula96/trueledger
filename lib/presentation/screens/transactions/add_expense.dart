@@ -8,8 +8,10 @@ import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
 
 class AddExpense extends ConsumerStatefulWidget {
   final String? initialType;
+  final String? initialCategory;
   final List<String>? allowedTypes;
-  const AddExpense({super.key, this.initialType, this.allowedTypes});
+  const AddExpense(
+      {super.key, this.initialType, this.initialCategory, this.allowedTypes});
 
   @override
   ConsumerState<AddExpense> createState() => _AddExpenseState();
@@ -32,7 +34,14 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
     } else {
       type = allowed.first;
     }
-    selectedCategory = categoryMap[type]!.first;
+
+    // Set initial category if valid for selected type
+    if (widget.initialCategory != null &&
+        categoryMap[type]!.contains(widget.initialCategory)) {
+      selectedCategory = widget.initialCategory!;
+    } else {
+      selectedCategory = categoryMap[type]!.first;
+    }
   }
 
   final Map<String, List<String>> categoryMap = {
@@ -44,7 +53,9 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
       'SIP',
       'Crypto',
       'Gold',
-      'Lending'
+      'Lending',
+      'Retirement',
+      'Other'
     ],
     'Income': ['Salary', 'Freelance', 'Dividends'],
     'Subscription': ['OTT', 'Software', 'Gym'],

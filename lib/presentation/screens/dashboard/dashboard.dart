@@ -72,7 +72,7 @@ class Dashboard extends ConsumerWidget {
                                       begin: 0.2,
                                       end: 0,
                                       curve: Curves.easeOutQuint),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 32),
                               Row(
                                 children: [
                                   Expanded(

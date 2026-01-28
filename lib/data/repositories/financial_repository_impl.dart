@@ -7,14 +7,19 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
   Future<MonthlySummary> getMonthlySummary() async {
     final db = await AppDatabase.db;
-    final income = Sqflite.firstIntValue(
-            await db.rawQuery('SELECT SUM(amount) FROM income_sources')) ??
+    final nowStr = DateTime.now().toIso8601String().substring(0, 7); // YYYY-MM
+
+    final income = Sqflite.firstIntValue(await db.rawQuery(
+            'SELECT SUM(amount) FROM income_sources WHERE substr(date, 1, 7) = ?',
+            [nowStr])) ??
         0;
-    final fixed = Sqflite.firstIntValue(
-            await db.rawQuery('SELECT SUM(amount) FROM fixed_expenses')) ??
+    final fixed = Sqflite.firstIntValue(await db.rawQuery(
+            'SELECT SUM(amount) FROM fixed_expenses WHERE substr(date, 1, 7) = ?',
+            [nowStr])) ??
         0;
-    final variable = Sqflite.firstIntValue(
-            await db.rawQuery('SELECT SUM(amount) FROM variable_expenses')) ??
+    final variable = Sqflite.firstIntValue(await db.rawQuery(
+            'SELECT SUM(amount) FROM variable_expenses WHERE substr(date, 1, 7) = ?',
+            [nowStr])) ??
         0;
     final subs = Sqflite.firstIntValue(await db.rawQuery(
             'SELECT SUM(amount) FROM subscriptions WHERE active=1')) ??
@@ -24,7 +29,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
             .rawQuery('SELECT SUM(amount) FROM investments WHERE active=1')) ??
         0;
 
-    // Net worth calc elements
+    // Net worth calc elements (Global snapshots)
     final npsTotal = Sqflite.firstIntValue(await db.rawQuery(
             "SELECT SUM(amount) FROM retirement_contributions WHERE type = 'NPS'")) ??
         0;
@@ -101,8 +106,10 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
   Future<List<Map<String, dynamic>>> getCategorySpending() async {
     final db = await AppDatabase.db;
+    final nowStr = DateTime.now().toIso8601String().substring(0, 7);
     return await db.rawQuery(
-        'SELECT category, SUM(amount) as total FROM variable_expenses GROUP BY category ORDER BY total DESC');
+        'SELECT category, SUM(amount) as total FROM variable_expenses WHERE substr(date, 1, 7) = ? GROUP BY category ORDER BY total DESC',
+        [nowStr]);
   }
 
   @override
@@ -115,12 +122,13 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
   Future<List<Budget>> getBudgets() async {
     final db = await AppDatabase.db;
+    final nowStr = DateTime.now().toIso8601String().substring(0, 7);
     final res = await db.rawQuery('''
       SELECT b.*, COALESCE(SUM(ve.amount), 0) as spent
       FROM budgets b
-      LEFT JOIN variable_expenses ve ON b.category = ve.category
+      LEFT JOIN variable_expenses ve ON b.category = ve.category AND substr(ve.date, 1, 7) = ?
       GROUP BY b.id
-    ''');
+    ''', [nowStr]);
     return res.map((e) => Budget.fromMap(e)).toList();
   }
 

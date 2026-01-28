@@ -7,7 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 
 class AddLoanScreen extends ConsumerStatefulWidget {
-  const AddLoanScreen({super.key});
+  final String? initialType;
+  const AddLoanScreen({super.key, this.initialType});
 
   @override
   ConsumerState<AddLoanScreen> createState() => _AddLoanScreenState();
@@ -20,7 +21,7 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
   final emiCtrl = TextEditingController();
   final rateCtrl = TextEditingController();
   final dueCtrl = TextEditingController();
-  String selectedType = 'Bank';
+  late String selectedType;
   DateTime? _selectedDate;
 
   final List<String> loanTypes = [
@@ -31,6 +32,15 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
     'Home',
     'Education'
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    selectedType =
+        (widget.initialType != null && loanTypes.contains(widget.initialType))
+            ? widget.initialType!
+            : 'Bank';
+  }
 
   @override
   Widget build(BuildContext context) {

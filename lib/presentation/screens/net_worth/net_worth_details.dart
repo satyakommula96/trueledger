@@ -10,6 +10,7 @@ import 'package:trueledger/core/utils/date_helper.dart';
 import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 import 'package:trueledger/presentation/screens/loans/add_loan.dart';
 import 'package:trueledger/presentation/screens/loans/edit_loan.dart';
+import 'package:trueledger/presentation/screens/cards/add_card.dart';
 import 'package:trueledger/presentation/screens/cards/edit_card.dart';
 import 'package:trueledger/presentation/screens/net_worth/edit_asset.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
@@ -122,31 +123,6 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          if (widget.viewMode == NetWorthView.liabilities) {
-            await Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const AddLoanScreen()));
-          } else {
-            await Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const AddExpense(
-                          initialType: 'Investment',
-                          allowedTypes: ['Investment'],
-                        )));
-          }
-          _loadData();
-        },
-        label: Text(widget.viewMode == NetWorthView.liabilities
-            ? "ADD DEBT"
-            : "ADD ASSET"),
-        icon: const Icon(Icons.add),
-        backgroundColor: widget.viewMode == NetWorthView.liabilities
-            ? semantic.overspent
-            : semantic.income,
-        foregroundColor: Colors.white,
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : widget.viewMode == NetWorthView.assets
@@ -168,7 +144,13 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
             ]),
           ),
         ),
-        _buildSliverSectionHeader("LOANS", semantic),
+        _buildSliverSectionHeader("LOANS", semantic, onAdd: () async {
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const AddLoanScreen(initialType: 'Bank')));
+          _loadData();
+        }, iconColor: semantic.overspent),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverList(
@@ -197,7 +179,12 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
           ),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        _buildSliverSectionHeader("CREDIT CARD OUTSTANDING", semantic),
+        _buildSliverSectionHeader("CREDIT CARD OUTSTANDING", semantic,
+            onAdd: () async {
+          await Navigator.push(context,
+              MaterialPageRoute(builder: (_) => AddCreditCardScreen()));
+          _loadData();
+        }, iconColor: semantic.overspent),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverList(
@@ -226,7 +213,15 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
           ),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        _buildSliverSectionHeader("INDIVIDUAL BORROWINGS", semantic),
+        _buildSliverSectionHeader("INDIVIDUAL BORROWINGS", semantic,
+            onAdd: () async {
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) =>
+                      const AddLoanScreen(initialType: 'Individual')));
+          _loadData();
+        }, iconColor: semantic.overspent),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverList(
@@ -312,7 +307,18 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
             ]),
           ),
         ),
-        _buildSliverSectionHeader("EQUITY & MUTUAL FUNDS", semantic),
+        _buildSliverSectionHeader("EQUITY & MUTUAL FUNDS", semantic,
+            onAdd: () async {
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const AddExpense(
+                        initialType: 'Investment',
+                        initialCategory: 'Mutual Funds',
+                        allowedTypes: ['Investment'],
+                      )));
+          _loadData();
+        }),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverList(
@@ -335,7 +341,18 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
           ),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        _buildSliverSectionHeader("GOLD & COMMODITIES", semantic),
+        _buildSliverSectionHeader("GOLD & COMMODITIES", semantic,
+            onAdd: () async {
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const AddExpense(
+                        initialType: 'Investment',
+                        initialCategory: 'Gold',
+                        allowedTypes: ['Investment'],
+                      )));
+          _loadData();
+        }),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverList(
@@ -358,7 +375,18 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
           ),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        _buildSliverSectionHeader("RETIREMENT & SAVINGS", semantic),
+        _buildSliverSectionHeader("RETIREMENT & SAVINGS", semantic,
+            onAdd: () async {
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const AddExpense(
+                        initialType: 'Investment',
+                        initialCategory: 'Retirement',
+                        allowedTypes: ['Investment'],
+                      )));
+          _loadData();
+        }),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverList(
@@ -380,7 +408,18 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
           ),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        _buildSliverSectionHeader("INDIVIDUAL LENDING", semantic),
+        _buildSliverSectionHeader("INDIVIDUAL LENDING", semantic,
+            onAdd: () async {
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const AddExpense(
+                        initialType: 'Investment',
+                        initialCategory: 'Lending',
+                        allowedTypes: ['Investment'],
+                      )));
+          _loadData();
+        }),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverList(
@@ -405,7 +444,17 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
         ),
         if (other.isNotEmpty) ...[
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
-          _buildSliverSectionHeader("OTHER ASSETS", semantic),
+          _buildSliverSectionHeader("OTHER ASSETS", semantic, onAdd: () async {
+            await Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const AddExpense(
+                          initialType: 'Investment',
+                          initialCategory: 'Other',
+                          allowedTypes: ['Investment'],
+                        )));
+            _loadData();
+          }),
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             sliver: SliverList(
@@ -432,13 +481,28 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
     );
   }
 
-  Widget _buildSliverSectionHeader(String title, AppColors semantic) {
+  Widget _buildSliverSectionHeader(String title, AppColors semantic,
+      {VoidCallback? onAdd, Color? iconColor}) {
     return SliverPersistentHeader(
       pinned: true,
       delegate: _StickyHeaderDelegate(
         title: title,
         color: Theme.of(context).colorScheme.surface,
         textColor: semantic.secondaryText,
+        action: onAdd != null
+            ? Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onAdd,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(Icons.add_circle_outline_rounded,
+                        size: 20, color: iconColor ?? semantic.income),
+                  ),
+                ),
+              )
+            : null,
       ),
     );
   }
@@ -568,41 +632,51 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String title;
   final Color color;
   final Color textColor;
+  final Widget? action;
 
   _StickyHeaderDelegate({
     required this.title,
     required this.color,
     required this.textColor,
+    this.action,
   });
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
+    return Material(
       color: color,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      alignment: Alignment.centerLeft,
-      child: Text(
-        title,
-        style: TextStyle(
-            color: textColor,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.2),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                  color: textColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2),
+            ),
+            if (action != null) action!,
+          ],
+        ),
       ),
     );
   }
 
   @override
-  double get maxExtent => 40.0;
+  double get maxExtent => 44.0;
 
   @override
-  double get minExtent => 40.0;
+  double get minExtent => 44.0;
 
   @override
   bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) {
     return oldDelegate.title != title ||
         oldDelegate.color != color ||
-        oldDelegate.textColor != textColor;
+        oldDelegate.textColor != textColor ||
+        oldDelegate.action != action;
   }
 }

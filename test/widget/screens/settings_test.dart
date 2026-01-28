@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:trueledger/core/services/backup_encryption_service.dart';
 
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/domain/models/models.dart';
@@ -39,6 +42,7 @@ void main() {
     // Repository mocks
     when(() => mockRepo.getAllValues(any())).thenAnswer((_) async => []);
     when(() => mockRepo.clearData()).thenAnswer((_) async => {});
+    when(() => mockRepo.seedData()).thenAnswer((_) async => {});
 
     final emptySummary = MonthlySummary(
       totalIncome: 0,
@@ -62,6 +66,7 @@ void main() {
     when(() => mockPrefs.getString('user_name')).thenReturn('Test User');
     when(() => mockPrefs.getString('theme_mode')).thenReturn('system');
     when(() => mockPrefs.getString('currency_symbol')).thenReturn('\$');
+    when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);
   });
 
   Widget createSettingsScreen() {
@@ -122,6 +127,163 @@ void main() {
 
       verify(() => mockRepo.clearData()).called(1);
       tester.view.resetPhysicalSize();
+    });
+
+    testWidgets('covers name picker logic', (tester) async {
+      await tester.pumpWidget(createSettingsScreen());
+      await tester.tap(find.text('User Name'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Set User Name'), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'New Name');
+      await tester.tap(find.text('SAVE'));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('covers theme picker logic', (tester) async {
+      await tester.pumpWidget(createSettingsScreen());
+      await tester.tap(find.text('Appearance'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Select Theme'), findsOneWidget);
+      await tester.tap(find.text('Dark Mode'));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('covers seed data logic', (tester) async {
+      await tester.pumpWidget(createSettingsScreen());
+      final seedTile = find.text('Seed Sample Data');
+      await tester.scrollUntilVisible(seedTile, 100);
+      await tester.tap(seedTile);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Select Data Scenario'), findsOneWidget);
+      await tester.tap(find.text('Standard Demo'));
+      await tester.pumpAndSettle();
+
+      verify(() => mockRepo.seedData()).called(1);
+    });
+
+    testWidgets('covers encrypted restore logic - success', (tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+
+      final encryptedData = BackupEncryptionService.encryptData(
+          jsonEncode({
+            'vars': [],
+            'income': [],
+            'fixed': [],
+            'invs': [],
+            'subs': [],
+            'cards': [],
+            'loans': [],
+            'goals': [],
+            'budgets': [],
+            'version': '1.0'
+          }),
+          'pass123');
+      final container = jsonEncode({
+        'encrypted': true,
+        'data': encryptedData,
+        'version': '2.0',
+      });
+
+      final file = File('${Directory.systemTemp.path}/test_backup.json');
+      await file.writeAsString(container);
+
+      when(() => mockFilePicker.pickFiles(type: any(named: 'type')))
+          .thenAnswer((_) async => FilePickerResult([
+                PlatformFile(
+                  path: file.path,
+                  name: 'test_backup.json',
+                  size: 100,
+                )
+              ]));
+
+      await tester.pumpWidget(createSettingsScreen());
+      final restoreTile = find.text('Restore Data');
+      await tester.scrollUntilVisible(restoreTile, 100);
+      await tester.tap(restoreTile);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Decrypt Backup'), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'pass123');
+      await tester.tap(find.text('DECRYPT'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Restore Data?'), findsOneWidget);
+      await tester.tap(find.text('RESTORE'));
+      await tester.pumpAndSettle();
+
+      verify(() => mockRepo.clearData()).called(1);
+      tester.view.resetPhysicalSize();
+    });
+
+    testWidgets('covers encrypted restore logic - wrong password',
+        (tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      final container = jsonEncode({
+        'encrypted': true,
+        'data': 'bad-data',
+        'version': '2.0',
+      });
+
+      final file = File('${Directory.systemTemp.path}/test_bad_backup.json');
+      await file.writeAsString(container);
+
+      when(() => mockFilePicker.pickFiles(type: any(named: 'type')))
+          .thenAnswer((_) async => FilePickerResult([
+                PlatformFile(
+                  path: file.path,
+                  name: 'test_bad_backup.json',
+                  size: 100,
+                )
+              ]));
+
+      await tester.pumpWidget(createSettingsScreen());
+      final restoreTile = find.text('Restore Data');
+      await tester.scrollUntilVisible(restoreTile, 100);
+      await tester.tap(restoreTile);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'wrongpass');
+      await tester.tap(find.text('DECRYPT'));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Invalid Password'), findsOneWidget);
+      tester.view.resetPhysicalSize();
+    });
+
+    testWidgets('covers currency picker logic', (tester) async {
+      await tester.pumpWidget(createSettingsScreen());
+      final currencyTile = find.text('Currency');
+      await tester.scrollUntilVisible(currencyTile, 100);
+      await tester.tap(currencyTile);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Select Currency'), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'USD');
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('USD'));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('covers pin setup logic', (tester) async {
+      await tester.pumpWidget(createSettingsScreen());
+      final securityTile = find.text('App Security');
+      await tester.scrollUntilVisible(securityTile, 100);
+      await tester.tap(securityTile);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Set 4-Digit PIN'), findsOneWidget);
+      await tester.enterText(find.byType(TextField), '1234');
+      await tester.tap(find.text('SAVE'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Recovery Key Generated'), findsOneWidget);
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.tap(find.text('DONE'));
+      await tester.pumpAndSettle();
     });
   });
 }

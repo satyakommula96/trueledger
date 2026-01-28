@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:trueledger/core/utils/web_saver.dart';
@@ -24,6 +23,7 @@ import 'package:trueledger/presentation/providers/analysis_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/user_provider.dart';
 import 'package:trueledger/core/providers/version_provider.dart';
+import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
 import 'package:trueledger/core/services/backup_encryption_service.dart';
 
@@ -66,8 +66,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _showThemePicker(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
+  Future<void> _showThemePicker(BuildContext context, WidgetRef ref) async {
+    final prefs = ref.read(sharedPreferencesProvider);
     if (!context.mounted) return;
 
     showDialog(
@@ -1023,7 +1023,7 @@ class SettingsScreen extends ConsumerWidget {
             "Switch between Light, Dark, or System theme",
             Icons.dark_mode_outlined,
             Colors.indigo,
-            () => _showThemePicker(context),
+            () => _showThemePicker(context, ref),
           ),
           const SizedBox(height: 16),
           _buildOption(

@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:math';
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 import 'schema.dart';
 import 'database_migrations.dart';
@@ -271,6 +272,15 @@ class AppDatabase {
       Schema.colDate: now.toIso8601String()
     });
 
+    // Individual Lending (Personal Asset)
+    batch.insert(Schema.investmentsTable, {
+      Schema.colName: 'Personal Loan to Rahul',
+      Schema.colAmount: 50000,
+      Schema.colActive: 1,
+      Schema.colType: 'Lending',
+      Schema.colDate: now.toIso8601String()
+    });
+
     // Retirement
     batch.insert(Schema.retirementContributionsTable, {
       Schema.colType: 'NPS',
@@ -305,20 +315,34 @@ class AppDatabase {
       Schema.colDate: now.toIso8601String()
     });
 
+    // Individual Borrowing (Personal Liability)
+    batch.insert(Schema.loansTable, {
+      Schema.colName: 'Borrowed from Amit',
+      Schema.colLoanType: 'Individual',
+      Schema.colTotalAmount: 25000,
+      Schema.colRemainingAmount: 15000,
+      Schema.colEmi: 2000,
+      Schema.colInterestRate: 0.0,
+      Schema.colDueDate: '1st',
+      Schema.colDate: now.toIso8601String()
+    });
+
     // Credit Cards
     batch.insert(Schema.creditCardsTable, {
       Schema.colBank: 'HDFC Infinia',
       Schema.colCreditLimit: 1500000,
       Schema.colStatementBalance: 87000,
       Schema.colMinDue: 0,
-      Schema.colDueDate: '12 Feb 2026'
+      Schema.colDueDate:
+          DateFormat('dd-MM-yy').format(DateTime(now.year, now.month + 1, 12))
     });
     batch.insert(Schema.creditCardsTable, {
       Schema.colBank: 'Amex Platinum',
       Schema.colCreditLimit: 1000000,
       Schema.colStatementBalance: 12500,
       Schema.colMinDue: 0,
-      Schema.colDueDate: '24 Feb 2026'
+      Schema.colDueDate:
+          DateFormat('dd-MM-yy').format(DateTime(now.year, now.month + 1, 24))
     });
 
     // Subscriptions (Active List)
@@ -339,8 +363,8 @@ class AppDatabase {
       });
     }
 
-    // 3. Historical Data Generation (Last 24 Months)
-    // We will generate monthly data going back 2 years
+    // 3. Historical & Future Data Generation
+    // We will generate data for 3 months in the future and 24 months in the past
     final random = Random();
     final categories = [
       'Food',
@@ -353,10 +377,11 @@ class AppDatabase {
       'Education'
     ];
 
-    for (int i = 0; i < 24; i++) {
+    for (int i = -3; i < 24; i++) {
       // Calculate reference date for this month (Start of month)
-      // i=0 is current month, i=1 is previous month...
+      // i=-3 is 3 months in future, i=0 is current month, i=1 is previous month...
       final monthDate = DateTime(now.year, now.month - i, 1);
+      final isFuture = i < 0;
 
       // --- Income ---
       // Primary Salary (Steady)
@@ -478,7 +503,8 @@ class AppDatabase {
           Schema.colDate: txDate.toIso8601String(),
           Schema.colAmount: (baseAmount * inflationFactor).toInt(),
           Schema.colCategory: cat,
-          Schema.colNote: '$cat at Place #${random.nextInt(99)}'
+          Schema.colNote:
+              '$cat at Place #${random.nextInt(99)}${isFuture ? " [PLANNED]" : ""}'
         });
       }
     }
