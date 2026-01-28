@@ -92,7 +92,7 @@ jobs:
 
       - name: Install OpenSSL
         run: |
-          choco install openssl
+          choco install openssl --version 3.1.1 -y
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
