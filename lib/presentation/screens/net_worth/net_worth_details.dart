@@ -131,8 +131,10 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
             await Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (_) =>
-                        const AddExpense(initialType: 'Investment')));
+                    builder: (_) => const AddExpense(
+                          initialType: 'Investment',
+                          allowedTypes: ['Investment'],
+                        )));
           }
           _loadData();
         },

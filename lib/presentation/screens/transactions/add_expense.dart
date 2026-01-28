@@ -8,7 +8,8 @@ import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
 
 class AddExpense extends ConsumerStatefulWidget {
   final String? initialType;
-  const AddExpense({super.key, this.initialType});
+  final List<String>? allowedTypes;
+  const AddExpense({super.key, this.initialType, this.allowedTypes});
 
   @override
   ConsumerState<AddExpense> createState() => _AddExpenseState();
@@ -23,11 +24,15 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
   @override
   void initState() {
     super.initState();
+    final allowed = widget.allowedTypes ?? categoryMap.keys.toList();
     if (widget.initialType != null &&
-        categoryMap.containsKey(widget.initialType)) {
+        categoryMap.containsKey(widget.initialType) &&
+        allowed.contains(widget.initialType)) {
       type = widget.initialType!;
-      selectedCategory = categoryMap[type]!.first;
+    } else {
+      type = allowed.first;
     }
+    selectedCategory = categoryMap[type]!.first;
   }
 
   final Map<String, List<String>> categoryMap = {
@@ -49,59 +54,65 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final displayedTypes = widget.allowedTypes ?? categoryMap.keys.toList();
+    final bool isLocked = displayedTypes.length <= 1;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("NEW LEDGER ENTRY")),
+      appBar: AppBar(
+          title: Text(
+              isLocked ? "NEW ${type.toUpperCase()}" : "NEW LEDGER ENTRY")),
       body: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(
             32, 32, 32, 32 + MediaQuery.of(context).padding.bottom),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("ENTRY TYPE",
-                style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                    color: Colors.grey)),
-            const SizedBox(height: 16),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: categoryMap.keys.map((t) {
-                  final active = type == t;
-                  final isIncome = t == 'Income';
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: ChoiceChip(
-                      label: Text(t.toUpperCase()),
-                      selected: active,
-                      onSelected: (_) => setState(() {
-                        type = t;
-                        selectedCategory = categoryMap[t]![0];
-                      }),
-                      selectedColor:
-                          isIncome ? semantic.income : colorScheme.onSurface,
-                      backgroundColor: Colors.transparent,
-                      side: BorderSide(
-                          color: active
-                              ? (isIncome
-                                  ? semantic.income
-                                  : colorScheme.onSurface)
-                              : colorScheme.onSurface.withValues(alpha: 0.1)),
-                      labelStyle: TextStyle(
-                          color: active
-                              ? colorScheme.surface
-                              : colorScheme.onSurface,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 10,
-                          letterSpacing: 1),
-                    ),
-                  );
-                }).toList(),
+            if (!isLocked) ...[
+              const Text("ENTRY TYPE",
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2,
+                      color: Colors.grey)),
+              const SizedBox(height: 16),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: displayedTypes.map((t) {
+                    final active = type == t;
+                    final isIncome = t == 'Income';
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: ChoiceChip(
+                        label: Text(t.toUpperCase()),
+                        selected: active,
+                        onSelected: (_) => setState(() {
+                          type = t;
+                          selectedCategory = categoryMap[t]![0];
+                        }),
+                        selectedColor:
+                            isIncome ? semantic.income : colorScheme.onSurface,
+                        backgroundColor: Colors.transparent,
+                        side: BorderSide(
+                            color: active
+                                ? (isIncome
+                                    ? semantic.income
+                                    : colorScheme.onSurface)
+                                : colorScheme.onSurface.withValues(alpha: 0.1)),
+                        labelStyle: TextStyle(
+                            color: active
+                                ? colorScheme.surface
+                                : colorScheme.onSurface,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 10,
+                            letterSpacing: 1),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
-            const SizedBox(height: 48),
+              const SizedBox(height: 48),
+            ],
             const Text("TRANSACTION AMOUNT",
                 style: TextStyle(
                     fontSize: 10,

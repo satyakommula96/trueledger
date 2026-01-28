@@ -91,8 +91,24 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
       appBar: AppBar(title: Text(_formatMonth(widget.month))),
       floatingActionButton: HoverWrapper(
         onTap: () async {
+          String? initial;
+          List<String>? allowed;
+
+          if (typeFilter == 'Income') {
+            initial = 'Income';
+            allowed = ['Income'];
+          } else if (typeFilter == 'Expenses') {
+            initial = 'Variable';
+            allowed = ['Variable', 'Fixed', 'Subscription'];
+          }
+
           await Navigator.push(
-              context, MaterialPageRoute(builder: (_) => AddExpense()));
+              context,
+              MaterialPageRoute(
+                  builder: (_) => AddExpense(
+                        initialType: initial,
+                        allowedTypes: allowed,
+                      )));
           _loadData();
         },
         borderRadius: 28,
