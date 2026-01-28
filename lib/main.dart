@@ -21,13 +21,9 @@ Future<void> main() async {
   if (kIsWeb) {
     // Web support via sqlite3.wasm
     databaseFactory = databaseFactoryFfiWeb;
-  } else if (Platform.isWindows) {
-    // Windows: Use sqlite3_flutter_libs (no SQLCipher encryption due to OpenSSL issues)
+  } else if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+    // Desktop: Use sqlite3_flutter_libs (unencrypted)
     await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  } else if (Platform.isLinux || Platform.isMacOS) {
-    // Linux/macOS: Use SQLCipher via sqlcipher_flutter_libs
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }

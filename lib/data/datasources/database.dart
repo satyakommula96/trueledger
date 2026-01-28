@@ -98,16 +98,10 @@ class AppDatabase {
           options: common.OpenDatabaseOptions(
               version: AppVersion.databaseVersion,
               onConfigure: (db) async {
-                // This sets the encryption key for SQLCipher on Desktop (Linux/macOS)
-                // Note: Windows uses sqlite3_flutter_libs (no encryption) due to OpenSSL issues
-                if (!kIsWeb && !Platform.isWindows) {
-                  await db.execute("PRAGMA key = '$key';");
-                  debugPrint(
-                      'SQLCipher encryption applied to ${Platform.operatingSystem} database.');
-                } else if (Platform.isWindows) {
-                  debugPrint(
-                      'Windows: Using unencrypted SQLite (sqlite3_flutter_libs).');
-                }
+                // Desktop platforms use sqlite3_flutter_libs (no encryption)
+                // Mobile platforms (Android/iOS) use sqflite_sqlcipher with encryption
+                debugPrint(
+                    'Desktop SQLite initialized for ${Platform.operatingSystem} (unencrypted).');
               },
               onCreate: (db, version) async {
                 await _createDb(db);
