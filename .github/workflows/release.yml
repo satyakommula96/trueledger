@@ -90,6 +90,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install OpenSSL
+        run: |
+          choco install openssl
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
