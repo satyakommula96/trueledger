@@ -111,7 +111,7 @@ jobs:
 
       - name: Build Unsigned EXE
         env:
-          OPENSSL_ROOT_DIR: "C:\\Program Files\\OpenSSL-Win64"
+          OPENSSL_ROOT_DIR: "C:\\vcpkg\\installed\\x64-windows-static"
         run: flutter build windows --profile --build-name=${{ steps.version.outputs.VERSION }}
 
       - name: Package with Inno Setup (Unsigned)
