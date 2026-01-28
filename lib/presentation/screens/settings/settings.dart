@@ -18,8 +18,6 @@ import 'package:trueledger/main.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:trueledger/presentation/providers/dashboard_provider.dart';
-import 'package:trueledger/presentation/providers/analysis_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/user_provider.dart';
 import 'package:trueledger/core/providers/version_provider.dart';
@@ -381,14 +379,10 @@ class SettingsScreen extends ConsumerWidget {
         await repo.seedAtRiskProfile();
       }
 
-      // Refresh providers
-      ref.invalidate(dashboardProvider);
-      ref.invalidate(analysisProvider);
-
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text("Generated ${option.toUpperCase()} data scenario")));
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       }
     }
   }
@@ -629,13 +623,10 @@ class SettingsScreen extends ConsumerWidget {
         await repo.clearData();
         await repo.restoreBackup(data);
 
-        ref.invalidate(dashboardProvider);
-        ref.invalidate(analysisProvider);
-
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Restore Successful!")));
-          Navigator.pop(context); // Go back to dashboard to refresh
+          Navigator.pop(context, true); // Go back to dashboard to refresh
         }
       }
     } catch (e) {
@@ -668,14 +659,10 @@ class SettingsScreen extends ConsumerWidget {
       final repo = ref.read(financialRepositoryProvider);
       await repo.clearData();
 
-      // Refresh providers
-      ref.invalidate(dashboardProvider);
-      ref.invalidate(analysisProvider);
-
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("All data has been reset")));
-        Navigator.pop(context);
+        Navigator.pop(context, true); // Updated to return true
       }
     }
   }

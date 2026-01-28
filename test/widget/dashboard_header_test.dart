@@ -8,10 +8,14 @@ import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/dashboard_header.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
+import 'package:trueledger/core/services/file_service.dart';
+import 'package:trueledger/core/providers/version_provider.dart';
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
+
+class MockFileService extends Mock implements FileService {}
 
 void main() {
   late MockSharedPreferences mockPrefs;
@@ -37,6 +41,8 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
         financialRepositoryProvider.overrideWithValue(mockRepo),
+        fileServiceProvider.overrideWithValue(MockFileService()),
+        appVersionProvider.overrideWith((ref) => '1.0.0'),
       ],
       child: MaterialApp(
         theme: isDark ? AppTheme.darkTheme : AppTheme.lightTheme,
@@ -82,7 +88,7 @@ void main() {
     verify(() => mockPrefs.setBool('is_private_mode', true)).called(1);
   });
 
-  testWidgets('navigates to settings and calls onLoad on return',
+  testWidgets('navigates to settings and does NOT call onLoad on simple return',
       (WidgetTester tester) async {
     int onLoadCalledCount = 0;
     await tester
@@ -104,6 +110,32 @@ void main() {
     await tester.pageBack();
     await tester.pumpAndSettle();
 
+    expect(onLoadCalledCount, 0);
+  });
+
+  testWidgets('calls onLoad when data is modified in Settings',
+      (WidgetTester tester) async {
+    int onLoadCalledCount = 0;
+    // Mock seedData
+    when(() => mockRepo.seedData()).thenAnswer((_) async => {});
+
+    await tester
+        .pumpWidget(createWidgetUnderTest(onLoad: () => onLoadCalledCount++));
+    await tester.pump(const Duration(seconds: 2));
+
+    await tester.tap(find.byIcon(Icons.settings_rounded));
+    await tester.pumpAndSettle();
+
+    // Trigger an action that returns true (e.g., Seed Data)
+    final seedTile = find.text('Seed Sample Data');
+    await tester.scrollUntilVisible(seedTile, 100);
+    await tester.tap(seedTile);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Standard Demo'));
+    await tester.pumpAndSettle();
+
+    // Verify onLoad was called
     expect(onLoadCalledCount, 1);
   });
 }

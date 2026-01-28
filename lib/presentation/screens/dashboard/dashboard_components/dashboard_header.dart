@@ -110,11 +110,13 @@ class DashboardHeader extends ConsumerWidget {
                   context,
                   icon: Icons.settings_rounded,
                   onTap: () async {
-                    await Navigator.push(
+                    final shouldReload = await Navigator.push(
                         context,
                         MaterialPageRoute(
                             builder: (_) => const SettingsScreen()));
-                    onLoad();
+                    if (shouldReload == true) {
+                      onLoad();
+                    }
                   },
                   semantic: semantic,
                 ),

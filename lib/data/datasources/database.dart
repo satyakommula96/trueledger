@@ -54,15 +54,20 @@ class AppDatabase {
 
   static Future<common.Database> _initDb() async {
     // Use Application Documents Directory for reliable storage on Linux/Desktop
-    final docsDir = await getApplicationDocumentsDirectory();
-    final path =
-        join(docsDir.path, 'tracker_enc_v${AppVersion.databaseVersion}.db');
+    String path;
+    if (kIsWeb) {
+      path = 'tracker_enc_v${AppVersion.databaseVersion}.db';
+    } else {
+      final docsDir = await getApplicationDocumentsDirectory();
+      path =
+          join(docsDir.path, 'tracker_enc_v${AppVersion.databaseVersion}.db');
+    }
 
     debugPrint('Initializing database at: $path');
 
     final key = await _getOrGenerateKey();
 
-    if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+    if (kIsWeb || Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
       try {
         return await sqflite_ffi.databaseFactoryFfi.openDatabase(
           path,
@@ -70,9 +75,11 @@ class AppDatabase {
               version: AppVersion.databaseVersion,
               onConfigure: (db) async {
                 // This sets the encryption key for SQLCipher on Desktop (Linux/Windows)
-                await db.execute("PRAGMA key = '$key';");
+                if (!kIsWeb) {
+                  await db.execute("PRAGMA key = '$key';");
+                }
                 debugPrint(
-                    'SQLCipher encryption applied to ${Platform.operatingSystem} database.');
+                    'SQLCipher encryption applied to ${kIsWeb ? "Web" : Platform.operatingSystem} database.');
               },
               onCreate: (db, version) async {
                 await _createDb(db);
@@ -105,24 +112,26 @@ class AppDatabase {
         return db;
       } catch (e) {
         debugPrint(
-            'CRITICAL: ${Platform.operatingSystem} database open failed ($e). Attempting recovery...');
+            'CRITICAL: ${kIsWeb ? "Web" : Platform.operatingSystem} database open failed ($e). Attempting recovery...');
         return await _handleDatabaseReset(path, key,
-            isDesktop:
-                Platform.isWindows || Platform.isLinux || Platform.isMacOS);
+            isDesktop: !kIsWeb &&
+                (Platform.isWindows || Platform.isLinux || Platform.isMacOS));
       }
     }
   }
 
   static Future<common.Database> _handleDatabaseReset(String path, String key,
       {required bool isDesktop}) async {
-    try {
-      final file = File(path);
-      if (await file.exists()) {
-        await file.delete();
-        debugPrint('Corrupted database file deleted at: $path');
+    if (!kIsWeb) {
+      try {
+        final file = File(path);
+        if (await file.exists()) {
+          await file.delete();
+          debugPrint('Corrupted database file deleted at: $path');
+        }
+      } catch (delErr) {
+        debugPrint('Failed to delete database file: $delErr');
       }
-    } catch (delErr) {
-      debugPrint('Failed to delete database file: $delErr');
     }
 
     if (isDesktop) {

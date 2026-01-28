@@ -102,6 +102,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/icon/
+    - assets/fonts/
   
   fonts:
     - family: Outfit

@@ -42,7 +42,14 @@ class Dashboard extends ConsumerWidget {
         final trendData = data.trendData;
 
         Future<void> reload() async {
-          ref.invalidate(dashboardProvider);
+          debugPrint("Dashboard: Reloading data...");
+          try {
+            // Force refresh the provider
+            final _ = await ref.refresh(dashboardProvider.future);
+            debugPrint("Dashboard: Data reloaded successfully.");
+          } catch (e) {
+            debugPrint("Dashboard: Reload failed: $e");
+          }
         }
 
         final currentMonth = DateFormat('yyyy-MM').format(DateTime.now());
