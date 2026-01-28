@@ -68,11 +68,20 @@ jobs:
       - name: Build APK
         run: flutter build apk --release --build-name=${{ steps.version.outputs.VERSION }}
 
-      - name: Upload Artifact
+      - name: Build App Bundle
+        run: flutter build appbundle --release --build-name=${{ steps.version.outputs.VERSION }}
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrueLedger-Android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrueLedger-Android-aab
+          path: build/app/outputs/bundle/release/app-release.aab
 
   build-windows:
     name: Build Windows (Exe)
@@ -171,6 +180,11 @@ jobs:
         with:
           name: TrueLedger-Android-apk
 
+      - name: Download Android AAB Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: TrueLedger-Android-aab
+
       - name: Download Windows EXE Artifact
         uses: actions/download-artifact@v4
         with:
@@ -193,6 +207,7 @@ jobs:
       - name: Rename Files with Version
         run: |
           mv app-release.apk TrueLedger_${{ steps.version.outputs.VERSION }}.apk
+          mv app-release.aab TrueLedger_${{ steps.version.outputs.VERSION }}.aab
           mv TrueLedger.deb TrueLedger_${{ steps.version.outputs.VERSION }}.deb
           mv TrueLedger.exe TrueLedger_${{ steps.version.outputs.VERSION }}.exe
           mv TrueLedger.msix TrueLedger_${{ steps.version.outputs.VERSION }}.msix
@@ -205,6 +220,7 @@ jobs:
           files: |
             TrueLedger_${{ steps.version.outputs.VERSION }}.deb
             TrueLedger_${{ steps.version.outputs.VERSION }}.apk
+            TrueLedger_${{ steps.version.outputs.VERSION }}.aab
             TrueLedger_${{ steps.version.outputs.VERSION }}.exe
             TrueLedger_${{ steps.version.outputs.VERSION }}.msix
             TrueLedger_${{ steps.version.outputs.VERSION }}.dmg
