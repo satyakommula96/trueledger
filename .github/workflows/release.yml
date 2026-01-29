@@ -270,7 +270,7 @@ jobs:
       - name: Prepare Pages Deployment
         run: |
           mkdir release_dist
-          cp TrueLedger_${{ steps.version.outputs.VERSION }}.* release_dist/
+          cp TrueLedger_${{ steps.version.outputs.VERSION }}* release_dist/
           touch release_dist/.nojekyll
 
       - name: Deploy to GitHub Pages
