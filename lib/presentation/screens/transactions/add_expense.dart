@@ -22,6 +22,22 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
   final noteCtrl = TextEditingController();
   String selectedCategory = 'General';
   String type = 'Variable';
+  DateTime _selectedDate = DateTime.now();
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(now.year - 5),
+      lastDate: now,
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -148,6 +164,38 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                   hintStyle: TextStyle(
                       color: colorScheme.onSurface.withValues(alpha: 0.1))),
             ),
+            const SizedBox(height: 24),
+            InkWell(
+              onTap: _pickDate,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: colorScheme.onSurface.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.calendar_today_rounded,
+                        size: 16, color: colorScheme.onSurface),
+                    const SizedBox(width: 8),
+                    Text(
+                      _selectedDate.day == DateTime.now().day &&
+                              _selectedDate.month == DateTime.now().month &&
+                              _selectedDate.year == DateTime.now().year
+                          ? "Today"
+                          : "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
+                      style: TextStyle(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 48),
             const Text("CATEGORY CLASSIFICATION",
                 style: TextStyle(
@@ -249,7 +297,7 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
       amount: amount,
       category: selectedCategory,
       note: noteCtrl.text,
-      date: DateTime.now().toIso8601String(),
+      date: _selectedDate.toIso8601String(),
     ));
 
     if (!mounted) return;

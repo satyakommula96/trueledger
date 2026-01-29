@@ -78,6 +78,8 @@ class DashboardHeader extends ConsumerWidget {
                                 letterSpacing: 1.5)),
                         const SizedBox(height: 2),
                         Text("TrueLedger",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w900,
