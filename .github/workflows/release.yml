@@ -69,13 +69,13 @@ jobs:
         run: flutter build appbundle --release --build-name=${{ steps.version.outputs.VERSION }}
 
       - name: Build Unsigned APK
-        run: flutter build apk --debug --build-name=${{ steps.version.outputs.VERSION }}
+        run: flutter build apk --release --build-name=${{ steps.version.outputs.VERSION }}
 
       - name: Upload Unsigned APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrueLedger-Android-apk-unsigned
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload Signed AAB Artifact
         uses: actions/upload-artifact@v4
@@ -245,7 +245,7 @@ jobs:
 
       - name: Rename Files with Version
         run: |
-          mv app-debug.apk TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.apk
+          mv app-release.apk TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.apk
           mv app-release.aab TrueLedger_${{ steps.version.outputs.VERSION }}_signed.aab
           mv TrueLedger.deb TrueLedger_${{ steps.version.outputs.VERSION }}.deb
           mv TrueLedger.exe TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.exe
