@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
@@ -22,8 +23,13 @@ final bootProvider = FutureProvider<String?>((ref) async {
   const storage = FlutterSecureStorage();
   try {
     return await storage.read(key: 'app_pin');
-  } catch (e) {
+  } catch (e, stack) {
     // If secure storage fails (e.g. simulator/tests), return null
+    debugPrint(
+        "App PIN secure storage retrieval failed (possibly non-critical): $e");
+    if (kDebugMode) {
+      debugPrint(stack.toString());
+    }
     return null;
   }
 });

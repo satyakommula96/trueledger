@@ -1,11 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'usecase_base.dart';
-import 'package:flutter/foundation.dart';
-import 'package:crypto/crypto.dart';
-import 'dart:convert';
 
 class AddTransactionParams {
   final String type;
@@ -23,36 +21,38 @@ class AddTransactionParams {
   });
 }
 
-class NotificationRequest {
-  final int id;
-  final String title;
-  final String body;
+enum NotificationType { budgetWarning, budgetExceeded }
 
-  NotificationRequest({
-    required this.id,
-    required this.title,
-    required this.body,
+class NotificationIntent {
+  final NotificationType type;
+  final String category;
+  final double percentage;
+
+  NotificationIntent({
+    required this.type,
+    required this.category,
+    required this.percentage,
   });
 }
 
-class TransactionResult {
+class AddTransactionResult {
   final bool cancelDailyReminder;
-  final List<NotificationRequest> notifications;
+  final NotificationIntent? budgetWarning;
 
-  TransactionResult({
+  AddTransactionResult({
     this.cancelDailyReminder = false,
-    this.notifications = const [],
+    this.budgetWarning,
   });
 }
 
 class AddTransactionUseCase
-    extends UseCase<TransactionResult, AddTransactionParams> {
+    extends UseCase<AddTransactionResult, AddTransactionParams> {
   final IFinancialRepository repository;
 
   AddTransactionUseCase(this.repository);
 
   @override
-  Future<Result<TransactionResult>> call(AddTransactionParams params) async {
+  Future<Result<AddTransactionResult>> call(AddTransactionParams params) async {
     // 1. Validation Logic
     if (params.amount <= 0) {
       return Failure(ValidationFailure("Amount must be greater than zero"));
@@ -75,7 +75,7 @@ class AddTransactionUseCase
       );
 
       bool shouldCancelDaily = false;
-      final List<NotificationRequest> notificationEvents = [];
+      NotificationIntent? budgetWarning;
 
       // 3. Smart Notifications Logic (Pure Domain Logic)
       try {
@@ -97,53 +97,43 @@ class AddTransactionUseCase
             );
 
         if (categoryBudget != null) {
-          final spent = categoryBudget
-              .spent; // Note: Repository should have returned updated spent amount if possible, or we assume it's close enough.
-          // Ideally, addEntry should return the new state, or we fetch it.
-          // Since we just added an entry, the 'spent' in `getBudgets` relies on the DB state.
-          // If `addEntry` is awaited, `getBudgets` should reflect the new total.
-
+          final spent = categoryBudget.spent;
           final limit = categoryBudget.monthlyLimit;
           final percent = (spent / limit) * 100;
 
           if (percent >= 100) {
-            notificationEvents.add(NotificationRequest(
-              id: _generateStableId('${params.category}_exceeded'),
-              title: 'Budget Exceeded: ${params.category}',
-              body: 'You have spent 100% of your ${params.category} budget.',
-            ));
+            budgetWarning = NotificationIntent(
+              type: NotificationType.budgetExceeded,
+              category: params.category,
+              percentage: percent,
+            );
           } else if (percent >= 85) {
-            notificationEvents.add(NotificationRequest(
-              id: _generateStableId('${params.category}_warning'),
-              title: 'Budget Warning: ${params.category}',
-              body:
-                  'You have reached ${percent.round()}% of your ${params.category} budget.',
-            ));
+            budgetWarning = NotificationIntent(
+              type: NotificationType.budgetWarning,
+              category: params.category,
+              percentage: percent,
+            );
           }
         }
-      } catch (e) {
-        // Log the error but do not fail the transaction.
-        // In a real app, send to Crashlytics.
-        debugPrint("Error calculating notification events: $e");
+      } catch (e, stack) {
+        debugPrint(
+            "Error in secondary transaction logic (notifications/budget): $e");
+        if (kDebugMode) {
+          debugPrint(stack.toString());
+          // In debug, we might want to know if our budget logic is broken
+          // but we still don't want to crash the main transaction for the user
+          // maybe just a very loud warning.
+        }
       }
 
-      return Success(TransactionResult(
+      return Success(AddTransactionResult(
         cancelDailyReminder: shouldCancelDaily,
-        notifications: notificationEvents,
+        budgetWarning: budgetWarning,
       ));
     } catch (e) {
       // 4. Error Mapping
       return Failure(
           DatabaseFailure("Failed to add transaction: ${e.toString()}"));
     }
-  }
-
-  int _generateStableId(String input) {
-    final bytes = utf8.encode(input);
-    final digest = sha256.convert(bytes);
-    // Use first 4 bytes for 32-bit int
-    return digest.bytes
-        .sublist(0, 4)
-        .fold(0, (prev, byte) => (prev << 8) | byte);
   }
 }

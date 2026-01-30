@@ -200,8 +200,8 @@ class AnalysisScreen extends ConsumerWidget {
   Widget _buildInsightCard(BuildContext context,
       List<Map<String, dynamic>> data, AppColors semantic, bool isPrivate) {
     if (data.length < 2) return const SizedBox();
-    final current = data[0]['total'] as int;
-    final last = data[1]['total'] as int;
+    final current = data.last['total'] as int;
+    final last = data[data.length - 2]['total'] as int;
     final diff = current - last;
     final isIncrease = diff > 0;
 

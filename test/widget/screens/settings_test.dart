@@ -230,7 +230,7 @@ void main() {
       await tester.tap(find.text('DECRYPT'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Restore Data?'), findsOneWidget);
+      expect(find.text('Restore & Overwrite?'), findsOneWidget);
       await tester.tap(find.text('RESTORE'));
 
       await tester.pumpAndSettle();

@@ -34,6 +34,8 @@ class AppDatabase {
     return _db!;
   }
 
+  static Future<String> getEncryptionKey() async => _getOrGenerateKey();
+
   static Future<String> _getOrGenerateKey() async {
     // Return a dummy key for testing to avoid KeyChain hangs
     if (_isTest) {
@@ -50,7 +52,12 @@ class AppDatabase {
         await _storage.write(key: _keyParams, value: key);
       }
       return key;
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint("SECURE STORAGE FAILURE: $e");
+      if (kDebugMode) {
+        debugPrint(stack.toString());
+        debugPrint("CRITICAL: USING INSECURE FALLBACK KEY FOR DEVELOPMENT.");
+      }
       // Fallback for dev environment if secure storage fails (NOT FOR PROD)
       // This allows the app to open even if keyring is broken.
       return 'fallback_dev_key_DO_NOT_USE_IN_PROD';
@@ -306,6 +313,7 @@ class AppDatabase {
   }
 
   static Future<void> seedDummyData() async {
+    if (!kDebugMode) return;
     await clearData(); // Ensure fresh start
     final database = await db;
     final now = DateTime.now();
@@ -600,6 +608,7 @@ class AppDatabase {
   }
 
   static Future<void> seedHealthyProfile() async {
+    if (!kDebugMode) return;
     await clearData();
     final database = await db;
     final now = DateTime.now();
@@ -663,6 +672,7 @@ class AppDatabase {
   }
 
   static Future<void> seedAtRiskProfile() async {
+    if (!kDebugMode) return;
     await clearData();
     final database = await db;
     final now = DateTime.now();
@@ -725,6 +735,7 @@ class AppDatabase {
   }
 
   static Future<void> seedLargeData({int count = 5000}) async {
+    if (!kDebugMode) return;
     await clearData();
     final database = await db;
     final now = DateTime.now();
@@ -773,6 +784,7 @@ class AppDatabase {
   }
 
   static Future<void> seedRoadmapData() async {
+    if (!kDebugMode) return;
     await seedDummyData(); // Start with a rich base
     final database = await db;
     final now = DateTime.now();

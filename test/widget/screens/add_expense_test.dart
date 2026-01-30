@@ -33,7 +33,7 @@ void main() {
     mockUseCase = MockAddTransactionUseCase();
     mockNotificationService = MockNotificationService();
     when(() => mockUseCase.call(any()))
-        .thenAnswer((_) async => Success(TransactionResult()));
+        .thenAnswer((_) async => Success(AddTransactionResult()));
   });
 
   Widget createWidget(AddExpense widget) {

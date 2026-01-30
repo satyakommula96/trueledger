@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/data/datasources/database.dart';
@@ -23,7 +24,7 @@ class StartupUseCase extends UseCase<void, NoParams> {
 
       // 1b. Auto Backup (Non-blocking)
       autoBackup.call(const NoParams()).catchError((e) {
-        // Log silently
+        debugPrint("CRITICAL: Auto-backup failed during startup: $e");
         return Failure(
             DatabaseFailure("Auto-backup failed silently: ${e.toString()}"));
       });

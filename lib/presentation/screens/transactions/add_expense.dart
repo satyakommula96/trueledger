@@ -11,6 +11,7 @@ import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/core/services/notification_service.dart';
+import 'package:trueledger/core/utils/hash_utils.dart';
 
 class AddExpense extends ConsumerStatefulWidget {
   final String? initialType;
@@ -401,7 +402,7 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
     if (!mounted) return;
 
     if (result.isSuccess) {
-      final transactionResult = (result as Success<TransactionResult>).value;
+      final transactionResult = (result as Success<AddTransactionResult>).value;
       final notificationService = ref.read(notificationServiceProvider);
 
       if (transactionResult.cancelDailyReminder) {
@@ -409,11 +410,22 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
             .cancelNotification(NotificationService.dailyReminderId);
       }
 
-      for (final notification in transactionResult.notifications) {
+      final warning = transactionResult.budgetWarning;
+      if (warning != null) {
+        final title = warning.type == NotificationType.budgetExceeded
+            ? 'Budget Exceeded: ${warning.category}'
+            : 'Budget Warning: ${warning.category}';
+        final body = warning.type == NotificationType.budgetExceeded
+            ? 'You have spent 100% of your ${warning.category} budget.'
+            : 'You have reached ${warning.percentage.round()}% of your ${warning.category} budget.';
+
+        // Generate a stable ID locally
+        final id = generateStableHash('${warning.category}_budget_alert');
+
         await notificationService.showNotification(
-          id: notification.id,
-          title: notification.title,
-          body: notification.body,
+          id: id,
+          title: title,
+          body: body,
         );
       }
 

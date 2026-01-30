@@ -7,6 +7,7 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/config/app_config.dart';
+import 'package:trueledger/core/utils/hash_utils.dart';
 
 class NotificationService {
   // Notification IDs are deterministic to support cancel/update across restarts
@@ -107,9 +108,12 @@ class NotificationService {
         },
       );
       _initFailed = false;
-    } catch (e) {
+    } catch (e, stack) {
       _initFailed = true;
       debugPrint('CRITICAL: NotificationService init failed: $e');
+      if (kDebugMode) {
+        debugPrint(stack.toString());
+      }
     }
   }
 
@@ -155,8 +159,11 @@ class NotificationService {
         granted = true;
       }
       return granted;
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint("Notification permissions request failed: $e");
+      if (kDebugMode) {
+        debugPrint(stack.toString());
+      }
       return false;
     }
   }
@@ -240,10 +247,8 @@ class NotificationService {
     // We remove the kIsWeb early return to allow local saving for the UI list
     // but we still skip the actual OS scheduling if not supported.
 
-    // Note: Object.hash is stable within the same Dart runtime.
-    // We do not guarantee cross-version stability for legacy notifications
-    // if hash implementation changes in future Dart SDKs.
-    final int id = Object.hash(bank, day).abs() % 0x7FFFFFFF;
+    // Use a stable deterministic hash instead of Object.hash
+    final int id = generateStableHash('cc_reminder_$bank');
 
     await showNotification(
       id: id,
@@ -301,8 +306,11 @@ class NotificationService {
             allNotifications.add(osItem);
           }
         }
-      } catch (e) {
+      } catch (e, stack) {
         debugPrint("Failed to fetch OS pending notifications: $e");
+        if (kDebugMode) {
+          debugPrint(stack.toString());
+        }
       }
     }
 
@@ -364,7 +372,11 @@ class NotificationService {
     try {
       final List<dynamic> decoded = jsonDecode(jsonString);
       return decoded.cast<Map<String, dynamic>>();
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint("Failed to load local notification storage: $e");
+      if (kDebugMode) {
+        debugPrint(stack.toString());
+      }
       return [];
     }
   }

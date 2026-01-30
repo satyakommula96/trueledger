@@ -89,15 +89,9 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       ...incomeRaw.map((e) => e['month'] as String),
     }.toList()
       ..sort((a, b) {
-        // Safe sort by DateTime
-        try {
-          // Format YYYY-MM
-          final dateA = DateTime.parse('$a-01');
-          final dateB = DateTime.parse('$b-01');
-          return dateA.compareTo(dateB);
-        } catch (_) {
-          return a.compareTo(b);
-        }
+        final dateA = _parseStepMonth(a);
+        final dateB = _parseStepMonth(b);
+        return dateA.compareTo(dateB);
       });
 
     // Limit to last 6 months
@@ -261,7 +255,6 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         SELECT substr(date, 1, 7) as month, 0 as income, 0 as expenses, amount as invested FROM investments WHERE ? = '' OR substr(date, 1, 4) = ?
       )
       GROUP BY month
-      ORDER BY month DESC
     ''';
 
     final res = await db.rawQuery(query, [
@@ -286,7 +279,28 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         'invested': invested.toInt(),
         'net': (income - (expenses + invested)).toInt(),
       };
-    }).toList();
+    }).toList()
+      ..sort((a, b) {
+        final dateA = _parseStepMonth(a['month'] as String);
+        final dateB = _parseStepMonth(b['month'] as String);
+        return dateB.compareTo(dateA); // History is usually newest first
+      });
+  }
+
+  /// Helper to parse "YYYY-MM" or "YYYY-MM-DD" into a DateTime safely
+  DateTime _parseStepMonth(String input) {
+    try {
+      if (input.length == 7) {
+        return DateTime.parse('$input-01');
+      }
+      return DateTime.parse(input);
+    } catch (e) {
+      debugPrint("INVALID DATE DETECTED: $input. Error: $e");
+      if (kDebugMode) {
+        throw FormatException("Expected YYYY-MM or ISO date but got: $input");
+      }
+      return DateTime(1900);
+    }
   }
 
   @override
@@ -549,6 +563,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     allItems.addAll(invs);
 
     // Sort desc by Date, then ID
+    // Note: ISO8601 strings sort correctly via string comparison and is significantly faster for large lists.
     allItems.sort((a, b) {
       final dateCmp = (b['date'] as String).compareTo(a['date'] as String);
       if (dateCmp != 0) return dateCmp;
@@ -669,6 +684,11 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
+
+  /// Calculates the active daily streak of "tracking" events.
+  /// Definition: A tracking event is a manual entry in the [variable_expenses] table.
+  /// Fixed expenses (like rent), one-off Income, or Investments do not count
+  /// toward the "habitual tracking" streak.
   Future<int> getActiveStreak() async {
     final db = await AppDatabase.db;
     final results = await db.rawQuery('''
