@@ -18,9 +18,9 @@ import 'package:trueledger/presentation/screens/dashboard/dashboard_components/w
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/smart_insights.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/daily_summary.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/weekly_summary.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/quick_add_bottom_sheet.dart';
 import 'package:trueledger/domain/services/intelligence_service.dart';
 import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
-import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 
 class Dashboard extends ConsumerWidget {
   const Dashboard({super.key});
@@ -67,9 +67,15 @@ class Dashboard extends ConsumerWidget {
                 extendBody: true,
                 floatingActionButton: FloatingActionButton(
                   onPressed: () async {
-                    await Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const AddExpense()));
-                    reload();
+                    final added = await showModalBottomSheet<bool>(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => const QuickAddBottomSheet(),
+                    );
+                    if (added == true) {
+                      reload();
+                    }
                   },
                   backgroundColor: colorScheme.primary,
                   foregroundColor: colorScheme.onPrimary,
@@ -101,6 +107,15 @@ class Dashboard extends ConsumerWidget {
                                   Expanded(
                                     child: DailySummary(
                                         todaySpend: data.todaySpend,
+                                        totalBudgetRemaining: data
+                                                .budgets.isEmpty
+                                            ? null
+                                            : data.budgets.fold(
+                                                    0,
+                                                    (sum, b) =>
+                                                        sum + b.monthlyLimit) -
+                                                data.budgets.fold(0,
+                                                    (sum, b) => sum + b.spent),
                                         semantic: semantic),
                                   ),
                                   const SizedBox(width: 12),

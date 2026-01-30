@@ -7,16 +7,16 @@ We implement these phases sequentially.
 
 - [x] **"Today" Screen / Widget on Dashboard**
     - [x] Show today's total spend (large, bold).
-    - [ ] Show remaining budget for today (if applicable) or month.
+    - [x] Show remaining budget for today (if applicable) or month.
     - [x] Simple daily summary text: "You've spent ₹820 today."
 
 - [x] **One-Tap Expense Entry**
     - [x] Floating Action Button (FAB) visible on Dashboard.
-    - [ ] Simplified "Quick Add" dialog:
-        - [ ] Amount keypad opens immediately.
-        - [ ] Category defaults to last used or "General".
-        - [ ] "Save" button is easily reachable.
-        - [ ] No full-screen navigation for quick entry.
+    - [x] Simplified "Quick Add" dialog:
+        - [x] Amount keypad opens immediately.
+        - [x] Category defaults to last used or "General".
+        - [x] "Save" button is easily reachable.
+        - [x] No full-screen navigation for quick entry.
 
 - [x] **Budgets (Core Value)**
     - [x] Create `Budget` model (Category-based).
@@ -24,9 +24,9 @@ We implement these phases sequentially.
     - [x] Visual progress bars on a dedicated "Budgets" tab.
     - [x] Colors: Green (Safe), Yellow (>75%), Red (>100%).
 
-- [ ] **Smart Reminders**
-    - [ ] "Daily Log" reminder (e.g., at 9 PM) *only if* no transaction added today.
-    - [ ] Budget proximity warning notification.
+- [x] **Smart Reminders**
+    - [x] "Daily Log" reminder (e.g., at 9 PM) *only if* no transaction added today.
+    - [x] Budget proximity warning notification.
 
 ## Phase 2: Trust (Goal: Reliability & Correction)
 
@@ -37,7 +37,7 @@ We implement these phases sequentially.
 
 - [ ] **Backup & Restore**
     - [ ] JSON Export/Import (Clean UI).
-    - [ ] (Optional) Auto-backup to local file.
+    - [ ] Auto-backup to local file.
 
 - [x] **Weekly/Monthly Insights**
     - [x] "You spent 12% more than last week" (Plain text insights).

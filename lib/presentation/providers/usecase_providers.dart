@@ -9,7 +9,8 @@ import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'repository_providers.dart';
 
 final addTransactionUseCaseProvider = Provider<AddTransactionUseCase>((ref) {
-  return AddTransactionUseCase(ref.watch(financialRepositoryProvider));
+  return AddTransactionUseCase(ref.watch(financialRepositoryProvider),
+      ref.watch(notificationServiceProvider));
 });
 
 final getMonthlySummaryUseCaseProvider =

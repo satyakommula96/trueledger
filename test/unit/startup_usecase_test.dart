@@ -26,6 +26,11 @@ void main() {
         .thenAnswer((_) async => true);
     when(() => mockNotificationService.scheduleDailyReminder())
         .thenAnswer((_) async {});
+    when(() => mockNotificationService.cancelNotification(any()))
+        .thenAnswer((_) async {});
+    when(() => mockRepository.getTodaySpend()).thenAnswer((_) async => 0);
+    when(() => mockRepository.checkAndProcessRecurring())
+        .thenAnswer((_) async {});
   });
 
   group('StartupUseCase', () {

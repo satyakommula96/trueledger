@@ -6,11 +6,13 @@ import 'package:trueledger/presentation/providers/privacy_provider.dart';
 
 class DailySummary extends ConsumerWidget {
   final int todaySpend;
+  final int? totalBudgetRemaining;
   final AppColors semantic;
 
   const DailySummary({
     super.key,
     required this.todaySpend,
+    this.totalBudgetRemaining,
     required this.semantic,
   });
 
@@ -52,6 +54,19 @@ class DailySummary extends ConsumerWidget {
               ),
             ),
           ),
+          if (totalBudgetRemaining != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              "${CurrencyFormatter.format(totalBudgetRemaining!, isPrivate: isPrivacy)} left",
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: totalBudgetRemaining! < 0
+                    ? semantic.overspent
+                    : semantic.income,
+              ),
+            ),
+          ],
         ],
       ),
     );

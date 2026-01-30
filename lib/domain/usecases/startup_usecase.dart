@@ -22,7 +22,13 @@ class StartupUseCase extends UseCase<void, NoParams> {
       await notificationService.init();
       final granted = await notificationService.requestPermissions();
       if (granted) {
-        await notificationService.scheduleDailyReminder();
+        final todaySpend = await repository.getTodaySpend();
+        if (todaySpend == 0) {
+          await notificationService.scheduleDailyReminder();
+        } else {
+          await notificationService
+              .cancelNotification(NotificationService.dailyReminderId);
+        }
       }
 
       // 3. Load Currency Preference
