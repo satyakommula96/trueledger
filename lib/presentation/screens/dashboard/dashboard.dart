@@ -88,10 +88,18 @@ class Dashboard extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           sliver: SliverList(
                             delegate: SliverChildListDelegate([
+                              WealthHero(summary: summary)
+                                  .animate()
+                                  .fade(duration: 600.ms)
+                                  .slideY(
+                                      begin: 0.2,
+                                      end: 0,
+                                      curve: Curves.easeOutQuint),
+                              const SizedBox(height: 24),
                               DailySummary(
                                       todaySpend: data.todaySpend,
                                       semantic: semantic)
-                                  .animate()
+                                  .animate(delay: 100.ms)
                                   .fade(duration: 600.ms)
                                   .slideY(
                                       begin: 0.2,
@@ -102,15 +110,7 @@ class Dashboard extends ConsumerWidget {
                                       thisWeekSpend: data.thisWeekSpend,
                                       lastWeekSpend: data.lastWeekSpend,
                                       semantic: semantic)
-                                  .animate(delay: 100.ms)
-                                  .fade(duration: 600.ms)
-                                  .slideY(
-                                      begin: 0.2,
-                                      end: 0,
-                                      curve: Curves.easeOutQuint),
-                              const SizedBox(height: 24),
-                              WealthHero(summary: summary)
-                                  .animate()
+                                  .animate(delay: 200.ms)
                                   .fade(duration: 600.ms)
                                   .slideY(
                                       begin: 0.2,
