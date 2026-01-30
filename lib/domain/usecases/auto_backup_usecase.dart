@@ -38,7 +38,7 @@ class AutoBackupUseCase extends UseCase<void, NoParams> {
       }
 
       final fileName =
-          'autobackup_${DateTime.now().year}${DateTime.now().month}${DateTime.now().day}.json';
+          'autobackup_${DateTime.now().year}${DateTime.now().month.toString().padLeft(2, '0')}${DateTime.now().day.toString().padLeft(2, '0')}_${DateTime.now().hour}${DateTime.now().minute}.json';
       final file = File('${backupDir.path}/$fileName');
       await file.writeAsString(jsonString);
 

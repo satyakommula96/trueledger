@@ -88,7 +88,17 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       ...spendRaw.map((e) => e['month'] as String),
       ...incomeRaw.map((e) => e['month'] as String),
     }.toList()
-      ..sort();
+      ..sort((a, b) {
+        // Safe sort by DateTime
+        try {
+          // Format YYYY-MM
+          final dateA = DateTime.parse('$a-01');
+          final dateB = DateTime.parse('$b-01');
+          return dateA.compareTo(dateB);
+        } catch (_) {
+          return a.compareTo(b);
+        }
+      });
 
     // Limit to last 6 months
     final lastMonths =
@@ -655,8 +665,6 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     final db = await AppDatabase.db;
     final results = await db.rawQuery('''
       SELECT DISTINCT substr(date, 1, 10) as day FROM variable_expenses
-      UNION
-      SELECT DISTINCT substr(date, 1, 10) as day FROM income_sources
       ORDER BY day DESC
     ''');
 
