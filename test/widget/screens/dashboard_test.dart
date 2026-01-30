@@ -57,6 +57,8 @@ void main() {
     when(() => mockRepo.getUpcomingBills())
         .thenAnswer((_) => Future.value(<Map<String, dynamic>>[]));
     when(() => mockRepo.getTodaySpend()).thenAnswer((_) async => 0);
+    when(() => mockRepo.getWeeklySummary())
+        .thenAnswer((_) async => {'thisWeek': 0, 'lastWeek': 0});
 
     // 3. Build Widget with Override
     await tester.pumpWidget(

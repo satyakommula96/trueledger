@@ -41,4 +41,5 @@ abstract class IFinancialRepository {
   Future<List<LedgerItem>> getMonthDetails(String month);
   Future<void> restoreBackup(Map<String, dynamic> data);
   Future<int> getTodaySpend();
+  Future<Map<String, int>> getWeeklySummary();
 }

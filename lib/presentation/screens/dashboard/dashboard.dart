@@ -17,6 +17,7 @@ import 'package:trueledger/presentation/screens/dashboard/dashboard_components/p
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/wealth_hero.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/smart_insights.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/daily_summary.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/weekly_summary.dart';
 import 'package:trueledger/domain/services/intelligence_service.dart';
 import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
 import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
@@ -91,6 +92,17 @@ class Dashboard extends ConsumerWidget {
                                       todaySpend: data.todaySpend,
                                       semantic: semantic)
                                   .animate()
+                                  .fade(duration: 600.ms)
+                                  .slideY(
+                                      begin: 0.2,
+                                      end: 0,
+                                      curve: Curves.easeOutQuint),
+                              const SizedBox(height: 16),
+                              WeeklySummary(
+                                      thisWeekSpend: data.thisWeekSpend,
+                                      lastWeekSpend: data.lastWeekSpend,
+                                      semantic: semantic)
+                                  .animate(delay: 100.ms)
                                   .fade(duration: 600.ms)
                                   .slideY(
                                       begin: 0.2,

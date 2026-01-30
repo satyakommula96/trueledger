@@ -58,6 +58,8 @@ void main() {
       when(() => mockRepository.getUpcomingBills())
           .thenAnswer((_) async => upcomingBills);
       when(() => mockRepository.getTodaySpend()).thenAnswer((_) async => 150);
+      when(() => mockRepository.getWeeklySummary())
+          .thenAnswer((_) async => {'thisWeek': 500, 'lastWeek': 400});
 
       // Act
       final result = await useCase.call(NoParams());
@@ -69,6 +71,8 @@ void main() {
       expect(data.budgets, budgets);
       expect(data.trendData, trendData);
       expect(data.todaySpend, 150);
+      expect(data.thisWeekSpend, 500);
+      expect(data.lastWeekSpend, 400);
     });
 
     test('should return Failure when any repository call fails', () async {

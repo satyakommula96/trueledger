@@ -530,4 +530,41 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         [todayStr]);
     return Sqflite.firstIntValue(result) ?? 0;
   }
+
+  @override
+  Future<Map<String, int>> getWeeklySummary() async {
+    final db = await AppDatabase.db;
+    final now = DateTime.now();
+
+    // This week: Monday to today
+    final thisMondayOffset = now.weekday - 1;
+    final thisWeekStart =
+        DateTime(now.year, now.month, now.day - thisMondayOffset);
+    final thisWeekEnd = now;
+
+    // Last week: Previous Monday to Sunday
+    final lastWeekStart = thisWeekStart.subtract(const Duration(days: 7));
+    final lastWeekEnd = thisWeekStart.subtract(const Duration(days: 1));
+
+    final thisWeekResult = await db.rawQuery('''
+      SELECT SUM(amount) FROM variable_expenses
+      WHERE date >= ? AND date <= ?
+    ''', [
+      thisWeekStart.toIso8601String().substring(0, 10),
+      thisWeekEnd.toIso8601String().substring(0, 10)
+    ]);
+
+    final lastWeekResult = await db.rawQuery('''
+      SELECT SUM(amount) FROM variable_expenses
+      WHERE date >= ? AND date <= ?
+    ''', [
+      lastWeekStart.toIso8601String().substring(0, 10),
+      lastWeekEnd.toIso8601String().substring(0, 10)
+    ]);
+
+    return {
+      'thisWeek': Sqflite.firstIntValue(thisWeekResult) ?? 0,
+      'lastWeek': Sqflite.firstIntValue(lastWeekResult) ?? 0,
+    };
+  }
 }
