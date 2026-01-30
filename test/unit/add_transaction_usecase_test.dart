@@ -1,31 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/core/error/failure.dart';
+import 'package:trueledger/core/utils/result.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
-
-class MockNotificationService extends Mock implements NotificationService {}
 
 void main() {
   late AddTransactionUseCase useCase;
   late MockFinancialRepository mockRepository;
-  late MockNotificationService mockNotificationService;
 
   setUp(() {
     mockRepository = MockFinancialRepository();
-    mockNotificationService = MockNotificationService();
-    useCase = AddTransactionUseCase(mockRepository, mockNotificationService);
+    useCase = AddTransactionUseCase(mockRepository);
 
-    when(() => mockNotificationService.cancelNotification(any()))
-        .thenAnswer((_) async {});
-    when(() => mockNotificationService.showNotification(
-          id: any(named: 'id'),
-          title: any(named: 'title'),
-          body: any(named: 'body'),
-        )).thenAnswer((_) async {});
     when(() => mockRepository.getBudgets()).thenAnswer((_) async => []);
 
     // Register fallback for Mocktail any()
@@ -52,6 +41,10 @@ void main() {
 
       // Assert
       expect(result.isSuccess, isTrue);
+      // Optional: Check if result data is correct structure
+      expect((result as Success<TransactionResult>).value,
+          isA<TransactionResult>());
+
       verify(() => mockRepository.addEntry(
             validParams.type,
             validParams.amount,

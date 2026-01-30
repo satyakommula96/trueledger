@@ -524,8 +524,12 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         [month]);
     allItems.addAll(invs);
 
-    // Sort desc by ID (implicitly time)
-    allItems.sort((a, b) => (b['id'] as int).compareTo(a['id'] as int));
+    // Sort desc by Date, then ID
+    allItems.sort((a, b) {
+      final dateCmp = (b['date'] as String).compareTo(a['date'] as String);
+      if (dateCmp != 0) return dateCmp;
+      return (b['id'] as int).compareTo(a['id'] as int);
+    });
     return allItems.map((e) => LedgerItem.fromMap(e)).toList();
   }
 
@@ -647,10 +651,6 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       SELECT DISTINCT substr(date, 1, 10) as day FROM variable_expenses
       UNION
       SELECT DISTINCT substr(date, 1, 10) as day FROM income_sources
-      UNION
-      SELECT DISTINCT substr(date, 1, 10) as day FROM fixed_expenses
-      UNION
-      SELECT DISTINCT substr(date, 1, 10) as day FROM investments
       ORDER BY day DESC
     ''');
 

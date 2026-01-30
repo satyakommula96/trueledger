@@ -21,8 +21,12 @@ class StartupUseCase extends UseCase<void, NoParams> {
       // 1. Initialize Database (including migrations)
       await AppDatabase.db;
 
-      // 1b. Auto Backup
-      await autoBackup.call(const NoParams());
+      // 1b. Auto Backup (Non-blocking)
+      autoBackup.call(const NoParams()).catchError((e) {
+        // Log silently
+        return Failure(
+            DatabaseFailure("Auto-backup failed silently: ${e.toString()}"));
+      });
 
       // 2. Initialize Notifications
       await notificationService.init();

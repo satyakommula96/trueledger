@@ -6,6 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
+import 'package:trueledger/core/utils/result.dart';
+import 'package:trueledger/core/services/notification_service.dart';
 
 class AddExpense extends ConsumerStatefulWidget {
   final String? initialType;
@@ -304,8 +307,24 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
     if (!mounted) return;
 
     if (result.isSuccess) {
+      final transactionResult = (result as Success<TransactionResult>).value;
+      final notificationService = ref.read(notificationServiceProvider);
+
+      if (transactionResult.cancelDailyReminder) {
+        await notificationService
+            .cancelNotification(NotificationService.dailyReminderId);
+      }
+
+      for (final notification in transactionResult.notifications) {
+        await notificationService.showNotification(
+          id: notification.id,
+          title: notification.title,
+          body: notification.body,
+        );
+      }
+
       ref.invalidate(dashboardProvider);
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(result.failureOrThrow.message)));

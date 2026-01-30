@@ -1,6 +1,5 @@
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/core/utils/result.dart';
-import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'usecase_base.dart';
@@ -22,14 +21,36 @@ class AddTransactionParams {
   });
 }
 
-class AddTransactionUseCase extends UseCase<void, AddTransactionParams> {
-  final IFinancialRepository repository;
-  final NotificationService notificationService;
+class NotificationRequest {
+  final int id;
+  final String title;
+  final String body;
 
-  AddTransactionUseCase(this.repository, this.notificationService);
+  NotificationRequest({
+    required this.id,
+    required this.title,
+    required this.body,
+  });
+}
+
+class TransactionResult {
+  final bool cancelDailyReminder;
+  final List<NotificationRequest> notifications;
+
+  TransactionResult({
+    this.cancelDailyReminder = false,
+    this.notifications = const [],
+  });
+}
+
+class AddTransactionUseCase
+    extends UseCase<TransactionResult, AddTransactionParams> {
+  final IFinancialRepository repository;
+
+  AddTransactionUseCase(this.repository);
 
   @override
-  Future<Result<void>> call(AddTransactionParams params) async {
+  Future<Result<TransactionResult>> call(AddTransactionParams params) async {
     // 1. Validation Logic
     if (params.amount <= 0) {
       return Failure(ValidationFailure("Amount must be greater than zero"));
@@ -51,17 +72,19 @@ class AddTransactionUseCase extends UseCase<void, AddTransactionParams> {
         params.date,
       );
 
-      // 3. Smart Notifications
+      bool shouldCancelDaily = false;
+      final List<NotificationRequest> notificationEvents = [];
+
+      // 3. Smart Notifications Logic (Pure Domain Logic)
       try {
         final entryDate = DateTime.parse(params.date);
         final now = DateTime.now();
 
-        // 3a. Cancel Daily Reminder if it's for today
+        // 3a. Check if Daily Reminder should be cancelled
         if (entryDate.year == now.year &&
             entryDate.month == now.month &&
             entryDate.day == now.day) {
-          await notificationService
-              .cancelNotification(NotificationService.dailyReminderId);
+          shouldCancelDaily = true;
         }
 
         // 3b. Budget Proximity Warning
@@ -72,31 +95,40 @@ class AddTransactionUseCase extends UseCase<void, AddTransactionParams> {
             );
 
         if (categoryBudget != null) {
-          final spent = categoryBudget.spent;
+          final spent = categoryBudget
+              .spent; // Note: Repository should have returned updated spent amount if possible, or we assume it's close enough.
+          // Ideally, addEntry should return the new state, or we fetch it.
+          // Since we just added an entry, the 'spent' in `getBudgets` relies on the DB state.
+          // If `addEntry` is awaited, `getBudgets` should reflect the new total.
+
           final limit = categoryBudget.monthlyLimit;
           final percent = (spent / limit) * 100;
 
           if (percent >= 100) {
-            await notificationService.showNotification(
+            notificationEvents.add(NotificationRequest(
               id: params.category.hashCode,
               title: 'Budget Exceeded: ${params.category}',
               body: 'You have spent 100% of your ${params.category} budget.',
-            );
+            ));
           } else if (percent >= 85) {
-            await notificationService.showNotification(
+            notificationEvents.add(NotificationRequest(
               id: params.category.hashCode,
               title: 'Budget Warning: ${params.category}',
               body:
                   'You have reached ${percent.round()}% of your ${params.category} budget.',
-            );
+            ));
           }
         }
       } catch (e) {
-        // Log but don't fail transaction if notification logic fails
-        debugPrint("Smart notification logic failed: $e");
+        // Log the error but do not fail the transaction.
+        // In a real app, send to Crashlytics.
+        debugPrint("Error calculating notification events: $e");
       }
 
-      return const Success(null);
+      return Success(TransactionResult(
+        cancelDailyReminder: shouldCancelDaily,
+        notifications: notificationEvents,
+      ));
     } catch (e) {
       // 4. Error Mapping
       return Failure(
