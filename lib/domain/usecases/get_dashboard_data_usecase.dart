@@ -11,6 +11,7 @@ class DashboardData {
   final List<SavingGoal> savingGoals;
   final List<Map<String, dynamic>> trendData;
   final List<Map<String, dynamic>> upcomingBills;
+  final int todaySpend;
 
   DashboardData({
     required this.summary,
@@ -19,6 +20,7 @@ class DashboardData {
     required this.savingGoals,
     required this.trendData,
     required this.upcomingBills,
+    required this.todaySpend,
   });
 }
 
@@ -37,6 +39,7 @@ class GetDashboardDataUseCase extends UseCase<DashboardData, NoParams> {
         repository.getSavingGoals(),
         repository.getSpendingTrend(),
         repository.getUpcomingBills(),
+        repository.getTodaySpend(),
       ]);
 
       return Success(DashboardData(
@@ -46,6 +49,7 @@ class GetDashboardDataUseCase extends UseCase<DashboardData, NoParams> {
         savingGoals: (results[3] as List).cast<SavingGoal>(),
         trendData: (results[4] as List).cast<Map<String, dynamic>>(),
         upcomingBills: (results[5] as List).cast<Map<String, dynamic>>(),
+        todaySpend: results[6] as int,
       ));
     } catch (e) {
       return Failure(

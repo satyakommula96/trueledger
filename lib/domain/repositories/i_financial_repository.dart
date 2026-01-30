@@ -40,4 +40,5 @@ abstract class IFinancialRepository {
   Future<void> updateEntry(String type, int id, Map<String, dynamic> values);
   Future<List<LedgerItem>> getMonthDetails(String month);
   Future<void> restoreBackup(Map<String, dynamic> data);
+  Future<int> getTodaySpend();
 }

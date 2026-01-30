@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:trueledger/core/theme/theme.dart';
-import 'package:trueledger/presentation/screens/loans/loans.dart';
 import 'package:trueledger/presentation/screens/cards/credit_cards.dart';
 import 'package:trueledger/presentation/screens/transactions/monthly_history.dart';
 import 'package:trueledger/presentation/screens/analysis/analysis_screen.dart';
+import 'package:trueledger/presentation/screens/budget/budgets_screen.dart';
 
 class DashboardBottomBar extends StatelessWidget {
   final VoidCallback onLoad;
@@ -48,12 +48,12 @@ class DashboardBottomBar extends StatelessWidget {
                   Expanded(
                     child: _buildActionIcon(
                         context,
-                        Icons.handshake_outlined,
-                        "LOANS",
+                        Icons.pie_chart_outline_rounded,
+                        "BUDGETS",
                         () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (_) => const LoansScreen())),
+                                builder: (_) => const BudgetsScreen())),
                         semantic),
                   ),
                   Expanded(

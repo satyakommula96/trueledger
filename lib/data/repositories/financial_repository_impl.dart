@@ -519,4 +519,15 @@ class FinancialRepositoryImpl implements IFinancialRepository {
 
     await batch.commit(noResult: true);
   }
+
+  @override
+  Future<int> getTodaySpend() async {
+    final db = await AppDatabase.db;
+    final todayStr =
+        DateTime.now().toIso8601String().substring(0, 10); // YYYY-MM-DD
+    final result = await db.rawQuery(
+        'SELECT SUM(amount) FROM variable_expenses WHERE substr(date, 1, 10) = ?',
+        [todayStr]);
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
 }

@@ -15,7 +15,7 @@ void main() {
   }
 
   group('DashboardBottomBar', () {
-    testWidgets('renders LOANS label', (tester) async {
+    testWidgets('renders BUDGETS label', (tester) async {
       await tester.pumpWidget(createTestWidget(
         Scaffold(
           bottomNavigationBar: DashboardBottomBar(onLoad: () {}),
@@ -24,7 +24,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('LOANS'), findsOneWidget);
+      expect(find.text('BUDGETS'), findsOneWidget);
     });
 
     testWidgets('renders CARDS label', (tester) async {
@@ -72,7 +72,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.handshake_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.pie_chart_outline_rounded), findsOneWidget);
       expect(find.byIcon(Icons.credit_card_outlined), findsOneWidget);
       expect(find.byIcon(Icons.analytics_outlined), findsOneWidget);
       expect(find.byIcon(Icons.history_outlined), findsOneWidget);

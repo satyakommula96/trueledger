@@ -31,6 +31,10 @@ final updateBudgetUseCaseProvider = Provider<UpdateBudgetUseCase>((ref) {
   return UpdateBudgetUseCase(ref.watch(financialRepositoryProvider));
 });
 
+final addBudgetUseCaseProvider = Provider<AddBudgetUseCase>((ref) {
+  return AddBudgetUseCase(ref.watch(financialRepositoryProvider));
+});
+
 final deleteBudgetUseCaseProvider = Provider<DeleteBudgetUseCase>((ref) {
   return DeleteBudgetUseCase(ref.watch(financialRepositoryProvider));
 });

@@ -37,6 +37,7 @@ void main() {
       savingGoals: [],
       trendData: [],
       upcomingBills: [],
+      todaySpend: 0,
     );
     when(() => mockPrefs.setBool(any(), any())).thenAnswer((_) async => true);
     when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);

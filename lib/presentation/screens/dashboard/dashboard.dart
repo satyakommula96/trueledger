@@ -16,8 +16,10 @@ import 'package:trueledger/presentation/screens/dashboard/dashboard_components/s
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/payment_calendar.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/wealth_hero.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/smart_insights.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/daily_summary.dart';
 import 'package:trueledger/domain/services/intelligence_service.dart';
 import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
+import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 
 class Dashboard extends ConsumerWidget {
   const Dashboard({super.key});
@@ -62,6 +64,16 @@ class Dashboard extends ConsumerWidget {
             builder: (context, currency, _) {
               return Scaffold(
                 extendBody: true,
+                floatingActionButton: FloatingActionButton(
+                  onPressed: () async {
+                    await Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const AddExpense()));
+                    reload();
+                  },
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                  child: const Icon(Icons.add_rounded, size: 32),
+                ),
                 bottomNavigationBar: DashboardBottomBar(onLoad: reload),
                 body: SafeArea(
                   child: RefreshIndicator(
@@ -75,6 +87,16 @@ class Dashboard extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           sliver: SliverList(
                             delegate: SliverChildListDelegate([
+                              DailySummary(
+                                      todaySpend: data.todaySpend,
+                                      semantic: semantic)
+                                  .animate()
+                                  .fade(duration: 600.ms)
+                                  .slideY(
+                                      begin: 0.2,
+                                      end: 0,
+                                      curve: Curves.easeOutQuint),
+                              const SizedBox(height: 24),
                               WealthHero(summary: summary)
                                   .animate()
                                   .fade(duration: 600.ms)

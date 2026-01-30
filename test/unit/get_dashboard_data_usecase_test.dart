@@ -57,6 +57,7 @@ void main() {
           .thenAnswer((_) async => trendData);
       when(() => mockRepository.getUpcomingBills())
           .thenAnswer((_) async => upcomingBills);
+      when(() => mockRepository.getTodaySpend()).thenAnswer((_) async => 150);
 
       // Act
       final result = await useCase.call(NoParams());
@@ -67,6 +68,7 @@ void main() {
       expect(data.summary, summary);
       expect(data.budgets, budgets);
       expect(data.trendData, trendData);
+      expect(data.todaySpend, 150);
     });
 
     test('should return Failure when any repository call fails', () async {
