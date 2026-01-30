@@ -5,24 +5,24 @@ We implement these phases sequentially.
 
 ## Phase 1: Retention (Goal: Daily Usage Hook)
 
-- [ ] **"Today" Screen / Widget on Dashboard**
-    - [ ] Show today's total spend (large, bold).
+- [x] **"Today" Screen / Widget on Dashboard**
+    - [x] Show today's total spend (large, bold).
     - [ ] Show remaining budget for today (if applicable) or month.
-    - [ ] Simple daily summary text: "You’ve spent ₹820 today."
+    - [x] Simple daily summary text: "You've spent ₹820 today."
 
-- [ ] **One-Tap Expense Entry**
-    - [ ] Floating Action Button (FAB) visible on all main tabs.
+- [x] **One-Tap Expense Entry**
+    - [x] Floating Action Button (FAB) visible on Dashboard.
     - [ ] Simplified "Quick Add" dialog:
         - [ ] Amount keypad opens immediately.
         - [ ] Category defaults to last used or "General".
         - [ ] "Save" button is easily reachable.
         - [ ] No full-screen navigation for quick entry.
 
-- [ ] **Budgets (Core Value)**
-    - [ ] Create `Budget` model (Category-based).
-    - [ ] "Add Budget" screen (Amount per Category).
-    - [ ] Visual progress bars on Dashboard or a dedicated "Budgets" tab.
-    - [ ] Colors: Green (Safe), Yellow (>75%), Red (>100%).
+- [x] **Budgets (Core Value)**
+    - [x] Create `Budget` model (Category-based).
+    - [x] "Add Budget" screen (Amount per Category).
+    - [x] Visual progress bars on a dedicated "Budgets" tab.
+    - [x] Colors: Green (Safe), Yellow (>75%), Red (>100%).
 
 - [ ] **Smart Reminders**
     - [ ] "Daily Log" reminder (e.g., at 9 PM) *only if* no transaction added today.
@@ -39,8 +39,8 @@ We implement these phases sequentially.
     - [ ] JSON Export/Import (Clean UI).
     - [ ] (Optional) Auto-backup to local file.
 
-- [ ] **Weekly/Monthly Insights**
-    - [ ] "You spent 12% more than last week" (Plain text insights).
+- [x] **Weekly/Monthly Insights**
+    - [x] "You spent 12% more than last week" (Plain text insights).
     - [ ] "Food is your top expense this month".
 
 ## Phase 3: Delight (Goal: Polish & Engagement)
