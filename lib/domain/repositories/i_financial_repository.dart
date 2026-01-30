@@ -20,6 +20,7 @@ abstract class IFinancialRepository {
   Future<void> updateBudget(int id, int monthlyLimit);
   Future<List<Map<String, dynamic>>> getAllValues(String table);
   Future<void> seedData();
+  Future<void> seedRoadmapData();
   Future<void> seedHealthyProfile();
   Future<void> seedAtRiskProfile();
   Future<void> seedLargeData(int count);
@@ -42,4 +43,6 @@ abstract class IFinancialRepository {
   Future<void> restoreBackup(Map<String, dynamic> data);
   Future<int> getTodaySpend();
   Future<Map<String, int>> getWeeklySummary();
+  Future<Map<String, dynamic>> generateBackup();
+  Future<int> getActiveStreak();
 }

@@ -177,7 +177,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Select Data Scenario'), findsOneWidget);
-      await tester.tap(find.text('Standard Demo'));
+      await tester.tap(find.text('Full History'));
       await tester.pumpAndSettle();
 
       verify(() => mockRepo.seedData()).called(1);

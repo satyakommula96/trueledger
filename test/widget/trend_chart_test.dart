@@ -62,6 +62,5 @@ void main() {
     expect(find.text('JAN'), findsOneWidget);
     expect(find.text('FEB'), findsOneWidget);
     expect(find.text('MAR'), findsOneWidget);
-    expect(find.text('FCST'), findsOneWidget);
   });
 }

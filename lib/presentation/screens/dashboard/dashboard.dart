@@ -94,13 +94,13 @@ class Dashboard extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           sliver: SliverList(
                             delegate: SliverChildListDelegate([
-                              WealthHero(summary: summary)
-                                  .animate()
-                                  .fade(duration: 600.ms)
-                                  .slideY(
-                                      begin: 0.2,
-                                      end: 0,
-                                      curve: Curves.easeOutQuint),
+                              WealthHero(
+                                summary: summary,
+                                activeStreak: data.activeStreak,
+                              ).animate().fade(duration: 600.ms).slideY(
+                                  begin: 0.2,
+                                  end: 0,
+                                  curve: Curves.easeOutQuint),
                               const SizedBox(height: 24),
                               Row(
                                 children: [
@@ -232,6 +232,7 @@ class Dashboard extends ConsumerWidget {
                                   summary: summary,
                                   trendData: trendData,
                                   budgets: budgets,
+                                  categorySpending: data.categorySpending,
                                 ),
                                 score: IntelligenceService.calculateHealthScore(
                                   summary: summary,

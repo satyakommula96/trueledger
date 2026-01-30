@@ -76,8 +76,10 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
       items = items.where((e) {
         final label = e.label.toLowerCase();
         final note = (e.note ?? "").toLowerCase();
+        final amount = e.amount.toString();
         return label.contains(searchQuery.toLowerCase()) ||
-            note.contains(searchQuery.toLowerCase());
+            note.contains(searchQuery.toLowerCase()) ||
+            amount.contains(searchQuery);
       }).toList();
     }
     return items;

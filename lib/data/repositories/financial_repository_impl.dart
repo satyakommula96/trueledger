@@ -1,9 +1,15 @@
 import 'package:sqflite_sqlcipher/sqflite.dart';
+import 'package:intl/intl.dart';
 import 'package:trueledger/data/datasources/database.dart';
 import 'package:trueledger/domain/models/models.dart';
 import '../../domain/repositories/i_financial_repository.dart';
+import 'package:trueledger/core/services/notification_service.dart';
 
 class FinancialRepositoryImpl implements IFinancialRepository {
+  final NotificationService? _notificationService;
+
+  FinancialRepositoryImpl([this._notificationService]);
+
   @override
   Future<MonthlySummary> getMonthlySummary() async {
     final db = await AppDatabase.db;
@@ -69,9 +75,37 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
   Future<List<Map<String, dynamic>>> getSpendingTrend() async {
     final db = await AppDatabase.db;
-    final trendRaw = await db.rawQuery(
+    // Get spending trend (variable expenses)
+    final spendRaw = await db.rawQuery(
         'SELECT substr(date, 1, 7) as month, SUM(amount) as total FROM variable_expenses GROUP BY month ORDER BY month DESC LIMIT 6');
-    return trendRaw.reversed.toList();
+
+    // Get income trend
+    final incomeRaw = await db.rawQuery(
+        'SELECT substr(date, 1, 7) as month, SUM(amount) as total FROM income_sources GROUP BY month ORDER BY month DESC LIMIT 6');
+
+    final months = <String>{
+      ...spendRaw.map((e) => e['month'] as String),
+      ...incomeRaw.map((e) => e['month'] as String),
+    }.toList()
+      ..sort();
+
+    // Limit to last 6 months
+    final lastMonths =
+        months.length > 6 ? months.sublist(months.length - 6) : months;
+
+    return lastMonths.map((m) {
+      final s = spendRaw.firstWhere((e) => e['month'] == m,
+          orElse: () => {'total': 0});
+      final i = incomeRaw.firstWhere((e) => e['month'] == m,
+          orElse: () => {'total': 0});
+      return {
+        'month': m,
+        'spending': s['total'],
+        'income': i['total'],
+        'total':
+            s['total'], // Keep 'total' for backward compatibility in widgets
+      };
+    }).toList();
   }
 
   @override
@@ -297,6 +331,11 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
+  Future<void> seedRoadmapData() async {
+    await AppDatabase.seedRoadmapData();
+  }
+
+  @override
   Future<void> seedHealthyProfile() async {
     await AppDatabase.seedHealthyProfile();
   }
@@ -314,6 +353,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
   Future<void> clearData() async {
     await AppDatabase.clearData();
+    await _notificationService?.cancelAllNotifications();
   }
 
   @override
@@ -490,6 +530,33 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> generateBackup() async {
+    final db = await AppDatabase.db;
+    final Map<String, dynamic> backup = {};
+
+    final tableMap = {
+      'variable_expenses': 'vars',
+      'income_sources': 'income',
+      'fixed_expenses': 'fixed',
+      'investments': 'invs',
+      'subscriptions': 'subs',
+      'credit_cards': 'cards',
+      'loans': 'loans',
+      'saving_goals': 'goals',
+      'budgets': 'budgets',
+    };
+
+    for (var entry in tableMap.entries) {
+      final tableName = entry.key;
+      final backupKey = entry.value;
+      final data = await db.query(tableName);
+      backup[backupKey] = data;
+    }
+
+    return backup;
+  }
+
+  @override
   Future<void> restoreBackup(Map<String, dynamic> data) async {
     final db = await AppDatabase.db;
     final batch = db.batch();
@@ -506,6 +573,11 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       'saving_goals': 'goals',
       'budgets': 'budgets',
     };
+
+    // Clear existing data first
+    for (var entry in tableMap.entries) {
+      batch.delete(entry.key);
+    }
 
     for (var entry in tableMap.entries) {
       final tableName = entry.key;
@@ -566,5 +638,54 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       'thisWeek': Sqflite.firstIntValue(thisWeekResult) ?? 0,
       'lastWeek': Sqflite.firstIntValue(lastWeekResult) ?? 0,
     };
+  }
+
+  @override
+  Future<int> getActiveStreak() async {
+    final db = await AppDatabase.db;
+    final results = await db.rawQuery('''
+      SELECT DISTINCT substr(date, 1, 10) as day FROM variable_expenses
+      UNION
+      SELECT DISTINCT substr(date, 1, 10) as day FROM income_sources
+      UNION
+      SELECT DISTINCT substr(date, 1, 10) as day FROM fixed_expenses
+      UNION
+      SELECT DISTINCT substr(date, 1, 10) as day FROM investments
+      ORDER BY day DESC
+    ''');
+
+    if (results.isEmpty) return 0;
+
+    final daysSet = results.map((e) => e['day'] as String).toSet();
+
+    DateTime checkDate = DateTime.now();
+    String todayStr = DateFormat('yyyy-MM-dd').format(checkDate);
+    String yesterdayStr = DateFormat('yyyy-MM-dd')
+        .format(checkDate.subtract(const Duration(days: 1)));
+
+    // If no transaction today or yesterday, streak is broken
+    if (!daysSet.contains(todayStr) && !daysSet.contains(yesterdayStr)) {
+      return 0;
+    }
+
+    int streak = 0;
+    // Start from either today or yesterday (whichever has the most recent tx)
+    if (daysSet.contains(todayStr)) {
+      streak = 1;
+    } else {
+      streak = 1;
+      checkDate = checkDate.subtract(const Duration(days: 1));
+    }
+
+    while (true) {
+      checkDate = checkDate.subtract(const Duration(days: 1));
+      String nextDayStr = DateFormat('yyyy-MM-dd').format(checkDate);
+      if (daysSet.contains(nextDayStr)) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
   }
 }

@@ -42,6 +42,7 @@ class SettingsScreen extends ConsumerWidget {
             hintText: "Enter your name",
             labelText: "Name",
           ),
+          maxLength: 20,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
         ),
@@ -342,27 +343,19 @@ class SettingsScreen extends ConsumerWidget {
               ),
               children: [
                 SimpleDialogOption(
+                  onPressed: () => Navigator.pop(context, 'roadmap'),
+                  child: const ListTile(
+                    leading: Icon(Icons.star_rounded, color: Colors.purple),
+                    title: Text("Complete Demo"),
+                    subtitle: Text("All features, including Streaks"),
+                  ),
+                ),
+                SimpleDialogOption(
                   onPressed: () => Navigator.pop(context, 'standard'),
                   child: const ListTile(
-                    leading: Icon(Icons.dvr_rounded, color: Colors.blue),
-                    title: Text("Standard Demo"),
-                    subtitle: Text("Mixed data over 2 years"),
-                  ),
-                ),
-                SimpleDialogOption(
-                  onPressed: () => Navigator.pop(context, 'positive'),
-                  child: const ListTile(
-                    leading: Icon(Icons.trending_up, color: Colors.green),
-                    title: Text("Wealth Builder"),
-                    subtitle: Text("High Income, Low Expense"),
-                  ),
-                ),
-                SimpleDialogOption(
-                  onPressed: () => Navigator.pop(context, 'negative'),
-                  child: const ListTile(
-                    leading: Icon(Icons.trending_down, color: Colors.red),
-                    title: Text("Debt Crisis"),
-                    subtitle: Text("Low Income, High Expense"),
+                    leading: Icon(Icons.history_rounded, color: Colors.amber),
+                    title: Text("Full History"),
+                    subtitle: Text("2 years of mixed data"),
                   ),
                 ),
               ],
@@ -371,7 +364,9 @@ class SettingsScreen extends ConsumerWidget {
     if (option != null) {
       final repo = ref.read(financialRepositoryProvider);
 
-      if (option == 'standard') {
+      if (option == 'roadmap') {
+        await repo.seedRoadmapData();
+      } else if (option == 'standard') {
         await repo.seedData();
       } else if (option == 'positive') {
         await repo.seedHealthyProfile();
@@ -1101,6 +1096,8 @@ class SettingsScreen extends ConsumerWidget {
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16)),
                   Text(sub,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),

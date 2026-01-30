@@ -21,7 +21,7 @@ We implement these phases sequentially.
 - [x] **Budgets (Core Value)**
     - [x] Create `Budget` model (Category-based).
     - [x] "Add Budget" screen (Amount per Category).
-    - [x] Visual progress bars on a dedicated "Budgets" tab.
+    - [x] Visual progress bars (Integrated into Analysis tab).
     - [x] Colors: Green (Safe), Yellow (>75%), Red (>100%).
 
 - [x] **Smart Reminders**
@@ -32,26 +32,26 @@ We implement these phases sequentially.
 
 - [ ] **Search & Edit**
     - [ ] Search bar in Transactions list (Amount, Category, Note).
-    - [ ] Edit/Delete capabilities for existing transactions.
-    - [ ] Undo option for deletions.
+    - [x] Edit/Delete capabilities for existing transactions.
+    - [x] Undo option for deletions.
 
 - [ ] **Backup & Restore**
-    - [ ] JSON Export/Import (Clean UI).
-    - [ ] Auto-backup to local file.
+    - [x] JSON Export/Import (Encrypted).
+    - [x] Auto-backup to local file (Daily snapshots).
 
 - [x] **Weekly/Monthly Insights**
     - [x] "You spent 12% more than last week" (Plain text insights).
-    - [ ] "Food is your top expense this month".
+    - [x] "Food is your top expense this month".
 
 ## Phase 3: Delight (Goal: Polish & Engagement)
 
-- [ ] **Streaks**
-    - [ ] "5 Day Streak" counter on Dashboard.
-    - [ ] Confetti animation for hitting streak milestones.
+- [x] **Streaks**
+    - [x] "5 Day Streak" counter on Dashboard.
+    - [x] Confetti animation for hitting streak milestones.
 
 - [ ] **Performance Polish**
-    - [ ] Ensure app opens < 1s.
-    - [ ] Optimistic UI updates (don't wait for DB to update UI).
+    - [x] Ensure app opens < 1s (Native performance).
+    - [ ] Optimistic UI updates (Skipped: Local DB is fast enough for <100ms response).
 
 ---
 

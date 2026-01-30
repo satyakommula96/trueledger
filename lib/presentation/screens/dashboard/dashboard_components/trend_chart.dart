@@ -16,33 +16,19 @@ class TrendChart extends StatelessWidget {
     required this.isPrivate,
   });
 
-  double _forecastNext(List<double> values) {
-    if (values.isEmpty) return 0;
-    if (values.length == 1) return values.first;
-    int n = values.length;
-    double sumX = 0;
-    double sumY = 0;
-    double sumXY = 0;
-    double sumXX = 0;
-    for (int i = 0; i < n; i++) {
-      sumX += i;
-      sumY += values[i];
-      sumXY += i * values[i];
-      sumXX += i * i;
-    }
-    double slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-    double intercept = (sumY - slope * sumX) / n;
-    double result = slope * n + intercept;
-    return double.parse(result.toStringAsFixed(2));
-  }
-
   @override
   Widget build(BuildContext context) {
     if (trendData.isEmpty) return const SizedBox.shrink();
     final colorScheme = Theme.of(context).colorScheme;
-    final maxVal = (trendData
-        .map((e) => e['total'] as num)
+    final maxValSpend = (trendData
+        .map((e) => (e['spending'] ?? e['total']) as num)
         .reduce((a, b) => a > b ? a : b)).toDouble();
+    final maxValIncome = (trendData
+        .map((e) => (e['income'] ?? 0) as num)
+        .reduce((a, b) => a > b ? a : b)).toDouble();
+    final maxVal =
+        (maxValSpend > maxValIncome ? maxValSpend : maxValIncome) * 1.2;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -64,130 +50,157 @@ class TrendChart extends StatelessWidget {
           ),
         ],
       ),
-      child: Container(
-        height: 180,
-        padding: const EdgeInsets.only(right: 12),
-        child: LineChart(
-          LineChartData(
-            minX: 0,
-            maxX: (trendData.length).toDouble(),
-            lineTouchData: LineTouchData(
-              touchTooltipData: LineTouchTooltipData(
-                getTooltipColor: (_) => Colors.blueGrey,
-                getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-                  return touchedBarSpots.map((barSpot) {
-                    return LineTooltipItem(
-                      CurrencyFormatter.format(barSpot.y, isPrivate: isPrivate),
-                      const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    );
-                  }).toList();
-                },
-              ),
-            ),
-            gridData: FlGridData(
-                show: true,
-                drawVerticalLine: false,
-                horizontalInterval: maxVal / 2,
-                getDrawingHorizontalLine: (v) =>
-                    FlLine(color: semantic.divider, strokeWidth: 1)),
-            titlesData: FlTitlesData(
-              show: true,
-              bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 24,
-                      interval: 1,
-                      getTitlesWidget: (value, meta) {
-                        int index = value.toInt();
-                        if (index == trendData.length) {
-                          return const Text("FCST",
-                              style: TextStyle(
-                                  fontSize: 8, fontWeight: FontWeight.bold));
-                        }
-                        if (index < 0 || index >= trendData.length) {
-                          return const SizedBox();
-                        }
-                        String month =
-                            trendData[index]['month'].toString().split('-')[1];
-                        const months = [
-                          'JAN',
-                          'FEB',
-                          'MAR',
-                          'APR',
-                          'MAY',
-                          'JUN',
-                          'JUL',
-                          'AUG',
-                          'SEP',
-                          'OCT',
-                          'NOV',
-                          'DEC'
-                        ];
-                        return Text(months[int.parse(month) - 1],
-                            style: TextStyle(
-                                color: semantic.secondaryText,
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold));
-                      })),
-              leftTitles:
-                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              rightTitles:
-                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              topTitles:
-                  const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            ),
-            borderData: FlBorderData(show: false),
-            lineBarsData: [
-              LineChartBarData(
-                spots: trendData
-                    .asMap()
-                    .entries
-                    .map((e) => FlSpot(
-                        e.key.toDouble(), (e.value['total'] as num).toDouble()))
-                    .toList(),
-                isCurved: true,
-                color: colorScheme.primary,
-                barWidth: 3,
-                dotData: const FlDotData(show: false),
-                belowBarData: BarAreaData(
-                  show: true,
-                  gradient: LinearGradient(
-                    colors: [
-                      colorScheme.primary.withValues(alpha: 0.3),
-                      colorScheme.primary.withValues(alpha: 0.0)
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-              ),
-              LineChartBarData(
-                spots: [
-                  FlSpot((trendData.length - 1).toDouble(),
-                      (trendData.last['total'] as num).toDouble()),
-                  FlSpot(
-                      trendData.length.toDouble(),
-                      _forecastNext(trendData
-                          .map((e) => (e['total'] as num).toDouble())
-                          .toList()))
-                ],
-                isCurved: true,
-                color: semantic.warning,
-                barWidth: 3,
-                dashArray: [5, 5],
-                dotData: const FlDotData(show: true),
-              ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _buildLegendItem(semantic.income, "INCOME"),
+              const SizedBox(width: 16),
+              _buildLegendItem(colorScheme.primary, "SPENDING"),
             ],
           ),
-          duration:
-              const Duration(milliseconds: 1000), // Built-in FL Chart animation
-          curve: Curves.easeOutQuart,
-        ),
+          const SizedBox(height: 16),
+          Container(
+            height: 180,
+            padding: const EdgeInsets.only(right: 12),
+            child: LineChart(
+              LineChartData(
+                minX: 0,
+                maxY: maxVal,
+                maxX: (trendData.length - 1).toDouble(),
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (_) => Colors.blueGrey,
+                    getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+                      return touchedBarSpots.map((barSpot) {
+                        final isIncome = barSpot.barIndex == 0;
+                        return LineTooltipItem(
+                          "${isIncome ? 'Income' : 'Spend'}: ${CurrencyFormatter.format(barSpot.y, isPrivate: isPrivate)}",
+                          TextStyle(
+                              color: isIncome ? semantic.income : Colors.white,
+                              fontWeight: FontWeight.bold),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
+                gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: maxVal / 3,
+                    getDrawingHorizontalLine: (v) =>
+                        FlLine(color: semantic.divider, strokeWidth: 1)),
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 24,
+                          interval: 1,
+                          getTitlesWidget: (value, meta) {
+                            int index = value.toInt();
+                            if (index < 0 || index >= trendData.length) {
+                              return const SizedBox();
+                            }
+                            String month = trendData[index]['month']
+                                .toString()
+                                .split('-')[1];
+                            const months = [
+                              'JAN',
+                              'FEB',
+                              'MAR',
+                              'APR',
+                              'MAY',
+                              'JUN',
+                              'JUL',
+                              'AUG',
+                              'SEP',
+                              'OCT',
+                              'NOV',
+                              'DEC'
+                            ];
+                            return Text(months[int.parse(month) - 1],
+                                style: TextStyle(
+                                    color: semantic.secondaryText,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold));
+                          })),
+                  leftTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                ),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  // Income Line
+                  LineChartBarData(
+                    spots: trendData.asMap().entries.map((e) {
+                      return FlSpot(e.key.toDouble(),
+                          (e.value['income'] as num? ?? 0).toDouble());
+                    }).toList(),
+                    isCurved: true,
+                    color: semantic.income,
+                    barWidth: 3,
+                    dotData: const FlDotData(show: true),
+                    belowBarData: BarAreaData(show: false),
+                  ),
+                  // Spending Line
+                  LineChartBarData(
+                    spots: trendData.asMap().entries.map((e) {
+                      return FlSpot(
+                          e.key.toDouble(),
+                          (e.value['spending'] ?? e.value['total'] as num)
+                              .toDouble());
+                    }).toList(),
+                    isCurved: true,
+                    color: colorScheme.primary,
+                    barWidth: 3,
+                    dotData: const FlDotData(show: true),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          colorScheme.primary.withValues(alpha: 0.2),
+                          colorScheme.primary.withValues(alpha: 0.0)
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              duration: const Duration(milliseconds: 1000),
+              curve: Curves.easeOutQuart,
+            ),
+          ),
+        ],
       ),
     ).animate().fadeIn(duration: 800.ms).scale(
         begin: const Offset(0.95, 0.95),
         end: const Offset(1, 1),
         curve: Curves.easeOutBack);
+  }
+
+  Widget _buildLegendItem(Color color, String label) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 4),
+        Text(label,
+            style: TextStyle(
+                fontSize: 8,
+                fontWeight: FontWeight.bold,
+                color: color.withValues(alpha: 0.8),
+                letterSpacing: 1)),
+      ],
+    );
   }
 }

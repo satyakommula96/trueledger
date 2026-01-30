@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/usecases/startup_usecase.dart';
+import 'package:trueledger/domain/usecases/auto_backup_usecase.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:trueledger/presentation/providers/boot_provider.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
@@ -15,14 +16,18 @@ class MockRepo extends Mock implements IFinancialRepository {}
 
 class MockNotificationService extends Mock implements NotificationService {}
 
+class MockAutoBackupUseCase extends Mock implements AutoBackupUseCase {}
+
 class SuccessStartupUseCase extends StartupUseCase {
-  SuccessStartupUseCase() : super(MockRepo(), MockNotificationService());
+  SuccessStartupUseCase()
+      : super(MockRepo(), MockNotificationService(), MockAutoBackupUseCase());
   @override
   Future<Result<void>> call(NoParams params) async => const Success(null);
 }
 
 class FailureStartupUseCase extends StartupUseCase {
-  FailureStartupUseCase() : super(MockRepo(), MockNotificationService());
+  FailureStartupUseCase()
+      : super(MockRepo(), MockNotificationService(), MockAutoBackupUseCase());
   @override
   Future<Result<void>> call(NoParams params) async =>
       Failure(DatabaseFailure("Fail"));

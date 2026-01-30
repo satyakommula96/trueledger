@@ -25,6 +25,7 @@ class IntelligenceService {
     required MonthlySummary summary,
     required List<Map<String, dynamic>> trendData,
     required List<Budget> budgets,
+    required List<Map<String, dynamic>> categorySpending,
   }) {
     List<AIInsight> insights = [];
 
@@ -122,6 +123,33 @@ class IntelligenceService {
         type: InsightType.warning,
         value: "Danger",
       ));
+    }
+
+    // 5. Top Expense Category
+    if (categorySpending.isNotEmpty) {
+      final topCategory = categorySpending.reduce((curr, next) =>
+          ((curr['total'] as num?) ?? 0) > ((next['total'] as num?) ?? 0)
+              ? curr
+              : next);
+
+      final totalExpense = summary.totalFixed +
+          summary.totalVariable +
+          summary.totalSubscriptions;
+
+      if (totalExpense > 0) {
+        final percentage =
+            (((topCategory['total'] as num?) ?? 0) / totalExpense) * 100;
+        if (percentage > 40) {
+          insights.add(AIInsight(
+            title: "CONCENTRATED SPENDING",
+            body:
+                "${topCategory['category']} accounts for ${percentage.toInt()}% of your monthly outflow. Explore ways to reduce this specific category.",
+            type: InsightType.info,
+            value: (topCategory['category'] as String).toUpperCase(),
+            currencyValue: (topCategory['total'] as num?)?.toDouble(),
+          ));
+        }
+      }
     }
 
     return insights;

@@ -6,17 +6,23 @@ import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'usecase_base.dart';
 
+import 'package:trueledger/domain/usecases/auto_backup_usecase.dart';
+
 class StartupUseCase extends UseCase<void, NoParams> {
   final IFinancialRepository repository;
   final NotificationService notificationService;
+  final AutoBackupUseCase autoBackup;
 
-  StartupUseCase(this.repository, this.notificationService);
+  StartupUseCase(this.repository, this.notificationService, this.autoBackup);
 
   @override
   Future<Result<void>> call(NoParams params) async {
     try {
       // 1. Initialize Database (including migrations)
       await AppDatabase.db;
+
+      // 1b. Auto Backup
+      await autoBackup.call(const NoParams());
 
       // 2. Initialize Notifications
       await notificationService.init();

@@ -21,10 +21,10 @@ void main() {
         onActionComplete: () {},
       )));
 
-      expect(find.text('INCOME'), findsOneWidget);
-      expect(find.text('EXPENSE'), findsOneWidget);
-      expect(find.text('ASSET'), findsOneWidget);
-      expect(find.text('LIABILITY'), findsOneWidget);
+      expect(find.text('Income'), findsOneWidget);
+      expect(find.text('Expense'), findsOneWidget);
+      expect(find.text('Asset'), findsOneWidget);
+      expect(find.text('Liability'), findsOneWidget);
     });
 
     testWidgets('Income button navigates to AddExpense', (tester) async {
@@ -33,7 +33,7 @@ void main() {
         onActionComplete: () {},
       )));
 
-      await tester.tap(find.text('INCOME'));
+      await tester.tap(find.text('Income'));
       await tester.pumpAndSettle();
 
       expect(find.byType(AddExpense), findsOneWidget);
@@ -45,7 +45,7 @@ void main() {
         onActionComplete: () {},
       )));
 
-      await tester.tap(find.text('LIABILITY'));
+      await tester.tap(find.text('Liability'));
       await tester.pumpAndSettle();
 
       expect(find.text('ADD LIABILITY'), findsOneWidget);

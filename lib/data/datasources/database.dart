@@ -762,4 +762,70 @@ class AppDatabase {
     await batch.commit(noResult: true);
     debugPrint("Seeded $count records for performance test.");
   }
+
+  static Future<void> seedRoadmapData() async {
+    await seedDummyData(); // Start with a rich base
+    final database = await db;
+    final now = DateTime.now();
+    final batch = database.batch();
+
+    // Ensure a 5-day streak (Today, Yesterday, ..., -4 days)
+    for (int i = 0; i < 5; i++) {
+      final date = now.subtract(Duration(days: i));
+      batch.insert(Schema.variableExpensesTable, {
+        Schema.colDate: date.toIso8601String(),
+        Schema.colAmount: 500 + i * 100,
+        Schema.colCategory: 'Food',
+        Schema.colNote: 'Streak Builder Day ${5 - i}',
+      });
+    }
+
+    // Add specific Budget statuses
+    // 1. Safe (e.g., 20% used)
+    batch.insert(Schema.budgetsTable, {
+      Schema.colCategory: 'Services',
+      Schema.colMonthlyLimit: 10000,
+    });
+    batch.insert(Schema.variableExpensesTable, {
+      Schema.colDate: now.toIso8601String(),
+      Schema.colAmount: 2000,
+      Schema.colCategory: 'Services',
+      Schema.colNote: 'Safe budget example',
+    });
+
+    // 2. Warning (>75%, e.g., 80%)
+    batch.insert(Schema.budgetsTable, {
+      Schema.colCategory: 'Medical',
+      Schema.colMonthlyLimit: 5000,
+    });
+    batch.insert(Schema.variableExpensesTable, {
+      Schema.colDate: now.toIso8601String(),
+      Schema.colAmount: 4000,
+      Schema.colCategory: 'Medical',
+      Schema.colNote: 'Warning budget example',
+    });
+
+    // 3. Overspent (>100%, e.g., 120%)
+    batch.insert(Schema.budgetsTable, {
+      Schema.colCategory: 'Education',
+      Schema.colMonthlyLimit: 2000,
+    });
+    batch.insert(Schema.variableExpensesTable, {
+      Schema.colDate: now.toIso8601String(),
+      Schema.colAmount: 2400,
+      Schema.colCategory: 'Education',
+      Schema.colNote: 'Overspent budget example',
+    });
+
+    // Searchable data for Phase 2
+    batch.insert(Schema.variableExpensesTable, {
+      Schema.colDate: now.toIso8601String(),
+      Schema.colAmount: 9999,
+      Schema.colCategory: 'Others',
+      Schema.colNote: 'SECRET_CODE_SEARCH',
+    });
+
+    await batch.commit(noResult: true);
+    debugPrint("Roadmap sample data seeded successfully.");
+  }
 }

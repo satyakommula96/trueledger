@@ -18,6 +18,7 @@ void main() {
         summary: summary,
         trendData: [],
         budgets: [],
+        categorySpending: [],
       );
 
       expect(insights.any((i) => i.title == 'WEALTH PROJECTION'), isTrue);
@@ -47,6 +48,7 @@ void main() {
         summary: summary,
         trendData: trendData,
         budgets: [],
+        categorySpending: [],
       );
 
       // Values: 100, 200. Slope = 100. Next = 300.
@@ -72,6 +74,7 @@ void main() {
         summary: summary,
         trendData: trendData,
         budgets: [],
+        categorySpending: [],
       );
 
       expect(insights.any((i) => i.title == 'SPENDING STABILITY'), isTrue);
@@ -91,6 +94,7 @@ void main() {
         summary: summary,
         trendData: [],
         budgets: [],
+        categorySpending: [],
       );
 
       expect(insights.any((i) => i.title == 'HIGH SAVINGS EFFICIENCY'), isTrue);
@@ -110,6 +114,7 @@ void main() {
         summary: summary,
         trendData: [],
         budgets: [],
+        categorySpending: [],
       );
 
       expect(insights.any((i) => i.title == 'SUBSCRIPTION OVERLOAD'), isTrue);

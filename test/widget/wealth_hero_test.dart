@@ -49,7 +49,7 @@ void main() {
       );
 
       await tester.pumpWidget(createTestWidget(
-        WealthHero(summary: summary),
+        WealthHero(summary: summary, activeStreak: 0),
       ));
 
       await tester.pump(const Duration(seconds: 2));
@@ -71,7 +71,7 @@ void main() {
       );
 
       await tester.pumpWidget(createTestWidget(
-        WealthHero(summary: summary),
+        WealthHero(summary: summary, activeStreak: 0),
       ));
 
       await tester.pump(const Duration(seconds: 2));
@@ -94,7 +94,7 @@ void main() {
       );
 
       await tester.pumpWidget(createTestWidget(
-        WealthHero(summary: summary),
+        WealthHero(summary: summary, activeStreak: 0),
       ));
 
       await tester.pump(const Duration(seconds: 2));
