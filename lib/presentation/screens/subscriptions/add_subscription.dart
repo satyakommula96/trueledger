@@ -33,7 +33,7 @@ class _AddSubscriptionScreenState extends ConsumerState<AddSubscriptionScreen> {
       try {
         final date = DateTime.parse(widget.subscription!.billingDate);
         _selectedDate = date;
-        dateCtrl.text = DateFormat('dd MMM yyyy').format(date);
+        dateCtrl.text = DateFormat('dd-MM-yyyy').format(date);
       } catch (e) {
         // Fallback for legacy "5th" etc
         dateCtrl.text = widget.subscription!.billingDate;
@@ -53,7 +53,7 @@ class _AddSubscriptionScreenState extends ConsumerState<AddSubscriptionScreen> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
-        dateCtrl.text = DateFormat('dd MMM yyyy').format(picked);
+        dateCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
       });
     }
   }

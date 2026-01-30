@@ -6,6 +6,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/theme/theme.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 
 class EditLoanScreen extends ConsumerStatefulWidget {
@@ -40,7 +41,7 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
 
     // Try to parse existing date if it looks like a full date (e.g. 15 Feb 2026)
     try {
-      _selectedDate = DateFormat('dd MMM yyyy').parse(widget.loan.dueDate);
+      _selectedDate = DateFormat('dd-MM-yyyy').parse(widget.loan.dueDate);
     } catch (_) {
       // Ignore if parsing fails (e.g. just Day number)
     }
@@ -332,13 +333,19 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
       double.tryParse(rateCtrl.text) ?? 0.0,
       dueCtrl.text,
     );
-    if (mounted) Navigator.pop(context);
+    if (mounted) {
+      ref.invalidate(dashboardProvider);
+      Navigator.pop(context);
+    }
   }
 
   Future<void> _delete() async {
     final repo = ref.read(financialRepositoryProvider);
     await repo.deleteItem('loans', widget.loan.id);
-    if (mounted) Navigator.pop(context);
+    if (mounted) {
+      ref.invalidate(dashboardProvider);
+      Navigator.pop(context);
+    }
   }
 
   Future<void> _pickDate() async {
@@ -353,7 +360,7 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
-        dueCtrl.text = DateFormat('dd MMM yyyy').format(picked);
+        dueCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
       });
     }
   }

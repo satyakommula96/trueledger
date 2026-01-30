@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
 
@@ -303,6 +304,7 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
     if (!mounted) return;
 
     if (result.isSuccess) {
+      ref.invalidate(dashboardProvider);
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context)

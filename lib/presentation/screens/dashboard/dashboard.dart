@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/asset_liability_card.dart';
@@ -46,6 +47,8 @@ class Dashboard extends ConsumerWidget {
           try {
             // Force refresh the provider
             final _ = await ref.refresh(dashboardProvider.future);
+            ref.invalidate(pendingNotificationsProvider);
+            ref.invalidate(pendingNotificationCountProvider);
             debugPrint("Dashboard: Data reloaded successfully.");
           } catch (e) {
             debugPrint("Dashboard: Reload failed: $e");

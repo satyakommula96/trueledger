@@ -19,7 +19,7 @@ class DateHelper {
     } catch (_) {
       // Try full date parse (e.g. "15 Jan 2026")
       try {
-        final date = DateFormat('dd MMM yyyy').parse(due);
+        final date = DateFormat('dd-MM-yyyy').parse(due);
         day = date.day;
       } catch (_) {
         // Fallback: Remove non-digits for day number (e.g. "5th", "5")
@@ -38,7 +38,7 @@ class DateHelper {
       if (next.isBefore(DateTime(now.year, now.month, now.day))) {
         next = DateTime(now.year, now.month + 1, day);
       }
-      return "$prefix: ${DateFormat('dd MMM').format(next).toUpperCase()}";
+      return "$prefix: ${DateFormat('dd-MM-yyyy').format(next)}";
     }
 
     return "$due $prefix".toUpperCase();
@@ -61,10 +61,9 @@ class DateHelper {
       }
     }
 
-    // Try "20th Jan" or "15 Feb 2026"
+    // Try "15-01-2026"
     try {
-      final date = DateFormat('dd MMM yyyy').parse(due);
-      // We likely want the day part applied to the specified month/year.
+      final date = DateFormat('dd-MM-yyyy').parse(due);
       return DateTime(now.year, now.month, date.day);
     } catch (_) {}
 

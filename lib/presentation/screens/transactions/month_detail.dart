@@ -335,7 +335,7 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
                                                   : colorScheme.onSurface)),
                                       const SizedBox(height: 4),
                                       Text(
-                                        DateFormat('dd MMM')
+                                        DateFormat('dd-MM-yyyy')
                                             .format(DateTime.parse(item.date)),
                                         style: TextStyle(
                                             fontSize: 10,

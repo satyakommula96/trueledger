@@ -8,8 +8,9 @@ import 'usecase_base.dart';
 
 class StartupUseCase extends UseCase<void, NoParams> {
   final IFinancialRepository repository;
+  final NotificationService notificationService;
 
-  StartupUseCase(this.repository);
+  StartupUseCase(this.repository, this.notificationService);
 
   @override
   Future<Result<void>> call(NoParams params) async {
@@ -18,7 +19,11 @@ class StartupUseCase extends UseCase<void, NoParams> {
       await AppDatabase.db;
 
       // 2. Initialize Notifications
-      await NotificationService().init();
+      await notificationService.init();
+      final granted = await notificationService.requestPermissions();
+      if (granted) {
+        await notificationService.scheduleDailyReminder();
+      }
 
       // 3. Load Currency Preference
       await CurrencyFormatter.load();
