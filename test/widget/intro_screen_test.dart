@@ -43,7 +43,7 @@ void main() {
     when(() => mockPrefs.getBool(any())).thenReturn(false);
     when(() => mockPrefs.getString(any())).thenReturn(null);
     when(() => mockNotifications.requestPermissions())
-        .thenAnswer((_) async => {});
+        .thenAnswer((_) async => true);
   });
 
   Widget createTestWidget() {
@@ -101,22 +101,18 @@ void main() {
     expect(find.byType(Dashboard), findsOneWidget);
   });
 
-  testWidgets('IntroScreen skip works', (tester) async {
+  testWidgets('IntroScreen skip jumps to name page', (tester) async {
     await tester.pumpWidget(createTestWidget());
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
 
-    // Verify preference saves
-    verify(() => mockPrefs.setBool('intro_seen', true)).called(1);
-    // user_name should not be set if skipped without entering anything
-    verifyNever(() => mockPrefs.setString('user_name', any()));
+    // Should be on name page now, not Dashboard
+    expect(find.text('What should we call you?'), findsOneWidget);
+    expect(find.byType(Dashboard), findsNothing);
 
-    // Pump repeatedly to allow navigation to finish
-    for (int i = 0; i < 5; i++) {
-      await tester.pump(const Duration(milliseconds: 200));
-    }
-
-    expect(find.byType(Dashboard), findsOneWidget);
+    // Skip button should be hidden on name page
+    expect(find.text('SKIP'), findsNothing);
   });
 }

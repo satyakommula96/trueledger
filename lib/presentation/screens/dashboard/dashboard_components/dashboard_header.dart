@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/providers/user_provider.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/core/theme/theme.dart';
 
 import 'package:trueledger/presentation/screens/settings/settings.dart';
@@ -26,6 +27,7 @@ class DashboardHeader extends ConsumerWidget {
     final semantic = Theme.of(context).extension<AppColors>()!;
     final userName = ref.watch(userProvider);
     final isPrivacy = ref.watch(privacyProvider);
+    final notificationCount = ref.watch(pendingNotificationCountProvider);
 
     String getGreeting() {
       final hour = DateTime.now().hour;
@@ -68,23 +70,31 @@ class DashboardHeader extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(getGreeting(),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                                color: semantic.secondaryText,
-                                letterSpacing: 1.5)),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(getGreeting(),
+                              maxLines: 1,
+                              softWrap: false,
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: semantic.secondaryText,
+                                  letterSpacing: 1.5)),
+                        ),
                         const SizedBox(height: 2),
-                        Text("TrueLedger",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w900,
-                                color: colorScheme.onSurface,
-                                letterSpacing: -0.5)),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text("TrueLedger",
+                              maxLines: 1,
+                              softWrap: false,
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w900,
+                                  color: colorScheme.onSurface,
+                                  letterSpacing: -0.5)),
+                        ),
                       ],
                     )
                         .animate()
@@ -111,6 +121,7 @@ class DashboardHeader extends ConsumerWidget {
                 const SizedBox(width: 12),
                 _buildHeaderAction(
                   context,
+                  badgeCount: notificationCount,
                   icon: Icons.notifications_outlined,
                   onTap: () => Navigator.push(
                     context,
@@ -149,6 +160,7 @@ class DashboardHeader extends ConsumerWidget {
     required VoidCallback onTap,
     required AppColors semantic,
     Color? color,
+    int badgeCount = 0,
   }) {
     return Material(
       color: semantic.surfaceCombined.withValues(alpha: 0.4),
@@ -162,11 +174,21 @@ class DashboardHeader extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: semantic.divider.withValues(alpha: 0.05)),
           ),
-          child: Icon(
-            icon,
-            size: 20,
-            color: color ?? Theme.of(context).colorScheme.onSurface,
-          ),
+          child: badgeCount > 0
+              ? Badge(
+                  label: Text('$badgeCount'),
+                  backgroundColor: semantic.overspent,
+                  child: Icon(
+                    icon,
+                    size: 20,
+                    color: color ?? Theme.of(context).colorScheme.onSurface,
+                  ),
+                )
+              : Icon(
+                  icon,
+                  size: 20,
+                  color: color ?? Theme.of(context).colorScheme.onSurface,
+                ),
         ),
       ),
     );

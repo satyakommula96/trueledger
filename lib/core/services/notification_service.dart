@@ -1,97 +1,163 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     as fln;
 import 'package:timezone/data/latest.dart' as tz_data;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trueledger/core/config/app_config.dart';
 
 class NotificationService {
-  static NotificationService? _instance;
+  // Notification IDs are deterministic to support cancel/update across restarts
+  static const int dailyReminderId = 888;
+  static const int creditCardBaseId = 10000;
+  // Injected for testability
+  final SharedPreferences _prefs;
+  bool _isInitialized = false;
+  bool _initFailed = false;
 
-  factory NotificationService() {
-    _instance ??= NotificationService._internal();
-    return _instance!;
+  final fln.FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+  NotificationService(this._prefs,
+      {fln.FlutterLocalNotificationsPlugin? plugin})
+      : flutterLocalNotificationsPlugin =
+            plugin ?? fln.FlutterLocalNotificationsPlugin();
+
+  /// Supported notification deep-link routes
+  static const String routeDashboard = '/dashboard';
+  static const String routeCards = '/cards';
+
+  final StreamController<String?> _onNotificationClick =
+      StreamController<String?>.broadcast();
+  Stream<String?> get onNotificationClick => _onNotificationClick.stream;
+
+  final StreamController<NotificationChangeType>
+      _notificationsUpdateController =
+      StreamController<NotificationChangeType>.broadcast();
+  Stream<NotificationChangeType> get onNotificationsChanged =>
+      _notificationsUpdateController.stream;
+
+  /// Must be called on every local notification state mutation to ensure
+  /// UI components and providers remain reactive.
+  void _notifyNotificationsChanged(NotificationChangeType type) {
+    _notificationsUpdateController.add(type);
   }
 
-  NotificationService._internal();
+  void dispose() {
+    _onNotificationClick.close();
+    _notificationsUpdateController.close();
+  }
 
-  final fln.FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      fln.FlutterLocalNotificationsPlugin();
+  bool get isReady => _isInitialized && !_initFailed;
+
+  static bool get _isTest =>
+      AppConfig.isIntegrationTest ||
+      (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST'));
 
   Future<void> init() async {
-    if (kIsWeb) return;
+    if (_isInitialized) return;
+    _isInitialized = true;
 
-    tz_data.initializeTimeZones();
+    if (kIsWeb || _isTest) {
+      debugPrint('NotificationService: Skipping native init (Web/Test mode).');
+      return;
+    }
 
-    const fln.AndroidInitializationSettings initializationSettingsAndroid =
-        fln.AndroidInitializationSettings('@mipmap/ic_launcher');
+    try {
+      tz_data.initializeTimeZones();
 
-    final fln.DarwinInitializationSettings initializationSettingsDarwin =
-        fln.DarwinInitializationSettings(
-      requestSoundPermission: false,
-      requestBadgePermission: false,
-      requestAlertPermission: false,
-    );
+      const fln.AndroidInitializationSettings initializationSettingsAndroid =
+          fln.AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const fln.LinuxInitializationSettings initializationSettingsLinux =
-        fln.LinuxInitializationSettings(
-      defaultActionName: 'Open notification',
-    );
+      final fln.DarwinInitializationSettings initializationSettingsDarwin =
+          fln.DarwinInitializationSettings(
+        requestSoundPermission: false,
+        requestBadgePermission: false,
+        requestAlertPermission: false,
+      );
 
-    // Windows initialization (Required for version 17+)
-    const fln.WindowsInitializationSettings initializationSettingsWindows =
-        fln.WindowsInitializationSettings(
-      appName: 'TrueLedger',
-      appUserModelId: 'com.satyakommula.TrueLedger',
-      guid: '9f2e3a8b-1d4c-4e5f-8a0b-1c2d3e4f5a6b',
-    );
+      const fln.LinuxInitializationSettings initializationSettingsLinux =
+          fln.LinuxInitializationSettings(
+        defaultActionName: 'Open notification',
+      );
 
-    final fln.InitializationSettings initializationSettings =
-        fln.InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-      macOS: initializationSettingsDarwin,
-      linux: initializationSettingsLinux,
-      windows: initializationSettingsWindows,
-    );
+      // Windows initialization (Required for version 17+)
+      const fln.WindowsInitializationSettings initializationSettingsWindows =
+          fln.WindowsInitializationSettings(
+        appName: 'TrueLedger',
+        appUserModelId: 'com.satyakommula.TrueLedger',
+        guid: '9f2e3a8b-1d4c-4e5f-8a0b-1c2d3e4f5a6b',
+      );
 
-    await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse:
-          (fln.NotificationResponse response) async {
-        // Handle notification tap
-      },
-    );
+      final fln.InitializationSettings initializationSettings =
+          fln.InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsDarwin,
+        macOS: initializationSettingsDarwin,
+        linux: initializationSettingsLinux,
+        windows: initializationSettingsWindows,
+      );
+
+      await flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse:
+            (fln.NotificationResponse response) async {
+          _onNotificationClick.add(response.payload);
+        },
+      );
+      _initFailed = false;
+    } catch (e) {
+      _initFailed = true;
+      debugPrint('CRITICAL: NotificationService init failed: $e');
+    }
   }
 
-  Future<void> requestPermissions() async {
+  Future<bool> requestPermissions() async {
+    if (_isTest) return true;
+    if (kIsWeb) {
+      return true; // Web permissions handled via browser prompts on demand
+    }
+
+    if (!_isInitialized) await init();
+    if (_initFailed) return false;
+
     try {
-      if (kIsWeb) return;
-
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              fln.IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              fln.MacOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
-
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              fln.AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
+      bool granted = false;
+      if (Platform.isAndroid) {
+        final plugin = flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                fln.AndroidFlutterLocalNotificationsPlugin>();
+        granted = await plugin?.requestNotificationsPermission() ?? false;
+      } else if (Platform.isIOS) {
+        final plugin = flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                fln.IOSFlutterLocalNotificationsPlugin>();
+        granted = await plugin?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            ) ??
+            false;
+      } else if (Platform.isMacOS) {
+        final plugin = flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                fln.MacOSFlutterLocalNotificationsPlugin>();
+        granted = await plugin?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            ) ??
+            false;
+      } else {
+        // Linux/Windows don't have a standardized "requestPermission" in this plugin
+        // but often allow notifications by default or are handled by the system.
+        granted = true;
+      }
+      return granted;
     } catch (e) {
-      debugPrint(
-          "Notification permissions request failed (likely expected in test): $e");
+      debugPrint("Notification permissions request failed: $e");
+      return false;
     }
   }
 
@@ -101,6 +167,14 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
+    if (!_isInitialized) await init();
+    if (_initFailed) return;
+
+    if (kIsWeb || _isTest) {
+      debugPrint('NotificationService: Skipping native show (Web/Test).');
+      return;
+    }
+
     const fln.AndroidNotificationDetails androidNotificationDetails =
         fln.AndroidNotificationDetails(
       'default_channel',
@@ -128,14 +202,19 @@ class NotificationService {
   }
 
   Future<void> scheduleDailyReminder() async {
-    if (kIsWeb || Platform.isLinux) {
-      // Periodic notifications are not supported on Linux or Web (yet)
+    if (!_isInitialized) await init();
+
+    // Save locally so it appears in the UI list even on Linux/Web
+    await _saveScheduledNotification(dailyReminderId, 'Daily Reminder',
+        'Add your expenses for today!', routeDashboard);
+
+    if (kIsWeb || Platform.isLinux || _isTest || _initFailed) {
       return;
     }
 
     // Using periodicallyShow as a robust workaround for zonedSchedule compilation issues
     await flutterLocalNotificationsPlugin.periodicallyShow(
-      888,
+      dailyReminderId,
       'Daily Reminder',
       'Add your expenses for today!',
       fln.RepeatInterval.daily,
@@ -153,40 +232,159 @@ class NotificationService {
         windows: fln.WindowsNotificationDetails(),
       ),
       androidScheduleMode: fln.AndroidScheduleMode.inexactAllowWhileIdle,
+      payload: routeDashboard,
     );
   }
 
   Future<void> scheduleCreditCardReminder(String bank, int day) async {
-    if (kIsWeb) return;
+    // We remove the kIsWeb early return to allow local saving for the UI list
+    // but we still skip the actual OS scheduling if not supported.
 
-    // In a real app, we'd use zonedSchedule for a specific day of month.
-    // For this demo, we'll show an immediate notification to confirm the setup,
-    // and note that recurring monthly scheduling would be implemented for mobile.
+    // Note: Object.hash is stable within the same Dart runtime.
+    // We do not guarantee cross-version stability for legacy notifications
+    // if hash implementation changes in future Dart SDKs.
+    final int id = Object.hash(bank, day).abs() % 0x7FFFFFFF;
+
     await showNotification(
-      id: bank.hashCode,
+      id: id,
       title: 'Reminder Set: $bank',
       body:
           'We will remind you on the ${day}th of every month to update your bill.',
+      payload: routeCards,
     );
+
+    // Also save as if it were scheduled, for UI demo purposes
+    await _saveScheduledNotification(
+        id, 'Reminder: $bank', 'Bill payment due on day $day', routeCards);
   }
 
-  /// Get list of pending/scheduled notifications
   Future<List<fln.PendingNotificationRequest>> getPendingNotifications() async {
-    if (kIsWeb) return [];
-    // Note: This throws UnimplementedError on Linux as pendingNotificationRequests
-    // is not supported on that platform
-    return await flutterLocalNotificationsPlugin.pendingNotificationRequests();
+    if (!_isInitialized) await init();
+
+    List<fln.PendingNotificationRequest> allNotifications = [];
+    final localNotifications = await _getStoredPendingNotifications();
+    allNotifications.addAll(localNotifications);
+
+    // Try to sync with the actual OS scheduler where supported
+    if (!kIsWeb &&
+        !_isTest &&
+        !_initFailed &&
+        (Platform.isAndroid || Platform.isIOS || Platform.isMacOS)) {
+      try {
+        final osPending =
+            await flutterLocalNotificationsPlugin.pendingNotificationRequests();
+
+        // 1. Mark existing locals that are confirmed by OS
+        final Set<int> osIds = osPending.map((e) => e.id).toSet();
+
+        // 2. Pragmatic Pruning: If a notification exists in local tracking but NOT in OS,
+        // and we are on a platform that supports OS pending requests, we prune the local.
+        // This prevents "ghost" notifications in the UI if the system was reset.
+        if (osPending.isNotEmpty || !Platform.isLinux) {
+          final localsToRemove = localNotifications
+              .where((l) => !osIds.contains(l.id))
+              .map((l) => l.id)
+              .toList();
+
+          for (final id in localsToRemove) {
+            await _removeScheduledNotification(id);
+            allNotifications.removeWhere((n) => n.id == id);
+          }
+        }
+
+        // 3. Merge OS notifications: favor OS data if ID matches, or add if missing
+        for (final osItem in osPending) {
+          final index = allNotifications.indexWhere((n) => n.id == osItem.id);
+          if (index != -1) {
+            allNotifications[index] = osItem;
+          } else {
+            allNotifications.add(osItem);
+          }
+        }
+      } catch (e) {
+        debugPrint("Failed to fetch OS pending notifications: $e");
+      }
+    }
+
+    return allNotifications;
   }
 
   /// Cancel a specific notification by ID
   Future<void> cancelNotification(int id) async {
-    if (kIsWeb) return;
+    if (!_isInitialized) await init();
+    await _removeScheduledNotification(id);
+    if (kIsWeb || _isTest || _initFailed) return;
     await flutterLocalNotificationsPlugin.cancel(id);
   }
 
   /// Cancel all notifications
   Future<void> cancelAllNotifications() async {
-    if (kIsWeb) return;
+    if (!_isInitialized) await init();
+    await _removeAllScheduledNotifications();
+    if (kIsWeb || _isTest || _initFailed) return;
     await flutterLocalNotificationsPlugin.cancelAll();
   }
+
+  // Local storage helpers
+  static const String _storageKey = 'scheduled_notifications';
+
+  Future<void> _saveScheduledNotification(
+      int id, String title, String body, String? payload) async {
+    final notifications = _getStoredNotificationsList();
+
+    final newNotification = {
+      'id': id,
+      'title': title,
+      'body': body,
+      'payload': payload,
+    };
+
+    notifications.removeWhere((n) => n['id'] == id);
+    notifications.add(newNotification);
+
+    await _prefs.setString(_storageKey, jsonEncode(notifications));
+    _notifyNotificationsChanged(NotificationChangeType.added);
+  }
+
+  Future<void> _removeScheduledNotification(int id) async {
+    final notifications = _getStoredNotificationsList();
+    notifications.removeWhere((n) => n['id'] == id);
+    await _prefs.setString(_storageKey, jsonEncode(notifications));
+    _notifyNotificationsChanged(NotificationChangeType.removed);
+  }
+
+  Future<void> _removeAllScheduledNotifications() async {
+    await _prefs.remove(_storageKey);
+    _notifyNotificationsChanged(NotificationChangeType.cleared);
+  }
+
+  List<Map<String, dynamic>> _getStoredNotificationsList() {
+    final String? jsonString = _prefs.getString(_storageKey);
+    if (jsonString == null) return [];
+    try {
+      final List<dynamic> decoded = jsonDecode(jsonString);
+      return decoded.cast<Map<String, dynamic>>();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<fln.PendingNotificationRequest>>
+      _getStoredPendingNotifications() async {
+    final list = _getStoredNotificationsList();
+    return list
+        .map((n) => fln.PendingNotificationRequest(
+              n['id'] as int,
+              n['title'] as String,
+              n['body'] as String,
+              n['payload'] as String?,
+            ))
+        .toList();
+  }
+}
+
+enum NotificationChangeType {
+  added,
+  removed,
+  cleared,
 }

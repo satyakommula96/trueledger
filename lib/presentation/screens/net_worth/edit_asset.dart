@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 
 class EditAssetScreen extends ConsumerStatefulWidget {
@@ -123,6 +125,7 @@ class _EditAssetScreenState extends ConsumerState<EditAssetScreen> {
     await repo.updateEntry('Investment', widget.asset.id, updates);
 
     if (mounted) {
+      ref.invalidate(dashboardProvider);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Asset Updated"), behavior: SnackBarBehavior.floating));
       Navigator.pop(context);
@@ -151,6 +154,7 @@ class _EditAssetScreenState extends ConsumerState<EditAssetScreen> {
       final repo = ref.read(financialRepositoryProvider);
       await repo.deleteItem('investments', widget.asset.id);
       if (mounted) {
+        ref.invalidate(dashboardProvider);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text("Asset Deleted"),
             behavior: SnackBarBehavior.floating));

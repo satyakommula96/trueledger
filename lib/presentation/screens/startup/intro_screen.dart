@@ -107,27 +107,34 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
               );
             },
           ),
-          Positioned(
-            top: 50 + MediaQuery.of(context).padding.top, // Safe area
-            right: 24,
-            child: TextButton(
-              onPressed: _finishIntro,
-              style: TextButton.styleFrom(
-                backgroundColor: colorScheme.surface.withValues(alpha: 0.5),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-              ),
-              child: Text('SKIP',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: colorScheme.secondary,
-                    fontSize: 12,
-                    letterSpacing: 1.0,
-                  )),
-            ).animate().fade(delay: 500.ms),
-          ),
+          if (_currentPage < _pages.length - 1)
+            Positioned(
+              top: 50 + MediaQuery.of(context).padding.top, // Safe area
+              right: 24,
+              child: TextButton(
+                onPressed: () {
+                  _pageController.animateToPage(
+                    _pages.length - 1,
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOutQuint,
+                  );
+                },
+                style: TextButton.styleFrom(
+                  backgroundColor: colorScheme.surface.withValues(alpha: 0.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                ),
+                child: Text('SKIP',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.secondary,
+                      fontSize: 12,
+                      letterSpacing: 1.0,
+                    )),
+              ).animate().fade(delay: 500.ms),
+            ),
           Positioned(
             bottom: 40 + MediaQuery.of(context).padding.bottom,
             left: 24,

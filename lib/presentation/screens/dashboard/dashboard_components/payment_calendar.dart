@@ -4,9 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/utils/date_helper.dart';
-import 'package:trueledger/core/services/notification_service.dart';
 
-class PaymentCalendar extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class PaymentCalendar extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> bills;
   final AppColors semantic;
 
@@ -14,10 +15,10 @@ class PaymentCalendar extends StatefulWidget {
       {super.key, required this.bills, required this.semantic});
 
   @override
-  State<PaymentCalendar> createState() => _PaymentCalendarState();
+  ConsumerState<PaymentCalendar> createState() => _PaymentCalendarState();
 }
 
-class _PaymentCalendarState extends State<PaymentCalendar> {
+class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
   late DateTime _focusedMonth;
   bool _isHovered = false;
 
@@ -113,14 +114,6 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
                       constraints: const BoxConstraints(),
                       iconSize: 20,
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                        icon: const Icon(Icons.notifications_active_outlined),
-                        onPressed: _scheduleNotifications,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        iconSize: 20,
-                        tooltip: "Schedule Reminders"),
                     const SizedBox(width: 16),
                     IconButton(
                       icon: const Icon(Icons.chevron_right),
@@ -261,10 +254,8 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  DateFormat('EEEE, dd MMMM yyyy')
-                      .format(DateTime(
-                          _focusedMonth.year, _focusedMonth.month, day))
-                      .toUpperCase(),
+                  DateFormat('dd-MM-yyyy').format(
+                      DateTime(_focusedMonth.year, _focusedMonth.month, day)),
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
@@ -337,30 +328,5 @@ class _PaymentCalendarState extends State<PaymentCalendar> {
         ],
       ),
     );
-  }
-
-  Future<void> _scheduleNotifications() async {
-    final notificationService = NotificationService();
-    // Use the central service's specialized logic
-    await notificationService.requestPermissions();
-
-    int count = 0;
-    for (var bill in widget.bills) {
-      final date = _parseDueDate(bill['due'] ?? '');
-      if (date != null) {
-        final now = DateTime.now();
-        // If date is today or future
-        if (date.isAfter(now.subtract(const Duration(days: 1)))) {
-          // Schedule actual notification logic would go here.
-          // For now, we just simulate enabling them.
-          count++;
-        }
-      }
-    }
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Scheduled reminders for $count upcoming payments.")));
-    }
   }
 }

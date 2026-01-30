@@ -4,6 +4,7 @@ import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 
 class EditEntryScreen extends ConsumerStatefulWidget {
@@ -137,6 +138,7 @@ class _EditEntryScreenState extends ConsumerState<EditEntryScreen> {
 
     await repo.updateEntry(widget.entry.type, widget.entry.id, updates);
     if (mounted) {
+      ref.invalidate(dashboardProvider);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Entry updated"), behavior: SnackBarBehavior.floating));
       Navigator.pop(context);
@@ -180,7 +182,10 @@ class _EditEntryScreenState extends ConsumerState<EditEntryScreen> {
           break;
       }
       await repo.deleteItem(table, widget.entry.id);
-      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        ref.invalidate(dashboardProvider);
+        Navigator.pop(context);
+      }
     }
   }
 }

@@ -3,10 +3,11 @@ import 'package:intl/intl.dart';
 
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
-import 'package:trueledger/core/services/notification_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
 
 class EditCreditCardScreen extends ConsumerStatefulWidget {
   final CreditCard card;
@@ -39,7 +40,7 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     if (picked != null) {
       setState(() {
         _selectedDueDate = picked;
-        dueDateCtrl.text = DateFormat('dd MMM yyyy').format(picked);
+        dueDateCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
       });
     }
   }
@@ -56,7 +57,7 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     if (picked != null) {
       setState(() {
         _selectedGenDate = picked;
-        genDateCtrl.text = DateFormat('dd MMM yyyy').format(picked);
+        genDateCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
       });
     }
   }
@@ -72,8 +73,12 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     dueDateCtrl = TextEditingController(text: widget.card.dueDate);
     genDateCtrl = TextEditingController();
     try {
-      _selectedDueDate = DateFormat('dd MMM yyyy').parse(widget.card.dueDate);
-    } catch (_) {}
+      _selectedDueDate = DateFormat('dd-MM-yyyy').parse(widget.card.dueDate);
+    } catch (_) {
+      try {
+        _selectedDueDate = DateFormat('dd-MM-yy').parse(widget.card.dueDate);
+      } catch (_) {}
+    }
   }
 
   @override
@@ -207,11 +212,17 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
         int.tryParse(minDueCtrl.text) ?? 0, dueDateCtrl.text);
 
     // Trigger notification
-    if (_selectedGenDate != null) {
-      await NotificationService()
-          .scheduleCreditCardReminder(bankCtrl.text, _selectedGenDate!.day);
+    final reminderDate = _selectedDueDate;
+    if (reminderDate != null) {
+      await ref
+          .read(notificationServiceProvider)
+          .scheduleCreditCardReminder(bankCtrl.text, reminderDate.day);
+      ref.invalidate(pendingNotificationsProvider);
+      ref.invalidate(pendingNotificationCountProvider);
     }
     if (mounted) {
+      ref.invalidate(dashboardProvider);
+      ref.invalidate(pendingNotificationsProvider);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Card Details Updated"),
           behavior: SnackBarBehavior.floating));
@@ -243,6 +254,7 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
       final repo = ref.read(financialRepositoryProvider);
       await repo.deleteItem('credit_cards', widget.card.id);
       if (mounted) {
+        ref.invalidate(dashboardProvider);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content: Text("Card Deleted"),
             behavior: SnackBarBehavior.floating));

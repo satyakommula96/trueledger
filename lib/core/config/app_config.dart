@@ -1,5 +1,9 @@
 class AppConfig {
-  /// Set to true during integration tests to bypass secure storage
-  /// and other native dependencies that might hang in CI environments.
+  /// This flag is manually toggled during Integration/E2E tests.
+  /// It helps bypass native dependencies (like Secure Storage or KeyChain)
+  /// that may require user interaction or hang in headless CI environments.
   static bool isIntegrationTest = false;
+
+  /// Note: Unit and Widget tests are automatically detected via
+  /// Platform.environment.containsKey('FLUTTER_TEST') in service implementations.
 }

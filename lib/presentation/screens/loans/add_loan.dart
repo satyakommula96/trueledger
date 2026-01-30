@@ -4,6 +4,7 @@ import 'package:trueledger/core/theme/theme.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 
 class AddLoanScreen extends ConsumerStatefulWidget {
@@ -230,7 +231,7 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
       if (picked != null) {
         setState(() {
           _selectedDate = picked;
-          dueCtrl.text = DateFormat('dd MMM yyyy').format(picked);
+          dueCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
         });
       }
     } else {
@@ -304,6 +305,10 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
       dueCtrl.text,
       DateTime.now().toIso8601String(),
     );
-    if (mounted) Navigator.pop(context);
+
+    if (mounted) {
+      ref.invalidate(dashboardProvider);
+      Navigator.pop(context);
+    }
   }
 }

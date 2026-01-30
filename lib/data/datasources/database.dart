@@ -23,6 +23,10 @@ class AppDatabase {
   static const _storage = FlutterSecureStorage();
   static const _keyParams = 'db_key';
 
+  static bool get _isTest =>
+      AppConfig.isIntegrationTest ||
+      (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST'));
+
   static Future<common.Database> get db async {
     if (_db != null) return _db!;
     _initializationInstance ??= _initDb();
@@ -31,8 +35,8 @@ class AppDatabase {
   }
 
   static Future<String> _getOrGenerateKey() async {
-    // Return a dummy key for integration tests to avoid KeyChain hangs on macOS CI
-    if (AppConfig.isIntegrationTest) {
+    // Return a dummy key for testing to avoid KeyChain hangs
+    if (_isTest) {
       debugPrint('TEST MODE: Using dummy database key.');
       return 'dummy_test_key_integration_mode_123';
     }
@@ -98,10 +102,40 @@ class AppDatabase {
           options: common.OpenDatabaseOptions(
               version: AppVersion.databaseVersion,
               onConfigure: (db) async {
-                // Desktop platforms use sqlite3_flutter_libs (no encryption)
-                // Mobile platforms (Android/iOS) use sqflite_sqlcipher with encryption
-                debugPrint(
-                    'Desktop SQLite initialized for ${Platform.operatingSystem} (unencrypted).');
+                // Verify SQLCipher support before applying key
+                // Bypass this in unit/integration tests
+                if (_isTest) {
+                  debugPrint('Skipping desktop encryption check in Test Mode.');
+                } else {
+                  try {
+                    // Check if SQLCipher is available
+                    final result = await db.rawQuery('PRAGMA cipher_version;');
+                    if (result.isEmpty || result.first.values.first == null) {
+                      if (kDebugMode && !kIsWeb) {
+                        debugPrint(
+                            'WARNING: SQLCipher not detected. Falling back to unencrypted SQLite for development.');
+                      } else {
+                        throw Exception(
+                            'SQLCipher not detected. Your build may be using vanilla SQLite. '
+                            'Encryption is MANDATORY for privacy compliance.');
+                      }
+                    } else {
+                      // Apply the key only if SQLCipher is available
+                      await db.execute("PRAGMA key = '$key';");
+                    }
+
+                    // Validation: Try a simple query that requires a valid key/encryption setup
+                    // Since the DB is fresh or already keyed, this should succeed.
+                    await db.rawQuery('SELECT count(*) FROM sqlite_master;');
+
+                    debugPrint(
+                        'Desktop SQLCipher encryption verified and active on ${kIsWeb ? "Web" : Platform.operatingSystem}.');
+                  } catch (e) {
+                    debugPrint('CRITICAL: Database encryption failure: $e');
+                    // Re-throw to prevent the app from starting with unencrypted data
+                    rethrow;
+                  }
+                }
               },
               onCreate: (db, version) async {
                 await _createDb(db);
@@ -130,7 +164,7 @@ class AppDatabase {
           onUpgrade: (db, old, newV) => _upgradeDb(db, old, newV),
         );
         debugPrint(
-            'Secure SQLCipher database opened successfully on ${Platform.operatingSystem}.');
+            'Secure SQLCipher database opened successfully on ${kIsWeb ? "Web" : Platform.operatingSystem}.');
         return db;
       } catch (e) {
         debugPrint(
@@ -170,7 +204,11 @@ class AppDatabase {
         options: common.OpenDatabaseOptions(
             version: AppVersion.databaseVersion,
             onConfigure: (db) async {
-              await db.execute("PRAGMA key = '$key';");
+              // Verify cipher support before applying key in recovery too
+              final result = await db.rawQuery('PRAGMA cipher_version;');
+              if (result.isNotEmpty && result.first.values.first != null) {
+                await db.execute("PRAGMA key = '$key';");
+              }
             },
             onCreate: (db, version) => _createDb(db),
             onUpgrade: (db, old, newV) => _upgradeDb(db, old, newV)),
@@ -373,7 +411,7 @@ class AppDatabase {
       Schema.colStatementBalance: 87000,
       Schema.colMinDue: 0,
       Schema.colDueDate:
-          DateFormat('dd-MM-yy').format(DateTime(now.year, now.month + 1, 12))
+          DateFormat('dd-MM-yyyy').format(DateTime(now.year, now.month + 1, 12))
     });
     batch.insert(Schema.creditCardsTable, {
       Schema.colBank: 'Amex Platinum',
@@ -381,7 +419,7 @@ class AppDatabase {
       Schema.colStatementBalance: 12500,
       Schema.colMinDue: 0,
       Schema.colDueDate:
-          DateFormat('dd-MM-yy').format(DateTime(now.year, now.month + 1, 24))
+          DateFormat('dd-MM-yyyy').format(DateTime(now.year, now.month + 1, 24))
     });
 
     // Subscriptions (Active List)

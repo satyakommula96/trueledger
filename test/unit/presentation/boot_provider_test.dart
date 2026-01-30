@@ -9,16 +9,20 @@ import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:trueledger/core/services/notification_service.dart';
+
 class MockRepo extends Mock implements IFinancialRepository {}
 
+class MockNotificationService extends Mock implements NotificationService {}
+
 class SuccessStartupUseCase extends StartupUseCase {
-  SuccessStartupUseCase() : super(MockRepo());
+  SuccessStartupUseCase() : super(MockRepo(), MockNotificationService());
   @override
   Future<Result<void>> call(NoParams params) async => const Success(null);
 }
 
 class FailureStartupUseCase extends StartupUseCase {
-  FailureStartupUseCase() : super(MockRepo());
+  FailureStartupUseCase() : super(MockRepo(), MockNotificationService());
   @override
   Future<Result<void>> call(NoParams params) async =>
       Failure(DatabaseFailure("Fail"));

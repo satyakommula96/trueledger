@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:trueledger/core/utils/currency_formatter.dart';
-import 'package:trueledger/core/services/notification_service.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
 
 class AddCreditCardScreen extends ConsumerStatefulWidget {
   const AddCreditCardScreen({super.key});
@@ -37,7 +38,7 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
     if (picked != null) {
       setState(() {
         _selectedDueDate = picked;
-        dueDateCtrl.text = DateFormat('dd MMM yyyy').format(picked);
+        dueDateCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
       });
     }
   }
@@ -54,7 +55,7 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
     if (picked != null) {
       setState(() {
         _selectedGenDate = picked;
-        genDateCtrl.text = DateFormat('dd MMM yyyy').format(picked);
+        genDateCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
       });
     }
   }
@@ -148,10 +149,12 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
 
     // Trigger notification
     if (_selectedGenDate != null) {
-      await NotificationService()
+      await ref
+          .read(notificationServiceProvider)
           .scheduleCreditCardReminder(bankCtrl.text, _selectedGenDate!.day);
     }
     if (mounted) {
+      ref.invalidate(dashboardProvider);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Credit Card Added"),
           behavior: SnackBarBehavior.floating));
