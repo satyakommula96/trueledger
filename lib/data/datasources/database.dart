@@ -250,7 +250,8 @@ class AppDatabase {
             ${Schema.colCreditLimit} INTEGER,
             ${Schema.colStatementBalance} INTEGER,
             ${Schema.colMinDue} INTEGER,
-            ${Schema.colDueDate} TEXT
+            ${Schema.colDueDate} TEXT,
+            ${Schema.colStatementDate} TEXT
           )
         ''');
     await db.execute('''
