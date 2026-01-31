@@ -10,9 +10,14 @@ import 'package:confetti/confetti.dart';
 class WealthHero extends ConsumerStatefulWidget {
   final MonthlySummary summary;
   final int activeStreak;
+  final bool hasLoggedToday;
 
-  const WealthHero(
-      {super.key, required this.summary, required this.activeStreak});
+  const WealthHero({
+    super.key,
+    required this.summary,
+    required this.activeStreak,
+    required this.hasLoggedToday,
+  });
 
   @override
   ConsumerState<WealthHero> createState() => _WealthHeroState();
@@ -132,16 +137,30 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                         _buildHeaderPill(context, "NET WORTH",
                             Icons.account_balance_wallet_rounded),
                         if (widget.activeStreak > 0)
-                          _buildHeaderPill(
-                            context,
-                            "${widget.activeStreak} DAY TRACKING STREAK",
-                            Icons.whatshot_rounded,
-                            isAlt: true,
-                            color: Colors.orange,
-                          ).animate(onPlay: (c) => c.repeat()).shimmer(
-                                duration: 1200.ms,
-                                color: Colors.white.withValues(alpha: 0.3),
-                              ),
+                          Flexible(
+                            child: Builder(builder: (context) {
+                              final pill = _buildHeaderPill(
+                                context,
+                                widget.hasLoggedToday
+                                    ? "${widget.activeStreak} DAY TRACKING STREAK"
+                                    : "${widget.activeStreak} DAY STREAK (PENDING)",
+                                Icons.whatshot_rounded,
+                                isAlt: true,
+                                color: widget.hasLoggedToday
+                                    ? Colors.orange
+                                    : Colors.blueGrey.shade300,
+                              );
+
+                              if (!widget.hasLoggedToday) return pill;
+
+                              return pill
+                                  .animate(onPlay: (c) => c.repeat())
+                                  .shimmer(
+                                    duration: 1200.ms,
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                  );
+                            }),
+                          ),
                       ],
                     ),
                     const Spacer(),
@@ -225,12 +244,16 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
           Icon(icon,
               size: 14, color: color ?? Colors.white.withValues(alpha: 0.9)),
           const SizedBox(width: 6),
-          Text(text,
-              style: TextStyle(
-                  color: color ?? Colors.white.withValues(alpha: 0.9),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 10,
-                  letterSpacing: 1.2)),
+          Flexible(
+            child: Text(text,
+                style: TextStyle(
+                    color: color ?? Colors.white.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 10,
+                    letterSpacing: 1.2),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1),
+          ),
         ],
       ),
     ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack);

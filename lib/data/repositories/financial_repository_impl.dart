@@ -724,6 +724,6 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         break;
       }
     }
-    return streak;
+    return streak > 1 ? streak : 0;
   }
 }

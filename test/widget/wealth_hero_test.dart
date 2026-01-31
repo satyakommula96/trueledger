@@ -49,7 +49,7 @@ void main() {
       );
 
       await tester.pumpWidget(createTestWidget(
-        WealthHero(summary: summary, activeStreak: 0),
+        WealthHero(summary: summary, activeStreak: 0, hasLoggedToday: false),
       ));
 
       await tester.pump(const Duration(seconds: 2));
@@ -71,7 +71,7 @@ void main() {
       );
 
       await tester.pumpWidget(createTestWidget(
-        WealthHero(summary: summary, activeStreak: 0),
+        WealthHero(summary: summary, activeStreak: 0, hasLoggedToday: false),
       ));
 
       await tester.pump(const Duration(seconds: 2));
@@ -94,12 +94,56 @@ void main() {
       );
 
       await tester.pumpWidget(createTestWidget(
-        WealthHero(summary: summary, activeStreak: 0),
+        WealthHero(summary: summary, activeStreak: 0, hasLoggedToday: false),
       ));
 
       await tester.pump(const Duration(seconds: 2));
 
       expect(find.byIcon(Icons.account_balance_wallet_rounded), findsOneWidget);
+    });
+
+    testWidgets('renders active streak when logged today', (tester) async {
+      final summary = MonthlySummary(
+        totalIncome: 100,
+        totalFixed: 0,
+        totalVariable: 0,
+        totalSubscriptions: 0,
+        totalInvestments: 0,
+        netWorth: 0,
+        creditCardDebt: 0,
+        loansTotal: 0,
+        totalMonthlyEMI: 0,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        WealthHero(summary: summary, activeStreak: 5, hasLoggedToday: true),
+      ));
+
+      await tester.pump(const Duration(seconds: 2));
+
+      expect(find.textContaining('5 DAY TRACKING STREAK'), findsOneWidget);
+    });
+
+    testWidgets('renders pending streak when not logged today', (tester) async {
+      final summary = MonthlySummary(
+        totalIncome: 100,
+        totalFixed: 0,
+        totalVariable: 0,
+        totalSubscriptions: 0,
+        totalInvestments: 0,
+        netWorth: 0,
+        creditCardDebt: 0,
+        loansTotal: 0,
+        totalMonthlyEMI: 0,
+      );
+
+      await tester.pumpWidget(createTestWidget(
+        WealthHero(summary: summary, activeStreak: 5, hasLoggedToday: false),
+      ));
+
+      await tester.pump(const Duration(seconds: 2));
+
+      expect(find.textContaining('5 DAY STREAK (PENDING)'), findsOneWidget);
     });
   });
 }
