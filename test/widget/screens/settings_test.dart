@@ -15,6 +15,11 @@ import 'package:trueledger/presentation/screens/settings/settings.dart';
 import 'package:trueledger/core/providers/version_provider.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/core/services/file_service.dart';
+import 'package:trueledger/core/utils/result.dart';
+import 'package:trueledger/domain/usecases/auto_backup_usecase.dart';
+import 'package:trueledger/domain/usecases/restore_backup_usecase.dart';
+import 'package:trueledger/presentation/providers/usecase_providers.dart';
+import 'package:trueledger/domain/usecases/usecase_base.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -26,33 +31,41 @@ class MockFilePicker extends Mock
 
 class MockFileService extends Mock implements FileService {}
 
+class MockRestoreBackupUseCase extends Mock implements RestoreBackupUseCase {}
+
+class MockAutoBackupUseCase extends Mock implements AutoBackupUseCase {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences.setMockInitialValues({});
-
-  // Set mock values for secure storage (implicitly used by _setupPin)
-  // Note: flutter_secure_storage provides this for testing
-  // However, since we can't easily access the static method if imports aren't perfect,
-  // we rely on the fact that the test environment handles channels or we need to stub.
-  // Actually, let's skip the pin test if it relies on real channels we can't mock easily without refactoring.
-  // But wait, "Set 4-Digit PIN" failure might be because async gap.
 
   setUpAll(() {
     registerFallbackValue(FileType.any);
     registerFallbackValue(<String, dynamic>{});
+    registerFallbackValue(RestoreBackupParams(backupData: {}));
+    registerFallbackValue(NoParams());
   });
 
   late MockFinancialRepository mockRepo;
   late MockSharedPreferences mockPrefs;
   late MockFilePicker mockFilePicker;
   late MockFileService mockFileService;
+  late MockRestoreBackupUseCase mockRestoreUseCase;
+  late MockAutoBackupUseCase mockAutoBackupUseCase;
 
   setUp(() {
     mockRepo = MockFinancialRepository();
     mockPrefs = MockSharedPreferences();
     mockFilePicker = MockFilePicker();
     mockFileService = MockFileService();
+    mockRestoreUseCase = MockRestoreBackupUseCase();
+    mockAutoBackupUseCase = MockAutoBackupUseCase();
     FilePicker.platform = mockFilePicker;
+
+    // UseCase mocks
+    when(() => mockRestoreUseCase.call(any()))
+        .thenAnswer((_) async => const Success(null));
+    when(() => mockAutoBackupUseCase.call(any()))
+        .thenAnswer((_) async => const Success(null));
 
     // Repository mocks
     when(() => mockRepo.getAllValues(any())).thenAnswer((_) async => []);
@@ -81,10 +94,17 @@ void main() {
     when(() => mockRepo.getCreditCards()).thenAnswer((_) async => []);
 
     // Prefs mocks
+    when(() => mockPrefs.getString(any())).thenReturn(null);
     when(() => mockPrefs.getString('user_name')).thenReturn('Test User');
     when(() => mockPrefs.getString('theme_mode')).thenReturn('system');
     when(() => mockPrefs.getString('currency_symbol')).thenReturn('\$');
     when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);
+    when(() => mockPrefs.remove(any())).thenAnswer((_) async => true);
+    when(() => mockPrefs.getKeys()).thenReturn({});
+
+    // Repository mocks
+    when(() => mockRepo.generateBackup())
+        .thenAnswer((_) async => <String, dynamic>{});
   });
 
   Widget createSettingsScreen() {
@@ -94,6 +114,8 @@ void main() {
         appVersionProvider.overrideWith((ref) => '1.2.2'),
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
         fileServiceProvider.overrideWithValue(mockFileService),
+        restoreBackupUseCaseProvider.overrideWithValue(mockRestoreUseCase),
+        autoBackupUseCaseProvider.overrideWithValue(mockAutoBackupUseCase),
       ],
       child: const MaterialApp(
         home: SettingsScreen(),
@@ -115,7 +137,7 @@ void main() {
 
       await tester.pumpWidget(createSettingsScreen());
 
-      final backupTile = find.text('Backup Data');
+      final backupTile = find.text('Secure Backup');
       await tester.scrollUntilVisible(backupTile, 100.0);
       await tester.tap(backupTile);
       await tester.pumpAndSettle();
@@ -235,8 +257,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      verify(() => mockRepo.clearData()).called(1);
-      verify(() => mockRepo.restoreBackup(any())).called(1);
+      verify(() => mockRestoreUseCase.call(any())).called(1);
       tester.view.resetPhysicalSize();
     });
 

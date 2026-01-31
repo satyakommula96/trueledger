@@ -56,10 +56,11 @@ class AppDatabase {
       debugPrint("SECURE STORAGE FAILURE: $e");
       if (kDebugMode) {
         debugPrint(stack.toString());
-        debugPrint("CRITICAL: USING INSECURE FALLBACK KEY FOR DEVELOPMENT.");
+        // Fail loudly in debug to alert the developer
+        throw Exception(
+            "CRITICAL: Secure Storage failed in Debug Mode: $e\n$stack");
       }
-      // Fallback for dev environment if secure storage fails (NOT FOR PROD)
-      // This allows the app to open even if keyring is broken.
+      // Fallback for production if secure storage fails (ALLOWS APP TO OPEN)
       return 'fallback_dev_key_DO_NOT_USE_IN_PROD';
     }
   }
@@ -100,6 +101,7 @@ class AppDatabase {
       } catch (e) {
         debugPrint(
             'CRITICAL: Web database open failed ($e). Attempting recovery...');
+        if (kDebugMode) rethrow;
         return await _handleDatabaseReset(path, key, isDesktop: false);
       }
     } else if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
@@ -161,6 +163,7 @@ class AppDatabase {
       } catch (e) {
         debugPrint(
             'CRITICAL: Desktop database open failed ($e). Attempting recovery...');
+        if (kDebugMode) rethrow;
         return await _handleDatabaseReset(path, key, isDesktop: true);
       }
     } else {
@@ -182,6 +185,7 @@ class AppDatabase {
       } catch (e) {
         debugPrint(
             'CRITICAL: ${kIsWeb ? "Web" : Platform.operatingSystem} database open failed ($e). Attempting recovery...');
+        if (kDebugMode) rethrow;
         return await _handleDatabaseReset(path, key,
             isDesktop: !kIsWeb &&
                 (Platform.isWindows || Platform.isLinux || Platform.isMacOS));

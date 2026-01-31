@@ -6,18 +6,14 @@ import 'package:trueledger/domain/usecases/startup_usecase.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/core/error/failure.dart';
-import 'package:trueledger/core/services/notification_service.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
-
-class MockNotificationService extends Mock implements NotificationService {}
 
 class MockAutoBackupUseCase extends Mock implements AutoBackupUseCase {}
 
 void main() {
   late StartupUseCase useCase;
   late MockFinancialRepository mockRepository;
-  late MockNotificationService mockNotificationService;
   late MockAutoBackupUseCase mockAutoBackupUseCase;
 
   setUpAll(() {
@@ -26,19 +22,9 @@ void main() {
 
   setUp(() {
     mockRepository = MockFinancialRepository();
-    mockNotificationService = MockNotificationService();
     mockAutoBackupUseCase = MockAutoBackupUseCase();
-    useCase = StartupUseCase(
-        mockRepository, mockNotificationService, mockAutoBackupUseCase);
+    useCase = StartupUseCase(mockRepository, mockAutoBackupUseCase);
 
-    // Stub notifications
-    when(() => mockNotificationService.init()).thenAnswer((_) async {});
-    when(() => mockNotificationService.requestPermissions())
-        .thenAnswer((_) async => true);
-    when(() => mockNotificationService.scheduleDailyReminder())
-        .thenAnswer((_) async {});
-    when(() => mockNotificationService.cancelNotification(any()))
-        .thenAnswer((_) async {});
     when(() => mockRepository.getTodaySpend()).thenAnswer((_) async => 0);
     when(() => mockRepository.checkAndProcessRecurring())
         .thenAnswer((_) async {});

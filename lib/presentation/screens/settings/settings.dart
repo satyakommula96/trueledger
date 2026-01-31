@@ -22,6 +22,7 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/user_provider.dart';
 import 'package:trueledger/core/providers/version_provider.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
 
 import 'package:trueledger/core/services/backup_encryption_service.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
@@ -410,10 +411,7 @@ class SettingsScreen extends ConsumerWidget {
         debugPrint("Data seeding failed: $e");
         if (kDebugMode) {
           debugPrint(stack.toString());
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Critical Seeding Error: $e")));
-          }
+          throw Exception("Data seeding failed: $e\n$stack");
         }
       }
     }
@@ -688,14 +686,21 @@ class SettingsScreen extends ConsumerWidget {
         Map<String, dynamic>? safetyBackup;
         try {
           safetyBackup = await repo.generateBackup();
-        } catch (e) {
+        } catch (e, stack) {
           debugPrint("In-memory safety backup failed: $e");
+          if (kDebugMode) {
+            throw Exception("Safety backup failed: $e\n$stack");
+          }
         }
 
         final result = await restoreUseCase.call(RestoreBackupParams(
           backupData: data,
           merge: false, // Currently only replace is supported
         ));
+
+        // When data is replaced, pre-existing notification schedules are stale.
+        final notificationService = ref.read(notificationServiceProvider);
+        await notificationService.cancelAllNotifications();
 
         if (!context.mounted) return;
 
@@ -716,8 +721,11 @@ class SettingsScreen extends ConsumerWidget {
                                   content:
                                       Text("Restore undone. Data recovered.")));
                         }
-                      } catch (e) {
+                      } catch (e, stack) {
                         debugPrint("Undo failed: $e");
+                        if (kDebugMode) {
+                          throw Exception("Restore UNDO failed: $e\n$stack");
+                        }
                       }
                     })
                 : null,
@@ -756,13 +764,26 @@ class SettingsScreen extends ConsumerWidget {
             ));
 
     if (confirmed == true) {
-      final repo = ref.read(financialRepositoryProvider);
-      await repo.clearData();
+      try {
+        final repo = ref.read(financialRepositoryProvider);
+        final notificationService = ref.read(notificationServiceProvider);
+        await repo.clearData();
+        await notificationService.cancelAllNotifications();
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("All data has been reset")));
-        Navigator.pop(context, true); // Updated to return true
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("All data has been reset")));
+          Navigator.pop(context, true);
+        }
+      } catch (e, stack) {
+        debugPrint("Reset failed: $e");
+        if (kDebugMode) {
+          throw Exception("Application Reset failed: $e\n$stack");
+        }
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Reset failed: ${e.toString()}")));
+        }
       }
     }
   }
@@ -1092,8 +1113,8 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildOption(
             context,
-            "Backup Data",
-            "Save full backup to file",
+            "Secure Backup",
+            "Creates an encrypted data package",
             Icons.cloud_upload_outlined,
             Colors.blueAccent,
             () => _backupData(context, ref),
@@ -1102,7 +1123,7 @@ class SettingsScreen extends ConsumerWidget {
           _buildOption(
             context,
             "Restore Data",
-            "Import backup file",
+            "Import from encrypted backup",
             Icons.restore_page_outlined,
             Colors.orange,
             () => _restoreData(context, ref),

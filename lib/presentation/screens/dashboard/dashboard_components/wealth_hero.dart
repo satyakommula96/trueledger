@@ -134,7 +134,7 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                         if (widget.activeStreak > 0)
                           _buildHeaderPill(
                             context,
-                            "${widget.activeStreak} DAY STREAK",
+                            "${widget.activeStreak} DAY TRACKING STREAK",
                             Icons.whatshot_rounded,
                             isAlt: true,
                             color: Colors.orange,

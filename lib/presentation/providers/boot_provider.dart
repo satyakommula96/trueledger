@@ -2,10 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
-
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
+import 'package:trueledger/core/services/notification_service.dart';
+import 'package:trueledger/core/utils/result.dart';
+import 'package:trueledger/domain/usecases/startup_usecase.dart';
 
 import 'package:trueledger/core/config/app_config.dart';
+import 'package:trueledger/core/providers/secure_storage_provider.dart';
 
 final bootProvider = FutureProvider<String?>((ref) async {
   final startupUseCase = ref.watch(startupUseCaseProvider);
@@ -15,12 +18,28 @@ final bootProvider = FutureProvider<String?>((ref) async {
     throw Exception(result.failureOrThrow.message);
   }
 
+  final startupResult = (result as Success<StartupResult>).value;
+
+  // 1. Initialize and perform side-effects (Infrastructure/Presentation level)
+  final notificationService = ref.read(notificationServiceProvider);
+  await notificationService.init();
+  final granted = await notificationService.requestPermissions();
+
+  if (granted) {
+    if (startupResult.shouldScheduleReminder) {
+      await notificationService.scheduleDailyReminder();
+    } else if (startupResult.shouldCancelReminder) {
+      await notificationService
+          .cancelNotification(NotificationService.dailyReminderId);
+    }
+  }
+
   // Bypass Secure Storage during tests to avoid UI blocking hangs
   if (AppConfig.isIntegrationTest) {
     return null;
   }
 
-  const storage = FlutterSecureStorage();
+  final storage = ref.read(secureStorageProvider);
   try {
     return await storage.read(key: 'app_pin');
   } catch (e, stack) {
@@ -29,6 +48,7 @@ final bootProvider = FutureProvider<String?>((ref) async {
         "App PIN secure storage retrieval failed (possibly non-critical): $e");
     if (kDebugMode) {
       debugPrint(stack.toString());
+      throw Exception("App PIN retrieval failed in Debug Mode: $e\n$stack");
     }
     return null;
   }

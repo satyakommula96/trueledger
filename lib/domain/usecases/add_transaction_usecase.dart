@@ -120,9 +120,7 @@ class AddTransactionUseCase
             "Error in secondary transaction logic (notifications/budget): $e");
         if (kDebugMode) {
           debugPrint(stack.toString());
-          // In debug, we might want to know if our budget logic is broken
-          // but we still don't want to crash the main transaction for the user
-          // maybe just a very loud warning.
+          throw Exception("Secondary transaction logic failed: $e\n$stack");
         }
       }
 

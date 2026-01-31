@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
@@ -53,8 +54,16 @@ class Dashboard extends ConsumerWidget {
             ref.invalidate(pendingNotificationsProvider);
             ref.invalidate(pendingNotificationCountProvider);
             debugPrint("Dashboard: Data reloaded successfully.");
-          } catch (e) {
+          } catch (e, stack) {
             debugPrint("Dashboard: Reload failed: $e");
+            if (kDebugMode) {
+              throw Exception("Dashboard reload failed: $e\n$stack");
+            }
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Failed to refresh dashboard")),
+              );
+            }
           }
         }
 

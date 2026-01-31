@@ -30,7 +30,7 @@ void main() {
 
     final mockStartup = MockStartupUseCase();
     when(() => mockStartup.call(any()))
-        .thenAnswer((_) async => const Success(null));
+        .thenAnswer((_) async => Success(StartupResult()));
 
     await tester.pumpWidget(
       ProviderScope(

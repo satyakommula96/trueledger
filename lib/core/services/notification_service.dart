@@ -110,10 +110,10 @@ class NotificationService {
       _initFailed = false;
     } catch (e, stack) {
       _initFailed = true;
-      debugPrint('CRITICAL: NotificationService init failed: $e');
       if (kDebugMode) {
-        debugPrint(stack.toString());
+        throw Exception("NotificationService init failed: $e\n$stack");
       }
+      debugPrint('CRITICAL: NotificationService init failed: $e');
     }
   }
 
@@ -373,10 +373,11 @@ class NotificationService {
       final List<dynamic> decoded = jsonDecode(jsonString);
       return decoded.cast<Map<String, dynamic>>();
     } catch (e, stack) {
-      debugPrint("Failed to load local notification storage: $e");
       if (kDebugMode) {
-        debugPrint(stack.toString());
+        throw Exception(
+            "Failed to load local notification storage in Debug Mode: $e\n$stack");
       }
+      debugPrint("Failed to load local notification storage: $e");
       return [];
     }
   }

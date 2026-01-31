@@ -7,7 +7,6 @@ import 'package:trueledger/domain/usecases/startup_usecase.dart';
 import 'package:trueledger/domain/usecases/budget_usecases.dart';
 import 'package:trueledger/domain/usecases/auto_backup_usecase.dart';
 import 'package:trueledger/domain/usecases/restore_backup_usecase.dart';
-import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'repository_providers.dart';
 
 final addTransactionUseCaseProvider = Provider<AddTransactionUseCase>((ref) {
@@ -22,7 +21,6 @@ final getMonthlySummaryUseCaseProvider =
 final startupUseCaseProvider = Provider<StartupUseCase>((ref) {
   return StartupUseCase(
     ref.watch(financialRepositoryProvider),
-    ref.watch(notificationServiceProvider),
     ref.watch(autoBackupUseCaseProvider),
   );
 });

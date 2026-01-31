@@ -3,13 +3,10 @@ import 'package:intl/intl.dart';
 import 'package:trueledger/data/datasources/database.dart';
 import 'package:trueledger/domain/models/models.dart';
 import '../../domain/repositories/i_financial_repository.dart';
-import 'package:trueledger/core/services/notification_service.dart';
 import 'package:flutter/foundation.dart';
 
 class FinancialRepositoryImpl implements IFinancialRepository {
-  final NotificationService? _notificationService;
-
-  FinancialRepositoryImpl([this._notificationService]);
+  FinancialRepositoryImpl();
 
   @override
   Future<MonthlySummary> getMonthlySummary() async {
@@ -383,7 +380,6 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
   Future<void> clearData() async {
     await AppDatabase.clearData();
-    await _notificationService?.cancelAllNotifications();
   }
 
   @override

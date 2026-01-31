@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
 import 'package:trueledger/domain/models/models.dart';
@@ -54,8 +55,11 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint("Error loading month details: $e");
+      if (kDebugMode) {
+        throw Exception("Month Detail loading failed: $e\n$stack");
+      }
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context)
