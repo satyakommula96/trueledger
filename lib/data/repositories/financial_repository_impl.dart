@@ -1,9 +1,13 @@
 import 'package:sqflite_sqlcipher/sqflite.dart';
+import 'package:intl/intl.dart';
 import 'package:trueledger/data/datasources/database.dart';
 import 'package:trueledger/domain/models/models.dart';
 import '../../domain/repositories/i_financial_repository.dart';
+import 'package:flutter/foundation.dart';
 
 class FinancialRepositoryImpl implements IFinancialRepository {
+  FinancialRepositoryImpl();
+
   @override
   Future<MonthlySummary> getMonthlySummary() async {
     final db = await AppDatabase.db;
@@ -69,9 +73,41 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
   Future<List<Map<String, dynamic>>> getSpendingTrend() async {
     final db = await AppDatabase.db;
-    final trendRaw = await db.rawQuery(
+    // Get spending trend (variable expenses)
+    final spendRaw = await db.rawQuery(
         'SELECT substr(date, 1, 7) as month, SUM(amount) as total FROM variable_expenses GROUP BY month ORDER BY month DESC LIMIT 6');
-    return trendRaw.reversed.toList();
+
+    // Get income trend
+    final incomeRaw = await db.rawQuery(
+        'SELECT substr(date, 1, 7) as month, SUM(amount) as total FROM income_sources GROUP BY month ORDER BY month DESC LIMIT 6');
+
+    final months = <String>{
+      ...spendRaw.map((e) => e['month'] as String),
+      ...incomeRaw.map((e) => e['month'] as String),
+    }.toList()
+      ..sort((a, b) {
+        final dateA = _parseStepMonth(a);
+        final dateB = _parseStepMonth(b);
+        return dateA.compareTo(dateB);
+      });
+
+    // Limit to last 6 months
+    final lastMonths =
+        months.length > 6 ? months.sublist(months.length - 6) : months;
+
+    return lastMonths.map((m) {
+      final s = spendRaw.firstWhere((e) => e['month'] == m,
+          orElse: () => {'total': 0});
+      final i = incomeRaw.firstWhere((e) => e['month'] == m,
+          orElse: () => {'total': 0});
+      return {
+        'month': m,
+        'spending': s['total'],
+        'income': i['total'],
+        'total':
+            s['total'], // Keep 'total' for backward compatibility in widgets
+      };
+    }).toList();
   }
 
   @override
@@ -216,7 +252,6 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         SELECT substr(date, 1, 7) as month, 0 as income, 0 as expenses, amount as invested FROM investments WHERE ? = '' OR substr(date, 1, 4) = ?
       )
       GROUP BY month
-      ORDER BY month DESC
     ''';
 
     final res = await db.rawQuery(query, [
@@ -241,7 +276,28 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         'invested': invested.toInt(),
         'net': (income - (expenses + invested)).toInt(),
       };
-    }).toList();
+    }).toList()
+      ..sort((a, b) {
+        final dateA = _parseStepMonth(a['month'] as String);
+        final dateB = _parseStepMonth(b['month'] as String);
+        return dateB.compareTo(dateA); // History is usually newest first
+      });
+  }
+
+  /// Helper to parse "YYYY-MM" or "YYYY-MM-DD" into a DateTime safely
+  DateTime _parseStepMonth(String input) {
+    try {
+      if (input.length == 7) {
+        return DateTime.parse('$input-01');
+      }
+      return DateTime.parse(input);
+    } catch (e) {
+      debugPrint("INVALID DATE DETECTED: $input. Error: $e");
+      if (kDebugMode) {
+        throw FormatException("Expected YYYY-MM or ISO date but got: $input");
+      }
+      return DateTime(1900);
+    }
   }
 
   @override
@@ -292,22 +348,26 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<void> seedData() async {
-    await AppDatabase.seedDummyData();
+  Future<void> seedRoadmapData() async {
+    if (!kDebugMode) return;
+    await AppDatabase.seedRoadmapData();
   }
 
   @override
   Future<void> seedHealthyProfile() async {
+    if (!kDebugMode) return;
     await AppDatabase.seedHealthyProfile();
   }
 
   @override
   Future<void> seedAtRiskProfile() async {
+    if (!kDebugMode) return;
     await AppDatabase.seedAtRiskProfile();
   }
 
   @override
   Future<void> seedLargeData(int count) async {
+    if (!kDebugMode) return;
     await AppDatabase.seedLargeData(count: count);
   }
 
@@ -318,7 +378,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
 
   @override
   Future<void> addCreditCard(String bank, int creditLimit, int statementBalance,
-      int minDue, String dueDate) async {
+      int minDue, String dueDate, String statementDate) async {
     final db = await AppDatabase.db;
     await db.insert('credit_cards', {
       'bank': bank,
@@ -326,12 +386,19 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       'statement_balance': statementBalance,
       'min_due': minDue,
       'due_date': dueDate,
+      'statement_date': statementDate,
     });
   }
 
   @override
-  Future<void> updateCreditCard(int id, String bank, int creditLimit,
-      int statementBalance, int minDue, String dueDate) async {
+  Future<void> updateCreditCard(
+      int id,
+      String bank,
+      int creditLimit,
+      int statementBalance,
+      int minDue,
+      String dueDate,
+      String statementDate) async {
     final db = await AppDatabase.db;
     await db.update(
       'credit_cards',
@@ -341,6 +408,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         'statement_balance': statementBalance,
         'min_due': minDue,
         'due_date': dueDate,
+        'statement_date': statementDate,
       },
       where: 'id = ?',
       whereArgs: [id],
@@ -484,9 +552,41 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         [month]);
     allItems.addAll(invs);
 
-    // Sort desc by ID (implicitly time)
-    allItems.sort((a, b) => (b['id'] as int).compareTo(a['id'] as int));
+    // Sort desc by Date, then ID
+    // Note: ISO8601 strings sort correctly via string comparison and is significantly faster for large lists.
+    allItems.sort((a, b) {
+      final dateCmp = (b['date'] as String).compareTo(a['date'] as String);
+      if (dateCmp != 0) return dateCmp;
+      return (b['id'] as int).compareTo(a['id'] as int);
+    });
     return allItems.map((e) => LedgerItem.fromMap(e)).toList();
+  }
+
+  @override
+  Future<Map<String, dynamic>> generateBackup() async {
+    final db = await AppDatabase.db;
+    final Map<String, dynamic> backup = {};
+
+    final tableMap = {
+      'variable_expenses': 'vars',
+      'income_sources': 'income',
+      'fixed_expenses': 'fixed',
+      'investments': 'invs',
+      'subscriptions': 'subs',
+      'credit_cards': 'cards',
+      'loans': 'loans',
+      'saving_goals': 'goals',
+      'budgets': 'budgets',
+    };
+
+    for (var entry in tableMap.entries) {
+      final tableName = entry.key;
+      final backupKey = entry.value;
+      final data = await db.query(tableName);
+      backup[backupKey] = data;
+    }
+
+    return backup;
   }
 
   @override
@@ -507,6 +607,11 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       'budgets': 'budgets',
     };
 
+    // Clear existing data first
+    for (var entry in tableMap.entries) {
+      batch.delete(entry.key);
+    }
+
     for (var entry in tableMap.entries) {
       final tableName = entry.key;
       final backupKey = entry.value;
@@ -518,5 +623,101 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     }
 
     await batch.commit(noResult: true);
+  }
+
+  @override
+  Future<int> getTodaySpend() async {
+    final db = await AppDatabase.db;
+    final todayStr =
+        DateTime.now().toIso8601String().substring(0, 10); // YYYY-MM-DD
+    final result = await db.rawQuery(
+        'SELECT SUM(amount) FROM variable_expenses WHERE substr(date, 1, 10) = ?',
+        [todayStr]);
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  @override
+  Future<Map<String, int>> getWeeklySummary() async {
+    final db = await AppDatabase.db;
+    final now = DateTime.now();
+
+    // This week: Monday to today
+    final thisMondayOffset = now.weekday - 1;
+    final thisWeekStart =
+        DateTime(now.year, now.month, now.day - thisMondayOffset);
+    final thisWeekEnd = now;
+
+    // Last week: Previous Monday to Sunday
+    final lastWeekStart = thisWeekStart.subtract(const Duration(days: 7));
+    final lastWeekEnd = thisWeekStart.subtract(const Duration(days: 1));
+
+    final thisWeekResult = await db.rawQuery('''
+      SELECT SUM(amount) FROM variable_expenses
+      WHERE date >= ? AND date <= ?
+    ''', [
+      thisWeekStart.toIso8601String().substring(0, 10),
+      thisWeekEnd.toIso8601String().substring(0, 10)
+    ]);
+
+    final lastWeekResult = await db.rawQuery('''
+      SELECT SUM(amount) FROM variable_expenses
+      WHERE date >= ? AND date <= ?
+    ''', [
+      lastWeekStart.toIso8601String().substring(0, 10),
+      lastWeekEnd.toIso8601String().substring(0, 10)
+    ]);
+
+    return {
+      'thisWeek': Sqflite.firstIntValue(thisWeekResult) ?? 0,
+      'lastWeek': Sqflite.firstIntValue(lastWeekResult) ?? 0,
+    };
+  }
+
+  @override
+
+  /// Calculates the active daily streak of "tracking" events.
+  /// Definition: A tracking event is a manual entry in the [variable_expenses] table.
+  /// Fixed expenses (like rent), one-off Income, or Investments do not count
+  /// toward the "habitual tracking" streak.
+  Future<int> getActiveStreak() async {
+    final db = await AppDatabase.db;
+    final results = await db.rawQuery('''
+      SELECT DISTINCT substr(date, 1, 10) as day FROM variable_expenses
+      ORDER BY day DESC
+    ''');
+
+    if (results.isEmpty) return 0;
+
+    final daysSet = results.map((e) => e['day'] as String).toSet();
+
+    DateTime checkDate = DateTime.now();
+    String todayStr = DateFormat('yyyy-MM-dd').format(checkDate);
+    String yesterdayStr = DateFormat('yyyy-MM-dd')
+        .format(checkDate.subtract(const Duration(days: 1)));
+
+    // If no transaction today or yesterday, streak is broken
+    if (!daysSet.contains(todayStr) && !daysSet.contains(yesterdayStr)) {
+      return 0;
+    }
+
+    int streak = 0;
+    // Start from either today or yesterday (whichever has the most recent tx)
+    if (daysSet.contains(todayStr)) {
+      streak = 1;
+    } else {
+      streak = 1;
+      checkDate = checkDate.subtract(const Duration(days: 1));
+    }
+
+    while (true) {
+      checkDate = checkDate.subtract(const Duration(days: 1));
+      String nextDayStr = DateFormat('yyyy-MM-dd').format(checkDate);
+      if (daysSet.contains(nextDayStr)) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak > 1 ? streak : 0;
   }
 }

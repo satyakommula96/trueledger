@@ -116,8 +116,8 @@ void main() {
   testWidgets('calls onLoad when data is modified in Settings',
       (WidgetTester tester) async {
     int onLoadCalledCount = 0;
-    // Mock seedData
-    when(() => mockRepo.seedData()).thenAnswer((_) async => {});
+    // Mock seedRoadmapData
+    when(() => mockRepo.seedRoadmapData()).thenAnswer((_) async => {});
 
     await tester
         .pumpWidget(createWidgetUnderTest(onLoad: () => onLoadCalledCount++));

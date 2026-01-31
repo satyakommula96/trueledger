@@ -76,6 +76,7 @@ class DashboardHeader extends ConsumerWidget {
                           child: Text(getGreeting(),
                               maxLines: 1,
                               softWrap: false,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w900,

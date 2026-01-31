@@ -55,7 +55,7 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
     if (picked != null) {
       setState(() {
         _selectedGenDate = picked;
-        genDateCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
+        genDateCtrl.text = 'Day ${picked.day}';
       });
     }
   }
@@ -79,7 +79,8 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
                 isNumber: true, prefix: CurrencyFormatter.symbol),
             _buildField("Minimum Due", minDueCtrl, Icons.low_priority,
                 isNumber: true, prefix: CurrencyFormatter.symbol),
-            _buildField("Statement Generation Date", genDateCtrl, Icons.event,
+            _buildField(
+                "Statement Date (Every Month)", genDateCtrl, Icons.event,
                 readOnly: true, onTap: _pickGenDate),
             _buildField("Payment Due Date", dueDateCtrl, Icons.calendar_today,
                 readOnly: true, onTap: _pickDueDate),
@@ -145,7 +146,7 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
     }
 
     await repo.addCreditCard(bankCtrl.text, limit, balance,
-        int.tryParse(minDueCtrl.text) ?? 0, dueDateCtrl.text);
+        int.tryParse(minDueCtrl.text) ?? 0, dueDateCtrl.text, genDateCtrl.text);
 
     // Trigger notification
     if (_selectedGenDate != null) {

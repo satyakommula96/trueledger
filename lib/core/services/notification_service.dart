@@ -7,6 +7,7 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/config/app_config.dart';
+import 'package:trueledger/core/utils/hash_utils.dart';
 
 class NotificationService {
   // Notification IDs are deterministic to support cancel/update across restarts
@@ -100,15 +101,18 @@ class NotificationService {
       );
 
       await flutterLocalNotificationsPlugin.initialize(
-        initializationSettings,
+        settings: initializationSettings,
         onDidReceiveNotificationResponse:
             (fln.NotificationResponse response) async {
           _onNotificationClick.add(response.payload);
         },
       );
       _initFailed = false;
-    } catch (e) {
+    } catch (e, stack) {
       _initFailed = true;
+      if (kDebugMode) {
+        throw Exception("NotificationService init failed: $e\n$stack");
+      }
       debugPrint('CRITICAL: NotificationService init failed: $e');
     }
   }
@@ -155,8 +159,11 @@ class NotificationService {
         granted = true;
       }
       return granted;
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint("Notification permissions request failed: $e");
+      if (kDebugMode) {
+        debugPrint(stack.toString());
+      }
       return false;
     }
   }
@@ -193,10 +200,10 @@ class NotificationService {
     );
 
     await flutterLocalNotificationsPlugin.show(
-      id,
-      title,
-      body,
-      notificationDetails,
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: notificationDetails,
       payload: payload,
     );
   }
@@ -214,11 +221,11 @@ class NotificationService {
 
     // Using periodicallyShow as a robust workaround for zonedSchedule compilation issues
     await flutterLocalNotificationsPlugin.periodicallyShow(
-      dailyReminderId,
-      'Daily Reminder',
-      'Add your expenses for today!',
-      fln.RepeatInterval.daily,
-      const fln.NotificationDetails(
+      id: dailyReminderId,
+      title: 'Daily Reminder',
+      body: 'Add your expenses for today!',
+      repeatInterval: fln.RepeatInterval.daily,
+      notificationDetails: const fln.NotificationDetails(
         android: fln.AndroidNotificationDetails(
           'scheduled_channel',
           'Scheduled Notifications',
@@ -240,10 +247,8 @@ class NotificationService {
     // We remove the kIsWeb early return to allow local saving for the UI list
     // but we still skip the actual OS scheduling if not supported.
 
-    // Note: Object.hash is stable within the same Dart runtime.
-    // We do not guarantee cross-version stability for legacy notifications
-    // if hash implementation changes in future Dart SDKs.
-    final int id = Object.hash(bank, day).abs() % 0x7FFFFFFF;
+    // Use a stable deterministic hash instead of Object.hash
+    final int id = generateStableHash('cc_reminder_$bank');
 
     await showNotification(
       id: id,
@@ -301,8 +306,11 @@ class NotificationService {
             allNotifications.add(osItem);
           }
         }
-      } catch (e) {
+      } catch (e, stack) {
         debugPrint("Failed to fetch OS pending notifications: $e");
+        if (kDebugMode) {
+          debugPrint(stack.toString());
+        }
       }
     }
 
@@ -314,7 +322,7 @@ class NotificationService {
     if (!_isInitialized) await init();
     await _removeScheduledNotification(id);
     if (kIsWeb || _isTest || _initFailed) return;
-    await flutterLocalNotificationsPlugin.cancel(id);
+    await flutterLocalNotificationsPlugin.cancel(id: id);
   }
 
   /// Cancel all notifications
@@ -364,7 +372,12 @@ class NotificationService {
     try {
       final List<dynamic> decoded = jsonDecode(jsonString);
       return decoded.cast<Map<String, dynamic>>();
-    } catch (e) {
+    } catch (e, stack) {
+      if (kDebugMode) {
+        throw Exception(
+            "Failed to load local notification storage in Debug Mode: $e\n$stack");
+      }
+      debugPrint("Failed to load local notification storage: $e");
       return [];
     }
   }

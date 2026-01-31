@@ -34,6 +34,8 @@ class AppDatabase {
     return _db!;
   }
 
+  static Future<String> getEncryptionKey() async => _getOrGenerateKey();
+
   static Future<String> _getOrGenerateKey() async {
     // Return a dummy key for testing to avoid KeyChain hangs
     if (_isTest) {
@@ -50,9 +52,15 @@ class AppDatabase {
         await _storage.write(key: _keyParams, value: key);
       }
       return key;
-    } catch (e) {
-      // Fallback for dev environment if secure storage fails (NOT FOR PROD)
-      // This allows the app to open even if keyring is broken.
+    } catch (e, stack) {
+      debugPrint("SECURE STORAGE FAILURE: $e");
+      if (kDebugMode) {
+        debugPrint(stack.toString());
+        // Fail loudly in debug to alert the developer
+        throw Exception(
+            "CRITICAL: Secure Storage failed in Debug Mode: $e\n$stack");
+      }
+      // Fallback for production if secure storage fails (ALLOWS APP TO OPEN)
       return 'fallback_dev_key_DO_NOT_USE_IN_PROD';
     }
   }
@@ -93,6 +101,7 @@ class AppDatabase {
       } catch (e) {
         debugPrint(
             'CRITICAL: Web database open failed ($e). Attempting recovery...');
+        if (kDebugMode) rethrow;
         return await _handleDatabaseReset(path, key, isDesktop: false);
       }
     } else if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
@@ -107,6 +116,7 @@ class AppDatabase {
                 if (_isTest) {
                   debugPrint('Skipping desktop encryption check in Test Mode.');
                 } else {
+                  bool isEncrypted = false;
                   try {
                     // Check if SQLCipher is available
                     final result = await db.rawQuery('PRAGMA cipher_version;');
@@ -120,16 +130,21 @@ class AppDatabase {
                             'Encryption is MANDATORY for privacy compliance.');
                       }
                     } else {
+                      isEncrypted = true;
                       // Apply the key only if SQLCipher is available
                       await db.execute("PRAGMA key = '$key';");
                     }
 
                     // Validation: Try a simple query that requires a valid key/encryption setup
-                    // Since the DB is fresh or already keyed, this should succeed.
                     await db.rawQuery('SELECT count(*) FROM sqlite_master;');
 
-                    debugPrint(
-                        'Desktop SQLCipher encryption verified and active on ${kIsWeb ? "Web" : Platform.operatingSystem}.');
+                    if (isEncrypted) {
+                      debugPrint(
+                          'Desktop SQLCipher encryption verified and active on ${kIsWeb ? "Web" : Platform.operatingSystem}.');
+                    } else {
+                      debugPrint(
+                          'Running in UNENCRYPTED mode (Development Fallback).');
+                    }
                   } catch (e) {
                     debugPrint('CRITICAL: Database encryption failure: $e');
                     // Re-throw to prevent the app from starting with unencrypted data
@@ -148,6 +163,7 @@ class AppDatabase {
       } catch (e) {
         debugPrint(
             'CRITICAL: Desktop database open failed ($e). Attempting recovery...');
+        if (kDebugMode) rethrow;
         return await _handleDatabaseReset(path, key, isDesktop: true);
       }
     } else {
@@ -169,6 +185,7 @@ class AppDatabase {
       } catch (e) {
         debugPrint(
             'CRITICAL: ${kIsWeb ? "Web" : Platform.operatingSystem} database open failed ($e). Attempting recovery...');
+        if (kDebugMode) rethrow;
         return await _handleDatabaseReset(path, key,
             isDesktop: !kIsWeb &&
                 (Platform.isWindows || Platform.isLinux || Platform.isMacOS));
@@ -244,7 +261,8 @@ class AppDatabase {
             ${Schema.colCreditLimit} INTEGER,
             ${Schema.colStatementBalance} INTEGER,
             ${Schema.colMinDue} INTEGER,
-            ${Schema.colDueDate} TEXT
+            ${Schema.colDueDate} TEXT,
+            ${Schema.colStatementDate} TEXT
           )
         ''');
     await db.execute('''
@@ -299,6 +317,7 @@ class AppDatabase {
   }
 
   static Future<void> seedDummyData() async {
+    if (!kDebugMode) return;
     await clearData(); // Ensure fresh start
     final database = await db;
     final now = DateTime.now();
@@ -410,16 +429,18 @@ class AppDatabase {
       Schema.colCreditLimit: 1500000,
       Schema.colStatementBalance: 87000,
       Schema.colMinDue: 0,
-      Schema.colDueDate:
-          DateFormat('dd-MM-yyyy').format(DateTime(now.year, now.month + 1, 12))
+      Schema.colDueDate: DateFormat('dd-MM-yyyy')
+          .format(DateTime(now.year, now.month + 1, 12)),
+      Schema.colStatementDate: 'Day 18'
     });
     batch.insert(Schema.creditCardsTable, {
       Schema.colBank: 'Amex Platinum',
       Schema.colCreditLimit: 1000000,
       Schema.colStatementBalance: 12500,
       Schema.colMinDue: 0,
-      Schema.colDueDate:
-          DateFormat('dd-MM-yyyy').format(DateTime(now.year, now.month + 1, 24))
+      Schema.colDueDate: DateFormat('dd-MM-yyyy')
+          .format(DateTime(now.year, now.month + 1, 24)),
+      Schema.colStatementDate: 'Day 2'
     });
 
     // Subscriptions (Active List)
@@ -591,6 +612,7 @@ class AppDatabase {
   }
 
   static Future<void> seedHealthyProfile() async {
+    if (!kDebugMode) return;
     await clearData();
     final database = await db;
     final now = DateTime.now();
@@ -654,6 +676,7 @@ class AppDatabase {
   }
 
   static Future<void> seedAtRiskProfile() async {
+    if (!kDebugMode) return;
     await clearData();
     final database = await db;
     final now = DateTime.now();
@@ -716,6 +739,7 @@ class AppDatabase {
   }
 
   static Future<void> seedLargeData({int count = 5000}) async {
+    if (!kDebugMode) return;
     await clearData();
     final database = await db;
     final now = DateTime.now();
@@ -761,5 +785,72 @@ class AppDatabase {
     }
     await batch.commit(noResult: true);
     debugPrint("Seeded $count records for performance test.");
+  }
+
+  static Future<void> seedRoadmapData() async {
+    if (!kDebugMode) return;
+    await seedDummyData(); // Start with a rich base
+    final database = await db;
+    final now = DateTime.now();
+    final batch = database.batch();
+
+    // Ensure a 5-day streak (Today, Yesterday, ..., -4 days)
+    for (int i = 0; i < 5; i++) {
+      final date = now.subtract(Duration(days: i));
+      batch.insert(Schema.variableExpensesTable, {
+        Schema.colDate: date.toIso8601String(),
+        Schema.colAmount: 500 + i * 100,
+        Schema.colCategory: 'Food',
+        Schema.colNote: 'Streak Builder Day ${5 - i}',
+      });
+    }
+
+    // Add specific Budget statuses
+    // 1. Safe (e.g., 20% used)
+    batch.insert(Schema.budgetsTable, {
+      Schema.colCategory: 'Services',
+      Schema.colMonthlyLimit: 10000,
+    });
+    batch.insert(Schema.variableExpensesTable, {
+      Schema.colDate: now.toIso8601String(),
+      Schema.colAmount: 2000,
+      Schema.colCategory: 'Services',
+      Schema.colNote: 'Safe budget example',
+    });
+
+    // 2. Warning (>75%, e.g., 80%)
+    batch.insert(Schema.budgetsTable, {
+      Schema.colCategory: 'Medical',
+      Schema.colMonthlyLimit: 5000,
+    });
+    batch.insert(Schema.variableExpensesTable, {
+      Schema.colDate: now.toIso8601String(),
+      Schema.colAmount: 4000,
+      Schema.colCategory: 'Medical',
+      Schema.colNote: 'Warning budget example',
+    });
+
+    // 3. Overspent (>100%, e.g., 120%)
+    batch.insert(Schema.budgetsTable, {
+      Schema.colCategory: 'Education',
+      Schema.colMonthlyLimit: 2000,
+    });
+    batch.insert(Schema.variableExpensesTable, {
+      Schema.colDate: now.toIso8601String(),
+      Schema.colAmount: 2400,
+      Schema.colCategory: 'Education',
+      Schema.colNote: 'Overspent budget example',
+    });
+
+    // Searchable data for Phase 2
+    batch.insert(Schema.variableExpensesTable, {
+      Schema.colDate: now.toIso8601String(),
+      Schema.colAmount: 9999,
+      Schema.colCategory: 'Others',
+      Schema.colNote: 'SECRET_CODE_SEARCH',
+    });
+
+    await batch.commit(noResult: true);
+    debugPrint("Roadmap sample data seeded successfully.");
   }
 }

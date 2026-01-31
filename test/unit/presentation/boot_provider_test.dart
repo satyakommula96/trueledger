@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/usecases/startup_usecase.dart';
+import 'package:trueledger/domain/usecases/auto_backup_usecase.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:trueledger/presentation/providers/boot_provider.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
@@ -10,29 +11,50 @@ import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:trueledger/core/services/notification_service.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
+
+import 'package:trueledger/core/providers/secure_storage_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MockRepo extends Mock implements IFinancialRepository {}
 
 class MockNotificationService extends Mock implements NotificationService {}
 
+class MockAutoBackupUseCase extends Mock implements AutoBackupUseCase {}
+
+class MockSecureStorage extends Mock implements FlutterSecureStorage {}
+
 class SuccessStartupUseCase extends StartupUseCase {
-  SuccessStartupUseCase() : super(MockRepo(), MockNotificationService());
+  SuccessStartupUseCase() : super(MockRepo(), MockAutoBackupUseCase());
   @override
-  Future<Result<void>> call(NoParams params) async => const Success(null);
+  Future<Result<StartupResult>> call(NoParams params) async =>
+      Success(StartupResult(shouldScheduleReminder: true));
 }
 
 class FailureStartupUseCase extends StartupUseCase {
-  FailureStartupUseCase() : super(MockRepo(), MockNotificationService());
+  FailureStartupUseCase() : super(MockRepo(), MockAutoBackupUseCase());
   @override
-  Future<Result<void>> call(NoParams params) async =>
+  Future<Result<StartupResult>> call(NoParams params) async =>
       Failure(DatabaseFailure("Fail"));
 }
 
 void main() {
   test('bootProvider success', () async {
+    final mockNotification = MockNotificationService();
+    when(() => mockNotification.init()).thenAnswer((_) async {});
+    when(() => mockNotification.requestPermissions())
+        .thenAnswer((_) async => true);
+    when(() => mockNotification.scheduleDailyReminder())
+        .thenAnswer((_) async {});
+
+    final mockStorage = MockSecureStorage();
+    when(() => mockStorage.read(key: 'app_pin')).thenAnswer((_) async => null);
+
     final container = ProviderContainer(
       overrides: [
         startupUseCaseProvider.overrideWith((ref) => SuccessStartupUseCase()),
+        notificationServiceProvider.overrideWithValue(mockNotification),
+        secureStorageProvider.overrideWithValue(mockStorage),
       ],
     );
     addTearDown(container.dispose);
@@ -44,6 +66,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         startupUseCaseProvider.overrideWith((ref) => FailureStartupUseCase()),
+        // notificationServiceProvider not strictly needed for failure if it fails early
       ],
     );
     addTearDown(container.dispose);

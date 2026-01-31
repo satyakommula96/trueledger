@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,8 +50,15 @@ void main() {
     test('getPendingNotifications handles corrupt json', () async {
       when(() => mockPrefs.getString('scheduled_notifications'))
           .thenReturn("{corrupt json");
-      final notifications = await notificationService.getPendingNotifications();
-      expect(notifications, isEmpty);
+
+      if (kDebugMode) {
+        expect(notificationService.getPendingNotifications(),
+            throwsA(isA<Exception>()));
+      } else {
+        final notifications =
+            await notificationService.getPendingNotifications();
+        expect(notifications, isEmpty);
+      }
     });
 
     test('stream emits correct types upon mutation', () async {

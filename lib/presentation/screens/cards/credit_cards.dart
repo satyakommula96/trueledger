@@ -192,6 +192,15 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.end,
                                       children: [
+                                        if (c.statementDate.isNotEmpty) ...[
+                                          Text("BILL: ${c.statementDate}",
+                                              style: TextStyle(
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.w900,
+                                                  color:
+                                                      semantic.secondaryText)),
+                                          const SizedBox(height: 4),
+                                        ],
                                         Text(DateHelper.formatDue(c.dueDate),
                                             style: TextStyle(
                                                 fontSize: 9,

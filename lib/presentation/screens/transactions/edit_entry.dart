@@ -184,6 +184,29 @@ class _EditEntryScreenState extends ConsumerState<EditEntryScreen> {
       await repo.deleteItem(table, widget.entry.id);
       if (mounted) {
         ref.invalidate(dashboardProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Item deleted"),
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: "UNDO",
+              onPressed: () async {
+                // Re-add the item using repository methods
+                // Since IFinancialRepository doesn't have a 'restore' method,
+                // we'll just handle it as a new entry for now.
+                // NOTE: This might assign a NEW ID, but for variable expenses it's fine.
+                await repo.addEntry(
+                  widget.entry.type,
+                  widget.entry.amount,
+                  widget.entry.label,
+                  widget.entry.note ?? '',
+                  widget.entry.date,
+                );
+                ref.invalidate(dashboardProvider);
+              },
+            ),
+          ),
+        );
         Navigator.pop(context);
       }
     }

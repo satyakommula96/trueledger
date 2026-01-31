@@ -1,5 +1,7 @@
 import 'package:sqflite_common/sqlite_api.dart' as common;
 
+import 'schema.dart';
+
 abstract class Migration {
   final int version;
   Migration(this.version);
@@ -27,4 +29,36 @@ class MigrationV1 extends Migration {
   Future<void> down(common.Database db) async {}
 }
 
-final List<Migration> appMigrations = [];
+class MigrationV2 extends Migration {
+  MigrationV2() : super(2);
+
+  @override
+  Future<void> up(common.Database db) async {
+    await addColumnSafe(
+        db, Schema.creditCardsTable, Schema.colStatementDate, "TEXT");
+  }
+
+  @override
+  Future<void> down(common.Database db) async {
+    // SQLite doesn't support DROP COLUMN easily in older versions, skipping for now
+  }
+}
+
+class MigrationV3 extends Migration {
+  MigrationV3() : super(3);
+
+  @override
+  Future<void> up(common.Database db) async {
+    // Re-check for v2 column in case v2 migration skipped
+    await addColumnSafe(
+        db, Schema.creditCardsTable, Schema.colStatementDate, "TEXT");
+  }
+
+  @override
+  Future<void> down(common.Database db) async {}
+}
+
+final List<Migration> appMigrations = [
+  MigrationV2(),
+  MigrationV3(),
+];

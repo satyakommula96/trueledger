@@ -30,6 +30,7 @@ class Schema {
   static const String colStatementBalance = 'statement_balance';
   static const String colMinDue = 'min_due';
   static const String colDueDate = 'due_date';
+  static const String colStatementDate = 'statement_date';
 
   // Loans
   static const String colLoanType = 'loan_type';

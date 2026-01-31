@@ -5,11 +5,19 @@ import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
+import 'package:confetti/confetti.dart';
 
 class WealthHero extends ConsumerStatefulWidget {
   final MonthlySummary summary;
+  final int activeStreak;
+  final bool hasLoggedToday;
 
-  const WealthHero({super.key, required this.summary});
+  const WealthHero({
+    super.key,
+    required this.summary,
+    required this.activeStreak,
+    required this.hasLoggedToday,
+  });
 
   @override
   ConsumerState<WealthHero> createState() => _WealthHeroState();
@@ -17,6 +25,29 @@ class WealthHero extends ConsumerStatefulWidget {
 
 class _WealthHeroState extends ConsumerState<WealthHero> {
   bool _isHovered = false;
+  late ConfettiController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 2));
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(WealthHero oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.activeStreak > oldWidget.activeStreak &&
+        widget.activeStreak > 0) {
+      _confettiController.play();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,99 +62,145 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
     final isTouch = Theme.of(context).platform == TargetPlatform.iOS ||
         Theme.of(context).platform == TargetPlatform.android;
 
-    final mainContent = AnimatedContainer(
-      duration: 300.ms,
-      curve: Curves.easeOutQuint,
-      // ignore: deprecated_member_use
-      transform: Matrix4.identity()
-        // ignore: deprecated_member_use
-        ..scale(_isHovered ? 1.02 : 1.0)
-        // ignore: deprecated_member_use
-        ..translate(0.0, _isHovered ? -4.0 : 0.0),
-      width: double.infinity,
-      height: 240,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            displayColor.withValues(alpha: 0.95),
-            displayColor.withValues(alpha: 0.8),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(
-          color: _isHovered
-              ? Colors.white.withValues(alpha: 0.5)
-              : Colors.white.withValues(alpha: 0.2),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-              color: displayColor.withValues(alpha: _isHovered ? 0.4 : 0.3),
-              blurRadius: _isHovered ? 40 : 24,
-              offset: Offset(0, _isHovered ? 20 : 12)),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Abstract Background Shapes
-          Positioned(
-            right: -50,
-            top: -50,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
-              ),
+    final mainContent = Stack(
+      alignment: Alignment.topCenter,
+      children: [
+        AnimatedContainer(
+          duration: 300.ms,
+          curve: Curves.easeOutQuint,
+          // ignore: deprecated_member_use
+          transform: Matrix4.identity()
+            // ignore: deprecated_member_use
+            ..scale(_isHovered ? 1.02 : 1.0)
+            // ignore: deprecated_member_use
+            ..translate(0.0, _isHovered ? -4.0 : 0.0),
+          width: double.infinity,
+          height: 240,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                displayColor.withValues(alpha: 0.95),
+                displayColor.withValues(alpha: 0.8),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          ),
-          Positioned(
-            left: -30,
-            bottom: -30,
-            child: Container(
-              width: 150,
-              height: 150,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.03),
-              ),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(
+              color: _isHovered
+                  ? Colors.white.withValues(alpha: 0.5)
+                  : Colors.white.withValues(alpha: 0.2),
+              width: 1.5,
             ),
+            boxShadow: [
+              BoxShadow(
+                  color: displayColor.withValues(alpha: _isHovered ? 0.4 : 0.3),
+                  blurRadius: _isHovered ? 40 : 24,
+                  offset: Offset(0, _isHovered ? 20 : 12)),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildHeaderPill(context, "NET WORTH",
-                        Icons.account_balance_wallet_rounded),
-                  ],
+          child: Stack(
+            children: [
+              // Abstract Background Shapes
+              Positioned(
+                right: -50,
+                top: -50,
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.05),
+                  ),
                 ),
-                const Spacer(),
-                Column(
+              ),
+              Positioned(
+                left: -30,
+                bottom: -30,
+                child: Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.03),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                        CurrencyFormatter.format(widget.summary.netWorth,
-                            compact: false, isPrivate: isPrivate),
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 44,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -2,
-                            height: 1.0)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildHeaderPill(context, "NET WORTH",
+                            Icons.account_balance_wallet_rounded),
+                        if (widget.activeStreak > 0)
+                          Flexible(
+                            child: Builder(builder: (context) {
+                              final pill = _buildHeaderPill(
+                                context,
+                                widget.hasLoggedToday
+                                    ? "${widget.activeStreak} DAY TRACKING STREAK"
+                                    : "${widget.activeStreak} DAY STREAK (PENDING)",
+                                Icons.whatshot_rounded,
+                                isAlt: true,
+                                color: widget.hasLoggedToday
+                                    ? Colors.orange
+                                    : Colors.blueGrey.shade300,
+                              );
+
+                              if (!widget.hasLoggedToday) return pill;
+
+                              return pill
+                                  .animate(onPlay: (c) => c.repeat())
+                                  .shimmer(
+                                    duration: 1200.ms,
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                  );
+                            }),
+                          ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                            CurrencyFormatter.format(widget.summary.netWorth,
+                                compact: false, isPrivate: isPrivate),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 44,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -2,
+                                height: 1.0)),
+                      ],
+                    )
+                        .animate()
+                        .fadeIn(duration: 600.ms)
+                        .moveY(begin: 20, end: 0),
                   ],
-                ).animate().fadeIn(duration: 600.ms).moveY(begin: 20, end: 0),
-              ],
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        ConfettiWidget(
+          confettiController: _confettiController,
+          blastDirectionality: BlastDirectionality.explosive,
+          shouldLoop: false,
+          colors: const [
+            Colors.green,
+            Colors.blue,
+            Colors.pink,
+            Colors.orange,
+            Colors.purple
+          ],
+          gravity: 0.1,
+        ),
+      ],
     );
 
     if (isTouch) {
@@ -147,26 +224,36 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
   }
 
   Widget _buildHeaderPill(BuildContext context, String text, IconData icon,
-      {bool isAlt = false}) {
+      {bool isAlt = false, Color? color}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-          color: isAlt
-              ? Colors.white.withValues(alpha: 0.2)
-              : Colors.black.withValues(alpha: 0.1),
+          color: color != null
+              ? color.withValues(alpha: 0.2)
+              : (isAlt
+                  ? Colors.white.withValues(alpha: 0.2)
+                  : Colors.black.withValues(alpha: 0.1)),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1))),
+          border: Border.all(
+              color: color != null
+                  ? color.withValues(alpha: 0.4)
+                  : Colors.white.withValues(alpha: 0.1))),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.white.withValues(alpha: 0.9)),
+          Icon(icon,
+              size: 14, color: color ?? Colors.white.withValues(alpha: 0.9)),
           const SizedBox(width: 6),
-          Text(text,
-              style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 10,
-                  letterSpacing: 1.2)),
+          Flexible(
+            child: Text(text,
+                style: TextStyle(
+                    color: color ?? Colors.white.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 10,
+                    letterSpacing: 1.2),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1),
+          ),
         ],
       ),
     ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack);

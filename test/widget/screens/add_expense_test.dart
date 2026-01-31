@@ -8,10 +8,16 @@ import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/result.dart';
 
+import 'package:trueledger/core/services/notification_service.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
+
 class MockAddTransactionUseCase extends Mock implements AddTransactionUseCase {}
+
+class MockNotificationService extends Mock implements NotificationService {}
 
 void main() {
   late MockAddTransactionUseCase mockUseCase;
+  late MockNotificationService mockNotificationService;
 
   setUpAll(() {
     registerFallbackValue(AddTransactionParams(
@@ -25,14 +31,16 @@ void main() {
 
   setUp(() {
     mockUseCase = MockAddTransactionUseCase();
+    mockNotificationService = MockNotificationService();
     when(() => mockUseCase.call(any()))
-        .thenAnswer((_) async => const Success(null));
+        .thenAnswer((_) async => Success(AddTransactionResult()));
   });
 
   Widget createWidget(AddExpense widget) {
     return ProviderScope(
       overrides: [
         addTransactionUseCaseProvider.overrideWithValue(mockUseCase),
+        notificationServiceProvider.overrideWithValue(mockNotificationService),
       ],
       child: MaterialApp(
         theme: AppTheme.darkTheme,

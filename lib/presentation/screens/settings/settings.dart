@@ -22,8 +22,12 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/user_provider.dart';
 import 'package:trueledger/core/providers/version_provider.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
 
 import 'package:trueledger/core/services/backup_encryption_service.dart';
+import 'package:trueledger/presentation/providers/usecase_providers.dart';
+import 'package:trueledger/domain/usecases/restore_backup_usecase.dart';
+import 'package:trueledger/data/datasources/database.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -42,6 +46,7 @@ class SettingsScreen extends ConsumerWidget {
             hintText: "Enter your name",
             labelText: "Name",
           ),
+          maxLength: 20,
           autofocus: true,
           textCapitalization: TextCapitalization.words,
         ),
@@ -293,6 +298,28 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _exportToCSV(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Export Unencrypted Data?"),
+        content: const Text(
+          "This will create a CSV file with your financial data in plain text.\n\nAnyone with access to this file can read it.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("CANCEL"),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text("EXPORT ANYWAY"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
     final repo = ref.read(financialRepositoryProvider);
     final txs = await repo.getAllValues('variable_expenses');
 
@@ -342,27 +369,11 @@ class SettingsScreen extends ConsumerWidget {
               ),
               children: [
                 SimpleDialogOption(
-                  onPressed: () => Navigator.pop(context, 'standard'),
+                  onPressed: () => Navigator.pop(context, 'roadmap'),
                   child: const ListTile(
-                    leading: Icon(Icons.dvr_rounded, color: Colors.blue),
-                    title: Text("Standard Demo"),
-                    subtitle: Text("Mixed data over 2 years"),
-                  ),
-                ),
-                SimpleDialogOption(
-                  onPressed: () => Navigator.pop(context, 'positive'),
-                  child: const ListTile(
-                    leading: Icon(Icons.trending_up, color: Colors.green),
-                    title: Text("Wealth Builder"),
-                    subtitle: Text("High Income, Low Expense"),
-                  ),
-                ),
-                SimpleDialogOption(
-                  onPressed: () => Navigator.pop(context, 'negative'),
-                  child: const ListTile(
-                    leading: Icon(Icons.trending_down, color: Colors.red),
-                    title: Text("Debt Crisis"),
-                    subtitle: Text("Low Income, High Expense"),
+                    leading: Icon(Icons.star_rounded, color: Colors.purple),
+                    title: Text("Complete Demo"),
+                    subtitle: Text("All features, including Streaks"),
                   ),
                 ),
               ],
@@ -371,18 +382,34 @@ class SettingsScreen extends ConsumerWidget {
     if (option != null) {
       final repo = ref.read(financialRepositoryProvider);
 
-      if (option == 'standard') {
-        await repo.seedData();
-      } else if (option == 'positive') {
-        await repo.seedHealthyProfile();
-      } else if (option == 'negative') {
-        await repo.seedAtRiskProfile();
-      }
+      try {
+        if (option == 'roadmap') {
+          await repo.seedRoadmapData();
+        } else if (option == 'positive') {
+          await repo.seedHealthyProfile();
+        } else if (option == 'negative') {
+          await repo.seedAtRiskProfile();
+        }
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Generated ${option.toUpperCase()} data scenario")));
-        Navigator.pop(context, true);
+        if (context.mounted) {
+          final scenarioName = option == 'roadmap'
+              ? "Complete Demo"
+              : option == 'positive'
+                  ? "Healthy Profile"
+                  : option == 'negative'
+                      ? "At-Risk Profile"
+                      : option.toUpperCase();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Generated $scenarioName data scenario")));
+          Navigator.pop(context, true);
+        }
+      } catch (e, stack) {
+        debugPrint("Data seeding failed: $e");
+        if (kDebugMode) {
+          debugPrint(stack.toString());
+          throw Exception("Data seeding failed: $e\n$stack");
+        }
       }
     }
   }
@@ -534,63 +561,73 @@ class SettingsScreen extends ConsumerWidget {
       // Check for encryption
       Map<String, dynamic> data;
       if (container['encrypted'] == true) {
-        // Ask for password
         String? password;
-        if (context.mounted) {
-          password = await showDialog<String>(
-            context: context,
-            barrierDismissible: false,
-            builder: (ctx) {
-              String input = "";
-              bool obscure = true;
-              return StatefulBuilder(builder: (context, setState) {
-                return AlertDialog(
-                  title: const Text("Decrypt Backup"),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text("Enter password to decrypt this file.",
-                          style: TextStyle(fontSize: 13)),
-                      const SizedBox(height: 16),
-                      TextField(
-                        autofocus: true,
-                        obscureText: obscure,
-                        onChanged: (v) => input = v,
-                        decoration: InputDecoration(
-                            labelText: "Password",
-                            border: const OutlineInputBorder(),
-                            suffixIcon: IconButton(
-                              icon: Icon(obscure
-                                  ? Icons.visibility
-                                  : Icons.visibility_off),
-                              onPressed: () =>
-                                  setState(() => obscure = !obscure),
-                            )),
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text("CANCEL")),
-                    FilledButton(
-                        onPressed: () => Navigator.pop(ctx, input),
-                        child: const Text("DECRYPT")),
-                  ],
-                );
-              });
-            },
-          );
-        }
 
-        if (password == null) return;
-
+        // 1. Try Auto-Decryption with Device Key (for auto-backups)
         try {
+          final deviceKey = await AppDatabase.getEncryptionKey();
           final decryptedJson =
-              BackupEncryptionService.decryptData(container['data'], password);
+              BackupEncryptionService.decryptData(container['data'], deviceKey);
           data = jsonDecode(decryptedJson) as Map<String, dynamic>;
-        } catch (e) {
-          throw "Invalid Password or Corrupted File";
+          debugPrint("Auto-decryption successful with device key.");
+        } catch (_) {
+          // 2. Fallback: Ask user for password
+          if (context.mounted) {
+            password = await showDialog<String>(
+              context: context,
+              barrierDismissible: false,
+              builder: (ctx) {
+                String input = "";
+                bool obscure = true;
+                return StatefulBuilder(builder: (context, setState) {
+                  return AlertDialog(
+                    title: const Text("Decrypt Backup"),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text("Enter password to decrypt this file.",
+                            style: TextStyle(fontSize: 13)),
+                        const SizedBox(height: 16),
+                        TextField(
+                          autofocus: true,
+                          obscureText: obscure,
+                          onChanged: (v) => input = v,
+                          decoration: InputDecoration(
+                              labelText: "Password",
+                              border: const OutlineInputBorder(),
+                              suffixIcon: IconButton(
+                                icon: Icon(obscure
+                                    ? Icons.visibility
+                                    : Icons.visibility_off),
+                                onPressed: () =>
+                                    setState(() => obscure = !obscure),
+                              )),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text("CANCEL")),
+                      FilledButton(
+                          onPressed: () => Navigator.pop(ctx, input),
+                          child: const Text("DECRYPT")),
+                    ],
+                  );
+                });
+              },
+            );
+          }
+
+          if (password == null) return;
+
+          try {
+            final decryptedJson = BackupEncryptionService.decryptData(
+                container['data'], password);
+            data = jsonDecode(decryptedJson) as Map<String, dynamic>;
+          } catch (e) {
+            throw "Invalid Password or Corrupted File";
+          }
         }
       } else {
         // Legacy (unencrypted) support
@@ -604,29 +641,97 @@ class SettingsScreen extends ConsumerWidget {
       final confirmed = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-                title: const Text("Restore Data?"),
-                content: const Text(
-                    "This will OVERWRITE all current data with the backup relative to the file date."),
+                title: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: Colors.amber[700]),
+                    const SizedBox(width: 8),
+                    const Text("Restore & Overwrite?"),
+                  ],
+                ),
+                content: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "This will REPLACE all your current entries, budgets, and cards with those from the backup file.",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      "• Your current state will be AUTO-BACKUPED before proceeding.\n• This action is destructive and cannot be merged.",
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ],
+                ),
                 actions: [
                   TextButton(
                       onPressed: () => Navigator.pop(ctx, false),
                       child: const Text("CANCEL")),
-                  TextButton(
+                  FilledButton(
                       onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text("RESTORE",
-                          style: TextStyle(color: Colors.red))),
+                      style:
+                          FilledButton.styleFrom(backgroundColor: Colors.red),
+                      child: const Text("RESTORE")),
                 ],
               ));
 
       if (confirmed == true) {
         final repo = ref.read(financialRepositoryProvider);
-        await repo.clearData();
-        await repo.restoreBackup(data);
+        final restoreUseCase = ref.read(restoreBackupUseCaseProvider);
 
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Restore Successful!")));
-          Navigator.pop(context, true); // Go back to dashboard to refresh
+        // Immediate safety backup for in-app UNDO
+        Map<String, dynamic>? safetyBackup;
+        try {
+          safetyBackup = await repo.generateBackup();
+        } catch (e, stack) {
+          debugPrint("In-memory safety backup failed: $e");
+          if (kDebugMode) {
+            throw Exception("Safety backup failed: $e\n$stack");
+          }
+        }
+
+        final result = await restoreUseCase.call(RestoreBackupParams(
+          backupData: data,
+          merge: false, // Currently only replace is supported
+        ));
+
+        // When data is replaced, pre-existing notification schedules are stale.
+        final notificationService = ref.read(notificationServiceProvider);
+        await notificationService.cancelAllNotifications();
+
+        if (!context.mounted) return;
+
+        if (result.isSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text("Restore Successful!"),
+            duration: const Duration(seconds: 8),
+            action: safetyBackup != null
+                ? SnackBarAction(
+                    label: "UNDO",
+                    onPressed: () async {
+                      try {
+                        await repo.clearData();
+                        await repo.restoreBackup(safetyBackup!);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text("Restore undone. Data recovered.")));
+                        }
+                      } catch (e, stack) {
+                        debugPrint("Undo failed: $e");
+                        if (kDebugMode) {
+                          throw Exception("Restore UNDO failed: $e\n$stack");
+                        }
+                      }
+                    })
+                : null,
+          ));
+          Navigator.pop(context, true); // Go back to refresh
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content:
+                  Text("Restore Failed: ${result.failureOrThrow.message}")));
         }
       }
     } catch (e) {
@@ -656,13 +761,26 @@ class SettingsScreen extends ConsumerWidget {
             ));
 
     if (confirmed == true) {
-      final repo = ref.read(financialRepositoryProvider);
-      await repo.clearData();
+      try {
+        final repo = ref.read(financialRepositoryProvider);
+        final notificationService = ref.read(notificationServiceProvider);
+        await repo.clearData();
+        await notificationService.cancelAllNotifications();
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("All data has been reset")));
-        Navigator.pop(context, true); // Updated to return true
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("All data has been reset")));
+          Navigator.pop(context, true);
+        }
+      } catch (e, stack) {
+        debugPrint("Reset failed: $e");
+        if (kDebugMode) {
+          throw Exception("Application Reset failed: $e\n$stack");
+        }
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Reset failed: ${e.toString()}")));
+        }
       }
     }
   }
@@ -992,8 +1110,8 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildOption(
             context,
-            "Backup Data",
-            "Save full backup to file",
+            "Secure Backup",
+            "Creates an encrypted data package",
             Icons.cloud_upload_outlined,
             Colors.blueAccent,
             () => _backupData(context, ref),
@@ -1002,21 +1120,23 @@ class SettingsScreen extends ConsumerWidget {
           _buildOption(
             context,
             "Restore Data",
-            "Import backup file",
+            "Import from encrypted backup",
             Icons.restore_page_outlined,
             Colors.orange,
             () => _restoreData(context, ref),
           ),
           const SizedBox(height: 16),
-          _buildOption(
-            context,
-            "Seed Sample Data",
-            "Populate app with demo entries",
-            Icons.science_rounded,
-            Colors.amber,
-            () => _seedData(context, ref),
-          ),
-          const SizedBox(height: 16),
+          if (kDebugMode) ...[
+            _buildOption(
+              context,
+              "Seed Sample Data",
+              "Populate app with demo entries",
+              Icons.science_rounded,
+              Colors.amber,
+              () => _seedData(context, ref),
+            ),
+            const SizedBox(height: 16),
+          ],
           _buildOption(
             context,
             "Reset Application",
@@ -1101,6 +1221,8 @@ class SettingsScreen extends ConsumerWidget {
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16)),
                   Text(sub,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),

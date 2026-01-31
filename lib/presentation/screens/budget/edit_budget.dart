@@ -5,6 +5,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
+
 import 'package:trueledger/domain/usecases/budget_usecases.dart';
 
 class EditBudgetScreen extends ConsumerStatefulWidget {
@@ -111,7 +112,22 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
     if (!mounted) return;
 
     if (result.isSuccess) {
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Deleted ${widget.budget.category} budget"),
+        action: SnackBarAction(
+          label: "UNDO",
+          onPressed: () async {
+            final addBudget = ref.read(addBudgetUseCaseProvider);
+            await addBudget(AddBudgetParams(
+              category: widget.budget.category,
+              monthlyLimit: widget.budget.monthlyLimit,
+            ));
+            // We assume the Dashboard will refresh which it usually does on route return
+          },
+        ),
+      ));
     } else {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(result.failureOrThrow.message)));

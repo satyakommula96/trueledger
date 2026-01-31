@@ -57,7 +57,7 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     if (picked != null) {
       setState(() {
         _selectedGenDate = picked;
-        genDateCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
+        genDateCtrl.text = 'Day ${picked.day}';
       });
     }
   }
@@ -71,13 +71,28 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
         TextEditingController(text: widget.card.statementBalance.toString());
     minDueCtrl = TextEditingController(text: widget.card.minDue.toString());
     dueDateCtrl = TextEditingController(text: widget.card.dueDate);
-    genDateCtrl = TextEditingController();
+    genDateCtrl = TextEditingController(text: widget.card.statementDate);
     try {
       _selectedDueDate = DateFormat('dd-MM-yyyy').parse(widget.card.dueDate);
     } catch (_) {
       try {
         _selectedDueDate = DateFormat('dd-MM-yy').parse(widget.card.dueDate);
       } catch (_) {}
+    }
+    if (widget.card.statementDate.isNotEmpty) {
+      if (widget.card.statementDate.startsWith('Day ')) {
+        final day = int.tryParse(widget.card.statementDate.split(' ')[1]);
+        if (day != null) {
+          final now = DateTime.now();
+          _selectedGenDate = DateTime(now.year, now.month, day);
+        }
+      } else {
+        // Fallback for old format
+        try {
+          _selectedGenDate =
+              DateFormat('dd-MM-yyyy').parse(widget.card.statementDate);
+        } catch (_) {}
+      }
     }
   }
 
@@ -108,7 +123,8 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
                 isNumber: true, prefix: CurrencyFormatter.symbol),
             _buildField("Minimum Due", minDueCtrl, Icons.low_priority,
                 isNumber: true, prefix: CurrencyFormatter.symbol),
-            _buildField("Statement Generation Date", genDateCtrl, Icons.event,
+            _buildField(
+                "Statement Date (Every Month)", genDateCtrl, Icons.event,
                 readOnly: true, onTap: _pickGenDate),
             _buildField("Payment Due Date", dueDateCtrl, Icons.calendar_today,
                 readOnly: true, onTap: _pickDueDate),
@@ -209,10 +225,10 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     }
 
     await repo.updateCreditCard(widget.card.id, bankCtrl.text, limit, balance,
-        int.tryParse(minDueCtrl.text) ?? 0, dueDateCtrl.text);
+        int.tryParse(minDueCtrl.text) ?? 0, dueDateCtrl.text, genDateCtrl.text);
 
     // Trigger notification
-    final reminderDate = _selectedDueDate;
+    final reminderDate = _selectedGenDate ?? _selectedDueDate;
     if (reminderDate != null) {
       await ref
           .read(notificationServiceProvider)

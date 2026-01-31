@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/presentation/screens/transactions/edit_entry.dart';
+import 'package:trueledger/presentation/components/error_view.dart';
 import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 import 'month_detail_components/category_icon.dart';
 import 'month_detail_components/month_detail_header.dart';
@@ -13,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/presentation/components/empty_state.dart';
 
 class MonthDetailScreen extends ConsumerStatefulWidget {
   final String month;
@@ -31,10 +34,11 @@ class MonthDetailScreen extends ConsumerStatefulWidget {
 
 class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
   String searchQuery = "";
-  late String typeFilter;
+  String typeFilter = "All";
+  bool _isLoading = true;
+  Object? _error;
 
   List<LedgerItem> _allItems = [];
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -44,6 +48,10 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
   }
 
   Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     try {
       final repo = ref.read(financialRepositoryProvider);
       final data = await repo.getMonthDetails(widget.month);
@@ -53,12 +61,16 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, stack) {
       debugPrint("Error loading month details: $e");
+      if (kDebugMode) {
+        throw Exception("Month Detail loading failed: $e\n$stack");
+      }
       if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Error: $e")));
+        setState(() {
+          _isLoading = false;
+          _error = e;
+        });
       }
     }
   }
@@ -76,8 +88,10 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
       items = items.where((e) {
         final label = e.label.toLowerCase();
         final note = (e.note ?? "").toLowerCase();
+        final amount = e.amount.toString();
         return label.contains(searchQuery.toLowerCase()) ||
-            note.contains(searchQuery.toLowerCase());
+            note.contains(searchQuery.toLowerCase()) ||
+            amount.contains(searchQuery);
       }).toList();
     }
     return items;
@@ -240,126 +254,156 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : Builder(builder: (context) {
-                    final items = _getFilteredItems();
-                    if (items.isEmpty) {
-                      return Center(
-                          child: Text("NO ENTRIES FOUND",
-                              style: TextStyle(
-                                  color: semantic.secondaryText,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.5)));
-                    }
+                : _error != null
+                    ? AppErrorView(
+                        error: _error!,
+                        onRetry: _loadData,
+                      )
+                    : Builder(builder: (context) {
+                        final items = _getFilteredItems();
+                        if (items.isEmpty) {
+                          return EmptyState(
+                            message: "No entries yet",
+                            subMessage:
+                                "Track your first transaction for this month.\nConsistency is key to financial health!",
+                            icon: Icons.receipt_long_rounded,
+                            actionLabel: "ADD ENTRY",
+                            onAction: () async {
+                              String? initial;
+                              List<String>? allowed;
 
-                    return ListView.builder(
-                      padding: EdgeInsets.fromLTRB(24, 8, 24,
-                          24 + MediaQuery.of(context).padding.bottom),
-                      itemCount: items.length,
-                      itemBuilder: (context, i) {
-                        final item = items[i];
-                        final String type = item.type;
-                        final isIncome = type == 'Income';
-                        final label = item.label;
+                              if (typeFilter == 'Income') {
+                                initial = 'Income';
+                                allowed = ['Income'];
+                              } else if (typeFilter == 'Expenses') {
+                                initial = 'Variable';
+                                allowed = ['Variable', 'Fixed', 'Subscription'];
+                              }
 
-                        return HoverWrapper(
-                          borderRadius: 16,
-                          onTap: () async {
-                            await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        EditEntryScreen(entry: item)));
-                            _loadData();
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: colorScheme.surface,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                    color: semantic.divider
-                                        .withValues(alpha: 0.5))),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Row(
-                                children: [
-                                  CategoryIcon(
-                                      type: type,
-                                      label: label,
-                                      semantic: semantic),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(label.toString().toUpperCase(),
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: 14,
-                                                letterSpacing: 0,
-                                                color: colorScheme.onSurface)),
-                                        const SizedBox(height: 4),
-                                        Row(
+                              await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => AddExpense(
+                                            initialType: initial,
+                                            allowedTypes: allowed,
+                                          )));
+                              _loadData();
+                            },
+                          );
+                        }
+
+                        return ListView.builder(
+                          padding: EdgeInsets.fromLTRB(24, 8, 24,
+                              24 + MediaQuery.of(context).padding.bottom),
+                          itemCount: items.length,
+                          itemBuilder: (context, i) {
+                            final item = items[i];
+                            final String type = item.type;
+                            final isIncome = type == 'Income';
+                            final label = item.label;
+
+                            return HoverWrapper(
+                              borderRadius: 16,
+                              onTap: () async {
+                                await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            EditEntryScreen(entry: item)));
+                                _loadData();
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    color: colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                        color: semantic.divider
+                                            .withValues(alpha: 0.5))),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      CategoryIcon(
+                                          type: type,
+                                          label: label,
+                                          semantic: semantic),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Text(type.toUpperCase(),
+                                            Text(label.toString().toUpperCase(),
                                                 style: TextStyle(
-                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w900,
+                                                    fontSize: 14,
+                                                    letterSpacing: 0,
                                                     color:
-                                                        semantic.secondaryText,
-                                                    fontWeight: FontWeight.w800,
-                                                    letterSpacing: 0.5)),
-                                            if (item.note != null &&
-                                                item.note!.isNotEmpty) ...[
-                                              const SizedBox(width: 8),
-                                              Icon(Icons.notes_rounded,
-                                                  size: 10,
-                                                  color:
-                                                      semantic.secondaryText),
-                                            ],
+                                                        colorScheme.onSurface)),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                Text(type.toUpperCase(),
+                                                    style: TextStyle(
+                                                        fontSize: 10,
+                                                        color: semantic
+                                                            .secondaryText,
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                        letterSpacing: 0.5)),
+                                                if (item.note != null &&
+                                                    item.note!.isNotEmpty) ...[
+                                                  const SizedBox(width: 8),
+                                                  Icon(Icons.notes_rounded,
+                                                      size: 10,
+                                                      color: semantic
+                                                          .secondaryText),
+                                                ],
+                                              ],
+                                            ),
                                           ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                          CurrencyFormatter.format(item.amount),
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w900,
-                                              fontSize: 16,
-                                              color: isIncome
-                                                  ? semantic.income
-                                                  : colorScheme.onSurface)),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        DateFormat('dd-MM-yyyy')
-                                            .format(DateTime.parse(item.date)),
-                                        style: TextStyle(
-                                            fontSize: 10,
-                                            color: semantic.secondaryText,
-                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                              CurrencyFormatter.format(
+                                                  item.amount),
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: 16,
+                                                  color: isIncome
+                                                      ? semantic.income
+                                                      : colorScheme.onSurface)),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            DateFormat('dd-MM-yyyy').format(
+                                                DateTime.parse(item.date)),
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                color: semantic.secondaryText,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-                        )
-                            .animate()
-                            .fadeIn(
-                                delay: (15 * i).clamp(0, 300).ms,
-                                duration: 400.ms)
-                            .slideX(
-                                begin: 0.05,
-                                end: 0,
-                                curve: Curves.easeOutQuint);
-                      },
-                    );
-                  }),
+                            )
+                                .animate()
+                                .fadeIn(
+                                    delay: (15 * i).clamp(0, 300).ms,
+                                    duration: 400.ms)
+                                .slideX(
+                                    begin: 0.05,
+                                    end: 0,
+                                    curve: Curves.easeOutQuint);
+                          },
+                        );
+                      }),
           ),
         ],
       ),

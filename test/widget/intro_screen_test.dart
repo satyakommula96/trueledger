@@ -31,12 +31,20 @@ void main() {
         totalVariable: 0,
         totalSubscriptions: 0,
         totalInvestments: 0,
+        netWorth: 0,
+        creditCardDebt: 0,
+        loansTotal: 0,
+        totalMonthlyEMI: 0,
       ),
       categorySpending: [],
       budgets: [],
       savingGoals: [],
       trendData: [],
       upcomingBills: [],
+      todaySpend: 0,
+      thisWeekSpend: 0,
+      lastWeekSpend: 0,
+      activeStreak: 0,
     );
     when(() => mockPrefs.setBool(any(), any())).thenAnswer((_) async => true);
     when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);

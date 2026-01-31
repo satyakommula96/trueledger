@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
@@ -16,8 +17,12 @@ import 'package:trueledger/presentation/screens/dashboard/dashboard_components/s
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/payment_calendar.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/wealth_hero.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/smart_insights.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/daily_summary.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/weekly_summary.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/quick_add_bottom_sheet.dart';
 import 'package:trueledger/domain/services/intelligence_service.dart';
 import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
+import 'package:trueledger/presentation/components/error_view.dart';
 
 class Dashboard extends ConsumerWidget {
   const Dashboard({super.key});
@@ -34,7 +39,11 @@ class Dashboard extends ConsumerWidget {
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (err, stack) => Scaffold(
-        body: Center(child: Text("Error: $err")),
+        body: AppErrorView(
+          error: err,
+          stackTrace: stack,
+          onRetry: () => ref.invalidate(dashboardProvider),
+        ),
       ),
       data: (data) {
         final summary = data.summary;
@@ -50,8 +59,16 @@ class Dashboard extends ConsumerWidget {
             ref.invalidate(pendingNotificationsProvider);
             ref.invalidate(pendingNotificationCountProvider);
             debugPrint("Dashboard: Data reloaded successfully.");
-          } catch (e) {
+          } catch (e, stack) {
             debugPrint("Dashboard: Reload failed: $e");
+            if (kDebugMode) {
+              throw Exception("Dashboard reload failed: $e\n$stack");
+            }
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Failed to refresh dashboard")),
+              );
+            }
           }
         }
 
@@ -62,6 +79,22 @@ class Dashboard extends ConsumerWidget {
             builder: (context, currency, _) {
               return Scaffold(
                 extendBody: true,
+                floatingActionButton: FloatingActionButton(
+                  onPressed: () async {
+                    final added = await showModalBottomSheet<bool>(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => const QuickAddBottomSheet(),
+                    );
+                    if (added == true) {
+                      reload();
+                    }
+                  },
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                  child: const Icon(Icons.add_rounded, size: 32),
+                ),
                 bottomNavigationBar: DashboardBottomBar(onLoad: reload),
                 body: SafeArea(
                   child: RefreshIndicator(
@@ -75,8 +108,41 @@ class Dashboard extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           sliver: SliverList(
                             delegate: SliverChildListDelegate([
-                              WealthHero(summary: summary)
-                                  .animate()
+                              WealthHero(
+                                summary: summary,
+                                activeStreak: data.activeStreak,
+                                hasLoggedToday: data.todaySpend > 0,
+                              ).animate().fade(duration: 600.ms).slideY(
+                                  begin: 0.2,
+                                  end: 0,
+                                  curve: Curves.easeOutQuint),
+                              const SizedBox(height: 24),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: DailySummary(
+                                        todaySpend: data.todaySpend,
+                                        totalBudgetRemaining: data
+                                                .budgets.isEmpty
+                                            ? null
+                                            : data.budgets.fold(
+                                                    0,
+                                                    (sum, b) =>
+                                                        sum + b.monthlyLimit) -
+                                                data.budgets.fold(0,
+                                                    (sum, b) => sum + b.spent),
+                                        semantic: semantic),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: WeeklySummary(
+                                        thisWeekSpend: data.thisWeekSpend,
+                                        lastWeekSpend: data.lastWeekSpend,
+                                        semantic: semantic),
+                                  ),
+                                ],
+                              )
+                                  .animate(delay: 100.ms)
                                   .fade(duration: 600.ms)
                                   .slideY(
                                       begin: 0.2,
@@ -181,6 +247,7 @@ class Dashboard extends ConsumerWidget {
                                   summary: summary,
                                   trendData: trendData,
                                   budgets: budgets,
+                                  categorySpending: data.categorySpending,
                                 ),
                                 score: IntelligenceService.calculateHealthScore(
                                   summary: summary,

@@ -3,6 +3,36 @@ import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'usecase_base.dart';
 
+class AddBudgetParams {
+  final String category;
+  final int monthlyLimit;
+
+  AddBudgetParams({required this.category, required this.monthlyLimit});
+}
+
+class AddBudgetUseCase extends UseCase<void, AddBudgetParams> {
+  final IFinancialRepository repository;
+
+  AddBudgetUseCase(this.repository);
+
+  @override
+  Future<Result<void>> call(AddBudgetParams params) async {
+    if (params.monthlyLimit < 0) {
+      return Failure(ValidationFailure("Budget limit cannot be negative"));
+    }
+    if (params.category.isEmpty) {
+      return Failure(ValidationFailure("Category cannot be empty"));
+    }
+
+    try {
+      await repository.addBudget(params.category, params.monthlyLimit);
+      return const Success(null);
+    } catch (e) {
+      return Failure(DatabaseFailure("Failed to add budget: ${e.toString()}"));
+    }
+  }
+}
+
 class UpdateBudgetParams {
   final int id;
   final int monthlyLimit;

@@ -19,15 +19,15 @@ abstract class IFinancialRepository {
   Future<void> addBudget(String category, int monthlyLimit);
   Future<void> updateBudget(int id, int monthlyLimit);
   Future<List<Map<String, dynamic>>> getAllValues(String table);
-  Future<void> seedData();
+  Future<void> seedRoadmapData();
   Future<void> seedHealthyProfile();
   Future<void> seedAtRiskProfile();
   Future<void> seedLargeData(int count);
   Future<void> clearData();
   Future<void> addCreditCard(String bank, int creditLimit, int statementBalance,
-      int minDue, String dueDate);
+      int minDue, String dueDate, String statementDate);
   Future<void> updateCreditCard(int id, String bank, int creditLimit,
-      int statementBalance, int minDue, String dueDate);
+      int statementBalance, int minDue, String dueDate, String statementDate);
   Future<void> payCreditCardBill(int id, int amount);
   Future<void> addGoal(String name, int targetAmount);
   Future<void> updateGoal(
@@ -40,4 +40,8 @@ abstract class IFinancialRepository {
   Future<void> updateEntry(String type, int id, Map<String, dynamic> values);
   Future<List<LedgerItem>> getMonthDetails(String month);
   Future<void> restoreBackup(Map<String, dynamic> data);
+  Future<int> getTodaySpend();
+  Future<Map<String, int>> getWeeklySummary();
+  Future<Map<String, dynamic>> generateBackup();
+  Future<int> getActiveStreak();
 }

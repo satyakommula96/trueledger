@@ -72,7 +72,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.handshake_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.account_balance_rounded), findsOneWidget);
       expect(find.byIcon(Icons.credit_card_outlined), findsOneWidget);
       expect(find.byIcon(Icons.analytics_outlined), findsOneWidget);
       expect(find.byIcon(Icons.history_outlined), findsOneWidget);

@@ -4,8 +4,14 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
+import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
+import 'package:trueledger/core/utils/result.dart';
+import 'package:trueledger/core/services/notification_service.dart';
+import 'package:trueledger/core/utils/hash_utils.dart';
 
 class AddExpense extends ConsumerStatefulWidget {
   final String? initialType;
@@ -59,6 +65,17 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
     } else {
       selectedCategory = categoryMap[type]!.first;
     }
+
+    amountCtrl.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    amountCtrl.dispose();
+    noteCtrl.dispose();
+    super.dispose();
   }
 
   final Map<String, List<String>> categoryMap = {
@@ -165,6 +182,87 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                   hintStyle: TextStyle(
                       color: colorScheme.onSurface.withValues(alpha: 0.1))),
             ),
+            // Optimistic Budget Overlay
+            Consumer(builder: (context, ref, _) {
+              if (type != 'Variable') return const SizedBox.shrink();
+              final dashboardAsync = ref.watch(dashboardProvider);
+              return dashboardAsync.maybeWhen(
+                  data: (data) {
+                    final budget = data.budgets.firstWhere(
+                        (b) => b.category == selectedCategory,
+                        orElse: () => Budget(
+                            id: -1, category: '', monthlyLimit: 0, spent: 0));
+
+                    if (budget.id == -1) return const SizedBox.shrink();
+
+                    final currentSpent = budget.spent;
+                    final addedAmount = int.tryParse(amountCtrl.text) ?? 0;
+                    final totalAfter = currentSpent + addedAmount;
+                    final limit = budget.monthlyLimit;
+                    final progress = (totalAfter / limit).clamp(0.0, 1.0);
+                    final isExceeded = totalAfter > limit;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerHighest
+                                .withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: isExceeded
+                                    ? semantic.overspent
+                                    : Colors.transparent,
+                                width: 1)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("BUDGET IMPACT",
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                        color: colorScheme.onSurfaceVariant)),
+                                Text(
+                                    "${((totalAfter / limit) * 100).toStringAsFixed(0)}%",
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                        color: isExceeded
+                                            ? semantic.overspent
+                                            : semantic.income)),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            LinearProgressIndicator(
+                              value: progress,
+                              backgroundColor: colorScheme.surface,
+                              color: isExceeded
+                                  ? semantic.overspent
+                                  : semantic.income,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              isExceeded
+                                  ? "This entry will exceed your ${budget.category} budget by ${CurrencyFormatter.format(totalAfter - limit)}."
+                                  : "Remaining after this: ${CurrencyFormatter.format(limit - totalAfter)}",
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: isExceeded
+                                      ? semantic.overspent
+                                      : colorScheme.onSurface),
+                            )
+                          ],
+                        ),
+                      ).animate().fadeIn(),
+                    );
+                  },
+                  orElse: () => const SizedBox.shrink());
+            }),
             const SizedBox(height: 24),
             InkWell(
               onTap: _pickDate,
@@ -304,8 +402,35 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
     if (!mounted) return;
 
     if (result.isSuccess) {
+      final transactionResult = (result as Success<AddTransactionResult>).value;
+      final notificationService = ref.read(notificationServiceProvider);
+
+      if (transactionResult.cancelDailyReminder) {
+        await notificationService
+            .cancelNotification(NotificationService.dailyReminderId);
+      }
+
+      final warning = transactionResult.budgetWarning;
+      if (warning != null) {
+        final title = warning.type == NotificationType.budgetExceeded
+            ? 'Budget Exceeded: ${warning.category}'
+            : 'Budget Warning: ${warning.category}';
+        final body = warning.type == NotificationType.budgetExceeded
+            ? 'You have spent 100% of your ${warning.category} budget.'
+            : 'You have reached ${warning.percentage.round()}% of your ${warning.category} budget.';
+
+        // Generate a stable ID locally
+        final id = generateStableHash('${warning.category}_budget_alert');
+
+        await notificationService.showNotification(
+          id: id,
+          title: title,
+          body: body,
+        );
+      }
+
       ref.invalidate(dashboardProvider);
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(result.failureOrThrow.message)));

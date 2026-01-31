@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
+import 'package:trueledger/presentation/providers/user_provider.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 
 class IntroScreen extends ConsumerStatefulWidget {
@@ -48,12 +49,22 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
     await ref.read(notificationServiceProvider).requestPermissions();
 
     final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setBool('intro_seen', true);
-
     final name = _nameController.text.trim();
-    if (name.isNotEmpty) {
-      await prefs.setString('user_name', name);
+    if (name.length > 20) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Name is too long (max 20 characters)')),
+        );
+      }
+      return;
     }
+
+    if (name.isNotEmpty) {
+      ref.read(userProvider.notifier).setName(
+          name); // setName is Future<void> but we don't strictly need to await it here for UI responsiveness if we navigate immediately
+    }
+
+    await prefs.setBool('intro_seen', true);
 
     if (mounted) {
       Navigator.of(context).pushReplacement(
@@ -313,7 +324,7 @@ class _IntroPage extends StatelessWidget {
   }
 }
 
-class _NamePage extends StatelessWidget {
+class _NamePage extends StatefulWidget {
   final String title;
   final String description;
   final TextEditingController controller;
@@ -327,12 +338,41 @@ class _NamePage extends StatelessWidget {
   });
 
   @override
+  State<_NamePage> createState() => _NamePageState();
+}
+
+class _NamePageState extends State<_NamePage> {
+  late String _displayName;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayName = widget.controller.text;
+    widget.controller.addListener(_updateName);
+  }
+
+  void _updateName() {
+    if (mounted) {
+      setState(() {
+        _displayName = widget.controller.text;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_updateName);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(40.0),
+        padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -345,67 +385,104 @@ class _NamePage extends StatelessWidget {
                     colorScheme.primary.withValues(alpha: 0.15),
                     colorScheme.primary.withValues(alpha: 0.05),
                   ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: colorScheme.primary.withValues(alpha: 0.2),
+                  width: 2,
+                ),
               ),
               child: Icon(Icons.person_outline_rounded,
                   size: 60, color: colorScheme.primary),
             ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
-            const SizedBox(height: 48),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              description,
-              style: TextStyle(
-                  fontSize: 14,
-                  color: colorScheme.onSurface.withValues(alpha: 0.6)),
-              textAlign: TextAlign.center,
-            ),
             const SizedBox(height: 40),
-            TextField(
-              controller: controller,
+            Text(
+              _displayName.isEmpty ? widget.title : "Hello, $_displayName!",
+              style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5),
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              textCapitalization: TextCapitalization.words,
-              onSubmitted: (_) => onStart(),
-              decoration: InputDecoration(
-                hintText: "Your Name",
-                hintStyle: TextStyle(
-                    color: colorScheme.onSurface.withValues(alpha: 0.2)),
-                filled: true,
-                fillColor: colorScheme.surface,
-                contentPadding: const EdgeInsets.all(24),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide(
-                      color: colorScheme.primary.withValues(alpha: 0.1)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide(
-                      color: colorScheme.primary.withValues(alpha: 0.4)),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            )
+                .animate(key: ValueKey(_displayName.isEmpty))
+                .fadeIn(duration: 400.ms),
+            const SizedBox(height: 12),
+            Text(
+              _displayName.isEmpty
+                  ? widget.description
+                  : "We're excited to have you here.",
+              style: TextStyle(
+                  fontSize: 15,
+                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 48),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: widget.controller,
+                textAlign: TextAlign.center,
+                maxLength: 20,
+                style:
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                textCapitalization: TextCapitalization.words,
+                onSubmitted: (_) => widget.onStart(),
+                decoration: InputDecoration(
+                  hintText: "Your Name",
+                  counterText: "",
+                  hintStyle: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.2)),
+                  filled: true,
+                  fillColor: isDark ? colorScheme.surface : Colors.white,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide(
+                        color: colorScheme.primary.withValues(alpha: 0.1)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide(
+                        color: colorScheme.primary.withValues(alpha: 0.4),
+                        width: 2),
+                  ),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.only(left: 12.0),
+                    child: Icon(Icons.edit_rounded,
+                        color: colorScheme.primary.withValues(alpha: 0.3)),
+                  ),
                 ),
               ),
-            ).animate(delay: 400.ms).fadeIn().slideY(begin: 0.2, end: 0),
+            ).animate(delay: 400.ms).fadeIn().slideY(begin: 0.1, end: 0),
             const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
-              height: 56,
+              height: 60,
               child: FilledButton(
-                onPressed: onStart,
+                onPressed: widget.onStart,
                 style: FilledButton.styleFrom(
                   backgroundColor: colorScheme.primary,
                   foregroundColor: colorScheme.onPrimary,
-                  elevation: 8,
-                  shadowColor: colorScheme.primary.withValues(alpha: 0.4),
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -413,15 +490,15 @@ class _NamePage extends StatelessWidget {
                 child: const Text(
                   'GET STARTED',
                   style: TextStyle(
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w900,
                       fontSize: 16,
-                      letterSpacing: 1),
+                      letterSpacing: 1.2),
                 ),
               ),
             )
                 .animate(delay: 500.ms)
-                .scale(duration: 300.ms, curve: Curves.easeOutBack)
-                .fadeIn(),
+                .fadeIn(duration: 400.ms)
+                .slideY(begin: 0.1, end: 0),
           ],
         ),
       ),
