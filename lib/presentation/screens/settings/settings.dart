@@ -392,9 +392,16 @@ class SettingsScreen extends ConsumerWidget {
         }
 
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content:
-                  Text("Generated ${option.toUpperCase()} data scenario")));
+          final scenarioName = option == 'roadmap'
+              ? "Complete Demo"
+              : option == 'positive'
+                  ? "Healthy Profile"
+                  : option == 'negative'
+                      ? "At-Risk Profile"
+                      : option.toUpperCase();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Generated $scenarioName data scenario")));
           Navigator.pop(context, true);
         }
       } catch (e, stack) {
