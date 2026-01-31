@@ -2,150 +2,154 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://satyakommula96.github.io/trueledger/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/DEPLOYMENT/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
+    </url>
+    <url>
+         <loc>https://satyakommula96.github.io/trueledger/ROADMAP/</loc>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/privacy/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/api/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/architecture/clean-architecture/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/architecture/data-flow/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/architecture/overview/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/architecture/project-structure/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/architecture/state-management/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/cicd/pipeline/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/cicd/releases/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/cicd/testing/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/contributing/code-of-conduct/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/contributing/guidelines/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/database/migrations/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/database/performance/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/database/schema/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/development/adding-features/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/development/code-style/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/development/design-patterns/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/development/error-handling/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/development/testing/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/features/ai-insights/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/features/analytics/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/features/budgets/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/features/dashboard/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/features/saving-goals/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/features/transactions/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/getting-started/configuration/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/getting-started/installation/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/getting-started/quick-start/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/platforms/android/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/platforms/ios/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/platforms/linux/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/platforms/macos/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/platforms/web/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
     <url>
          <loc>https://satyakommula96.github.io/trueledger/platforms/windows/</loc>
-         <lastmod>2026-01-26</lastmod>
+         <lastmod>2026-01-31</lastmod>
     </url>
 </urlset>

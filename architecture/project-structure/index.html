@@ -81,6 +81,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#project-structure-architecture-conventions" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -833,6 +838,26 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -850,6 +875,58 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming Conventions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -2029,6 +2106,49 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Naming Conventions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -2048,9 +2168,79 @@
   
 
 
-  <h1>Project Structure</h1>
-
-
+<h1 id="project-structure-architecture-conventions">Project Structure &amp; Architecture Conventions<a class="headerlink" href="#project-structure-architecture-conventions" title="Permanent link">&para;</a></h1>
+<p>TrueLedger follows a <strong>Clean Architecture</strong> approach with strict separation of concerns. This ensures scalability, testability, and maintainability.</p>
+<h2 id="directory-structure">Directory Structure<a class="headerlink" href="#directory-structure" title="Permanent link">&para;</a></h2>
+<p>We use a <strong>Layer-First</strong> organization (Standard Flutter Clean Arch), gradually moving towards Feature-First where possible.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>lib/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── core/                  # Infrastructure &amp; Shared Utilities
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── config/            # App-wide vars (Version, Constants)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   ├── error/             # Failure/Exception classes
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   ├── services/          # External services (Notification, Intelligence)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   ├── theme/             # AppTheme &amp; AppColors
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   └── utils/             # Helpers (Date, Currency, Platform)
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── data/                  # Data Layer (Implements Domain Interfaces)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── datasources/       # Low-level data access (Database, SharedPreferences)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   └── repositories/      # Implementation of Domain Repositories
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>├── domain/                # Business Logic (Pure Dart, No Flutter)
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── models/            # Entities / Data Classes
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── repositories/      # Interfaces (Contracts)
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   └── usecases/          # Business Logic Units (Single Responsibility)
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>├── presentation/          # UI Layer (Widgets &amp; State)
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── providers/         # Riverpod Providers (State Management)
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   ├── screens/           # Full-screen Widgets
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   │   ├── dashboard/
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   │   ├── transactions/
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│   │   └── ...
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│   └── widgets/           # Shared/Reusable UI Components
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>└── main.dart              # Entry Point
+</code></pre></div>
+<h2 id="architecture-rules">Architecture Rules<a class="headerlink" href="#architecture-rules" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p><strong>Dependency Rule</strong>: Dependencies point <strong>INWARDS</strong>.</p>
+<ul>
+<li><code>Presentation</code> depends on <code>Domain</code>.</li>
+<li><code>Data</code> depends on <code>Domain</code>.</li>
+<li><code>Domain</code> depends on <strong>NOTHING</strong> (pure Dart).</li>
+</ul>
+</li>
+<li>
+<p><strong>State Management</strong>: <strong>Riverpod</strong></p>
+<ul>
+<li>UI Widgets (<code>ConsumerWidget</code>) must <strong>never</strong> call Repositories directly.</li>
+<li>UI must watch <strong>Providers</strong>.</li>
+<li>Providers use <strong>UseCases</strong>.</li>
+<li>UseCases use <strong>Repositories</strong>.</li>
+</ul>
+</li>
+<li>
+<p><strong>Data Flow</strong>:</p>
+<ul>
+<li><code>UI</code> -&gt; <code>Provider</code> -&gt; <code>UseCase</code> -&gt; <code>Repository</code> -&gt; <code>DataSource</code> -&gt; <code>Database</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Testing</strong>:</p>
+<ul>
+<li><strong>Unit Tests</strong>: Domain layer (UseCases, Models) and Logic.</li>
+<li><strong>Widget Tests</strong>: Presentation layer (Screens, Widgets).</li>
+<li><strong>Integration Tests</strong>: Data layer (Repositories with in-memory DB).</li>
+</ul>
+</li>
+</ol>
+<h2 id="naming-conventions">Naming Conventions<a class="headerlink" href="#naming-conventions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Files</strong>: <code>snake_case.dart</code></li>
+<li><strong>Classes</strong>: <code>PascalCase</code></li>
+<li><strong>Variables</strong>: <code>camelCase</code></li>
+<li><strong>Repositories</strong>: <code>IFinancialRepository</code> (Interface), <code>FinancialRepositoryImpl</code> (Impl).</li>
+<li><strong>UseCases</strong>: <code>VerbSubjectUseCase</code> (e.g., <code>GetMonthlySummaryUseCase</code>).</li>
+</ul>
 
 
 
@@ -2073,7 +2263,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 24, 2026 12:10:27 UTC">January 24, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 31, 2026 01:23:36 UTC">January 31, 2026</span>
   </span>
 
     
