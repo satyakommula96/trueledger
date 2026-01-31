@@ -70,7 +70,7 @@ void main() {
     // Repository mocks
     when(() => mockRepo.getAllValues(any())).thenAnswer((_) async => []);
     when(() => mockRepo.clearData()).thenAnswer((_) async => {});
-    when(() => mockRepo.seedData()).thenAnswer((_) async => {});
+    when(() => mockRepo.seedRoadmapData()).thenAnswer((_) async => {});
     when(() => mockRepo.restoreBackup(any())).thenAnswer((_) async => {});
     when(() => mockFileService.writeAsString(any(), any()))
         .thenAnswer((_) async => {});
@@ -199,10 +199,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Select Data Scenario'), findsOneWidget);
-      await tester.tap(find.text('Full History'));
+      await tester.tap(find.text('Complete Demo'));
       await tester.pumpAndSettle();
 
-      verify(() => mockRepo.seedData()).called(1);
+      verify(() => mockRepo.seedRoadmapData()).called(1);
     });
 
     testWidgets('covers encrypted restore logic - success', (tester) async {

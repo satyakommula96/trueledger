@@ -376,14 +376,6 @@ class SettingsScreen extends ConsumerWidget {
                     subtitle: Text("All features, including Streaks"),
                   ),
                 ),
-                SimpleDialogOption(
-                  onPressed: () => Navigator.pop(context, 'standard'),
-                  child: const ListTile(
-                    leading: Icon(Icons.history_rounded, color: Colors.amber),
-                    title: Text("Full History"),
-                    subtitle: Text("2 years of mixed data"),
-                  ),
-                ),
               ],
             ));
 
@@ -393,8 +385,6 @@ class SettingsScreen extends ConsumerWidget {
       try {
         if (option == 'roadmap') {
           await repo.seedRoadmapData();
-        } else if (option == 'standard') {
-          await repo.seedData();
         } else if (option == 'positive') {
           await repo.seedHealthyProfile();
         } else if (option == 'negative') {

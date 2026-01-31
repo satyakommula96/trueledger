@@ -348,12 +348,6 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<void> seedData() async {
-    if (!kDebugMode) return;
-    await AppDatabase.seedDummyData();
-  }
-
-  @override
   Future<void> seedRoadmapData() async {
     if (!kDebugMode) return;
     await AppDatabase.seedRoadmapData();

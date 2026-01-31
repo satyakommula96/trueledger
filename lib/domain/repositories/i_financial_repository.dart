@@ -19,7 +19,6 @@ abstract class IFinancialRepository {
   Future<void> addBudget(String category, int monthlyLimit);
   Future<void> updateBudget(int id, int monthlyLimit);
   Future<List<Map<String, dynamic>>> getAllValues(String table);
-  Future<void> seedData();
   Future<void> seedRoadmapData();
   Future<void> seedHealthyProfile();
   Future<void> seedAtRiskProfile();
