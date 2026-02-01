@@ -23,7 +23,7 @@ dependencies:
   flutter_secure_storage: ^10.0.0
   shared_preferences: ^2.5.4
   path_provider: ^2.1.5
-  file_picker: 10.3.8
+  file_picker: 10.3.10
 
   # UI & Charts
   fl_chart: ^1.1.1
