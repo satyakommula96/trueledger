@@ -81,6 +81,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#database-migrations" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -1436,6 +1441,26 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrations
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -1453,6 +1478,114 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#migration-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏗️ Migration Framework
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🏗️ Migration Framework">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Features:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📜 Migration History
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📜 Migration History">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#version-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 3
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-new-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Adding a New Migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -2029,6 +2162,105 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#migration-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏗️ Migration Framework
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🏗️ Migration Framework">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Features:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📜 Migration History
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📜 Migration History">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#version-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#version-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version 3
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-new-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Adding a New Migration
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -2048,9 +2280,45 @@
   
 
 
-  <h1>Migrations</h1>
-
-
+<h1 id="database-migrations">Database Migrations<a class="headerlink" href="#database-migrations" title="Permanent link">&para;</a></h1>
+<p>TrueLedger handles schema updates gracefully through a custom migration framework, ensuring that user data is preserved across application updates.</p>
+<h2 id="migration-framework">🏗️ Migration Framework<a class="headerlink" href="#migration-framework" title="Permanent link">&para;</a></h2>
+<p>The migration logic is abstracted into the <code>Migration</code> class (<code>lib/data/datasources/database_migrations.dart</code>). </p>
+<h3 id="key-features">Key Features:<a class="headerlink" href="#key-features" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Versioning</strong>: Each migration is assigned a strictly increasing integer version.</li>
+<li><strong>Up/Down paths</strong>: Support for rolling forward (required) and rolling back (optional/best effort).</li>
+<li><strong>Safety</strong>: Includes <code>addColumnSafe</code> utility to prevent accidental "duplicate column" errors.</li>
+</ul>
+<h2 id="migration-history">📜 Migration History<a class="headerlink" href="#migration-history" title="Permanent link">&para;</a></h2>
+<h3 id="version-1">Version 1<a class="headerlink" href="#version-1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Initial schema rollout with core tables: <code>variable_expenses</code>, <code>income_sources</code>, <code>investments</code>, etc.</li>
+</ul>
+<h3 id="version-2">Version 2<a class="headerlink" href="#version-2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Added <code>statement_date</code> column to the <code>credit_cards</code> table.</li>
+</ul>
+<h3 id="version-3">Version 3<a class="headerlink" href="#version-3" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Maintenance migration to ensure <code>statement_date</code> exists across all platforms.</li>
+</ul>
+<h2 id="adding-a-new-migration">🛠️ Adding a New Migration<a class="headerlink" href="#adding-a-new-migration" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Create a new class inheriting from <code>Migration</code>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">class</span><span class="w"> </span><span class="nc">MigrationV4</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">Migration</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="n">MigrationV4</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">super</span><span class="p">(</span><span class="m">4</span><span class="p">);</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nd">@override</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="n">Future</span><span class="o">&lt;</span><span class="kt">void</span><span class="o">&gt;</span><span class="w"> </span><span class="n">up</span><span class="p">(</span><span class="n">common</span><span class="p">.</span><span class="n">Database</span><span class="w"> </span><span class="n">db</span><span class="p">)</span><span class="w"> </span><span class="kd">async</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="kd">await</span><span class="w"> </span><span class="n">addColumnSafe</span><span class="p">(</span><span class="n">db</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;table_name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;new_column&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;TEXT&#39;</span><span class="p">);</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nd">@override</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="n">Future</span><span class="o">&lt;</span><span class="kt">void</span><span class="o">&gt;</span><span class="w"> </span><span class="n">down</span><span class="p">(</span><span class="n">common</span><span class="p">.</span><span class="n">Database</span><span class="w"> </span><span class="n">db</span><span class="p">)</span><span class="w"> </span><span class="kd">async</span><span class="w"> </span><span class="p">{}</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
+</code></pre></div></li>
+<li>Register it in the <code>appMigrations</code> list at the bottom of the file.</li>
+<li>Update <code>AppVersion.databaseVersion</code> in <code>lib/core/config/version.dart</code>.</li>
+</ol>
 
 
 
@@ -2073,7 +2341,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 24, 2026 12:10:27 UTC">January 24, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="February 1, 2026 02:30:05 UTC">February 1, 2026</span>
   </span>
 
     

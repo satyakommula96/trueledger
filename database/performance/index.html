@@ -81,6 +81,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#database-performance" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -1464,6 +1469,26 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -1481,6 +1506,97 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#optimization-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Optimization Strategies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Optimization Strategies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-indexing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Indexing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-batching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Batching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-asynchronous-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Asynchronous Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-wasm-performance-web" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. WASM Performance (Web)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benchmarking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📈 Benchmarking
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -2029,6 +2145,88 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#optimization-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Optimization Strategies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Optimization Strategies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-indexing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Indexing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-batching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Batching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-asynchronous-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Asynchronous Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-wasm-performance-web" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. WASM Performance (Web)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benchmarking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📈 Benchmarking
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -2048,9 +2246,34 @@
   
 
 
-  <h1>Performance</h1>
-
-
+<h1 id="database-performance">Database Performance<a class="headerlink" href="#database-performance" title="Permanent link">&para;</a></h1>
+<p>TrueLedger is designed to remain fast even with thousands of transactions. Here's how we optimize for performance.</p>
+<h2 id="optimization-strategies">🚀 Optimization Strategies<a class="headerlink" href="#optimization-strategies" title="Permanent link">&para;</a></h2>
+<h3 id="1-indexing">1. Indexing<a class="headerlink" href="#1-indexing" title="Permanent link">&para;</a></h3>
+<p>We use indexes on columns frequently used in <code>WHERE</code> clauses and <code>ORDER BY</code> operations:
+- <code>date</code> columns in <code>variable_expenses</code> and <code>income_sources</code>.
+- <code>category</code> in <code>variable_expenses</code> for aggregation.</p>
+<h3 id="2-batching">2. Batching<a class="headerlink" href="#2-batching" title="Permanent link">&para;</a></h3>
+<p>When seeding data or importing backups, we use SQLite <strong>Transactions</strong> and <strong>Batches</strong>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">final</span><span class="w"> </span><span class="n">batch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">database</span><span class="p">.</span><span class="n">batch</span><span class="p">();</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">var</span><span class="w"> </span><span class="n">item</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">items</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="n">batch</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">item</span><span class="p">);</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kd">await</span><span class="w"> </span><span class="n">batch</span><span class="p">.</span><span class="n">commit</span><span class="p">(</span><span class="nl">noResult:</span><span class="w"> </span><span class="kc">true</span><span class="p">);</span>
+</code></pre></div>
+Batching reduces the number of disk sync operations, speeding up imports by up to 100x compared to individual inserts.</p>
+<h3 id="3-asynchronous-operations">3. Asynchronous Operations<a class="headerlink" href="#3-asynchronous-operations" title="Permanent link">&para;</a></h3>
+<p>All database operations are offloaded to an asynchronous execution pool via <code>sqflite</code>, ensuring the UI thread remains jank-free even during complex aggregations.</p>
+<h3 id="4-wasm-performance-web">4. WASM Performance (Web)<a class="headerlink" href="#4-wasm-performance-web" title="Permanent link">&para;</a></h3>
+<p>On the web, we use <code>sqlite3.wasm</code> which is highly optimized:
+- Employs <strong>IndexedDB</strong> for persistence.
+- Provides near-native speed for most CRUD operations.
+- <strong>Tip</strong>: Large queries (&gt;10k rows) on the web should still be chunked to avoid blocking the main JS thread for too long.</p>
+<h2 id="benchmarking">📈 Benchmarking<a class="headerlink" href="#benchmarking" title="Permanent link">&para;</a></h2>
+<p>We track the performance of critical queries:
+- <strong>Dashboard Load</strong>: Aggregates 6 months of data (&lt;50ms on modern devices).
+- <strong>History View</strong>: Paginated or chunked fetching for deep history.
+- <strong>Search</strong>: Optimized using the <code>LIKE</code> operator on indexed columns.</p>
 
 
 
@@ -2073,7 +2296,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 24, 2026 12:10:27 UTC">January 24, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="February 1, 2026 02:30:05 UTC">February 1, 2026</span>
   </span>
 
     
