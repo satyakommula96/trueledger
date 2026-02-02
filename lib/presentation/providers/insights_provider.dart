@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/domain/services/intelligence_service.dart';
-// import 'package:trueledger/domain/models/models.dart'; // Unnecessary
 
 final insightsProvider = Provider<List<AIInsight>>((ref) {
   final dashboardValues = ref.watch(dashboardProvider).asData?.value;
@@ -14,5 +13,6 @@ final insightsProvider = Provider<List<AIInsight>>((ref) {
     trendData: dashboardValues.trendData,
     budgets: dashboardValues.budgets,
     categorySpending: dashboardValues.categorySpending,
+    requestedSurface: InsightSurface.main,
   );
 });

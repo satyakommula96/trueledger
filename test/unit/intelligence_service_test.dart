@@ -102,7 +102,7 @@ void main() {
         categorySpending: [],
       );
 
-      expect(insights.any((i) => i.title == 'NEUTRAL PATTERNS'), isTrue);
+      expect(insights, isEmpty);
     });
 
     test('should respect cooldown and filter insights', () {

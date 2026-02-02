@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/domain/models/models.dart';
+import 'package:trueledger/core/utils/currency_formatter.dart';
 export 'package:trueledger/domain/models/models.dart'
-    show AIInsight, InsightType, InsightPriority, InsightGroup;
+    show AIInsight, InsightType, InsightPriority, InsightGroup, InsightSurface;
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
 final intelligenceServiceProvider = Provider<IntelligenceService>((ref) {
@@ -12,7 +13,14 @@ final intelligenceServiceProvider = Provider<IntelligenceService>((ref) {
 
 class IntelligenceService {
   final SharedPreferences _prefs;
+  static const Map<InsightGroup, int> _groupCooldowns = {
+    InsightGroup.trend: 7, // Weekly
+    InsightGroup.behavioral: 30, // Monthly
+    InsightGroup.critical: 1, // Daily
+  };
+
   static const String _historyKey = 'insight_display_history';
+  static const String _kindHistoryKey = 'insight_kind_history';
 
   // --- Behavioral Thresholds ---
   static const double _savingsRateThreshold = 0.3;
@@ -55,12 +63,6 @@ class IntelligenceService {
   static const double _liquidityBonus = 10.0;
   static const double _insolvencyPenalty = 20.0;
 
-  static const Map<InsightGroup, int> _groupCooldowns = {
-    InsightGroup.trend: 7, // Weekly
-    InsightGroup.behavioral: 30, // Monthly
-    InsightGroup.critical: 1, // Daily
-  };
-
   static const String _dailyCacheKey = 'daily_insight_cache';
   static const String _dailyCacheTimestampKey = 'daily_insight_cache_timestamp';
 
@@ -96,6 +98,7 @@ class IntelligenceService {
     required List<Map<String, dynamic>> trendData,
     required List<Budget> budgets,
     required List<Map<String, dynamic>> categorySpending,
+    InsightSurface requestedSurface = InsightSurface.main,
     bool forceRefresh = false,
   }) {
     final now = DateTime.now();
@@ -107,7 +110,7 @@ class IntelligenceService {
         _memCacheDate!.month == now.month &&
         _memCacheDate!.day == now.day &&
         _memCache != null) {
-      return _memCache!;
+      return _filterBySurface(_memCache!, requestedSurface);
     }
 
     // 2. Check Disk Cache (Sync read)
@@ -124,7 +127,7 @@ class IntelligenceService {
               final List<dynamic> list = jsonDecode(cachedJson);
               _memCache = list.map((j) => AIInsight.fromJson(j)).toList();
               _memCacheDate = now;
-              return _memCache!;
+              return _filterBySurface(_memCache!, requestedSurface);
             }
           }
         } catch (e) {
@@ -148,21 +151,27 @@ class IntelligenceService {
           monthlyExpenses.reduce((a, b) => a + b) / monthlyExpenses.length;
     }
 
+    // Days until next month (for budget cycle cooldown)
+    final nextMonth = DateTime(now.year, now.month + 1, 1);
+    final daysUntilNextCycle = nextMonth.difference(now).inDays;
+
     // 1. Wealth Projection (Prediction) - High Priority
     double monthlyNet = (summary.totalIncome - monthlyOutflow).toDouble();
-    if (monthlyNet > 0) {
+    if (monthlyNet > 0 && summary.totalIncome > 0) {
       final projectedYearly = monthlyNet * _monthsInYear;
+      final savingsRate = monthlyNet / summary.totalIncome;
       if (projectedYearly.isFinite && projectedYearly > 0) {
         allPotentialInsights.add(AIInsight(
           id: 'wealth_projection',
           title: "WEALTH PROJECTION",
           body:
-              "Based on this month's ${((monthlyNet / summary.totalIncome) * 100).toInt()}% savings rate, you could grow your net worth by ${projectedYearly.toInt()} in one year. This beats the typical ${(_typicalSavingsBenchmark * 100).toInt()}% behavior benchmark.",
+              "At your current ${((savingsRate) * 100).toInt()}% savings rate, you could grow your net worth by ${CurrencyFormatter.format(projectedYearly)} in one year. This beats the typical behavior benchmark of ${(_typicalSavingsBenchmark * 100).toInt()}%.",
           type: InsightType.prediction,
           priority: InsightPriority.high,
           value: "Projected",
           currencyValue: projectedYearly,
           group: InsightGroup.behavioral,
+          cooldown: const Duration(days: 14), // Patterns: 14 days
         ));
       }
     }
@@ -174,39 +183,42 @@ class IntelligenceService {
       if (avgOutflow > 0) {
         final diff = ((monthlyOutflow - avgOutflow) / avgOutflow * 100)
             .toStringAsFixed(0);
-        avgContext = " This is $diff% higher than your average.";
+        avgContext =
+            " This is $diff% higher than your average monthly spending of ${CurrencyFormatter.format(avgOutflow)}.";
       }
 
       allPotentialInsights.add(AIInsight(
         id: 'critical_overspending',
         title: "CRITICAL OVERSPENDING",
         body:
-            "You've spent ${((deficit / summary.totalIncome) * 100).toInt()}% more than your income this month.$avgContext High risk of debt accumulation vs your budget limits.",
+            "You've spent ${((deficit / summary.totalIncome) * 100).toInt()}% more than your income this month.$avgContext Abnormal pattern detected compared to your earnings.",
         type: InsightType.warning,
         priority: InsightPriority.high,
-        value: "Danger",
+        value: "Deficit",
         currencyValue: deficit,
         group: InsightGroup.critical,
+        cooldown: const Duration(days: 1), // Daily check for critical
       ));
     }
 
     // 3. Spending Forecast - Medium Priority
-    if (trendData.length >= 2) {
+    if (trendData.length >= 2 && avgOutflow > 0) {
       final monthlyExpenses =
           trendData.map((d) => ((d['total'] as num?) ?? 0).toDouble()).toList();
       double forecast = _forecastNext(monthlyExpenses);
 
-      if (avgOutflow > 0 && forecast > avgOutflow * _forecastSurgeThreshold) {
+      if (forecast > avgOutflow * _forecastSurgeThreshold) {
         allPotentialInsights.add(AIInsight(
           id: 'spending_surge',
           title: "SPENDING SURGE DETECTED",
           body:
-              "Calculated velocity suggests next month's outflows will be ${((forecast / avgOutflow - 1) * 100).toInt()}% higher than your 3-month average of ${avgOutflow.toInt()}.",
+              "Calculated velocity suggests next month's outflows will be ${CurrencyFormatter.format(forecast)}, a ${((forecast / avgOutflow - 1) * 100).toInt()}% increase compared to your 3-month average.",
           type: InsightType.warning,
           priority: InsightPriority.medium,
           value: "Forecast",
           currencyValue: forecast,
           group: InsightGroup.trend,
+          cooldown: const Duration(days: 7), // Trends: weekly
         ));
       }
     }
@@ -216,31 +228,39 @@ class IntelligenceService {
       final overspentBudgets =
           budgets.where((b) => b.spent > b.monthlyLimit).toList();
       if (overspentBudgets.isNotEmpty) {
+        final totalOverflow = overspentBudgets.fold(
+            0.0, (sum, b) => sum + (b.spent - b.monthlyLimit));
         allPotentialInsights.add(AIInsight(
           id: 'budget_discipline',
           title: "BUDGET OVERFLOW",
           body:
-              "You have exceeded your limit in ${overspentBudgets.length} categories. Total overflow is ${overspentBudgets.fold(0.0, (sum, b) => sum + (b.spent - b.monthlyLimit)).toInt()} vs your planned budget limits.",
+              "You have exceeded your limit in ${overspentBudgets.length} categories. Total overflow is ${CurrencyFormatter.format(totalOverflow)} compared to your set budget limits.",
           type: InsightType.warning,
           priority: InsightPriority.medium,
-          value: "Action Needed",
+          value: "Overflow",
+          currencyValue: totalOverflow,
           group: InsightGroup.trend,
+          cooldown: Duration(
+              days: daysUntilNextCycle.clamp(7, 30)), // Until next cycle
         ));
       }
     }
 
     // 5. Subscription Leakage - Low Priority
-    if (summary.totalSubscriptions >
-        (summary.totalIncome * _subscriptionIncomeThreshold)) {
+    if (summary.totalIncome > 0 &&
+        summary.totalSubscriptions >
+            (summary.totalIncome * _subscriptionIncomeThreshold)) {
       allPotentialInsights.add(AIInsight(
         id: 'subscription_overload',
         title: "SUBSCRIPTION LEAKAGE",
         body:
-            "Recurring services consume ${((summary.totalSubscriptions / summary.totalIncome) * 100).toInt()}% of your income, which is above the ${(_subscriptionIncomeThreshold * 100).toInt()}% typical behavior recommendation.",
+            "Recurring services consume ${((summary.totalSubscriptions / summary.totalIncome) * 100).toInt()}% of your income. This exceeds the ${(_subscriptionIncomeThreshold * 100).toInt()}% typical behavior benchmark.",
         type: InsightType.info,
         priority: InsightPriority.low,
-        value: "Optimization",
+        value: "Subscriptions",
+        currencyValue: summary.totalSubscriptions.toDouble(),
         group: InsightGroup.behavioral,
+        cooldown: const Duration(days: 14), // Patterns: 14 days
       ));
     }
 
@@ -250,74 +270,94 @@ class IntelligenceService {
     if (savingsRate > _savingsRateThreshold) {
       allPotentialInsights.add(AIInsight(
         id: 'savings_milestone',
-        title: "SAVINGS MILESTONE",
+        title: "SAVINGS MASTERY",
         body:
-            "Your ${((savingsRate) * 100).toInt()}% savings rate is well above the recommended 20% benchmark. This shows strong discipline vs typical consumer behavior.",
+            "Your ${((savingsRate) * 100).toInt()}% savings rate is exceptional compared to the recommended ${(_typicalSavingsBenchmark * 100).toInt()}% benchmark.",
         type: InsightType.success,
         priority: InsightPriority.low,
-        value: "Elite",
+        value: "Savings Rate",
+        currencyValue: (savingsRate * 100),
         group: InsightGroup.trend,
+        cooldown: const Duration(days: 7), // Reflections: weekly
       ));
     }
 
     // Filter by Cooldown
     List<AIInsight> filteredInsights = _filterByCooldown(allPotentialInsights);
 
-    // Filter by Priority
+    // Filter by Priority & Surface Logic
     final results = _applyPriorityLogic(filteredInsights);
 
-    // 3. Update Cache
+    // 3. Update Cache (All potential valid insights for the day)
     _memCache = results;
     _memCacheDate = now;
     _prefs.setString(_dailyCacheTimestampKey, now.toIso8601String());
     _prefs.setString(
         _dailyCacheKey, jsonEncode(results.map((e) => e.toJson()).toList()));
 
-    return results;
+    return _filterBySurface(results, requestedSurface);
+  }
+
+  List<AIInsight> _filterBySurface(
+      List<AIInsight> insights, InsightSurface surface) {
+    if (surface == InsightSurface.main) {
+      // Main surface: Never show Low priority
+      return insights.where((i) => i.priority != InsightPriority.low).toList();
+    }
+    return insights;
   }
 
   List<AIInsight> _filterByCooldown(List<AIInsight> potential) {
     final historyJson = _prefs.getString(_historyKey) ?? '{}';
+    final kindHistoryJson = _prefs.getString(_kindHistoryKey) ?? '{}';
     final Map<String, dynamic> history = jsonDecode(historyJson);
+    final Map<String, dynamic> kindHistory = jsonDecode(kindHistoryJson);
     final now = DateTime.now();
     final List<AIInsight> filtered = [];
 
     for (final insight in potential) {
-      // 0. Check Explicit Snooze
+      // 0. Check Explicit Snooze (Remains as is)
       final snoozeUntilStr = history['snooze_${insight.id}'];
       if (snoozeUntilStr != null) {
         try {
           final snoozeUntil = DateTime.parse(snoozeUntilStr);
-          if (now.isBefore(snoozeUntil)) {
+          if (now.isBefore(snoozeUntil)) continue;
+        } catch (_) {}
+      }
+
+      // 1. Check Kind-based Cooldown (Primary Requirement)
+      // Insight IDs represent their "kind" in the current implementation.
+      final lastShownStr = kindHistory[insight.id];
+      if (lastShownStr != null) {
+        try {
+          final lastShown = DateTime.parse(lastShownStr);
+          final cooldownDuration = insight.cooldown;
+
+          // Enforce strict duration-based cooldown
+          if (now.difference(lastShown) < cooldownDuration) {
             continue;
           }
-        } catch (e) {
-          // Ignore malformed snooze
-        }
+        } catch (_) {}
       }
 
-      // 1. Check Individual Insight Cooldown
-      final lastShownStr = history[insight.id];
-      if (lastShownStr != null) {
-        final lastShown = DateTime.parse(lastShownStr);
-        final cooldown = _groupCooldowns[insight.group] ?? 7;
-        if (now.difference(lastShown).inDays < cooldown) {
-          continue;
-        }
-      }
-
-      // 2. Check Group Cooldown (Broad Throttling)
-      final groupKey = 'group_${insight.group.name}';
+      // 2. Check Group Throttling (Breathing room for the whole category)
+      final groupKey = 'group_last_shown_${insight.group.name}';
       final lastGroupShownStr = history[groupKey];
       if (lastGroupShownStr != null) {
-        final lastGroupShown = DateTime.parse(lastGroupShownStr);
-        final groupCooldown = _groupCooldowns[insight.group] ?? 7;
+        try {
+          final lastGroupShown = DateTime.parse(lastGroupShownStr);
+          // For groups, we might want a slightly shorter throttling than the individual kind,
+          // but for Behavioral/Trend we follow the user's strict weekly/monthly desire.
+          final groupCooldown = _groupCooldowns[insight.group] ?? 7;
 
-        // Critical insights can show multiple times if different, but others follow group throttles
-        if (insight.group != InsightGroup.critical &&
-            now.difference(lastGroupShown).inDays < groupCooldown) {
-          continue;
-        }
+          if (insight.group != InsightGroup.critical &&
+              now.difference(lastGroupShown).inDays <
+                  (groupCooldown / 2).ceil()) {
+            // We use half the cooldown for group throttling to allow different insights
+            // from same group occasionally, but still enforce strict kind cooldown above.
+            continue;
+          }
+        } catch (_) {}
       }
 
       filtered.add(insight);
@@ -325,66 +365,72 @@ class IntelligenceService {
     return filtered;
   }
 
+  /// Applies strict priority-based display logic.
+  ///
+  /// **ENFORCEMENT RULES:**
+  /// - HIGH: Exactly 1 if any exist (interrupts attention)
+  /// - MEDIUM: Max 2 only if NO high exists (passive display)
+  /// - LOW: Returned but FILTERED by surface (never auto-shown on main)
+  ///
+  /// This is the CENTRAL POLICY that prevents insight spam.
+  /// DO NOT modify without understanding the product implications.
   List<AIInsight> _applyPriorityLogic(List<AIInsight> insights) {
     if (insights.isEmpty) {
-      return [
-        AIInsight(
-          id: 'no_insights',
-          title: "NEUTRAL PATTERNS",
-          body:
-              "Your spending habits are balanced relative to your goals. Keep tracking to unlock more analysis.",
-          type: InsightType.info,
-          priority: InsightPriority.low,
-          value: "Steady",
-          group: InsightGroup.critical,
-        )
-      ];
+      return [];
     }
-
-    // Sort by confidence within same priority groups
-    insights.sort((a, b) => b.confidence.compareTo(a.confidence));
 
     // 1. High Priority Rule: Exactly one if any exist
     final high =
         insights.where((i) => i.priority == InsightPriority.high).toList();
     if (high.isNotEmpty) {
+      // Sort by confidence (DO NOT use enum.index)
+      high.sort((a, b) => b.confidence.compareTo(a.confidence));
       final selected = high.first;
       _recordShown(selected.id, selected.group);
       return [selected];
     }
 
-    // 2. Medium & Low Priority Rule: Max 2 total, priority ordered
-    // We prioritize Medium over Low, and then confidence.
-    final remaining = insights
-        .where((i) =>
-            i.priority == InsightPriority.medium ||
-            i.priority == InsightPriority.low)
-        .toList();
+    // 2. Medium Priority Rule: Max 2 total
+    final medium =
+        insights.where((i) => i.priority == InsightPriority.medium).toList();
 
-    // Sort by priority (Medium before Low) then confidence
-    remaining.sort((a, b) {
-      if (a.priority == b.priority) {
-        return b.confidence.compareTo(a.confidence);
+    if (medium.isNotEmpty) {
+      medium.sort((a, b) => b.confidence.compareTo(a.confidence));
+      final showing = medium.take(2).toList();
+      for (var s in showing) {
+        _recordShown(s.id, s.group);
       }
-      return a.priority == InsightPriority.medium ? -1 : 1;
-    });
-
-    final showing = remaining.take(2).toList();
-    for (var s in showing) {
-      _recordShown(s.id, s.group);
+      return showing;
     }
+
+    // 3. Low Priority Rule: NEVER auto-shown on main surface
+    // These are returned here but MUST be filtered by _filterBySurface.
+    // If a low priority insight appears on the dashboard, the system is broken.
+    final low =
+        insights.where((i) => i.priority == InsightPriority.low).toList();
+
+    low.sort((a, b) => b.confidence.compareTo(a.confidence));
+    final showing = low.take(2).toList();
+
+    // DO NOT record as shown here - they're filtered by surface logic.
+    // Only record when actually displayed in details view.
     return showing;
   }
 
   void _recordShown(String id, InsightGroup group) {
     if (id == 'no_insights') return;
-    final historyJson = _prefs.getString(_historyKey) ?? '{}';
-    final Map<String, dynamic> history = jsonDecode(historyJson);
     final nowStr = DateTime.now().toIso8601String();
 
-    history[id] = nowStr;
-    history['group_${group.name}'] = nowStr;
+    // 1. Record Kind History
+    final kindHistoryJson = _prefs.getString(_kindHistoryKey) ?? '{}';
+    final Map<String, dynamic> kindHistory = jsonDecode(kindHistoryJson);
+    kindHistory[id] = nowStr;
+    _prefs.setString(_kindHistoryKey, jsonEncode(kindHistory));
 
+    // 2. Record Group Throttling History
+    final historyJson = _prefs.getString(_historyKey) ?? '{}';
+    final Map<String, dynamic> history = jsonDecode(historyJson);
+    history['group_last_shown_${group.name}'] = nowStr;
     _prefs.setString(_historyKey, jsonEncode(history));
   }
 
