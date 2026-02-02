@@ -120,6 +120,52 @@ void main() {
       expect(insights.any((i) => i.title == 'SUBSCRIPTION OVERLOAD'), isTrue);
       expect(insights.any((i) => i.title == 'CRITICAL OVERSPENDING'), isTrue);
     });
+
+    test('should generate neutral patterns when no significant data', () {
+      final summary = MonthlySummary(
+        totalIncome: 0,
+        totalFixed: 0,
+        totalVariable: 0,
+        totalSubscriptions: 0,
+        totalInvestments: 0,
+        netWorth: 0,
+      );
+
+      final insights = IntelligenceService.generateInsights(
+        summary: summary,
+        trendData: [],
+        budgets: [],
+        categorySpending: [],
+      );
+
+      expect(insights.any((i) => i.title == 'NEUTRAL PATTERNS'), isTrue);
+    });
+
+    test('should generate projected savings insight', () {
+      final summary = MonthlySummary(
+        totalIncome: 1000,
+        totalFixed: 200,
+        totalVariable: 200,
+        totalSubscriptions: 0,
+        totalInvestments: 0,
+        netWorth: 0,
+      );
+
+      final insights = IntelligenceService.generateInsights(
+        summary: summary,
+        trendData: [],
+        budgets: [],
+        categorySpending: [],
+      );
+
+      expect(insights.any((i) => i.title == 'PROJECTED SAVINGS'), isTrue);
+      // 1000 - 400 = 600 monthly savings
+      expect(
+          insights
+              .firstWhere((i) => i.title == 'PROJECTED SAVINGS')
+              .currencyValue,
+          600);
+    });
   });
 
   group('IntelligenceService.calculateHealthScore', () {

@@ -10,18 +10,26 @@ import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/core/theme/theme.dart';
+import 'package:trueledger/domain/repositories/i_financial_repository.dart';
+import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/domain/models/models.dart';
 
 class MockAddTransactionUseCase extends Mock implements AddTransactionUseCase {}
+
+class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
 class MockNotificationService extends Mock implements NotificationService {}
 
 void main() {
   late MockAddTransactionUseCase mockUseCase;
   late MockNotificationService mockNotificationService;
+  late MockFinancialRepository mockRepository;
 
   setUp(() {
     mockUseCase = MockAddTransactionUseCase();
     mockNotificationService = MockNotificationService();
+    mockRepository = MockFinancialRepository();
+
     registerFallbackValue(AddTransactionParams(
       type: 'Variable',
       amount: 0,
@@ -29,6 +37,13 @@ void main() {
       note: '',
       date: '',
     ));
+
+    // Mock category fetching
+    when(() => mockRepository.getCategories('Variable'))
+        .thenAnswer((_) async => [
+              TransactionCategory(id: 1, name: 'Food', type: 'Variable'),
+              TransactionCategory(id: 2, name: 'General', type: 'Variable'),
+            ]);
   });
 
   Widget createWidgetUnderTest() {
@@ -36,6 +51,7 @@ void main() {
       overrides: [
         addTransactionUseCaseProvider.overrideWithValue(mockUseCase),
         notificationServiceProvider.overrideWithValue(mockNotificationService),
+        financialRepositoryProvider.overrideWithValue(mockRepository),
       ],
       child: MaterialApp(
         theme: AppTheme.darkTheme,
@@ -61,7 +77,7 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Enter amount
-      await tester.enterText(find.byType(TextField), '100');
+      await tester.enterText(find.byType(TextField).first, '100');
 
       // Select category (Food)
       await tester.tap(find.text('Food'));
@@ -97,7 +113,7 @@ void main() {
 
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.enterText(find.byType(TextField), '100');
+      await tester.enterText(find.byType(TextField).first, '100');
       await tester.tap(find.text('SAVE EXPENSE'));
       await tester.pumpAndSettle();
 
@@ -129,7 +145,7 @@ void main() {
 
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.enterText(find.byType(TextField), '100');
+      await tester.enterText(find.byType(TextField).first, '100');
       await tester.tap(find.text('SAVE EXPENSE'));
       await tester.pumpAndSettle();
 
@@ -146,7 +162,7 @@ void main() {
 
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.enterText(find.byType(TextField), '100');
+      await tester.enterText(find.byType(TextField).first, '100');
       await tester.tap(find.text('SAVE EXPENSE'));
       await tester.pumpAndSettle();
 
@@ -157,7 +173,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
-      await tester.enterText(find.byType(TextField), '0');
+      await tester.enterText(find.byType(TextField).first, '0');
       await tester.tap(find.text('SAVE EXPENSE'));
       await tester.pumpAndSettle();
 

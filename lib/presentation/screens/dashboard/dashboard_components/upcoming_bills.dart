@@ -55,12 +55,28 @@ class UpcomingBills extends StatelessWidget {
                                 fontWeight: FontWeight.bold, fontSize: 13),
                             overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 12),
-                        Text(CurrencyFormatter.format(b['amount']),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w900, fontSize: 15)),
-                        Text(DateHelper.formatDue(b['due'].toString()),
-                            style: TextStyle(
-                                fontSize: 9, color: semantic.secondaryText))
+                        Semantics(
+                          container: true,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(CurrencyFormatter.format(b['amount']),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w900, fontSize: 15)),
+                          ),
+                        ),
+                        Semantics(
+                          container: true,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                                DateHelper.formatDue(b['due'].toString()),
+                                style: TextStyle(
+                                    fontSize: 9,
+                                    color: semantic.secondaryText)),
+                          ),
+                        )
                       ])),
             )
                 .animate()

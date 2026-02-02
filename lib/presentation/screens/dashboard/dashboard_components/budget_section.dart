@@ -73,17 +73,29 @@ class BudgetSection extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(b.category.toUpperCase(),
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 12)),
-                    Text(
-                        "${CurrencyFormatter.format(b.spent, isPrivate: isPrivate)} / ${CurrencyFormatter.format(b.monthlyLimit, isPrivate: isPrivate)}",
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: isOver
-                                ? semantic.overspent
-                                : semantic.secondaryText,
-                            fontWeight: FontWeight.w700)),
+                    Expanded(
+                      child: Text(b.category.toUpperCase(),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 12),
+                          overflow: TextOverflow.ellipsis),
+                    ),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Semantics(
+                        container: true,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                              "${CurrencyFormatter.format(b.spent, isPrivate: isPrivate)} / ${CurrencyFormatter.format(b.monthlyLimit, isPrivate: isPrivate)}",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: isOver
+                                      ? semantic.overspent
+                                      : semantic.secondaryText,
+                                  fontWeight: FontWeight.w700)),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),

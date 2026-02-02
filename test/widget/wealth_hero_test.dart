@@ -121,10 +121,10 @@ void main() {
 
       await tester.pump(const Duration(seconds: 2));
 
-      expect(find.textContaining('5 DAY TRACKING STREAK'), findsOneWidget);
+      expect(find.textContaining('5 DAY STREAK'), findsOneWidget);
     });
 
-    testWidgets('renders pending streak when not logged today', (tester) async {
+    testWidgets('renders streak when not logged today', (tester) async {
       final summary = MonthlySummary(
         totalIncome: 100,
         totalFixed: 0,
@@ -143,7 +143,7 @@ void main() {
 
       await tester.pump(const Duration(seconds: 2));
 
-      expect(find.textContaining('5 DAY STREAK (PENDING)'), findsOneWidget);
+      expect(find.textContaining('5 DAY STREAK'), findsOneWidget);
     });
   });
 }

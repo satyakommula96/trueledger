@@ -70,31 +70,37 @@ class DashboardHeader extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(getGreeting(),
-                              maxLines: 1,
-                              softWrap: false,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w900,
-                                  color: semantic.secondaryText,
-                                  letterSpacing: 1.5)),
+                        Semantics(
+                          container: true,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(getGreeting(),
+                                maxLines: 1,
+                                softWrap: false,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    color: semantic.secondaryText,
+                                    letterSpacing: 1.5)),
+                          ),
                         ),
                         const SizedBox(height: 2),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text("TrueLedger",
-                              maxLines: 1,
-                              softWrap: false,
-                              style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w900,
-                                  color: colorScheme.onSurface,
-                                  letterSpacing: -0.5)),
+                        Semantics(
+                          container: true,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text("TrueLedger",
+                                maxLines: 1,
+                                softWrap: false,
+                                style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w900,
+                                    color: colorScheme.onSurface,
+                                    letterSpacing: -0.5)),
+                          ),
                         ),
                       ],
                     )

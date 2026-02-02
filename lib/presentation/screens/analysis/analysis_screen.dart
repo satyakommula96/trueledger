@@ -136,10 +136,14 @@ class AnalysisScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(item['category'],
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface)),
+                  Expanded(
+                    child: Text(item['category'],
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.onSurface),
+                        overflow: TextOverflow.ellipsis),
+                  ),
+                  const SizedBox(width: 12),
                   Text(CurrencyFormatter.format(total, isPrivate: isPrivate),
                       style: const TextStyle(
                           fontWeight: FontWeight.w900, fontSize: 13)),

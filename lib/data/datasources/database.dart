@@ -282,6 +282,8 @@ class AppDatabase {
         'CREATE TABLE ${Schema.savingGoalsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colTargetAmount} INTEGER, ${Schema.colCurrentAmount} INTEGER)');
     await db.execute(
         'CREATE TABLE ${Schema.budgetsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colCategory} TEXT, ${Schema.colMonthlyLimit} INTEGER)');
+    await db.execute(
+        'CREATE TABLE ${Schema.customCategoriesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colType} TEXT)');
   }
 
   static Future<void> _upgradeDb(
@@ -314,6 +316,7 @@ class AppDatabase {
     await database.delete(Schema.loansTable);
     await database.delete(Schema.savingGoalsTable);
     await database.delete(Schema.budgetsTable);
+    await database.delete(Schema.customCategoriesTable);
   }
 
   static Future<void> seedDummyData() async {

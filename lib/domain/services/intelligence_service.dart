@@ -47,6 +47,15 @@ class IntelligenceService {
           value: "Projected",
           currencyValue: projectedYearly,
         ));
+
+        insights.add(AIInsight(
+          title: "PROJECTED SAVINGS",
+          body:
+              "You are set to save a surplus this month. Consider moving this to your emergency fund.",
+          type: InsightType.success,
+          value: "Monthly",
+          currencyValue: monthlyNet,
+        ));
       }
     }
 
@@ -150,6 +159,16 @@ class IntelligenceService {
           ));
         }
       }
+    }
+
+    if (insights.isEmpty) {
+      insights.add(AIInsight(
+        title: "NEUTRAL PATTERNS",
+        body:
+            "Your spending habits are balanced. Keep tracking to unlock more advanced insights.",
+        type: InsightType.info,
+        value: "Steady",
+      ));
     }
 
     return insights;

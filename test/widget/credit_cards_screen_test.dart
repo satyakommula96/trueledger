@@ -51,7 +51,7 @@ void main() {
       // Initially loading
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 1));
 
       expect(find.text('HDFC'), findsOneWidget);
       expect(find.text('5.0% UTILIZED'), findsOneWidget);
@@ -62,7 +62,7 @@ void main() {
       when(() => mockRepository.getCreditCards()).thenAnswer((_) async => []);
 
       await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 1));
 
       expect(find.text('NO CARDS REGISTERED.'), findsOneWidget);
     });
@@ -82,10 +82,12 @@ void main() {
           .thenAnswer((_) async => [card]);
 
       await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 1));
 
+      await tester.ensureVisible(find.text('RECORD PAYMENT'));
       await tester.tap(find.text('RECORD PAYMENT'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('Record Payment - HDFC'), findsOneWidget);
       expect(find.byType(TextField), findsOneWidget);

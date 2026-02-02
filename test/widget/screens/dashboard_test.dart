@@ -60,6 +60,7 @@ void main() {
     when(() => mockRepo.getWeeklySummary())
         .thenAnswer((_) async => {'thisWeek': 0, 'lastWeek': 0});
     when(() => mockRepo.getActiveStreak()).thenAnswer((_) async => 0);
+    when(() => mockRepo.getTodayTransactionCount()).thenAnswer((_) async => 0);
 
     // 3. Build Widget with Override
     await tester.pumpWidget(

@@ -39,9 +39,19 @@ abstract class IFinancialRepository {
   Future<void> addSubscription(String name, int amount, String billingDate);
   Future<void> updateEntry(String type, int id, Map<String, dynamic> values);
   Future<List<LedgerItem>> getMonthDetails(String month);
+  Future<List<LedgerItem>> getTransactionsForRange(
+      DateTime start, DateTime end);
   Future<void> restoreBackup(Map<String, dynamic> data);
   Future<int> getTodaySpend();
+  Future<int> getTodayTransactionCount();
   Future<Map<String, int>> getWeeklySummary();
   Future<Map<String, dynamic>> generateBackup();
   Future<int> getActiveStreak();
+  Future<List<TransactionCategory>> getCategories(String type);
+  Future<void> addCategory(String name, String type);
+  Future<void> deleteCategory(int id);
+  Future<List<Map<String, dynamic>>> getCategorySpendingForRange(
+      DateTime start, DateTime end);
+  Future<String?> getRecommendedCategory(String note);
+  Future<Map<String, int>> getDatabaseStats();
 }

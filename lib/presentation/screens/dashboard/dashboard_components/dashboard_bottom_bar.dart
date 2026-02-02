@@ -108,12 +108,20 @@ class DashboardBottomBar extends StatelessWidget {
         children: [
           Icon(icon, size: 24, color: semantic.secondaryText),
           const SizedBox(height: 4),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: semantic.secondaryText,
-                  letterSpacing: 0.5)),
+          Flexible(
+            child: Semantics(
+              container: true,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(label,
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: semantic.secondaryText,
+                        letterSpacing: 0.5)),
+              ),
+            ),
+          ),
         ],
       ),
     );

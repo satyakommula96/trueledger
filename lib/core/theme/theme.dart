@@ -11,6 +11,8 @@ class AppTheme {
     secondaryText: const Color(0xFF9CA3AF), // --text-secondary (Dark)
     surfaceCombined: const Color(0xFF1E293B),
     shimmer: Colors.white12,
+    text: const Color(0xFFE5E7EB),
+    success: const Color(0xFF34D399),
   );
 
   static AppColors lightColors = AppColors(
@@ -22,7 +24,11 @@ class AppTheme {
     secondaryText: const Color(0xFF6B7280), // --text-secondary (Light)
     surfaceCombined: const Color(0xFFEFF6FF),
     shimmer: Colors.black12,
+    text: const Color(0xFF1F2933),
+    success: const Color(0xFF2ECC71),
   );
+
+  // ... (ThemeData logic remains same, but AppColors structure updates below)
 
   static ThemeData get darkTheme => ThemeData(
         useMaterial3: true,
@@ -120,6 +126,8 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color secondaryText;
   final Color surfaceCombined;
   final Color shimmer;
+  final Color text;
+  final Color success;
 
   AppColors({
     required this.income,
@@ -130,6 +138,8 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.secondaryText,
     required this.surfaceCombined,
     required this.shimmer,
+    required this.text,
+    required this.success,
   });
 
   @override
@@ -141,7 +151,9 @@ class AppColors extends ThemeExtension<AppColors> {
       Color? divider,
       Color? secondaryText,
       Color? surfaceCombined,
-      Color? shimmer}) {
+      Color? shimmer,
+      Color? text,
+      Color? success}) {
     return AppColors(
       income: income ?? this.income,
       expense: expense ?? this.expense,
@@ -151,6 +163,8 @@ class AppColors extends ThemeExtension<AppColors> {
       secondaryText: secondaryText ?? this.secondaryText,
       surfaceCombined: surfaceCombined ?? this.surfaceCombined,
       shimmer: shimmer ?? this.shimmer,
+      text: text ?? this.text,
+      success: success ?? this.success,
     );
   }
 
@@ -166,6 +180,8 @@ class AppColors extends ThemeExtension<AppColors> {
       secondaryText: Color.lerp(secondaryText, other.secondaryText, t)!,
       surfaceCombined: Color.lerp(surfaceCombined, other.surfaceCombined, t)!,
       shimmer: Color.lerp(shimmer, other.shimmer, t)!,
+      text: Color.lerp(text, other.text, t)!,
+      success: Color.lerp(success, other.success, t)!,
     );
   }
 }

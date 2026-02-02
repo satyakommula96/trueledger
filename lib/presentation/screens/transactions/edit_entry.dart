@@ -6,6 +6,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/providers/category_provider.dart';
 
 class EditEntryScreen extends ConsumerStatefulWidget {
   final LedgerItem entry;
@@ -81,6 +82,47 @@ class _EditEntryScreenState extends ConsumerState<EditEntryScreen> {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             if (widget.entry.type == 'Variable') ...[
+              const SizedBox(height: 16),
+              Consumer(
+                builder: (context, ref, child) {
+                  final categoriesAsync =
+                      ref.watch(categoriesProvider('Variable'));
+                  return categoriesAsync.when(
+                    data: (categories) {
+                      if (categories.isEmpty) return const SizedBox.shrink();
+                      return Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: categories.map((cat) {
+                          final active = labelCtrl.text == cat.name;
+                          return ActionChip(
+                            label: Text(cat.name.toUpperCase()),
+                            onPressed: () => setState(() {
+                              labelCtrl.text = cat.name;
+                            }),
+                            backgroundColor: active
+                                ? colorScheme.onSurface.withValues(alpha: 0.05)
+                                : Colors.transparent,
+                            side: BorderSide(
+                                color: active
+                                    ? colorScheme.onSurface
+                                    : colorScheme.onSurface
+                                        .withValues(alpha: 0.05)),
+                            labelStyle: TextStyle(
+                                color: colorScheme.onSurface,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 9,
+                                letterSpacing: 1),
+                          );
+                        }).toList(),
+                      );
+                    },
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Text("Error: $err"),
+                  );
+                },
+              ),
               const SizedBox(height: 48),
               const Text("NOTE",
                   style: TextStyle(

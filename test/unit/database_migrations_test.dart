@@ -70,9 +70,23 @@ void main() {
       // No crash means success for empty migration
     });
 
-    test('MigrationV2 and V3 down should not throw', () async {
+    test('MigrationV4 should create custom_categories table', () async {
+      final migration = MigrationV4();
+      await migration.up(db);
+
+      final results = await db
+          .rawQuery("PRAGMA table_info(${Schema.customCategoriesTable})");
+      expect(results, isNotEmpty);
+      final hasNameColumn = results.any((row) => row['name'] == Schema.colName);
+      final hasTypeColumn = results.any((row) => row['name'] == Schema.colType);
+      expect(hasNameColumn, isTrue);
+      expect(hasTypeColumn, isTrue);
+    });
+
+    test('MigrationV2, V3 and V4 down should not throw', () async {
       await MigrationV2().down(db);
       await MigrationV3().down(db);
+      await MigrationV4().down(db);
     });
   });
 }

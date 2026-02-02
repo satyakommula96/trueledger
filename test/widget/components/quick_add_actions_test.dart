@@ -3,14 +3,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/quick_add_actions.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
   final semantic = AppTheme.darkColors;
 
   Widget createWidget(QuickAddActions widget) {
-    return MaterialApp(
-      theme: AppTheme.darkTheme,
-      home: Scaffold(body: widget),
+    return ProviderScope(
+      child: MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(body: widget),
+      ),
     );
   }
 
@@ -34,7 +37,8 @@ void main() {
       )));
 
       await tester.tap(find.text('Income'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(AddExpense), findsOneWidget);
     });
@@ -46,7 +50,8 @@ void main() {
       )));
 
       await tester.tap(find.text('Liability'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.text('ADD LIABILITY'), findsOneWidget);
       expect(find.text('Credit Card'), findsOneWidget);

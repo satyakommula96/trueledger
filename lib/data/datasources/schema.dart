@@ -9,6 +9,7 @@ class Schema {
   static const String loansTable = 'loans';
   static const String savingGoalsTable = 'saving_goals';
   static const String budgetsTable = 'budgets';
+  static const String customCategoriesTable = 'custom_categories';
 
   // Common columns
   static const String colId = 'id';

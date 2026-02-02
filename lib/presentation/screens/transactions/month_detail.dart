@@ -7,12 +7,12 @@ import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/presentation/screens/transactions/edit_entry.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
-import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 import 'month_detail_components/category_icon.dart';
 import 'month_detail_components/month_detail_header.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/quick_add_bottom_sheet.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/presentation/components/empty_state.dart';
@@ -103,59 +103,21 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
     final semantic = Theme.of(context).extension<AppColors>()!;
     return Scaffold(
       appBar: AppBar(title: Text(_formatMonth(widget.month))),
-      floatingActionButton: HoverWrapper(
-        onTap: () async {
-          String? initial;
-          List<String>? allowed;
-
-          if (typeFilter == 'Income') {
-            initial = 'Income';
-            allowed = ['Income'];
-          } else if (typeFilter == 'Expenses') {
-            initial = 'Variable';
-            allowed = ['Variable', 'Fixed', 'Subscription'];
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final added = await showModalBottomSheet<bool>(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => const QuickAddBottomSheet(),
+          );
+          if (added == true) {
+            _loadData();
           }
-
-          await Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => AddExpense(
-                        initialType: initial,
-                        allowedTypes: allowed,
-                      )));
-          _loadData();
         },
-        borderRadius: 28,
-        glowColor: semantic.income,
-        glowOpacity: 0.15,
-        child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          decoration: BoxDecoration(
-            color: semantic.income,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: semantic.income.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.add_rounded, color: Colors.white),
-              SizedBox(width: 8),
-              Text("ADD ENTRY",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12,
-                      letterSpacing: 1)),
-            ],
-          ),
-        ),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        child: const Icon(Icons.add_rounded, size: 32),
       ),
       body: Column(
         children: [
@@ -211,14 +173,21 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
                                   : semantic.overspent),
                               letterSpacing: 2)),
                       const SizedBox(height: 4),
-                      Text(CurrencyFormatter.format(total),
-                          style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w900,
-                              color: (isIncome
-                                  ? semantic.income
-                                  : semantic.overspent),
-                              letterSpacing: -0.5)),
+                      Semantics(
+                        container: true,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(CurrencyFormatter.format(total),
+                              style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  color: (isIncome
+                                      ? semantic.income
+                                      : semantic.overspent),
+                                  letterSpacing: -0.5)),
+                        ),
+                      ),
                     ],
                   ),
                   Container(
@@ -267,28 +236,6 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
                             subMessage:
                                 "Track your first transaction for this month.\nConsistency is key to financial health!",
                             icon: Icons.receipt_long_rounded,
-                            actionLabel: "ADD ENTRY",
-                            onAction: () async {
-                              String? initial;
-                              List<String>? allowed;
-
-                              if (typeFilter == 'Income') {
-                                initial = 'Income';
-                                allowed = ['Income'];
-                              } else if (typeFilter == 'Expenses') {
-                                initial = 'Variable';
-                                allowed = ['Variable', 'Fixed', 'Subscription'];
-                              }
-
-                              await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => AddExpense(
-                                            initialType: initial,
-                                            allowedTypes: allowed,
-                                          )));
-                              _loadData();
-                            },
                           );
                         }
 
@@ -364,29 +311,52 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
                                           ],
                                         ),
                                       ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                              CurrencyFormatter.format(
-                                                  item.amount),
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: 16,
-                                                  color: isIncome
-                                                      ? semantic.income
-                                                      : colorScheme.onSurface)),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            DateFormat('dd-MM-yyyy').format(
-                                                DateTime.parse(item.date)),
-                                            style: TextStyle(
-                                                fontSize: 10,
-                                                color: semantic.secondaryText,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
+                                      Flexible(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Semantics(
+                                              container: true,
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: Text(
+                                                    CurrencyFormatter.format(
+                                                        item.amount),
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        fontSize: 16,
+                                                        color: isIncome
+                                                            ? semantic.income
+                                                            : colorScheme
+                                                                .onSurface)),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Semantics(
+                                              container: true,
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: Text(
+                                                  DateFormat('dd-MM-yyyy')
+                                                      .format(DateTime.parse(
+                                                          item.date)),
+                                                  style: TextStyle(
+                                                      fontSize: 10,
+                                                      color: semantic
+                                                          .secondaryText,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),

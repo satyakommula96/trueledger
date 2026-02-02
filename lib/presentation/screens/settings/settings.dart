@@ -28,6 +28,9 @@ import 'package:trueledger/core/services/backup_encryption_service.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/usecases/restore_backup_usecase.dart';
 import 'package:trueledger/data/datasources/database.dart';
+import 'package:intl/intl.dart';
+import 'package:trueledger/presentation/screens/settings/trust_center.dart';
+import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -515,6 +518,11 @@ class SettingsScreen extends ConsumerWidget {
     if (kIsWeb) {
       final bytes = utf8.encode(finalOutput);
       await saveFileWeb(bytes, fileName);
+
+      final prefs = ref.read(sharedPreferencesProvider);
+      await prefs.setString('last_backup_time',
+          DateFormat('MMM dd, yyyy HH:mm').format(DateTime.now()));
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Backup download started")));
@@ -533,6 +541,11 @@ class SettingsScreen extends ConsumerWidget {
       if (outputFile != null) {
         final fileService = ref.read(fileServiceProvider);
         await fileService.writeAsString(outputFile, finalOutput);
+
+        final prefs = ref.read(sharedPreferencesProvider);
+        await prefs.setString('last_backup_time',
+            DateFormat('MMM dd, yyyy HH:mm').format(DateTime.now()));
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("Encrypted backup saved to $outputFile")));
@@ -545,6 +558,10 @@ class SettingsScreen extends ConsumerWidget {
     final file = File('${directory.path}/$fileName');
     final fileService = ref.read(fileServiceProvider);
     await fileService.writeAsString(file.path, finalOutput);
+
+    final prefs = ref.read(sharedPreferencesProvider);
+    await prefs.setString('last_backup_time',
+        DateFormat('MMM dd, yyyy HH:mm').format(DateTime.now()));
 
     if (context.mounted) {
       // ignore: deprecated_member_use
@@ -1085,6 +1102,16 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildOption(
             context,
+            "Trust & Privacy",
+            "Data health & security",
+            Icons.verified_user_outlined,
+            Colors.green,
+            () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const TrustCenterScreen())),
+          ),
+          const SizedBox(height: 16),
+          _buildOption(
+            context,
             "Appearance",
             "Switch between Light, Dark, or System theme",
             Icons.dark_mode_outlined,
@@ -1108,6 +1135,18 @@ class SettingsScreen extends ConsumerWidget {
             Icons.payments_outlined,
             Colors.teal,
             () => _showCurrencyPicker(context),
+          ),
+          const SizedBox(height: 16),
+          _buildOption(
+            context,
+            "Manage Categories",
+            "Add, edit, or remove your personal categories",
+            Icons.category_outlined,
+            Colors.orange,
+            () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ManageCategoriesScreen())),
           ),
 
           const SizedBox(height: 16),

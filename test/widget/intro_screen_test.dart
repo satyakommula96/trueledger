@@ -45,6 +45,7 @@ void main() {
       thisWeekSpend: 0,
       lastWeekSpend: 0,
       activeStreak: 0,
+      todayTransactionCount: 0,
     );
     when(() => mockPrefs.setBool(any(), any())).thenAnswer((_) async => true);
     when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);

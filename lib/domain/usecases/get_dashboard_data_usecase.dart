@@ -15,6 +15,7 @@ class DashboardData {
   final int thisWeekSpend;
   final int lastWeekSpend;
   final int activeStreak;
+  final int todayTransactionCount;
 
   DashboardData({
     required this.summary,
@@ -27,6 +28,7 @@ class DashboardData {
     required this.thisWeekSpend,
     required this.lastWeekSpend,
     required this.activeStreak,
+    required this.todayTransactionCount,
   });
 }
 
@@ -48,6 +50,7 @@ class GetDashboardDataUseCase extends UseCase<DashboardData, NoParams> {
         repository.getTodaySpend(),
         repository.getWeeklySummary(),
         repository.getActiveStreak(),
+        repository.getTodayTransactionCount(),
       ]);
 
       final weeklySummary = results[7] as Map<String, int>;
@@ -63,6 +66,7 @@ class GetDashboardDataUseCase extends UseCase<DashboardData, NoParams> {
         thisWeekSpend: weeklySummary['thisWeek'] ?? 0,
         lastWeekSpend: weeklySummary['lastWeek'] ?? 0,
         activeStreak: results[8] as int,
+        todayTransactionCount: results[9] as int,
       ));
     } catch (e) {
       return Failure(

@@ -20,8 +20,14 @@ import 'package:trueledger/presentation/screens/dashboard/dashboard_components/s
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/daily_summary.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/weekly_summary.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/quick_add_bottom_sheet.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/daily_closure_card.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/credit_card_summary.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/borrowing_summary.dart';
 import 'package:trueledger/domain/services/intelligence_service.dart';
+import 'package:trueledger/presentation/screens/dashboard/weekly_reflection.dart';
 import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
+import 'package:trueledger/presentation/screens/transactions/transactions_detail.dart';
+import 'package:trueledger/presentation/screens/transactions/monthly_history.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
 
 class Dashboard extends ConsumerWidget {
@@ -112,10 +118,31 @@ class Dashboard extends ConsumerWidget {
                                 summary: summary,
                                 activeStreak: data.activeStreak,
                                 hasLoggedToday: data.todaySpend > 0,
+                                onTapStreak: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              const MonthlyHistoryScreen()));
+                                },
                               ).animate().fade(duration: 600.ms).slideY(
                                   begin: 0.2,
                                   end: 0,
                                   curve: Curves.easeOutQuint),
+                              const SizedBox(height: 24),
+                              DailyClosureCard(
+                                transactionCount: data.todayTransactionCount,
+                                todaySpend: data.todaySpend,
+                                dailyBudget: data.budgets.isEmpty
+                                    ? 0
+                                    : (data.budgets.fold(
+                                                0,
+                                                (sum, b) =>
+                                                    sum + b.monthlyLimit) /
+                                            30)
+                                        .round(),
+                                semantic: semantic,
+                              ),
                               const SizedBox(height: 24),
                               Row(
                                 children: [
@@ -131,14 +158,33 @@ class Dashboard extends ConsumerWidget {
                                                         sum + b.monthlyLimit) -
                                                 data.budgets.fold(0,
                                                     (sum, b) => sum + b.spent),
-                                        semantic: semantic),
+                                        semantic: semantic,
+                                        onTap: () {
+                                          final now = DateTime.now();
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      TransactionsDetailScreen(
+                                                        title: "Today's Ledger",
+                                                        startDate: now,
+                                                        endDate: now,
+                                                      )));
+                                        }),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: WeeklySummary(
                                         thisWeekSpend: data.thisWeekSpend,
                                         lastWeekSpend: data.lastWeekSpend,
-                                        semantic: semantic),
+                                        semantic: semantic,
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      const WeeklyReflectionScreen()));
+                                        }),
                                   ),
                                 ],
                               )
@@ -227,15 +273,32 @@ class Dashboard extends ConsumerWidget {
                                       curve: Curves.easeOutQuint),
                               const SizedBox(height: 32),
                               SectionHeader(
-                                      title: "Payment Calendar",
-                                      sub: "Month view",
+                                      title: "Credit & Loans",
+                                      sub: "Debt Management",
                                       semantic: semantic)
-                                  .animate(delay: 500.ms)
+                                  .animate(delay: 450.ms)
                                   .fade(duration: 600.ms),
                               const SizedBox(height: 16),
-                              PaymentCalendar(
-                                      bills: upcomingBills, semantic: semantic)
-                                  .animate(delay: 600.ms)
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: CreditCardSummary(
+                                      summary: summary,
+                                      semantic: semantic,
+                                      onLoad: reload,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: BorrowingSummary(
+                                      summary: summary,
+                                      semantic: semantic,
+                                      onLoad: reload,
+                                    ),
+                                  ),
+                                ],
+                              )
+                                  .animate(delay: 480.ms)
                                   .fade(duration: 600.ms)
                                   .slideY(
                                       begin: 0.2,
@@ -255,6 +318,22 @@ class Dashboard extends ConsumerWidget {
                                 ),
                                 semantic: semantic,
                               )
+                                  .animate(delay: 500.ms)
+                                  .fade(duration: 600.ms)
+                                  .slideY(
+                                      begin: 0.2,
+                                      end: 0,
+                                      curve: Curves.easeOutQuint),
+                              const SizedBox(height: 32),
+                              SectionHeader(
+                                      title: "Payment Calendar",
+                                      sub: "Month view",
+                                      semantic: semantic)
+                                  .animate(delay: 600.ms)
+                                  .fade(duration: 600.ms),
+                              const SizedBox(height: 16),
+                              PaymentCalendar(
+                                      bills: upcomingBills, semantic: semantic)
                                   .animate(delay: 700.ms)
                                   .fade(duration: 600.ms)
                                   .slideY(

@@ -7,17 +7,25 @@ import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/data/datasources/database.dart';
 import 'package:trueledger/core/services/backup_encryption_service.dart';
+import 'package:trueledger/core/services/notification_service.dart';
 import 'usecase_base.dart';
 
 class AutoBackupUseCase extends UseCase<void, NoParams> {
   final IFinancialRepository repository;
+  final NotificationService? notificationService;
 
-  AutoBackupUseCase(this.repository);
+  AutoBackupUseCase(this.repository, [this.notificationService]);
 
   @override
   Future<Result<void>> call(NoParams params) async {
     if (kIsWeb) return const Success(null);
     try {
+      notificationService?.showNotification(
+        id: 999,
+        title: "Auto Backup Started",
+        body: "Securing your latest financial data...",
+      );
+
       final backupData = await repository.generateBackup();
       backupData['auto_backup'] = true;
       backupData['date'] = DateTime.now().toIso8601String();
@@ -64,8 +72,19 @@ class AutoBackupUseCase extends UseCase<void, NoParams> {
       final file = File('${backupDir.path}/$fileName');
       await file.writeAsString(finalOutput);
 
+      notificationService?.showNotification(
+        id: 999,
+        title: "Auto Backup Completed",
+        body: "Your data is safely encrypted and stored locally.",
+      );
+
       return const Success(null);
     } catch (e) {
+      notificationService?.showNotification(
+        id: 999,
+        title: "Auto Backup Failed",
+        body: "Could not secure your data. Please check storage.",
+      );
       return Failure(DatabaseFailure("Auto-backup failed: $e"));
     }
   }

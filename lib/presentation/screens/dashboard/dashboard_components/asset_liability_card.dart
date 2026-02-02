@@ -136,9 +136,16 @@ class AssetLiabilityCard extends ConsumerWidget {
               fontWeight: FontWeight.w900,
               letterSpacing: 1.2)),
       const SizedBox(height: 6),
-      Text(val,
-          style: TextStyle(
-              color: color, fontSize: 16, fontWeight: FontWeight.w800)),
+      Semantics(
+        container: true,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(val,
+              style: TextStyle(
+                  color: color, fontSize: 16, fontWeight: FontWeight.w800)),
+        ),
+      ),
     ]);
   }
 }

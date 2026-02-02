@@ -7,6 +7,8 @@ import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 
+import 'package:trueledger/presentation/screens/dashboard/scenario_mode.dart';
+
 class SmartInsightsCard extends ConsumerWidget {
   final List<AIInsight> insights;
   final AppColors semantic;
@@ -22,7 +24,7 @@ class SmartInsightsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPrivate = ref.watch(privacyProvider);
-    if (insights.isEmpty) return const SizedBox.shrink();
+    // if (insights.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,12 +66,9 @@ class SmartInsightsCard extends ConsumerWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-            itemCount: insights.length + 1,
+            itemCount:
+                insights.length + 2, // +1 for ScoreCard, +1 for ScenarioCard
             itemBuilder: (context, index) {
-              // Priority: 1. Wealth Projection, 2. ScoreCard, 3. Other Insights
-
-              // We want: [Wealth Projection] (if exists) -> [ScoreCard] -> [Remaining Insights]
-
               final hasWealth =
                   insights.any((i) => i.title == "WEALTH PROJECTION");
 
@@ -82,7 +81,6 @@ class SmartInsightsCard extends ConsumerWidget {
                     .slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuint);
               }
 
-              // If index 0 and no wealth, show ScoreCard
               if (index == 0 && !hasWealth) {
                 return _buildScoreCard(context)
                     .animate()
@@ -90,7 +88,6 @@ class SmartInsightsCard extends ConsumerWidget {
                     .slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuint);
               }
 
-              // If index 1 and has wealth, show ScoreCard
               if (index == 1 && hasWealth) {
                 return _buildScoreCard(context)
                     .animate()
@@ -98,9 +95,6 @@ class SmartInsightsCard extends ConsumerWidget {
                     .slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuint);
               }
 
-              // Otherwise show remaining insights
-              // Adjust offset based on whether wealth exists
-              // Skip the wealth projection if we encounter it in the list again
               final dynInsights = insights
                   .where((i) => i.title != "WEALTH PROJECTION")
                   .toList();
@@ -110,6 +104,15 @@ class SmartInsightsCard extends ConsumerWidget {
                   currentDynIndex < dynInsights.length) {
                 return _buildInsightItem(
                         context, dynInsights[currentDynIndex], isPrivate)
+                    .animate()
+                    .fadeIn(delay: (100 * index).ms, duration: 600.ms)
+                    .slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuint);
+              }
+
+              // Show Scenario Card at the end
+              if ((hasWealth && index == dynInsights.length + 2) ||
+                  (!hasWealth && index == dynInsights.length + 1)) {
+                return _buildScenarioCard(context)
                     .animate()
                     .fadeIn(delay: (100 * index).ms, duration: 600.ms)
                     .slideX(begin: 0.2, end: 0, curve: Curves.easeOutQuint);
@@ -127,6 +130,59 @@ class SmartInsightsCard extends ConsumerWidget {
     return ScoreCard(
       score: score,
       semantic: semantic,
+    );
+  }
+
+  Widget _buildScenarioCard(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16, top: 4, bottom: 4),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const ScenarioScreen()));
+        },
+        child: Container(
+          width: 280,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blue.withValues(alpha: 0.2),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.rocket_launch_rounded,
+                  color: Colors.white, size: 32),
+              const SizedBox(height: 16),
+              const Text(
+                "SCENARIO MODE",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Simulate your future progress.",
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -344,14 +400,18 @@ class InsightItem extends StatelessWidget {
                     ),
                     child: Icon(icon, size: 18, color: accentColor),
                   ),
-                  Text(
-                    insight.currencyValue != null
-                        ? "${insight.value}: ${CurrencyFormatter.format(insight.currencyValue!, isPrivate: isPrivate)}"
-                        : insight.value,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 14,
-                      color: accentColor,
+                  Expanded(
+                    child: Text(
+                      insight.currencyValue != null
+                          ? "${insight.value}: ${CurrencyFormatter.format(insight.currencyValue!, isPrivate: isPrivate)}"
+                          : insight.value,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                        color: accentColor,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

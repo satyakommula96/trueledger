@@ -7,6 +7,8 @@ import 'package:trueledger/domain/usecases/startup_usecase.dart';
 import 'package:trueledger/domain/usecases/budget_usecases.dart';
 import 'package:trueledger/domain/usecases/auto_backup_usecase.dart';
 import 'package:trueledger/domain/usecases/restore_backup_usecase.dart';
+import 'package:trueledger/domain/usecases/get_weekly_reflection_usecase.dart';
+import 'notification_provider.dart';
 import 'repository_providers.dart';
 
 final addTransactionUseCaseProvider = Provider<AddTransactionUseCase>((ref) {
@@ -30,6 +32,11 @@ final getDashboardDataUseCaseProvider =
   return GetDashboardDataUseCase(ref.watch(financialRepositoryProvider));
 });
 
+final getWeeklyReflectionUseCaseProvider =
+    Provider<GetWeeklyReflectionUseCase>((ref) {
+  return GetWeeklyReflectionUseCase(ref.watch(financialRepositoryProvider));
+});
+
 final updateBudgetUseCaseProvider = Provider<UpdateBudgetUseCase>((ref) {
   return UpdateBudgetUseCase(ref.watch(financialRepositoryProvider));
 });
@@ -47,7 +54,10 @@ final getAnalysisDataUseCaseProvider = Provider<GetAnalysisDataUseCase>((ref) {
 });
 
 final autoBackupUseCaseProvider = Provider<AutoBackupUseCase>((ref) {
-  return AutoBackupUseCase(ref.watch(financialRepositoryProvider));
+  return AutoBackupUseCase(
+    ref.watch(financialRepositoryProvider),
+    ref.watch(notificationServiceProvider),
+  );
 });
 
 final restoreBackupUseCaseProvider = Provider<RestoreBackupUseCase>((ref) {

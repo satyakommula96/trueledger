@@ -563,6 +563,38 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
+  Future<List<LedgerItem>> getTransactionsForRange(
+      DateTime start, DateTime end) async {
+    final db = await AppDatabase.db;
+    final startStr = start.toIso8601String().substring(0, 10);
+    final endStr = end.toIso8601String().substring(0, 10);
+
+    List<Map<String, dynamic>> allItems = [];
+
+    final tables = [
+      {'name': 'variable_expenses', 'type': 'Variable'},
+      {'name': 'income_sources', 'type': 'Income'},
+      {'name': 'fixed_expenses', 'type': 'Fixed'},
+      {'name': 'investments', 'type': 'Investment'},
+    ];
+
+    for (var table in tables) {
+      final data = await db.rawQuery(
+          "SELECT *, '${table['type']}' as entryType FROM ${table['name']} WHERE substr(date, 1, 10) >= ? AND substr(date, 1, 10) <= ?",
+          [startStr, endStr]);
+      allItems.addAll(data);
+    }
+
+    allItems.sort((a, b) {
+      final dateCmp = (b['date'] as String).compareTo(a['date'] as String);
+      if (dateCmp != 0) return dateCmp;
+      return (b['id'] as int).compareTo(a['id'] as int);
+    });
+
+    return allItems.map((e) => LedgerItem.fromMap(e)).toList();
+  }
+
+  @override
   Future<Map<String, dynamic>> generateBackup() async {
     final db = await AppDatabase.db;
     final Map<String, dynamic> backup = {};
@@ -637,6 +669,17 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
+  Future<int> getTodayTransactionCount() async {
+    final db = await AppDatabase.db;
+    final todayStr =
+        DateTime.now().toIso8601String().substring(0, 10); // YYYY-MM-DD
+    final result = await db.rawQuery(
+        'SELECT COUNT(*) FROM variable_expenses WHERE substr(date, 1, 10) = ?',
+        [todayStr]);
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  @override
   Future<Map<String, int>> getWeeklySummary() async {
     final db = await AppDatabase.db;
     final now = DateTime.now();
@@ -645,23 +688,22 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     final thisMondayOffset = now.weekday - 1;
     final thisWeekStart =
         DateTime(now.year, now.month, now.day - thisMondayOffset);
-    final thisWeekEnd = now;
 
-    // Last week: Previous Monday to Sunday
+    // Last week same period: Previous Monday to (now - 7 days)
     final lastWeekStart = thisWeekStart.subtract(const Duration(days: 7));
-    final lastWeekEnd = thisWeekStart.subtract(const Duration(days: 1));
+    final lastWeekEnd = now.subtract(const Duration(days: 7));
 
     final thisWeekResult = await db.rawQuery('''
       SELECT SUM(amount) FROM variable_expenses
-      WHERE date >= ? AND date <= ?
+      WHERE substr(date, 1, 10) >= ? AND substr(date, 1, 10) <= ?
     ''', [
       thisWeekStart.toIso8601String().substring(0, 10),
-      thisWeekEnd.toIso8601String().substring(0, 10)
+      now.toIso8601String().substring(0, 10)
     ]);
 
     final lastWeekResult = await db.rawQuery('''
       SELECT SUM(amount) FROM variable_expenses
-      WHERE date >= ? AND date <= ?
+      WHERE substr(date, 1, 10) >= ? AND substr(date, 1, 10) <= ?
     ''', [
       lastWeekStart.toIso8601String().substring(0, 10),
       lastWeekEnd.toIso8601String().substring(0, 10)
@@ -679,6 +721,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   /// Definition: A tracking event is a manual entry in the [variable_expenses] table.
   /// Fixed expenses (like rent), one-off Income, or Investments do not count
   /// toward the "habitual tracking" streak.
+  @override
   Future<int> getActiveStreak() async {
     final db = await AppDatabase.db;
     final results = await db.rawQuery('''
@@ -719,5 +762,116 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       }
     }
     return streak > 1 ? streak : 0;
+  }
+
+  @override
+  Future<List<TransactionCategory>> getCategories(String type) async {
+    final db = await AppDatabase.db;
+    var list = await db
+        .query('custom_categories', where: 'type = ?', whereArgs: [type]);
+
+    if (list.isEmpty) {
+      final allCount = Sqflite.firstIntValue(
+              await db.rawQuery('SELECT COUNT(*) FROM custom_categories')) ??
+          0;
+      // If the specific type is empty, and the table is entirely empty, seed all.
+      if (allCount == 0) {
+        final batch = db.batch();
+        for (var entry in _defaultCategories.entries) {
+          for (var cat in entry.value) {
+            batch.insert('custom_categories', {
+              'name': cat,
+              'type': entry.key,
+            });
+          }
+        }
+        await batch.commit(noResult: true);
+        list = await db
+            .query('custom_categories', where: 'type = ?', whereArgs: [type]);
+      }
+    }
+
+    return list.map((e) => TransactionCategory.fromMap(e)).toList();
+  }
+
+  @override
+  Future<void> addCategory(String name, String type) async {
+    final db = await AppDatabase.db;
+    await db.insert('custom_categories', {
+      'name': name,
+      'type': type,
+    });
+  }
+
+  @override
+  Future<void> deleteCategory(int id) async {
+    final db = await AppDatabase.db;
+    await db.delete('custom_categories', where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getCategorySpendingForRange(
+      DateTime start, DateTime end) async {
+    final db = await AppDatabase.db;
+    final startStr = start.toIso8601String().substring(0, 10);
+    final endStr = end.toIso8601String().substring(0, 10);
+
+    return await db.rawQuery(
+        'SELECT category, SUM(amount) as total FROM variable_expenses WHERE substr(date, 1, 10) >= ? AND substr(date, 1, 10) <= ? GROUP BY category ORDER BY total DESC',
+        [startStr, endStr]);
+  }
+
+  static const Map<String, List<String>> _defaultCategories = {
+    'Variable': ['Food', 'Transport', 'Shopping', 'Entertainment', 'Others'],
+    'Fixed': ['Rent', 'Utility', 'Insurance', 'EMI'],
+    'Investment': [
+      'Stocks',
+      'Mutual Funds',
+      'SIP',
+      'Crypto',
+      'Gold',
+      'Lending',
+      'Retirement',
+      'Other'
+    ],
+    'Income': ['Salary', 'Freelance', 'Dividends'],
+    'Subscription': ['OTT', 'Software', 'Gym'],
+  };
+
+  @override
+  Future<String?> getRecommendedCategory(String note) async {
+    final db = await AppDatabase.db;
+    final result = await db.rawQuery(
+        'SELECT category FROM variable_expenses WHERE note LIKE ? ORDER BY date DESC LIMIT 1',
+        ['%$note%']);
+    if (result.isNotEmpty) {
+      return result.first['category'] as String?;
+    }
+    return null;
+  }
+
+  @override
+  Future<Map<String, int>> getDatabaseStats() async {
+    final db = await AppDatabase.db;
+    final variableCount = Sqflite.firstIntValue(
+            await db.rawQuery('SELECT COUNT(*) FROM variable_expenses')) ??
+        0;
+    final fixedCount = Sqflite.firstIntValue(
+            await db.rawQuery('SELECT COUNT(*) FROM fixed_expenses')) ??
+        0;
+    final incomeCount = Sqflite.firstIntValue(
+            await db.rawQuery('SELECT COUNT(*) FROM income_sources')) ??
+        0;
+    final budgetsCount = Sqflite.firstIntValue(
+            await db.rawQuery('SELECT COUNT(*) FROM budgets')) ??
+        0;
+
+    return {
+      'variable': variableCount,
+      'fixed': fixedCount,
+      'income': incomeCount,
+      'budgets': budgetsCount,
+      'total_records': variableCount + fixedCount + incomeCount + budgetsCount,
+    };
   }
 }

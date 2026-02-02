@@ -33,7 +33,7 @@ class StartupUseCase extends UseCase<StartupResult, NoParams> {
       // 1b. Auto Backup (Non-blocking)
       autoBackup.call(const NoParams()).catchError((e) {
         debugPrint("CRITICAL: Auto-backup failed during startup: $e");
-        return Failure(
+        return Failure<void>(
             DatabaseFailure("Auto-backup failed silently: ${e.toString()}"));
       });
 

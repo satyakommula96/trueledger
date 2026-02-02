@@ -9,7 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
-import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 
 class MonthlyHistoryScreen extends ConsumerStatefulWidget {
   const MonthlyHistoryScreen({super.key});
@@ -63,44 +62,6 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
     final semantic = Theme.of(context).extension<AppColors>()!;
     return Scaffold(
       appBar: AppBar(title: const Text("LEDGER HISTORY")),
-      floatingActionButton: HoverWrapper(
-        onTap: () async {
-          await Navigator.push(
-              context, MaterialPageRoute(builder: (_) => AddExpense()));
-          load();
-        },
-        borderRadius: 28,
-        glowColor: semantic.income,
-        glowOpacity: 0.15,
-        child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          decoration: BoxDecoration(
-            color: semantic.income,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: semantic.income.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.add_rounded, color: Colors.white),
-              SizedBox(width: 8),
-              Text("ADD ENTRY",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12,
-                      letterSpacing: 1)),
-            ],
-          ),
-        ),
-      ),
       body: Column(
         children: [
           // Modern Year Selector
@@ -221,25 +182,44 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
                                                     MainAxisAlignment
                                                         .spaceBetween,
                                                 children: [
-                                                  Text(_formatMonth(s['month']),
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w800,
-                                                          fontSize: 18,
-                                                          letterSpacing: -0.5,
-                                                          color: colorScheme
-                                                              .onSurface)),
-                                                  Text(
-                                                      CurrencyFormatter.format(
-                                                          s['net']),
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w800,
-                                                          color: positive
-                                                              ? semantic.income
-                                                              : semantic
-                                                                  .warning,
-                                                          fontSize: 16)),
+                                                  Expanded(
+                                                    child: Text(
+                                                        _formatMonth(
+                                                            s['month']),
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w800,
+                                                            fontSize: 18,
+                                                            letterSpacing: -0.5,
+                                                            color: colorScheme
+                                                                .onSurface),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis),
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Flexible(
+                                                    child: Semantics(
+                                                      container: true,
+                                                      child: FittedBox(
+                                                        fit: BoxFit.scaleDown,
+                                                        child: Text(
+                                                            CurrencyFormatter
+                                                                .format(
+                                                                    s['net']),
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w800,
+                                                                color: positive
+                                                                    ? semantic
+                                                                        .income
+                                                                    : semantic
+                                                                        .warning,
+                                                                fontSize: 16)),
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ]),
                                             const SizedBox(height: 20),
                                             Divider(
@@ -252,21 +232,32 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
                                                     MainAxisAlignment
                                                         .spaceBetween,
                                                 children: [
-                                                  _buildStatItem(
-                                                      "INCOME",
-                                                      CurrencyFormatter.format(
-                                                          s['income']),
-                                                      semantic),
-                                                  _buildStatItem(
-                                                      "EXPENDITURE",
-                                                      CurrencyFormatter.format(
-                                                          s['expenses']),
-                                                      semantic),
-                                                  _buildStatItem(
-                                                      "INVESTED",
-                                                      CurrencyFormatter.format(
-                                                          s['invested']),
-                                                      semantic),
+                                                  Expanded(
+                                                    child: _buildStatItem(
+                                                        "INCOME",
+                                                        CurrencyFormatter
+                                                            .format(
+                                                                s['income']),
+                                                        semantic),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: _buildStatItem(
+                                                        "EXPENDITURE",
+                                                        CurrencyFormatter
+                                                            .format(
+                                                                s['expenses']),
+                                                        semantic),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: _buildStatItem(
+                                                        "INVESTED",
+                                                        CurrencyFormatter
+                                                            .format(
+                                                                s['invested']),
+                                                        semantic),
+                                                  ),
                                                 ]),
                                           ],
                                         ),
@@ -294,15 +285,28 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
 
   Widget _buildStatItem(String label, String value, AppColors semantic) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label,
-          style: TextStyle(
-              fontSize: 8,
-              fontWeight: FontWeight.w900,
-              color: semantic.secondaryText,
-              letterSpacing: 1.2)),
+      Semantics(
+        container: true,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(label,
+              style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w900,
+                  color: semantic.secondaryText,
+                  letterSpacing: 1.2)),
+        ),
+      ),
       const SizedBox(height: 6),
-      Text(value,
-          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+      Semantics(
+        container: true,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(value,
+              style:
+                  const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+        ),
+      ),
     ]);
   }
 

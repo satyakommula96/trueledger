@@ -4,6 +4,8 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/providers/category_provider.dart';
+import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
 
 class AddBudgetScreen extends ConsumerStatefulWidget {
   const AddBudgetScreen({super.key});
@@ -29,6 +31,78 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
               controller: categoryCtrl,
               decoration:
                   const InputDecoration(labelText: "Category (e.g. Food)"),
+            ),
+            const SizedBox(height: 16),
+            Consumer(
+              builder: (context, ref, child) {
+                final categoriesAsync =
+                    ref.watch(categoriesProvider('Variable'));
+                return categoriesAsync.when(
+                  data: (categories) {
+                    if (categories.isEmpty) return const SizedBox.shrink();
+                    return Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ...categories.map((cat) {
+                          final active = categoryCtrl.text == cat.name;
+                          return ActionChip(
+                            label: Text(cat.name.toUpperCase()),
+                            onPressed: () => setState(() {
+                              categoryCtrl.text = cat.name;
+                            }),
+                            backgroundColor: active
+                                ? Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.05)
+                                : Colors.transparent,
+                            side: BorderSide(
+                                color: active
+                                    ? Theme.of(context).colorScheme.onSurface
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.05)),
+                            labelStyle: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 9,
+                                letterSpacing: 1),
+                          );
+                        }),
+                        ActionChip(
+                          label: const Icon(Icons.add, size: 16),
+                          onPressed: () async {
+                            final newCat = await Navigator.push<String>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ManageCategoriesScreen(
+                                  initialType: 'Variable',
+                                ),
+                              ),
+                            );
+                            if (newCat != null && mounted) {
+                              setState(() {
+                                categoryCtrl.text = newCat;
+                              });
+                            }
+                          },
+                          backgroundColor: Colors.transparent,
+                          side: BorderSide(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.1),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (err, stack) => const SizedBox.shrink(),
+                );
+              },
             ),
             const SizedBox(height: 20),
             TextField(

@@ -48,12 +48,17 @@ class SummaryCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(label.toUpperCase(),
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: semantic.secondaryText,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1)),
+                Expanded(
+                  child: Text(label.toUpperCase(),
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: semantic.secondaryText,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1),
+                ),
+                const SizedBox(width: 4),
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
@@ -65,12 +70,19 @@ class SummaryCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(value,
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: valueColor,
-                    letterSpacing: -0.5)),
+            Semantics(
+              container: true,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(value,
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: valueColor,
+                        letterSpacing: -0.5)),
+              ),
+            ),
           ],
         ),
       ),
@@ -118,37 +130,50 @@ class FullWidthSummaryCard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: valueColor.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
+            Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: valueColor.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      valueColor == semantic.income
+                          ? Icons.account_balance_wallet_outlined
+                          : Icons.receipt_long_outlined,
+                      size: 16,
+                      color: valueColor,
+                    ),
                   ),
-                  child: Icon(
-                    valueColor == semantic.income
-                        ? Icons.account_balance_wallet_outlined
-                        : Icons.receipt_long_outlined,
-                    size: 16,
-                    color: valueColor,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(label.toUpperCase(),
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: semantic.secondaryText,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Text(label.toUpperCase(),
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: semantic.secondaryText,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1)),
-              ],
+                ],
+              ),
             ),
-            Text(value,
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: valueColor,
-                    letterSpacing: -0.5)),
+            const SizedBox(width: 12),
+            Semantics(
+              container: true,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(value,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: valueColor,
+                        letterSpacing: -0.5)),
+              ),
+            ),
           ],
         ),
       ),

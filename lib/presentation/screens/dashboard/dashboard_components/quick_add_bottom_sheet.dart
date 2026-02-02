@@ -7,6 +7,9 @@ import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/core/utils/hash_utils.dart';
+import 'package:trueledger/presentation/providers/category_provider.dart';
+import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
 
 class QuickAddBottomSheet extends ConsumerStatefulWidget {
   const QuickAddBottomSheet({super.key});
@@ -18,18 +21,9 @@ class QuickAddBottomSheet extends ConsumerStatefulWidget {
 
 class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
   final TextEditingController _amountController = TextEditingController();
-  String _selectedCategory = 'General';
+  final TextEditingController _noteController = TextEditingController();
+  String _selectedCategory = ''; // Will be set when categories load
   final FocusNode _focusNode = FocusNode();
-
-  final List<String> _categories = [
-    'General',
-    'Food',
-    'Transport',
-    'Shopping',
-    'Entertainment',
-    'Medical',
-    'Services',
-  ];
 
   @override
   void initState() {
@@ -42,8 +36,22 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
   @override
   void dispose() {
     _amountController.dispose();
+    _noteController.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _onNoteChanged(String value) async {
+    if (value.length < 3) return;
+
+    final recommended = await ref
+        .read(financialRepositoryProvider)
+        .getRecommendedCategory(value);
+    if (recommended != null && mounted) {
+      setState(() {
+        _selectedCategory = recommended;
+      });
+    }
   }
 
   Future<void> _handleSave() async {
@@ -60,7 +68,9 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
             type: 'Variable',
             amount: amount,
             category: _selectedCategory,
-            note: 'Quick add',
+            note: _noteController.text.isEmpty
+                ? 'Quick add'
+                : _noteController.text,
             date: DateTime.now().toIso8601String(),
           ),
         );
@@ -158,83 +168,170 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                 prefixText: "", // Could add currency symbol here
               ),
             ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 44,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                itemCount: _categories.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 10),
-                itemBuilder: (context, index) {
-                  final cat = _categories[index];
-                  final isSelected = cat == _selectedCategory;
-                  return InkWell(
-                    onTap: () => setState(() => _selectedCategory = cat),
-                    borderRadius: BorderRadius.circular(16),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      decoration: BoxDecoration(
-                        gradient: isSelected
-                            ? LinearGradient(
-                                colors: [
-                                  colorScheme.primary,
-                                  colorScheme.primary.withValues(alpha: 0.8)
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
-                            : null,
-                        color: isSelected
-                            ? null
-                            : colorScheme.surfaceContainerHighest
-                                .withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? colorScheme.primary.withValues(alpha: 0.2)
-                              : Colors.transparent,
-                        ),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: colorScheme.primary
-                                      .withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                )
-                              ]
-                            : [],
-                      ),
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (isSelected) ...[
-                              const Icon(Icons.check_circle_rounded,
-                                  size: 16, color: Colors.white),
-                              const SizedBox(width: 8),
-                            ],
-                            Text(
-                              cat,
-                              style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : colorScheme.onSurfaceVariant,
-                                fontWeight: isSelected
-                                    ? FontWeight.w800
-                                    : FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
+            const SizedBox(height: 8),
+            TextField(
+              controller: _noteController,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: semantic.secondaryText,
               ),
+              decoration: const InputDecoration(
+                hintText: "What was this for?",
+                border: InputBorder.none,
+              ),
+              onChanged: _onNoteChanged,
+            ),
+            const SizedBox(height: 24),
+            Consumer(
+              builder: (context, ref, child) {
+                final categoriesAsync =
+                    ref.watch(categoriesProvider('Variable'));
+                return categoriesAsync.when(
+                  data: (categories) {
+                    if (categories.isEmpty) {
+                      return TextButton.icon(
+                        onPressed: () async {
+                          final newCat = await Navigator.push<String>(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ManageCategoriesScreen(
+                                          initialType: 'Variable')));
+                          if (newCat != null && mounted) {
+                            setState(() => _selectedCategory = newCat);
+                          }
+                        },
+                        icon: const Icon(Icons.add),
+                        label: const Text("MANAGE CATEGORIES"),
+                      );
+                    }
+
+                    if (_selectedCategory.isEmpty && categories.isNotEmpty) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          setState(() {
+                            _selectedCategory = categories.first.name;
+                          });
+                        }
+                      });
+                    }
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 4),
+                              itemCount: categories.length,
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(width: 10),
+                              itemBuilder: (context, index) {
+                                final cat = categories[index].name;
+                                final isSelected = cat == _selectedCategory;
+                                return InkWell(
+                                  onTap: () =>
+                                      setState(() => _selectedCategory = cat),
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20),
+                                    decoration: BoxDecoration(
+                                      gradient: isSelected
+                                          ? LinearGradient(
+                                              colors: [
+                                                colorScheme.primary,
+                                                colorScheme.primary
+                                                    .withValues(alpha: 0.8)
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            )
+                                          : null,
+                                      color: isSelected
+                                          ? null
+                                          : colorScheme.surfaceContainerHighest
+                                              .withValues(alpha: 0.5),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? colorScheme.primary
+                                                .withValues(alpha: 0.2)
+                                            : Colors.transparent,
+                                      ),
+                                      boxShadow: isSelected
+                                          ? [
+                                              BoxShadow(
+                                                color: colorScheme.primary
+                                                    .withValues(alpha: 0.3),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 4),
+                                              )
+                                            ]
+                                          : [],
+                                    ),
+                                    child: Center(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (isSelected) ...[
+                                            const Icon(
+                                                Icons.check_circle_rounded,
+                                                size: 16,
+                                                color: Colors.white),
+                                            const SizedBox(width: 8),
+                                          ],
+                                          Text(
+                                            cat,
+                                            style: TextStyle(
+                                              color: isSelected
+                                                  ? Colors.white
+                                                  : colorScheme
+                                                      .onSurfaceVariant,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.w800
+                                                  : FontWeight.w600,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        IconButton.filledTonal(
+                          onPressed: () async {
+                            final newCat = await Navigator.push<String>(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const ManageCategoriesScreen(
+                                            initialType: 'Variable')));
+                            if (newCat != null && mounted) {
+                              setState(() => _selectedCategory = newCat);
+                            }
+                          },
+                          icon: const Icon(Icons.settings_suggest_rounded,
+                              size: 20),
+                        ),
+                      ],
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) => Text("Error: $err"),
+                );
+              },
             ),
             const SizedBox(height: 32),
             Container(
@@ -277,9 +374,9 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                       "SAVE EXPENSE",
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
-                        letterSpacing: 1.5,
+                        letterSpacing: 2.0,
                         fontSize: 16,
-                        color: Colors.white,
+                        color: Color(0xFF064E3B), // Dark green for contrast
                       ),
                     ),
                   ),

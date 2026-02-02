@@ -10,14 +10,20 @@ import 'package:trueledger/core/utils/result.dart';
 
 import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
+import 'package:trueledger/domain/repositories/i_financial_repository.dart';
+import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/domain/models/models.dart';
 
 class MockAddTransactionUseCase extends Mock implements AddTransactionUseCase {}
 
 class MockNotificationService extends Mock implements NotificationService {}
 
+class MockFinancialRepository extends Mock implements IFinancialRepository {}
+
 void main() {
   late MockAddTransactionUseCase mockUseCase;
   late MockNotificationService mockNotificationService;
+  late MockFinancialRepository mockRepository;
 
   setUpAll(() {
     registerFallbackValue(AddTransactionParams(
@@ -32,8 +38,34 @@ void main() {
   setUp(() {
     mockUseCase = MockAddTransactionUseCase();
     mockNotificationService = MockNotificationService();
+    mockRepository = MockFinancialRepository();
+
     when(() => mockUseCase.call(any()))
         .thenAnswer((_) async => Success(AddTransactionResult()));
+
+    // Mock category fetching for all types
+    when(() => mockRepository.getCategories(any()))
+        .thenAnswer((invocation) async {
+      final type = invocation.positionalArguments[0] as String;
+      switch (type) {
+        case 'Variable':
+          return [TransactionCategory(id: 1, name: 'Food', type: 'Variable')];
+        case 'Fixed':
+          return [TransactionCategory(id: 2, name: 'Rent', type: 'Fixed')];
+        case 'Income':
+          return [TransactionCategory(id: 3, name: 'Salary', type: 'Income')];
+        case 'Investment':
+          return [
+            TransactionCategory(id: 4, name: 'Stocks', type: 'Investment')
+          ];
+        case 'Subscription':
+          return [
+            TransactionCategory(id: 5, name: 'OTT', type: 'Subscription')
+          ];
+        default:
+          return [];
+      }
+    });
   });
 
   Widget createWidget(AddExpense widget) {
@@ -41,6 +73,7 @@ void main() {
       overrides: [
         addTransactionUseCaseProvider.overrideWithValue(mockUseCase),
         notificationServiceProvider.overrideWithValue(mockNotificationService),
+        financialRepositoryProvider.overrideWithValue(mockRepository),
       ],
       child: MaterialApp(
         theme: AppTheme.darkTheme,
@@ -87,7 +120,7 @@ void main() {
 
       // Change type to Fixed
       await tester.tap(find.text('FIXED'));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       // Category should default to Rent (first in categoryMap['Fixed'])
       expect(find.text('RENT'), findsOneWidget);

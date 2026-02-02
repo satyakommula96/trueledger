@@ -525,12 +525,18 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
                 letterSpacing: 1.5,
               )),
           const SizedBox(height: 8),
-          Text(
-            CurrencyFormatter.format(amount.toInt(), compact: false),
-            style: TextStyle(
-              color: color,
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
+          Semantics(
+            container: true,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                CurrencyFormatter.format(amount.toInt(), compact: false),
+                style: TextStyle(
+                  color: color,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
             ),
           )
               .animate()
@@ -555,9 +561,13 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
           Icon(icon ?? Icons.info_outline,
               size: 16, color: Theme.of(context).disabledColor),
           const SizedBox(width: 12),
-          Text(msg,
-              style: TextStyle(
-                  color: Theme.of(context).disabledColor, fontSize: 13)),
+          Expanded(
+            child: Text(msg,
+                style: TextStyle(
+                    color: Theme.of(context).disabledColor, fontSize: 13),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1),
+          ),
         ],
       ),
     );
@@ -589,33 +599,51 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: colorScheme.onSurface)),
-                  const SizedBox(height: 4),
-                  Text(subtitle,
-                      style: TextStyle(
-                          color: Theme.of(context).hintColor, fontSize: 11)),
-                ],
-              ),
-              Row(
-                children: [
-                  Text(amount,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 15,
-                          color: amountColor)),
-                  if (onTap != null) ...[
-                    const SizedBox(width: 8),
-                    Icon(Icons.chevron_right,
-                        size: 16, color: Theme.of(context).hintColor),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: colorScheme.onSurface),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1),
+                    const SizedBox(height: 4),
+                    Text(subtitle,
+                        style: TextStyle(
+                            color: Theme.of(context).hintColor, fontSize: 11),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1),
                   ],
-                ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Semantics(
+                        container: true,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(amount,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
+                                  color: amountColor)),
+                        ),
+                      ),
+                    ),
+                    if (onTap != null) ...[
+                      const SizedBox(width: 8),
+                      Icon(Icons.chevron_right,
+                          size: 16, color: Theme.of(context).hintColor),
+                    ],
+                  ],
+                ),
               ),
             ],
           ),

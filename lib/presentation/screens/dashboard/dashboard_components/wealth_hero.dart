@@ -11,12 +11,16 @@ class WealthHero extends ConsumerStatefulWidget {
   final MonthlySummary summary;
   final int activeStreak;
   final bool hasLoggedToday;
+  final VoidCallback? onTapNetWorth;
+  final VoidCallback? onTapStreak;
 
   const WealthHero({
     super.key,
     required this.summary,
     required this.activeStreak,
     required this.hasLoggedToday,
+    this.onTapNetWorth,
+    this.onTapStreak,
   });
 
   @override
@@ -134,16 +138,21 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildHeaderPill(context, "NET WORTH",
-                            Icons.account_balance_wallet_rounded),
+                        Flexible(
+                          child: GestureDetector(
+                            onTap: widget.onTapNetWorth,
+                            child: _buildHeaderPill(context, "NET WORTH",
+                                Icons.account_balance_wallet_rounded),
+                          ),
+                        ),
                         if (widget.activeStreak > 0)
                           Flexible(
                             child: Builder(builder: (context) {
-                              final pill = _buildHeaderPill(
+                              final pillContent = _buildHeaderPill(
                                 context,
                                 widget.hasLoggedToday
-                                    ? "${widget.activeStreak} DAY TRACKING STREAK"
-                                    : "${widget.activeStreak} DAY STREAK (PENDING)",
+                                    ? "${widget.activeStreak} DAY STREAK"
+                                    : "${widget.activeStreak} DAY STREAK",
                                 Icons.whatshot_rounded,
                                 isAlt: true,
                                 color: widget.hasLoggedToday
@@ -151,14 +160,13 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                                     : Colors.blueGrey.shade300,
                               );
 
-                              if (!widget.hasLoggedToday) return pill;
-
-                              return pill
-                                  .animate(onPlay: (c) => c.repeat())
-                                  .shimmer(
-                                    duration: 1200.ms,
-                                    color: Colors.white.withValues(alpha: 0.3),
-                                  );
+                              Widget pill;
+                              if (!widget.hasLoggedToday) {
+                                pill = pillContent;
+                              } else {
+                                pill = pillContent.animate();
+                              }
+                              return pill;
                             }),
                           ),
                       ],
@@ -170,17 +178,16 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                         Text(
                             CurrencyFormatter.format(widget.summary.netWorth,
                                 compact: false, isPrivate: isPrivate),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 44,
+                                fontSize: 40,
                                 fontWeight: FontWeight.w900,
-                                letterSpacing: -2,
-                                height: 1.0)),
+                                letterSpacing: -1.5,
+                                height: 1.0),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
                       ],
-                    )
-                        .animate()
-                        .fadeIn(duration: 600.ms)
-                        .moveY(begin: 20, end: 0),
+                    ).animate().fadeIn(duration: 600.ms),
                   ],
                 ),
               ),
@@ -204,12 +211,7 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
     );
 
     if (isTouch) {
-      return mainContent
-          .animate(onPlay: (controller) => controller.repeat(reverse: true))
-          .shimmer(
-              duration: 3.seconds,
-              delay: 2.seconds,
-              color: Colors.white.withValues(alpha: 0.1));
+      return mainContent.animate();
     }
 
     return MouseRegion(
@@ -217,10 +219,7 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
       child: mainContent,
-    ).animate(onPlay: (controller) => controller.repeat(reverse: true)).shimmer(
-        duration: 3.seconds,
-        delay: 2.seconds,
-        color: Colors.white.withValues(alpha: 0.1));
+    ).animate();
   }
 
   Widget _buildHeaderPill(BuildContext context, String text, IconData icon,
@@ -250,7 +249,7 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                     color: color ?? Colors.white.withValues(alpha: 0.9),
                     fontWeight: FontWeight.w900,
                     fontSize: 10,
-                    letterSpacing: 1.2),
+                    letterSpacing: 0.5),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1),
           ),

@@ -12,6 +12,8 @@ import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/core/utils/hash_utils.dart';
+import 'package:trueledger/presentation/providers/category_provider.dart';
+import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
 
 class AddExpense extends ConsumerStatefulWidget {
   final String? initialType;
@@ -49,21 +51,18 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
   @override
   void initState() {
     super.initState();
-    final allowed = widget.allowedTypes ?? categoryMap.keys.toList();
-    if (widget.initialType != null &&
-        categoryMap.containsKey(widget.initialType) &&
-        allowed.contains(widget.initialType)) {
+    final allowed = widget.allowedTypes ??
+        ['Variable', 'Fixed', 'Income', 'Investment', 'Subscription'];
+    if (widget.initialType != null && allowed.contains(widget.initialType)) {
       type = widget.initialType!;
     } else {
       type = allowed.first;
     }
 
-    // Set initial category if valid for selected type
-    if (widget.initialCategory != null &&
-        categoryMap[type]!.contains(widget.initialCategory)) {
+    if (widget.initialCategory != null) {
       selectedCategory = widget.initialCategory!;
     } else {
-      selectedCategory = categoryMap[type]!.first;
+      selectedCategory = ''; // Will be set when categories load
     }
 
     amountCtrl.addListener(() {
@@ -78,29 +77,15 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
     super.dispose();
   }
 
-  final Map<String, List<String>> categoryMap = {
-    'Variable': ['Food', 'Transport', 'Shopping', 'Entertainment', 'Others'],
-    'Fixed': ['Rent', 'Utility', 'Insurance', 'EMI'],
-    'Investment': [
-      'Stocks',
-      'Mutual Funds',
-      'SIP',
-      'Crypto',
-      'Gold',
-      'Lending',
-      'Retirement',
-      'Other'
-    ],
-    'Income': ['Salary', 'Freelance', 'Dividends'],
-    'Subscription': ['OTT', 'Software', 'Gym'],
-  };
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<AppColors>()!;
-    final displayedTypes = widget.allowedTypes ?? categoryMap.keys.toList();
+    final displayedTypes = widget.allowedTypes ??
+        ['Variable', 'Fixed', 'Income', 'Investment', 'Subscription'];
     final bool isLocked = displayedTypes.length <= 1;
+
+    final categoriesAsync = ref.watch(categoriesProvider(type));
 
     return Scaffold(
       appBar: AppBar(
@@ -133,7 +118,7 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                         selected: active,
                         onSelected: (_) => setState(() {
                           type = t;
-                          selectedCategory = categoryMap[t]![0];
+                          selectedCategory = ''; // Reset when type changes
                         }),
                         selectedColor:
                             isIncome ? semantic.income : colorScheme.onSurface,
@@ -303,28 +288,81 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                     letterSpacing: 2,
                     color: Colors.grey)),
             const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: categoryMap[type]!.map((cat) {
-                final active = selectedCategory == cat;
-                return ActionChip(
-                  label: Text(cat.toUpperCase()),
-                  onPressed: () => setState(() => selectedCategory = cat),
-                  backgroundColor: active
-                      ? colorScheme.onSurface.withValues(alpha: 0.05)
-                      : Colors.transparent,
-                  side: BorderSide(
-                      color: active
-                          ? colorScheme.onSurface
-                          : colorScheme.onSurface.withValues(alpha: 0.05)),
-                  labelStyle: TextStyle(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 9,
-                      letterSpacing: 1),
+            categoriesAsync.when(
+              data: (categories) {
+                if (categories.isEmpty) {
+                  return TextButton.icon(
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const ManageCategoriesScreen())),
+                    icon: const Icon(Icons.add),
+                    label: const Text("MANAGE CATEGORIES"),
+                  );
+                }
+
+                // If selectedCategory is empty or not in the list, set it to the first one
+                if (selectedCategory.isEmpty ||
+                    !categories.any((c) => c.name == selectedCategory)) {
+                  // We use postFrameCallback to avoid setstate during build
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      setState(() {
+                        selectedCategory = categories.first.name;
+                      });
+                    }
+                  });
+                }
+
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ...categories.map((cat) {
+                      final active = selectedCategory == cat.name;
+                      return ActionChip(
+                        label: Text(cat.name.toUpperCase()),
+                        onPressed: () =>
+                            setState(() => selectedCategory = cat.name),
+                        backgroundColor: active
+                            ? colorScheme.onSurface.withValues(alpha: 0.05)
+                            : Colors.transparent,
+                        side: BorderSide(
+                            color: active
+                                ? colorScheme.onSurface
+                                : colorScheme.onSurface
+                                    .withValues(alpha: 0.05)),
+                        labelStyle: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 9,
+                            letterSpacing: 1),
+                      );
+                    }),
+                    ActionChip(
+                      label: const Icon(Icons.add, size: 16),
+                      onPressed: () async {
+                        final newCat = await Navigator.push<String>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ManageCategoriesScreen(initialType: type),
+                          ),
+                        );
+                        if (newCat != null && mounted) {
+                          setState(() => selectedCategory = newCat);
+                        }
+                      },
+                      backgroundColor: Colors.transparent,
+                      side: BorderSide(
+                          color: colorScheme.onSurface.withValues(alpha: 0.1)),
+                    ),
+                  ],
                 );
-              }).toList(),
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => Text("Error loading categories: $err"),
             ),
             const SizedBox(height: 48),
             const Text("AUDIT NOTES",
