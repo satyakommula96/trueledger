@@ -124,12 +124,12 @@ void main() {
       );
       expect(insights1.any((i) => i.id == 'wealth_projection'), isTrue);
 
-      // Generate second time immediately - should NOT have wealth projection (due to cooldown)
       final insights2 = service.generateInsights(
         summary: summary,
         trendData: [],
         budgets: [],
         categorySpending: [],
+        forceRefresh: true,
       );
       expect(insights2.any((i) => i.id == 'wealth_projection'), isFalse);
     });
@@ -164,8 +164,48 @@ void main() {
         trendData: [],
         budgets: budgets,
         categorySpending: [],
+        forceRefresh: true,
       );
       expect(insights2.any((i) => i.group == InsightGroup.trend), isFalse);
+    });
+
+    test('should cache insights and not recompute on same day', () {
+      final summary = MonthlySummary(
+        totalIncome: 10000,
+        totalFixed: 1000,
+        totalVariable: 1000,
+        totalSubscriptions: 0,
+        totalInvestments: 0,
+        netWorth: 1000,
+      );
+
+      // 1. Generate first time
+      final insights1 = service.generateInsights(
+        summary: summary,
+        trendData: [],
+        budgets: [],
+        categorySpending: [],
+      );
+
+      // 2. Change data - if cached, it should still return insights1
+      final emptySummary = MonthlySummary(
+        totalIncome: 0,
+        totalFixed: 0,
+        totalVariable: 0,
+        totalSubscriptions: 0,
+        totalInvestments: 0,
+        netWorth: 0,
+      );
+
+      final insights2 = service.generateInsights(
+        summary: emptySummary,
+        trendData: [],
+        budgets: [],
+        categorySpending: [],
+      );
+
+      expect(insights2.first.id, equals(insights1.first.id));
+      expect(insights2.first.id, equals('wealth_projection'));
     });
 
     test('should only show ONE high priority insight if any exist', () {

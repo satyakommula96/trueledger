@@ -61,10 +61,21 @@ class IntelligenceService {
     InsightGroup.critical: 1, // Daily
   };
 
+  static const String _dailyCacheKey = 'daily_insight_cache';
+  static const String _dailyCacheTimestampKey = 'daily_insight_cache_timestamp';
+
+  List<AIInsight>? _memCache;
+  DateTime? _memCacheDate;
+
   IntelligenceService(this._prefs);
 
   Future<void> dismissInsight(String id, InsightGroup group) async {
     _recordShown(id, group);
+    // Invalidate cache to force re-generation without the dismissed item
+    _memCache = null;
+    _memCacheDate = null;
+    await _prefs.remove(_dailyCacheKey);
+    await _prefs.remove(_dailyCacheTimestampKey);
   }
 
   List<AIInsight> generateInsights({
@@ -72,7 +83,43 @@ class IntelligenceService {
     required List<Map<String, dynamic>> trendData,
     required List<Budget> budgets,
     required List<Map<String, dynamic>> categorySpending,
+    bool forceRefresh = false,
   }) {
+    final now = DateTime.now();
+
+    // 1. Check Memory Cache
+    if (!forceRefresh &&
+        _memCacheDate != null &&
+        _memCacheDate!.year == now.year &&
+        _memCacheDate!.month == now.month &&
+        _memCacheDate!.day == now.day &&
+        _memCache != null) {
+      return _memCache!;
+    }
+
+    // 2. Check Disk Cache (Sync read)
+    if (!forceRefresh) {
+      final lastRunStr = _prefs.getString(_dailyCacheTimestampKey);
+      if (lastRunStr != null) {
+        try {
+          final lastRun = DateTime.parse(lastRunStr);
+          if (lastRun.year == now.year &&
+              lastRun.month == now.month &&
+              lastRun.day == now.day) {
+            final cachedJson = _prefs.getString(_dailyCacheKey);
+            if (cachedJson != null) {
+              final List<dynamic> list = jsonDecode(cachedJson);
+              _memCache = list.map((j) => AIInsight.fromJson(j)).toList();
+              _memCacheDate = now;
+              return _memCache!;
+            }
+          }
+        } catch (e) {
+          // Fallback to recomputation
+        }
+      }
+    }
+
     List<AIInsight> allPotentialInsights = [];
 
     final monthlyOutflow = (summary.totalFixed +
@@ -204,7 +251,16 @@ class IntelligenceService {
     List<AIInsight> filteredInsights = _filterByCooldown(allPotentialInsights);
 
     // Filter by Priority
-    return _applyPriorityLogic(filteredInsights);
+    final results = _applyPriorityLogic(filteredInsights);
+
+    // 3. Update Cache
+    _memCache = results;
+    _memCacheDate = now;
+    _prefs.setString(_dailyCacheTimestampKey, now.toIso8601String());
+    _prefs.setString(
+        _dailyCacheKey, jsonEncode(results.map((e) => e.toJson()).toList()));
+
+    return results;
   }
 
   List<AIInsight> _filterByCooldown(List<AIInsight> potential) {

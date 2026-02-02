@@ -32,4 +32,28 @@ class AIInsight {
     this.confidence = 0.85,
     required this.group,
   });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'body': body,
+        'type': type.name,
+        'priority': priority.name,
+        'value': value,
+        'currencyValue': currencyValue,
+        'confidence': confidence,
+        'group': group.name,
+      };
+
+  factory AIInsight.fromJson(Map<String, dynamic> json) => AIInsight(
+        id: json['id'],
+        title: json['title'],
+        body: json['body'],
+        type: InsightType.values.byName(json['type']),
+        priority: InsightPriority.values.byName(json['priority']),
+        value: json['value'],
+        currencyValue: json['currencyValue'],
+        confidence: json['confidence'],
+        group: InsightGroup.values.byName(json['group']),
+      );
 }
