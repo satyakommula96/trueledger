@@ -41,12 +41,21 @@ class IntelligenceService {
   }) {
     List<AIInsight> allPotentialInsights = [];
 
-    // 1. Wealth Projection (Prediction) - High Priority
-    double monthlyNet = (summary.totalIncome -
-            (summary.totalFixed +
-                summary.totalVariable +
-                summary.totalSubscriptions))
+    final monthlyOutflow = (summary.totalFixed +
+            summary.totalVariable +
+            summary.totalSubscriptions)
         .toDouble();
+
+    double avgOutflow = 0;
+    if (trendData.isNotEmpty) {
+      final monthlyExpenses =
+          trendData.map((d) => ((d['total'] as num?) ?? 0).toDouble()).toList();
+      avgOutflow =
+          monthlyExpenses.reduce((a, b) => a + b) / monthlyExpenses.length;
+    }
+
+    // 1. Wealth Projection (Prediction) - High Priority
+    double monthlyNet = (summary.totalIncome - monthlyOutflow).toDouble();
     if (monthlyNet > 0) {
       final projectedYearly = monthlyNet * 12;
       if (projectedYearly.isFinite && projectedYearly > 0) {
@@ -54,7 +63,7 @@ class IntelligenceService {
           id: 'wealth_projection',
           title: "WEALTH PROJECTION",
           body:
-              "Based on this month's ${((monthlyNet / summary.totalIncome) * 100).toInt()}% savings rate, you could grow your net worth by ${projectedYearly.toInt()} in one year.",
+              "Based on this month's ${((monthlyNet / summary.totalIncome) * 100).toInt()}% savings rate, you could grow your net worth by ${projectedYearly.toInt()} in one year. This beats the typical 20% behavior benchmark.",
           type: InsightType.prediction,
           priority: InsightPriority.high,
           value: "Projected",
@@ -65,16 +74,20 @@ class IntelligenceService {
     }
 
     // 2. Critical Overspending - High Priority
-    final totalOutflow = (summary.totalFixed +
-        summary.totalVariable +
-        summary.totalSubscriptions);
-    if (summary.totalIncome > 0 && totalOutflow > summary.totalIncome) {
-      final deficit = totalOutflow - summary.totalIncome;
+    if (summary.totalIncome > 0 && monthlyOutflow > summary.totalIncome) {
+      final deficit = monthlyOutflow - summary.totalIncome;
+      String avgContext = "";
+      if (avgOutflow > 0) {
+        final diff = ((monthlyOutflow - avgOutflow) / avgOutflow * 100)
+            .toStringAsFixed(0);
+        avgContext = " This is $diff% higher than your average.";
+      }
+
       allPotentialInsights.add(AIInsight(
         id: 'critical_overspending',
         title: "CRITICAL OVERSPENDING",
         body:
-            "You've spent ${((deficit / summary.totalIncome) * 100).toInt()}% more than your income this month. High risk of debt accumulation.",
+            "You've spent ${((deficit / summary.totalIncome) * 100).toInt()}% more than your income this month.$avgContext High risk of debt accumulation vs your budget limits.",
         type: InsightType.warning,
         priority: InsightPriority.high,
         value: "Danger",
@@ -88,15 +101,13 @@ class IntelligenceService {
       final monthlyExpenses =
           trendData.map((d) => ((d['total'] as num?) ?? 0).toDouble()).toList();
       double forecast = _forecastNext(monthlyExpenses);
-      double avgExpense =
-          monthlyExpenses.reduce((a, b) => a + b) / monthlyExpenses.length;
 
-      if (forecast > avgExpense * _forecastSurgeThreshold) {
+      if (avgOutflow > 0 && forecast > avgOutflow * _forecastSurgeThreshold) {
         allPotentialInsights.add(AIInsight(
           id: 'spending_surge',
           title: "SPENDING SURGE DETECTED",
           body:
-              "Calculated velocity suggests next month's outflows will be ${((_forecastSurgeThreshold - 1) * 100).toInt()}% higher than your 3-month average.",
+              "Calculated velocity suggests next month's outflows will be ${((forecast / avgOutflow - 1) * 100).toInt()}% higher than your 3-month average of ${avgOutflow.toInt()}.",
           type: InsightType.warning,
           priority: InsightPriority.medium,
           value: "Forecast",
@@ -115,7 +126,7 @@ class IntelligenceService {
           id: 'budget_discipline',
           title: "BUDGET OVERFLOW",
           body:
-              "You have exceeded your limit in ${overspentBudgets.length} categories. Total overflow is ${overspentBudgets.fold(0.0, (sum, b) => sum + (b.spent - b.monthlyLimit)).toInt()} vs your plan.",
+              "You have exceeded your limit in ${overspentBudgets.length} categories. Total overflow is ${overspentBudgets.fold(0.0, (sum, b) => sum + (b.spent - b.monthlyLimit)).toInt()} vs your planned budget limits.",
           type: InsightType.warning,
           priority: InsightPriority.medium,
           value: "Action Needed",
@@ -131,7 +142,7 @@ class IntelligenceService {
         id: 'subscription_overload',
         title: "SUBSCRIPTION LEAKAGE",
         body:
-            "Recurring services consume ${((summary.totalSubscriptions / summary.totalIncome) * 100).toInt()}% of your income, which is above the ${(_subscriptionIncomeThreshold * 100).toInt()}% recommendation.",
+            "Recurring services consume ${((summary.totalSubscriptions / summary.totalIncome) * 100).toInt()}% of your income, which is above the ${(_subscriptionIncomeThreshold * 100).toInt()}% typical behavior recommendation.",
         type: InsightType.info,
         priority: InsightPriority.low,
         value: "Optimization",
@@ -147,7 +158,7 @@ class IntelligenceService {
         id: 'savings_milestone',
         title: "SAVINGS MILESTONE",
         body:
-            "Your ${((savingsRate) * 100).toInt()}% savings rate is well above the recommended 20% benchmark. Great consistency!",
+            "Your ${((savingsRate) * 100).toInt()}% savings rate is well above the recommended 20% benchmark. This shows strong discipline vs typical consumer behavior.",
         type: InsightType.success,
         priority: InsightPriority.low,
         value: "Elite",
