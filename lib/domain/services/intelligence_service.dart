@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/domain/models/models.dart';
 export 'package:trueledger/domain/models/models.dart'
-    show AIInsight, InsightType, InsightPriority;
+    show AIInsight, InsightType, InsightPriority, InsightGroup;
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
 final intelligenceServiceProvider = Provider<IntelligenceService>((ref) {
@@ -21,10 +21,16 @@ class IntelligenceService {
   static const double _debtToIncomeManageableThreshold = 0.40;
   static const double _debtToIncomeHealthyThreshold = 0.20;
 
+  static const Map<InsightGroup, int> _groupCooldowns = {
+    InsightGroup.trend: 7, // Weekly
+    InsightGroup.behavioral: 30, // Monthly
+    InsightGroup.critical: 1, // Daily
+  };
+
   IntelligenceService(this._prefs);
 
-  Future<void> dismissInsight(String id) async {
-    _recordShown(id);
+  Future<void> dismissInsight(String id, InsightGroup group) async {
+    _recordShown(id, group);
   }
 
   List<AIInsight> generateInsights({
@@ -53,7 +59,7 @@ class IntelligenceService {
           priority: InsightPriority.high,
           value: "Projected",
           currencyValue: projectedYearly,
-          cooldownDays: 30, // Show once a month
+          group: InsightGroup.behavioral,
         ));
       }
     }
@@ -73,7 +79,7 @@ class IntelligenceService {
         priority: InsightPriority.high,
         value: "Danger",
         currencyValue: deficit,
-        cooldownDays: 1, // Alert daily if critical
+        group: InsightGroup.critical,
       ));
     }
 
@@ -95,7 +101,7 @@ class IntelligenceService {
           priority: InsightPriority.medium,
           value: "Forecast",
           currencyValue: forecast,
-          cooldownDays: 14,
+          group: InsightGroup.trend,
         ));
       }
     }
@@ -113,7 +119,7 @@ class IntelligenceService {
           type: InsightType.warning,
           priority: InsightPriority.medium,
           value: "Action Needed",
-          cooldownDays: 7,
+          group: InsightGroup.trend,
         ));
       }
     }
@@ -129,7 +135,7 @@ class IntelligenceService {
         type: InsightType.info,
         priority: InsightPriority.low,
         value: "Optimization",
-        cooldownDays: 30,
+        group: InsightGroup.behavioral,
       ));
     }
 
@@ -145,7 +151,7 @@ class IntelligenceService {
         type: InsightType.success,
         priority: InsightPriority.low,
         value: "Elite",
-        cooldownDays: 7,
+        group: InsightGroup.trend,
       ));
     }
 
@@ -163,17 +169,31 @@ class IntelligenceService {
     final List<AIInsight> filtered = [];
 
     for (final insight in potential) {
+      // 1. Check Individual Insight Cooldown
       final lastShownStr = history[insight.id];
-      if (lastShownStr == null) {
-        filtered.add(insight);
-        continue;
+      if (lastShownStr != null) {
+        final lastShown = DateTime.parse(lastShownStr);
+        final cooldown = _groupCooldowns[insight.group] ?? 7;
+        if (now.difference(lastShown).inDays < cooldown) {
+          continue;
+        }
       }
 
-      final lastShown = DateTime.parse(lastShownStr);
-      // Determine if within cooldown period
-      if (now.difference(lastShown).inDays >= insight.cooldownDays) {
-        filtered.add(insight);
+      // 2. Check Group Cooldown (Broad Throttling)
+      final groupKey = 'group_${insight.group.name}';
+      final lastGroupShownStr = history[groupKey];
+      if (lastGroupShownStr != null) {
+        final lastGroupShown = DateTime.parse(lastGroupShownStr);
+        final groupCooldown = _groupCooldowns[insight.group] ?? 7;
+
+        // Critical insights can show multiple times if different, but others follow group throttles
+        if (insight.group != InsightGroup.critical &&
+            now.difference(lastGroupShown).inDays < groupCooldown) {
+          continue;
+        }
       }
+
+      filtered.add(insight);
     }
     return filtered;
   }
@@ -189,53 +209,55 @@ class IntelligenceService {
           type: InsightType.info,
           priority: InsightPriority.low,
           value: "Steady",
-          cooldownDays: 0,
+          group: InsightGroup.critical,
         )
       ];
     }
 
-    // 1. High Priority First
+    // Sort by confidence within same priority groups
+    insights.sort((a, b) => b.confidence.compareTo(a.confidence));
+
+    // 1. High Priority Rule: Exactly one if any exist
     final high =
         insights.where((i) => i.priority == InsightPriority.high).toList();
     if (high.isNotEmpty) {
-      // Return 1 high priority insight (most critical)
-      high.sort((a, b) => b.confidence.compareTo(a.confidence));
-      _recordShown(high.first.id);
-      return [high.first];
+      final selected = high.first;
+      _recordShown(selected.id, selected.group);
+      return [selected];
     }
 
-    // 2. Max 2 Medium Priority
-    final medium =
-        insights.where((i) => i.priority == InsightPriority.medium).toList();
-    if (medium.isNotEmpty) {
-      medium.sort((a, b) => b.confidence.compareTo(a.confidence));
-      final showing = medium.take(2).toList();
-      for (var s in showing) {
-        _recordShown(s.id);
+    // 2. Medium & Low Priority Rule: Max 2 total, priority ordered
+    // We prioritize Medium over Low, and then confidence.
+    final remaining = insights
+        .where((i) =>
+            i.priority == InsightPriority.medium ||
+            i.priority == InsightPriority.low)
+        .toList();
+
+    // Sort by priority (Medium before Low) then confidence
+    remaining.sort((a, b) {
+      if (a.priority == b.priority) {
+        return b.confidence.compareTo(a.confidence);
       }
-      return showing;
-    }
+      return a.priority == InsightPriority.medium ? -1 : 1;
+    });
 
-    // 3. Low Priority
-    final low =
-        insights.where((i) => i.priority == InsightPriority.low).toList();
-    if (low.isNotEmpty) {
-      low.sort((a, b) => b.confidence.compareTo(a.confidence));
-      final showing = low.take(2).toList();
-      for (var s in showing) {
-        _recordShown(s.id);
-      }
-      return showing;
+    final showing = remaining.take(2).toList();
+    for (var s in showing) {
+      _recordShown(s.id, s.group);
     }
-
-    return insights;
+    return showing;
   }
 
-  void _recordShown(String id) {
+  void _recordShown(String id, InsightGroup group) {
     if (id == 'no_insights') return;
     final historyJson = _prefs.getString(_historyKey) ?? '{}';
     final Map<String, dynamic> history = jsonDecode(historyJson);
-    history[id] = DateTime.now().toIso8601String();
+    final nowStr = DateTime.now().toIso8601String();
+
+    history[id] = nowStr;
+    history['group_${group.name}'] = nowStr;
+
     _prefs.setString(_historyKey, jsonEncode(history));
   }
 

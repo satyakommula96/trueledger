@@ -414,7 +414,7 @@ class InsightItem extends ConsumerWidget {
                             onTap: () async {
                               await ref
                                   .read(intelligenceServiceProvider)
-                                  .dismissInsight(insight.id);
+                                  .dismissInsight(insight.id, insight.group);
                               ref.invalidate(insightsProvider);
                             },
                             child: Padding(

@@ -4,6 +4,12 @@ enum InsightType { warning, success, info, prediction }
 
 enum InsightPriority { high, medium, low }
 
+enum InsightGroup {
+  trend,
+  behavioral,
+  critical,
+}
+
 class AIInsight {
   final String id;
   final String title;
@@ -13,7 +19,7 @@ class AIInsight {
   final String value;
   final num? currencyValue;
   final double confidence;
-  final int cooldownDays;
+  final InsightGroup group;
 
   AIInsight({
     required this.id,
@@ -24,6 +30,6 @@ class AIInsight {
     required this.value,
     this.currencyValue,
     this.confidence = 0.85,
-    this.cooldownDays = 7, // Default 1 week
+    required this.group,
   });
 }

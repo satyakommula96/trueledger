@@ -58,6 +58,7 @@ void main() {
         type: InsightType.prediction,
         priority: InsightPriority.high,
         currencyValue: 1000000,
+        group: InsightGroup.behavioral,
       ),
       AIInsight(
         id: '2',
@@ -66,6 +67,7 @@ void main() {
         value: 'Advice',
         type: InsightType.info,
         priority: InsightPriority.medium,
+        group: InsightGroup.trend,
       ),
     ];
 

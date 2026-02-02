@@ -133,6 +133,99 @@ void main() {
       );
       expect(insights2.any((i) => i.id == 'wealth_projection'), isFalse);
     });
+
+    test('should apply group-level cooldown (Trend)', () {
+      final summary = MonthlySummary(
+        totalIncome: 200, // Very low income
+        totalFixed: 100,
+        totalVariable: 100,
+        totalSubscriptions: 0,
+        totalInvestments: 0,
+        netWorth: 0,
+      );
+      final budgets = [
+        Budget(id: 1, category: 'Food', monthlyLimit: 50, spent: 100),
+      ];
+      // Savings milestone is also a Trend, but budget discipline is usually higher priority or first
+
+      final insights1 = service.generateInsights(
+        summary: summary,
+        trendData: [],
+        budgets: budgets,
+        categorySpending: [],
+      );
+
+      // Should show at least one trend (budget overflow)
+      expect(insights1.any((i) => i.group == InsightGroup.trend), isTrue);
+
+      // Generate again - should be blocked by group cooldown
+      final insights2 = service.generateInsights(
+        summary: summary,
+        trendData: [],
+        budgets: budgets,
+        categorySpending: [],
+      );
+      expect(insights2.any((i) => i.group == InsightGroup.trend), isFalse);
+    });
+
+    test('should only show ONE high priority insight if any exist', () {
+      final summary = MonthlySummary(
+        totalIncome: 1000,
+        totalFixed: 600,
+        totalVariable: 500,
+        totalSubscriptions: 100, // total outflow = 1200 (Critical!)
+        totalInvestments: 0,
+        netWorth: 1000, // Also satisfies Wealth Projection (High)
+      );
+
+      final insights = service.generateInsights(
+        summary: summary,
+        trendData: [],
+        budgets: [],
+        categorySpending: [],
+      );
+
+      // Even if multiple high priority are valid, we only show one to stay calm
+      expect(insights.length, 1);
+      expect(insights.first.priority, InsightPriority.high);
+    });
+
+    test('should show max two medium/low priority insights', () {
+      final summary = MonthlySummary(
+        totalIncome: 1000,
+        totalFixed: 100,
+        totalVariable: 100,
+        totalSubscriptions: 0,
+        totalInvestments: 0,
+        netWorth: 0,
+      );
+      // Validating multiple low/medium triggers:
+      // 1. Savings Milestone (Low)
+      // 2. Budget Discipline (Medium) - if we add one
+      // 3. Subscription Leakage (Low) - if we adjust income
+
+      final budgets = [
+        Budget(id: 1, category: 'A', monthlyLimit: 50, spent: 100),
+        Budget(id: 2, category: 'B', monthlyLimit: 50, spent: 100),
+      ];
+
+      final insights = service.generateInsights(
+        summary: summary,
+        trendData: [],
+        budgets: budgets,
+        categorySpending: [],
+      );
+
+      // Should be capped at 2
+      expect(insights.length, lessThanOrEqualTo(2));
+      // Should not contain High (since 1000 income vs 200 expense doesn't trigger critical overspending anymore, wait...)
+      // actually wealth projection is high.
+      if (insights.any((i) => i.priority == InsightPriority.high)) {
+        expect(insights.length, 1);
+      } else {
+        expect(insights.length, 2);
+      }
+    });
   });
 
   group('IntelligenceService.calculateHealthScore', () {
