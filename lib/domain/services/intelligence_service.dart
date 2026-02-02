@@ -14,12 +14,46 @@ class IntelligenceService {
   final SharedPreferences _prefs;
   static const String _historyKey = 'insight_display_history';
 
+  // --- Behavioral Thresholds ---
   static const double _savingsRateThreshold = 0.3;
   static const double _subscriptionIncomeThreshold = 0.1;
   static const double _forecastSurgeThreshold = 1.15;
   static const double _debtToIncomeRiskyThreshold = 0.60;
   static const double _debtToIncomeManageableThreshold = 0.40;
   static const double _debtToIncomeHealthyThreshold = 0.20;
+  static const double _typicalSavingsBenchmark = 0.20;
+  static const double _creditCardPaymentFactor =
+      0.05; // 5% minimum payment estimate
+  static const int _monthsInYear = 12;
+
+  // --- Health Score Weights ---
+  static const int _defaultScore = 50;
+  static const double _highSavingsThreshold = 0.50;
+  static const double _savingsBaseScore = 25.0;
+  static const double _savingsMaxBonus = 15.0;
+  static const double _savingsSlopeDenom = 0.30;
+  static const double _savingsPenaltyFactor = 20.0;
+  static const double _savingsPenaltyMax = 30.0;
+
+  static const double _dtiZeroScore = 30.0;
+  static const double _dtiHealthyScore = 25.0;
+  static const double _dtiManageableScore = 15.0;
+  static const double _dtiRiskyScore = 5.0;
+  static const double _dtiHeavyPenalty = 10.0;
+
+  static const double _solvencyHighRatio = 3.0;
+  static const double _solvencyMidRatio = 1.5;
+  static const double _solvencyBaseRatio = 1.0;
+  static const double _solvencyHighBonus = 15.0;
+  static const double _solvencyMidBonus = 10.0;
+  static const double _solvencyBaseBonus = 5.0;
+  static const double _solvencyZeroLiabBonus = 7.0;
+
+  static const double _budgetMaxScore = 15.0;
+  static const double _budgetNoBudgetsBonus = 10.0;
+  static const double _liquidityExpMultiplier = 3.0;
+  static const double _liquidityBonus = 10.0;
+  static const double _insolvencyPenalty = 20.0;
 
   static const Map<InsightGroup, int> _groupCooldowns = {
     InsightGroup.trend: 7, // Weekly
@@ -57,13 +91,13 @@ class IntelligenceService {
     // 1. Wealth Projection (Prediction) - High Priority
     double monthlyNet = (summary.totalIncome - monthlyOutflow).toDouble();
     if (monthlyNet > 0) {
-      final projectedYearly = monthlyNet * 12;
+      final projectedYearly = monthlyNet * _monthsInYear;
       if (projectedYearly.isFinite && projectedYearly > 0) {
         allPotentialInsights.add(AIInsight(
           id: 'wealth_projection',
           title: "WEALTH PROJECTION",
           body:
-              "Based on this month's ${((monthlyNet / summary.totalIncome) * 100).toInt()}% savings rate, you could grow your net worth by ${projectedYearly.toInt()} in one year. This beats the typical 20% behavior benchmark.",
+              "Based on this month's ${((monthlyNet / summary.totalIncome) * 100).toInt()}% savings rate, you could grow your net worth by ${projectedYearly.toInt()} in one year. This beats the typical ${(_typicalSavingsBenchmark * 100).toInt()}% behavior benchmark.",
           type: InsightType.prediction,
           priority: InsightPriority.high,
           value: "Projected",
@@ -280,7 +314,7 @@ class IntelligenceService {
         summary.totalFixed == 0 &&
         summary.totalVariable == 0 &&
         summary.netWorth == 0) {
-      return 50;
+      return _defaultScore;
     }
 
     double score = 0.0;
@@ -290,34 +324,37 @@ class IntelligenceService {
 
     if (summary.totalIncome > 0) {
       double savingsRate = surplus / summary.totalIncome;
-      if (savingsRate >= 0.50) {
-        score += 40;
-      } else if (savingsRate >= 0.20) {
-        score += 25 + (savingsRate - 0.20) * (15 / 0.30);
+      if (savingsRate >= _highSavingsThreshold) {
+        score += (_savingsBaseScore + _savingsMaxBonus);
+      } else if (savingsRate >= _typicalSavingsBenchmark) {
+        score += _savingsBaseScore +
+            (savingsRate - _typicalSavingsBenchmark) *
+                (_savingsMaxBonus / _savingsSlopeDenom);
       } else if (savingsRate > 0) {
-        score += (savingsRate / 0.20) * 25;
+        score += (savingsRate / _typicalSavingsBenchmark) * _savingsBaseScore;
       } else {
-        score -= (savingsRate.abs() * 20).clamp(0.0, 30.0);
+        score -= (savingsRate.abs() * _savingsPenaltyFactor)
+            .clamp(0.0, _savingsPenaltyMax);
       }
     } else if (totalExpenses > 0) {
-      score -= 20;
+      score -= _insolvencyPenalty;
     }
 
     if (summary.totalIncome > 0) {
-      double monthlyDebt =
-          summary.totalMonthlyEMI.toDouble() + (summary.creditCardDebt * 0.05);
+      double monthlyDebt = summary.totalMonthlyEMI.toDouble() +
+          (summary.creditCardDebt * _creditCardPaymentFactor);
       double dti = monthlyDebt / summary.totalIncome;
 
       if (dti == 0) {
-        score += 30;
+        score += _dtiZeroScore;
       } else if (dti <= _debtToIncomeHealthyThreshold) {
-        score += 25;
+        score += _dtiHealthyScore;
       } else if (dti <= _debtToIncomeManageableThreshold) {
-        score += 15;
+        score += _dtiManageableScore;
       } else if (dti <= _debtToIncomeRiskyThreshold) {
-        score += 5;
+        score += _dtiRiskyScore;
       } else {
-        score -= 10;
+        score -= _dtiHeavyPenalty;
       }
     }
 
@@ -326,15 +363,15 @@ class IntelligenceService {
     double assets = (summary.netWorth + liabilities).toDouble();
 
     if (liabilities <= 0) {
-      score += assets > 0 ? 15 : 7;
+      score += assets > 0 ? _solvencyHighBonus : _solvencyZeroLiabBonus;
     } else if (assets > 0) {
       double ratio = assets / liabilities;
-      if (ratio >= 3.0) {
-        score += 15;
-      } else if (ratio >= 1.5) {
-        score += 10;
-      } else if (ratio >= 1.0) {
-        score += 5;
+      if (ratio >= _solvencyHighRatio) {
+        score += _solvencyHighBonus;
+      } else if (ratio >= _solvencyMidRatio) {
+        score += _solvencyMidBonus;
+      } else if (ratio >= _solvencyBaseRatio) {
+        score += _solvencyBaseBonus;
       }
     }
 
@@ -342,17 +379,18 @@ class IntelligenceService {
       int overspentCount =
           budgets.where((b) => b.spent > b.monthlyLimit).length;
       double health = 1 - (overspentCount / budgets.length);
-      score += (health * 15);
+      score += (health * _budgetMaxScore);
     } else {
-      score += 10;
+      score += _budgetNoBudgetsBonus;
     }
 
-    if (totalExpenses > 0 && assets > (totalExpenses * 3)) {
-      score += 10;
+    if (totalExpenses > 0 &&
+        assets > (totalExpenses * _liquidityExpMultiplier)) {
+      score += _liquidityBonus;
     }
 
     if (summary.netWorth < 0) {
-      score -= 20;
+      score -= _insolvencyPenalty;
     }
 
     return score.toInt().clamp(0, 100);
