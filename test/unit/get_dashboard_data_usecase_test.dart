@@ -61,6 +61,8 @@ void main() {
       when(() => mockRepository.getWeeklySummary())
           .thenAnswer((_) async => {'thisWeek': 500, 'lastWeek': 400});
       when(() => mockRepository.getActiveStreak()).thenAnswer((_) async => 5);
+      when(() => mockRepository.getTodayTransactionCount())
+          .thenAnswer((_) async => 3);
 
       // Act
       final result = await useCase.call(NoParams());

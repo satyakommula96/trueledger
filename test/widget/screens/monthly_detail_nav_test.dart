@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
 import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
-import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -52,8 +51,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap FAB
-      await tester.tap(find.descendant(
-          of: find.byType(HoverWrapper), matching: find.text('ADD ENTRY')));
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
       // Verify AddExpense is shown with restricted type
@@ -71,8 +69,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap FAB
-      await tester.tap(find.descendant(
-          of: find.byType(HoverWrapper), matching: find.text('ADD ENTRY')));
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
       expect(find.byType(AddExpense), findsOneWidget);

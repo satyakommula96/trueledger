@@ -71,9 +71,9 @@ void main() {
       // debugPrint("FOUND ERROR VIEW: ${errorView.error}");
     }
 
-    expect(find.text("Spending Consistency"), findsOneWidget);
-    expect(find.text("Volume Comparison"), findsOneWidget);
-    expect(find.text("Gentle Goal"), findsOneWidget);
+    expect(find.text("SPENDING CONSISTENCY"), findsOneWidget);
+    expect(find.text("VOLUME COMPARISON"), findsOneWidget);
+    expect(find.text("GENTLE GOAL"), findsOneWidget);
     expect(find.textContaining("Perfect week"), findsOneWidget);
   });
 }

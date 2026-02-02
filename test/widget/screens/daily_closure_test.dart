@@ -36,6 +36,7 @@ void main() {
       ProviderScope(
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepo),
+          dayClosureProvider.overrideWith(() => MockDayClosureNotifier(false)),
         ],
         child: MaterialApp(
           theme: AppTheme.lightTheme,

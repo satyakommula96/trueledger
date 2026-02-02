@@ -22,8 +22,6 @@ import 'package:trueledger/presentation/screens/dashboard/dashboard_components/d
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/weekly_summary.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/quick_add_bottom_sheet.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/daily_closure_card.dart';
-import 'package:trueledger/presentation/screens/dashboard/dashboard_components/credit_card_summary.dart';
-import 'package:trueledger/presentation/screens/dashboard/dashboard_components/borrowing_summary.dart';
 import 'package:trueledger/domain/services/intelligence_service.dart';
 import 'package:trueledger/presentation/screens/dashboard/weekly_reflection.dart';
 import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
@@ -267,39 +265,6 @@ class Dashboard extends ConsumerWidget {
                                       semantic: semantic,
                                       onLoad: reload)
                                   .animate(delay: 400.ms)
-                                  .fade(duration: 600.ms)
-                                  .slideY(
-                                      begin: 0.2,
-                                      end: 0,
-                                      curve: Curves.easeOutQuint),
-                              const SizedBox(height: 32),
-                              SectionHeader(
-                                      title: "Credit & Loans",
-                                      sub: "Debt Management",
-                                      semantic: semantic)
-                                  .animate(delay: 450.ms)
-                                  .fade(duration: 600.ms),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: CreditCardSummary(
-                                      summary: summary,
-                                      semantic: semantic,
-                                      onLoad: reload,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: BorrowingSummary(
-                                      summary: summary,
-                                      semantic: semantic,
-                                      onLoad: reload,
-                                    ),
-                                  ),
-                                ],
-                              )
-                                  .animate(delay: 480.ms)
                                   .fade(duration: 600.ms)
                                   .slideY(
                                       begin: 0.2,

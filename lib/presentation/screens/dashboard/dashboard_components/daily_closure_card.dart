@@ -52,7 +52,7 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
     if (!isNight && !widget.forceShow) return const SizedBox.shrink();
 
     // If day is already closed ritualistically, show a smaller "Success" state or shrink
-    if (isClosed && !widget.forceShow) {
+    if (isClosed) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),

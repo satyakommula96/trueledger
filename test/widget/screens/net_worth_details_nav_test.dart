@@ -7,6 +7,7 @@ import 'package:trueledger/presentation/screens/net_worth/net_worth_details.dart
 import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
+import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/core/theme/theme.dart';
 
@@ -25,6 +26,10 @@ void main() {
     when(() => mockRepo.getAllValues(any())).thenAnswer((_) async => []);
     when(() => mockRepo.getCreditCards()).thenAnswer((_) async => []);
     when(() => mockRepo.getLoans()).thenAnswer((_) async => []);
+    when(() => mockRepo.getCategories('Investment')).thenAnswer((_) async => [
+          TransactionCategory(id: 1, name: 'Mutual Funds', type: 'Investment'),
+          TransactionCategory(id: 2, name: 'Stocks', type: 'Investment'),
+        ]);
     when(() => mockPrefs.getString(any())).thenReturn(null);
     when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);
   });

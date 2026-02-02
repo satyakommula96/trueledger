@@ -7,12 +7,12 @@ import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/presentation/screens/transactions/edit_entry.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
+import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 import 'month_detail_components/category_icon.dart';
 import 'month_detail_components/month_detail_header.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
-import 'package:trueledger/presentation/screens/dashboard/dashboard_components/quick_add_bottom_sheet.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/presentation/components/empty_state.dart';
@@ -105,11 +105,22 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
       appBar: AppBar(title: Text(_formatMonth(widget.month))),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          final added = await showModalBottomSheet<bool>(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (context) => const QuickAddBottomSheet(),
+          final List<String>? allowedTypes = typeFilter == 'All'
+              ? null
+              : (typeFilter == 'Expenses'
+                  ? ['Variable', 'Fixed', 'Subscription']
+                  : [typeFilter]);
+
+          final added = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddExpense(
+                allowedTypes: allowedTypes,
+                initialType: typeFilter == 'All' || typeFilter == 'Expenses'
+                    ? 'Variable'
+                    : typeFilter,
+              ),
+            ),
           );
           if (added == true) {
             _loadData();

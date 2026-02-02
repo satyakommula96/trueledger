@@ -71,7 +71,7 @@ void main() {
     // Wait for animations to finish
     await tester.pumpAndSettle();
 
-    expect(find.text('REMAINING DEBT'), findsOneWidget);
+    expect(find.text('BORROWINGS'), findsOneWidget);
     // With USD and compact=true, 15000 should be "$15K"
     expect(find.textContaining('15'), findsOneWidget);
   });
@@ -97,7 +97,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Tap on the card
-    await tester.tap(find.text('REMAINING DEBT'));
+    await tester.tap(find.text('BORROWINGS'));
     await tester.pumpAndSettle();
 
     // Check if we are on Loans screen
