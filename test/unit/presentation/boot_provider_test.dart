@@ -27,14 +27,16 @@ class MockSecureStorage extends Mock implements FlutterSecureStorage {}
 class SuccessStartupUseCase extends StartupUseCase {
   SuccessStartupUseCase() : super(MockRepo(), MockAutoBackupUseCase());
   @override
-  Future<Result<StartupResult>> call(NoParams params) async =>
+  Future<Result<StartupResult>> call(NoParams params,
+          {void Function()? onBackupSuccess}) async =>
       Success(StartupResult(shouldScheduleReminder: true));
 }
 
 class FailureStartupUseCase extends StartupUseCase {
   FailureStartupUseCase() : super(MockRepo(), MockAutoBackupUseCase());
   @override
-  Future<Result<StartupResult>> call(NoParams params) async =>
+  Future<Result<StartupResult>> call(NoParams params,
+          {void Function()? onBackupSuccess}) async =>
       Failure(DatabaseFailure("Fail"));
 }
 

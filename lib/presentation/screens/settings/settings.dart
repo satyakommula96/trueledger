@@ -21,15 +21,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/user_provider.dart';
 import 'package:trueledger/core/providers/version_provider.dart';
-import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
+import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
 import 'package:trueledger/core/services/backup_encryption_service.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/usecases/restore_backup_usecase.dart';
 import 'package:trueledger/data/datasources/database.dart';
-import 'package:intl/intl.dart';
 import 'package:trueledger/presentation/screens/settings/trust_center.dart';
+import 'package:trueledger/presentation/providers/backup_provider.dart';
 import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
 import 'package:trueledger/presentation/screens/settings/personalization_settings.dart';
 
@@ -520,9 +520,7 @@ class SettingsScreen extends ConsumerWidget {
       final bytes = utf8.encode(finalOutput);
       await saveFileWeb(bytes, fileName);
 
-      final prefs = ref.read(sharedPreferencesProvider);
-      await prefs.setString('last_backup_time',
-          DateFormat('MMM dd, yyyy HH:mm').format(DateTime.now()));
+      await ref.read(lastBackupTimeProvider.notifier).updateLastBackupTime();
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -543,9 +541,7 @@ class SettingsScreen extends ConsumerWidget {
         final fileService = ref.read(fileServiceProvider);
         await fileService.writeAsString(outputFile, finalOutput);
 
-        final prefs = ref.read(sharedPreferencesProvider);
-        await prefs.setString('last_backup_time',
-            DateFormat('MMM dd, yyyy HH:mm').format(DateTime.now()));
+        await ref.read(lastBackupTimeProvider.notifier).updateLastBackupTime();
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -560,9 +556,7 @@ class SettingsScreen extends ConsumerWidget {
     final fileService = ref.read(fileServiceProvider);
     await fileService.writeAsString(file.path, finalOutput);
 
-    final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setString('last_backup_time',
-        DateFormat('MMM dd, yyyy HH:mm').format(DateTime.now()));
+    await ref.read(lastBackupTimeProvider.notifier).updateLastBackupTime();
 
     if (context.mounted) {
       // ignore: deprecated_member_use

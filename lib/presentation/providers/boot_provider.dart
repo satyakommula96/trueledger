@@ -4,6 +4,7 @@ import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/core/services/notification_service.dart';
+import 'package:trueledger/presentation/providers/backup_provider.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/usecases/startup_usecase.dart';
 
@@ -12,7 +13,9 @@ import 'package:trueledger/core/providers/secure_storage_provider.dart';
 
 final bootProvider = FutureProvider<String?>((ref) async {
   final startupUseCase = ref.watch(startupUseCaseProvider);
-  final result = await startupUseCase(NoParams());
+  final result = await startupUseCase(NoParams(), onBackupSuccess: () {
+    ref.read(lastBackupTimeProvider.notifier).updateLastBackupTime();
+  });
 
   if (result.isFailure) {
     throw Exception(result.failureOrThrow.message);

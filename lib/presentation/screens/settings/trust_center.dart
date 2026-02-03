@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:trueledger/core/providers/shared_prefs_provider.dart';
+import 'package:trueledger/presentation/providers/backup_provider.dart';
 
 final databaseStatsProvider = FutureProvider<Map<String, int>>((ref) {
   return ref.watch(financialRepositoryProvider).getDatabaseStats();
@@ -16,9 +16,7 @@ class TrustCenterScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<AppColors>()!;
     final statsAsync = ref.watch(databaseStatsProvider);
-    final lastBackup =
-        ref.watch(sharedPreferencesProvider).getString('last_backup_time') ??
-            'Never';
+    final lastBackup = ref.watch(lastBackupTimeProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,

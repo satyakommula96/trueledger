@@ -25,13 +25,16 @@ class StartupUseCase extends UseCase<StartupResult, NoParams> {
   StartupUseCase(this.repository, this.autoBackup);
 
   @override
-  Future<Result<StartupResult>> call(NoParams params) async {
+  Future<Result<StartupResult>> call(NoParams params,
+      {VoidCallback? onBackupSuccess}) async {
     try {
       // 1. Initialize Database (including migrations)
       await AppDatabase.db;
 
       // 1b. Auto Backup (Non-blocking)
-      autoBackup.call(const NoParams()).catchError((e) {
+      autoBackup
+          .call(const NoParams(), onSuccess: onBackupSuccess)
+          .catchError((e) {
         debugPrint("CRITICAL: Auto-backup failed during startup: $e");
         return Failure<void>(
             DatabaseFailure("Auto-backup failed silently: ${e.toString()}"));

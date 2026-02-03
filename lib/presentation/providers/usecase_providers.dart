@@ -10,6 +10,7 @@ import 'package:trueledger/domain/usecases/restore_backup_usecase.dart';
 import 'package:trueledger/domain/usecases/get_weekly_reflection_usecase.dart';
 import 'notification_provider.dart';
 import 'repository_providers.dart';
+import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
 final addTransactionUseCaseProvider = Provider<AddTransactionUseCase>((ref) {
   return AddTransactionUseCase(ref.watch(financialRepositoryProvider));
@@ -57,6 +58,7 @@ final autoBackupUseCaseProvider = Provider<AutoBackupUseCase>((ref) {
   return AutoBackupUseCase(
     ref.watch(financialRepositoryProvider),
     ref.watch(notificationServiceProvider),
+    ref.watch(sharedPreferencesProvider),
   );
 });
 
