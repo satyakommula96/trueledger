@@ -7,6 +7,7 @@ import 'package:trueledger/domain/usecases/restore_from_local_file_usecase.dart'
 import 'package:trueledger/domain/usecases/restore_backup_usecase.dart';
 import 'package:trueledger/core/services/backup_encryption_service.dart';
 import 'package:trueledger/core/utils/result.dart';
+import 'package:trueledger/data/datasources/database.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -29,6 +30,7 @@ void main() {
   });
 
   tearDown(() async {
+    await AppDatabase.close();
     if (await tempDir.exists()) {
       await tempDir.delete(recursive: true);
     }

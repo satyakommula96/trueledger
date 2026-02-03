@@ -6,6 +6,7 @@ import 'package:trueledger/domain/usecases/auto_backup_usecase.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:flutter/services.dart';
 import 'package:trueledger/core/config/app_config.dart';
+import 'package:trueledger/data/datasources/database.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -34,6 +35,7 @@ void main() {
   });
 
   tearDown(() async {
+    await AppDatabase.close();
     if (await tempDir.exists()) {
       await tempDir.delete(recursive: true);
     }

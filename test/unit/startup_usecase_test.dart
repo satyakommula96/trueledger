@@ -6,6 +6,7 @@ import 'package:trueledger/domain/usecases/startup_usecase.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/core/error/failure.dart';
+import 'package:trueledger/data/datasources/database.dart';
 
 import 'package:flutter/services.dart';
 import 'dart:io';
@@ -53,6 +54,7 @@ void main() {
   });
 
   tearDown(() async {
+    await AppDatabase.close();
     if (await tempDir.exists()) {
       await tempDir.delete(recursive: true);
     }
