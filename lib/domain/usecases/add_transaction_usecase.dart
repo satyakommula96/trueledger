@@ -84,7 +84,7 @@ class AddTransactionUseCase
       // 2b. Personalization logic
       await personalizationService?.recordUsage(
         category: params.category,
-        paymentMethod: params.paymentMethod ?? 'Cash',
+        paymentMethod: params.paymentMethod,
         merchant: params.merchant,
         amount: params.amount,
         note: params.note,

@@ -35,6 +35,7 @@ class QuickAddPreset {
 }
 
 class PersonalizationSettings {
+  final bool personalizationEnabled;
   final bool rememberLastUsed;
   final bool timeOfDaySuggestions;
   final bool shortcutSuggestions;
@@ -43,6 +44,7 @@ class PersonalizationSettings {
   final int? payDay; // 1-31 or null
 
   PersonalizationSettings({
+    this.personalizationEnabled = true,
     this.rememberLastUsed = true,
     this.timeOfDaySuggestions = true,
     this.shortcutSuggestions = true,
@@ -52,6 +54,7 @@ class PersonalizationSettings {
   });
 
   Map<String, dynamic> toJson() => {
+        'personalizationEnabled': personalizationEnabled,
         'rememberLastUsed': rememberLastUsed,
         'timeOfDaySuggestions': timeOfDaySuggestions,
         'shortcutSuggestions': shortcutSuggestions,
@@ -62,6 +65,7 @@ class PersonalizationSettings {
 
   factory PersonalizationSettings.fromJson(Map<String, dynamic> json) =>
       PersonalizationSettings(
+        personalizationEnabled: json['personalizationEnabled'] ?? true,
         rememberLastUsed: json['rememberLastUsed'] ?? true,
         timeOfDaySuggestions: json['timeOfDaySuggestions'] ?? true,
         shortcutSuggestions: json['shortcutSuggestions'] ?? true,
@@ -71,6 +75,7 @@ class PersonalizationSettings {
       );
 
   PersonalizationSettings copyWith({
+    bool? personalizationEnabled,
     bool? rememberLastUsed,
     bool? timeOfDaySuggestions,
     bool? shortcutSuggestions,
@@ -79,6 +84,8 @@ class PersonalizationSettings {
     int? payDay,
   }) {
     return PersonalizationSettings(
+      personalizationEnabled:
+          personalizationEnabled ?? this.personalizationEnabled,
       rememberLastUsed: rememberLastUsed ?? this.rememberLastUsed,
       timeOfDaySuggestions: timeOfDaySuggestions ?? this.timeOfDaySuggestions,
       shortcutSuggestions: shortcutSuggestions ?? this.shortcutSuggestions,

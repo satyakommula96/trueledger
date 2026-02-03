@@ -39,13 +39,13 @@ class PersonalizationService {
   // --- Last Used Memory ---
   Future<void> recordUsage({
     required String category,
-    required String paymentMethod,
+    required String? paymentMethod,
     String? merchant,
     int? amount,
     String? note,
   }) async {
     final settings = getSettings();
-    if (!settings.rememberLastUsed) return;
+    if (!settings.personalizationEnabled || !settings.rememberLastUsed) return;
 
     final data = {
       'category': category,
@@ -120,6 +120,8 @@ class PersonalizationService {
     Map<String, dynamic> meta = const {},
   }) async {
     final settings = getSettings();
+    if (!settings.personalizationEnabled) return;
+
     // Only record signals if at least one feature that needs them is enabled
     final anyFeatureEnabled = settings.rememberLastUsed ||
         settings.timeOfDaySuggestions ||

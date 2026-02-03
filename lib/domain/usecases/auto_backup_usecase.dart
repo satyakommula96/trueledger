@@ -83,7 +83,7 @@ class AutoBackupUseCase extends UseCase<void, NoParams> {
       );
 
       if (sharedPreferences != null) {
-        await sharedPreferences!.setString('last_backup_time',
+        await sharedPreferences!.setString('backup.last_success_at',
             DateFormat('MMM dd, yyyy HH:mm').format(DateTime.now()));
       }
 
