@@ -84,9 +84,11 @@ void main() {
           (i) => {
                 'key': 'transaction_added',
                 'reason': 'test',
-                'timestamp':
-                    now.subtract(Duration(days: i * 3)).toIso8601String(),
-                'meta': {'category': 'Breakfast', 'hour': 8},
+                // Explicitly set the hour to match the test requirement
+                'timestamp': DateTime(now.year, now.month, now.day, 8)
+                    .subtract(Duration(days: i * 3))
+                    .toIso8601String(),
+                'meta': {'category': 'Breakfast'},
               });
 
       when(() => mockPrefs.getStringList(any(that: contains('signals'))))
