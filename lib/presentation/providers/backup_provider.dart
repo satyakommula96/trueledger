@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:trueledger/domain/usecases/get_local_backups_usecase.dart';
+import 'package:trueledger/domain/usecases/usecase_base.dart';
+import 'package:trueledger/presentation/providers/usecase_providers.dart';
 
 class LastBackupTimeNotifier extends Notifier<String> {
   @override
@@ -21,4 +24,15 @@ class LastBackupTimeNotifier extends Notifier<String> {
 final lastBackupTimeProvider =
     NotifierProvider<LastBackupTimeNotifier, String>(() {
   return LastBackupTimeNotifier();
+});
+
+final localBackupsProvider =
+    FutureProvider.autoDispose<List<BackupFile>>((ref) async {
+  final useCase = ref.watch(getLocalBackupsUseCaseProvider);
+  final result = await useCase(NoParams());
+  if (result.isSuccess) {
+    return result.getOrThrow;
+  } else {
+    throw Exception(result.failureOrThrow.message);
+  }
 });

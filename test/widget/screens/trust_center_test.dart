@@ -9,6 +9,7 @@ import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
+import 'package:trueledger/presentation/providers/backup_provider.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -42,6 +43,7 @@ void main() {
           financialRepositoryProvider.overrideWithValue(mockRepo),
           sharedPreferencesProvider.overrideWithValue(mockPrefs),
           databaseStatsProvider.overrideWith((ref) async => stats),
+          localBackupsProvider.overrideWith((ref) => []),
         ],
         child: MaterialApp(
           theme: AppTheme.lightTheme,
