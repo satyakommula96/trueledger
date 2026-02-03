@@ -258,13 +258,39 @@ void main() {
 
       // Should be capped at 2
       expect(insights.length, lessThanOrEqualTo(2));
-      // Should not contain High (since 1000 income vs 200 expense doesn't trigger critical overspending anymore, wait...)
-      // actually wealth projection is high.
       if (insights.any((i) => i.priority == InsightPriority.high)) {
         expect(insights.length, 1);
       } else {
         expect(insights.length, 2);
       }
+    });
+
+    test('should generate STABLE LIFESTYLE insight when budgets are stable',
+        () {
+      final summary = MonthlySummary(
+        totalIncome: 0,
+        totalFixed: 0,
+        totalVariable: 0,
+        totalSubscriptions: 0,
+        totalInvestments: 0,
+        netWorth: 0,
+      );
+      final budgets = [
+        Budget(
+            id: 1, category: 'A', monthlyLimit: 100, spent: 50, isStable: true),
+        Budget(
+            id: 2, category: 'B', monthlyLimit: 100, spent: 50, isStable: true),
+      ];
+
+      final insights = service.generateInsights(
+        summary: summary,
+        trendData: [],
+        budgets: budgets,
+        categorySpending: [],
+        requestedSurface: InsightSurface.details, // Low priority shows here
+      );
+
+      expect(insights.any((i) => i.id == 'stable_lifestyle'), isTrue);
     });
   });
 

@@ -15,9 +15,9 @@ void main() {
     await Future.delayed(const Duration(milliseconds: 500));
 
     await app.main();
-    await tester.pumpAndSettle(const Duration(seconds: 3));
+    await tester.pump(const Duration(seconds: 2));
 
-    // Poll for up to 30 seconds for the app to settle on a known screen
+    // Poll for up to 60 seconds for the app to settle on a known screen
     bool found = false;
     for (int i = 0; i < 500; i++) {
       await tester

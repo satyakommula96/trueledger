@@ -60,4 +60,32 @@ void main() {
       verify(() => mockRepository.deleteItem('budgets', 1)).called(1);
     });
   });
+
+  group('MarkBudgetAsReviewedUseCase', () {
+    late MarkBudgetAsReviewedUseCase useCase;
+
+    setUp(() {
+      useCase = MarkBudgetAsReviewedUseCase(mockRepository);
+    });
+
+    test('should return Success when repository call is successful', () async {
+      when(() => mockRepository.markBudgetAsReviewed(any()))
+          .thenAnswer((_) async {});
+
+      final result = await useCase.call(1);
+
+      expect(result.isSuccess, isTrue);
+      verify(() => mockRepository.markBudgetAsReviewed(1)).called(1);
+    });
+
+    test('should return Failure when repository call fails', () async {
+      when(() => mockRepository.markBudgetAsReviewed(any()))
+          .thenThrow(Exception("DB Error"));
+
+      final result = await useCase.call(1);
+
+      expect(result.isFailure, isTrue);
+      expect(result.failureOrThrow.message, contains("DB Error"));
+    });
+  });
 }

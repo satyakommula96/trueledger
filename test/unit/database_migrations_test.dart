@@ -83,10 +83,42 @@ void main() {
       expect(hasTypeColumn, isTrue);
     });
 
-    test('MigrationV2, V3 and V4 down should not throw', () async {
+    test(
+        'MigrationV5 should create credit_cards and loans tables if not exists',
+        () async {
+      final migration = MigrationV5();
+      await migration.up(db);
+
+      final ccInfo =
+          await db.rawQuery("PRAGMA table_info(${Schema.creditCardsTable})");
+      expect(ccInfo, isNotEmpty);
+
+      final loansInfo =
+          await db.rawQuery("PRAGMA table_info(${Schema.loansTable})");
+      expect(loansInfo, isNotEmpty);
+    });
+
+    test('MigrationV6 should add last_reviewed_at column to budgets', () async {
+      // Setup budgets table
+      await db.execute(
+          'CREATE TABLE ${Schema.budgetsTable} (${Schema.colId} INTEGER PRIMARY KEY)');
+
+      final migration = MigrationV6();
+      await migration.up(db);
+
+      final results =
+          await db.rawQuery("PRAGMA table_info(${Schema.budgetsTable})");
+      final hasColumn =
+          results.any((row) => row['name'] == Schema.colLastReviewedAt);
+      expect(hasColumn, isTrue);
+    });
+
+    test('Migration down should not throw for all versions', () async {
       await MigrationV2().down(db);
       await MigrationV3().down(db);
       await MigrationV4().down(db);
+      await MigrationV5().down(db);
+      await MigrationV6().down(db);
     });
   });
 }
