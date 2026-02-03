@@ -9,6 +9,21 @@ import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
+import 'package:trueledger/presentation/providers/backup_provider.dart';
+import 'package:trueledger/domain/usecases/get_local_backups_usecase.dart';
+import 'package:trueledger/presentation/providers/usecase_providers.dart';
+import 'package:trueledger/domain/usecases/restore_from_local_file_usecase.dart';
+import 'package:trueledger/core/utils/result.dart';
+
+class MockRestoreFromLocalFileUseCase extends Mock
+    implements RestoreFromLocalFileUseCase {}
+
+class MockLastBackupTimeNotifier extends Notifier<String>
+    with Mock
+    implements LastBackupTimeNotifier {
+  @override
+  String build() => 'Never';
+}
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -21,6 +36,7 @@ void main() {
   setUp(() {
     mockRepo = MockFinancialRepository();
     mockPrefs = MockSharedPreferences();
+    registerFallbackValue(RestoreFromLocalFileParams(path: ''));
   });
 
   testWidgets('TrustCenterScreen renders stats correctly',
@@ -42,6 +58,9 @@ void main() {
           financialRepositoryProvider.overrideWithValue(mockRepo),
           sharedPreferencesProvider.overrideWithValue(mockPrefs),
           databaseStatsProvider.overrideWith((ref) async => stats),
+          localBackupsProvider.overrideWith((ref) => []),
+          lastBackupTimeProvider
+              .overrideWith(() => MockLastBackupTimeNotifier()),
         ],
         child: MaterialApp(
           theme: AppTheme.lightTheme,
@@ -57,5 +76,70 @@ void main() {
     expect(find.text("Total Records"), findsOneWidget);
     expect(find.text("20"), findsOneWidget);
     expect(find.text("Privacy First"), findsOneWidget);
+  });
+
+  testWidgets('TrustCenterScreen renders backups and shows restore dialog',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1200, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    final mockRestoreUseCase = MockRestoreFromLocalFileUseCase();
+    final stats = {
+      'total_records': 0,
+      'variable': 0,
+      'income': 0,
+      'budgets': 0
+    };
+    final backups = [
+      BackupFile(
+        path: '/path/backup.json',
+        name: 'backup.json',
+        date: DateTime.now(),
+        size: 1024,
+      ),
+    ];
+
+    when(() => mockRepo.getDatabaseStats()).thenAnswer((_) async => stats);
+    when(() => mockRestoreUseCase.call(any()))
+        .thenAnswer((_) async => const Success(null));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          financialRepositoryProvider.overrideWithValue(mockRepo),
+          databaseStatsProvider.overrideWith((ref) async => stats),
+          localBackupsProvider.overrideWith((ref) => backups),
+          lastBackupTimeProvider
+              .overrideWith(() => MockLastBackupTimeNotifier()),
+          restoreFromLocalFileUseCaseProvider
+              .overrideWithValue(mockRestoreUseCase),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const TrustCenterScreen(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Check if backup is rendered
+    expect(find.text("AVAILABLE LOCAL BACKUPS"), findsOneWidget);
+    expect(find.byIcon(Icons.history_rounded), findsOneWidget);
+
+    // Tap Restore icon
+    await tester.tap(find.byIcon(Icons.settings_backup_restore_rounded));
+    await tester.pumpAndSettle();
+
+    // Verify dialog
+    expect(find.text("Restore Data?"), findsOneWidget);
+    expect(find.text("RESTORE NOW"), findsOneWidget);
+
+    // Tap Restore
+    await tester.tap(find.text("RESTORE NOW"));
+    await tester.pump(); // Start restore logic
+
+    verify(() => mockRestoreUseCase.call(any())).called(1);
   });
 }

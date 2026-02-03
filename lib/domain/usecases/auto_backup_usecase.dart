@@ -8,16 +8,21 @@ import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/data/datasources/database.dart';
 import 'package:trueledger/core/services/backup_encryption_service.dart';
 import 'package:trueledger/core/services/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+import 'package:trueledger/core/config/app_config.dart';
 import 'usecase_base.dart';
 
 class AutoBackupUseCase extends UseCase<void, NoParams> {
   final IFinancialRepository repository;
   final NotificationService? notificationService;
+  final SharedPreferences? sharedPreferences;
 
-  AutoBackupUseCase(this.repository, [this.notificationService]);
+  AutoBackupUseCase(this.repository,
+      [this.notificationService, this.sharedPreferences]);
 
   @override
-  Future<Result<void>> call(NoParams params) async {
+  Future<Result<void>> call(NoParams params, {VoidCallback? onSuccess}) async {
     if (kIsWeb) return const Success(null);
     try {
       notificationService?.showNotification(
@@ -50,7 +55,8 @@ class AutoBackupUseCase extends UseCase<void, NoParams> {
       final finalOutput = jsonEncode(container);
 
       final directory = await getApplicationDocumentsDirectory();
-      final backupDir = Directory('${directory.path}/backups');
+      final backupDir =
+          Directory('${directory.path}/${AppConfig.backupFolderName}');
       if (!await backupDir.exists()) {
         await backupDir.create(recursive: true);
       }
@@ -77,6 +83,13 @@ class AutoBackupUseCase extends UseCase<void, NoParams> {
         title: "Auto Backup Completed",
         body: "Your data is safely encrypted and stored locally.",
       );
+
+      if (sharedPreferences != null) {
+        await sharedPreferences!.setString('backup.last_success_at',
+            DateFormat('MMM dd, yyyy HH:mm').format(DateTime.now()));
+      }
+
+      onSuccess?.call();
 
       return const Success(null);
     } catch (e) {

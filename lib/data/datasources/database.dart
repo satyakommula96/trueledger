@@ -34,6 +34,14 @@ class AppDatabase {
     return _db!;
   }
 
+  static Future<void> close() async {
+    if (_db != null) {
+      await _db!.close();
+      _db = null;
+    }
+    _initializationInstance = null;
+  }
+
   static Future<String> getEncryptionKey() async => _getOrGenerateKey();
 
   static Future<String> _getOrGenerateKey() async {

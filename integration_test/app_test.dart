@@ -7,14 +7,15 @@ import 'package:trueledger/core/config/app_config.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  // Disable native dependencies for CI early
+  AppConfig.isIntegrationTest = true;
 
   testWidgets('App smoke test - verifies app launches', (tester) async {
-    // Disable secure storage for CI reliability
-    AppConfig.isIntegrationTest = true;
+    // Small delay to ensure binding is fully settled in headless environments
+    await Future.delayed(const Duration(milliseconds: 500));
 
     await app.main();
-    await tester.pump(const Duration(seconds: 2));
-    await tester.pump();
+    await tester.pumpAndSettle(const Duration(seconds: 3));
 
     // Poll for up to 30 seconds for the app to settle on a known screen
     bool found = false;

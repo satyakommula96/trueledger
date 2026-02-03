@@ -47,6 +47,15 @@ class _PersonalizationSettingsScreenState
         children: [
           _buildInfoCard(semantic),
           const SizedBox(height: 32),
+          _buildToggle(
+            title: "Enable Personalization",
+            subtitle:
+                "Allow the app to learn from your patterns to provide suggestions. All data stays on device.",
+            value: _settings.personalizationEnabled,
+            onChanged: (v) =>
+                _updateSettings(_settings.copyWith(personalizationEnabled: v)),
+          ),
+          const Divider(height: 32),
           _buildSectionHeader("ADAPTIVE BEHAVIOR"),
           const SizedBox(height: 12),
           _buildToggle(

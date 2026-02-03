@@ -46,7 +46,6 @@ We implement these phases sequentially.
 
 - [x] **Weekly/Monthly Insights**
     - [x] "You spent 12% more than last week" (Plain text insights).
-    - [ ] "Food is your top expense this month".
 
 ## Phase 3: Delight (Goal: Polish & Engagement)
 
@@ -61,7 +60,7 @@ We implement these phases sequentially.
 ## Phase 4: Intelligence (Goal: Actionable Data)
 
 - [x] **Smart Insights Engine**
-    - [x] Spending forensics (week-over-week, month-over-month).
+    - [x] Spending forensics (week-over-week, month-over-month, top categories).
     - [x] Budget proximity warnings based on velocity.
     - [x] Snooze & Dismiss capabilities (persistent).
 - [x] **Financial Health Score**

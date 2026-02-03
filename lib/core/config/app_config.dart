@@ -6,4 +6,6 @@ class AppConfig {
 
   /// Note: Unit and Widget tests are automatically detected via
   /// Platform.environment.containsKey('FLUTTER_TEST') in service implementations.
+  /// The directory name for local backups.
+  static const String backupFolderName = 'TrueLedgerSafeVault';
 }
