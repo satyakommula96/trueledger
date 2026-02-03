@@ -178,5 +178,30 @@ void main() {
       final reflections = service.generateBaselineReflections();
       expect(reflections, isEmpty);
     });
+
+    test('recordUsage is a no-op if personalizationEnabled is false', () async {
+      final settings = PersonalizationSettings(personalizationEnabled: false);
+      when(() => mockPrefs.getString(any(that: contains('settings'))))
+          .thenReturn(jsonEncode(settings.toJson()));
+
+      await service.recordUsage(category: 'Test', paymentMethod: 'Test');
+
+      verifyNever(() => mockPrefs.setString(
+            any(that: contains('last_used')),
+            any(),
+          ));
+    });
+
+    test('recordSignal is a no-op if personalizationEnabled is false',
+        () async {
+      final settings = PersonalizationSettings(personalizationEnabled: false);
+      when(() => mockPrefs.getString(any(that: contains('settings'))))
+          .thenReturn(jsonEncode(settings.toJson()));
+
+      await service.recordSignal(key: 'test', reason: 'test');
+
+      verifyNever(
+          () => mockPrefs.setStringList(any(that: contains('signals')), any()));
+    });
   });
 }
