@@ -10,6 +10,9 @@ import 'package:trueledger/domain/usecases/get_local_backups_usecase.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 
+import 'package:trueledger/domain/usecases/restore_from_local_file_usecase.dart';
+import 'package:trueledger/presentation/providers/usecase_providers.dart';
+
 final databaseStatsProvider = FutureProvider<Map<String, int>>((ref) {
   return ref.watch(financialRepositoryProvider).getDatabaseStats();
 });
@@ -191,7 +194,7 @@ class TrustCenterScreen extends ConsumerWidget {
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final file = backups[index];
-                        return _buildBackupItem(context, file, semantic);
+                        return _buildBackupItem(context, ref, file, semantic);
                       },
                     );
                   },
@@ -256,8 +259,8 @@ class TrustCenterScreen extends ConsumerWidget {
     ).animate().fadeIn().slideY(begin: 0.1, end: 0);
   }
 
-  Widget _buildBackupItem(
-      BuildContext context, BackupFile file, AppColors semantic) {
+  Widget _buildBackupItem(BuildContext context, WidgetRef ref, BackupFile file,
+      AppColors semantic) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -294,6 +297,12 @@ class TrustCenterScreen extends ConsumerWidget {
             ),
           ),
           IconButton(
+            icon: Icon(Icons.settings_backup_restore_rounded,
+                size: 18, color: semantic.secondaryText),
+            tooltip: "Restore",
+            onPressed: () => _confirmRestore(context, ref, file),
+          ),
+          IconButton(
             icon: const Icon(Icons.ios_share_rounded, size: 18),
             onPressed: () {
               // ignore: deprecated_member_use
@@ -304,6 +313,61 @@ class TrustCenterScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmRestore(
+      BuildContext context, WidgetRef ref, BackupFile file) async {
+    final semantic = Theme.of(context).extension<AppColors>()!;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Restore Data?",
+            style: TextStyle(fontWeight: FontWeight.w900)),
+        content: const Text(
+            "This will REPLACE all your current data with the data from this backup. This action cannot be undone."),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("CANCEL")),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: semantic.overspent),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("RESTORE NOW"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    if (context.mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final useCase = ref.read(restoreFromLocalFileUseCaseProvider);
+    final result = await useCase(RestoreFromLocalFileParams(path: file.path));
+
+    if (context.mounted) {
+      Navigator.pop(context); // Pop loading
+      if (result.isSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Restore completed successfully!")),
+        );
+        // Navigate to dashboard and refresh
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text("Restore failed: ${result.failureOrThrow.message}")),
+        );
+      }
+    }
   }
 
   String _formatSize(int bytes) {
