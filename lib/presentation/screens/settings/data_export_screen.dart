@@ -13,6 +13,7 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/domain/usecases/restore_backup_usecase.dart';
+import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/domain/services/intelligence_service.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/data/datasources/database.dart';
@@ -50,9 +51,21 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
 
       final data = await repo.generateBackup();
 
-      // Compatibility: Add version field so it can be restored by the existing restore logic
-      data['version'] = '1.0';
+      // Capture Insight Metadata (History/Dismissals)
+      final prefs = ref.read(sharedPreferencesProvider);
+      final insightHistory = prefs.getString('insight_display_history');
+      final insightKindHistory = prefs.getString('insight_kind_history');
+
+      // Compatibility: Update version to 2.0 for comprehensive export
+      data['version'] = '2.0';
       data['insights'] = insights.map((e) => e.toJson()).toList();
+      data['insights_meta'] = {
+        // Persist history so dismissals/snoozes are respected on restore
+        'display_history':
+            insightHistory != null ? jsonDecode(insightHistory) : {},
+        'kind_history':
+            insightKindHistory != null ? jsonDecode(insightKindHistory) : {},
+      };
       data['export_metadata'] = {
         'date': DateTime.now().toIso8601String(),
         'app': "TrueLedger",
@@ -484,7 +497,9 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         data = container;
       }
 
-      if (data['version'] != '1.0' && data['version'] != '1.1') {
+      if (data['version'] != '1.0' &&
+          data['version'] != '1.1' &&
+          data['version'] != '2.0') {
         throw "Unsupported backup version: ${data['version']}";
       }
 
@@ -538,6 +553,20 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
           backupData: data,
           merge: false,
         ));
+
+        // Restore Insight Metadata
+        if (data.containsKey('insights_meta')) {
+          final meta = data['insights_meta'];
+          final prefs = ref.read(sharedPreferencesProvider);
+          if (meta['display_history'] != null) {
+            await prefs.setString(
+                'insight_display_history', jsonEncode(meta['display_history']));
+          }
+          if (meta['kind_history'] != null) {
+            await prefs.setString(
+                'insight_kind_history', jsonEncode(meta['kind_history']));
+          }
+        }
 
         // When data is replaced, pre-existing notification schedules are stale.
         final notificationService = ref.read(notificationServiceProvider);
@@ -758,7 +787,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
               ),
               const SizedBox(height: 12),
               const Text(
-                "Download your entire financial footprint including history, budgets, and insights in a machine-readable JSON format.",
+                "Download your entire financial footprint including history, budgets, and insights in a machine-readable JSON format.\n\nExport is local-only. No cloud sync or external services.",
                 style: TextStyle(color: Colors.white, fontSize: 13),
               ),
               const SizedBox(height: 16),
