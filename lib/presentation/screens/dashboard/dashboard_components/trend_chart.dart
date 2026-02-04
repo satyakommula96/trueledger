@@ -57,7 +57,7 @@ class TrendChart extends StatelessWidget {
             children: [
               _buildLegendItem(semantic.income, "INCOME"),
               const SizedBox(width: 16),
-              _buildLegendItem(colorScheme.primary, "SPENDING"),
+              _buildLegendItem(semantic.overspent, "SPENDING"),
             ],
           ),
           const SizedBox(height: 16),
@@ -78,7 +78,9 @@ class TrendChart extends StatelessWidget {
                         return LineTooltipItem(
                           "${isIncome ? 'Income' : 'Spend'}: ${CurrencyFormatter.format(barSpot.y, isPrivate: isPrivate)}",
                           TextStyle(
-                              color: isIncome ? semantic.income : Colors.white,
+                              color: isIncome
+                                  ? semantic.income
+                                  : semantic.overspent,
                               fontWeight: FontWeight.bold),
                         );
                       }).toList();
@@ -156,15 +158,15 @@ class TrendChart extends StatelessWidget {
                               .toDouble());
                     }).toList(),
                     isCurved: true,
-                    color: colorScheme.primary,
+                    color: semantic.overspent,
                     barWidth: 3,
                     dotData: const FlDotData(show: true),
                     belowBarData: BarAreaData(
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          colorScheme.primary.withValues(alpha: 0.2),
-                          colorScheme.primary.withValues(alpha: 0.0)
+                          semantic.overspent.withValues(alpha: 0.2),
+                          semantic.overspent.withValues(alpha: 0.0)
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
