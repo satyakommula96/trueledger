@@ -123,6 +123,7 @@ jobs:
         run: |
           flutter pub get
           flutter precache --ios
+          cd ios && pod install
 
       - name: Run iOS Integration Test
         run: |
