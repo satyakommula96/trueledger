@@ -42,7 +42,7 @@ ios/Runner/GeneratedPluginRegistrant.*
 
 # Xcode user / build junk
 **/DerivedData/
-**/*.xcworkspace
+*.xcworkspace
 **/*.xcuserdata
 **/*.xcuserstate
 **/*.pbxuser
