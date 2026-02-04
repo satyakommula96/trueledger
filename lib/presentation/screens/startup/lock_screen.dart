@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/analysis_provider.dart';
+import 'package:trueledger/core/providers/secure_storage_provider.dart';
+import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
 class LockScreen extends ConsumerStatefulWidget {
   final int? expectedPinLength;
@@ -32,7 +32,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   }
 
   Future<void> _loadPinLength() async {
-    const storage = FlutterSecureStorage();
+    final storage = ref.read(secureStorageProvider);
     final stored = await storage.read(key: 'app_pin');
     if (stored != null && stored.length == 6) {
       if (mounted) setState(() => _pinLength = 6);
@@ -48,7 +48,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     });
 
     if (_pin.length == _pinLength) {
-      const storage = FlutterSecureStorage();
+      final storage = ref.read(secureStorageProvider);
       final storedPin = await storage.read(key: 'app_pin');
 
       if (storedPin == _pin) {
@@ -75,7 +75,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   }
 
   Future<void> _onForgotPin() async {
-    const storage = FlutterSecureStorage();
+    final storage = ref.read(secureStorageProvider);
     final hasKey = await storage.containsKey(key: 'recovery_key');
 
     if (!mounted) return;
@@ -140,7 +140,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
   }
 
   Future<void> _promptRecoveryKey() async {
-    const storage = FlutterSecureStorage();
+    final storage = ref.read(secureStorageProvider);
     final storedKey = await storage.read(key: 'recovery_key');
     String inputKey = "";
 
@@ -225,9 +225,9 @@ class _LockScreenState extends ConsumerState<LockScreen> {
       await repo.clearData();
 
       // 2. Wipe Prefs (PIN - now in Secure Storage) & Prefs
-      const storage = FlutterSecureStorage();
+      final storage = ref.read(secureStorageProvider);
       await storage.deleteAll();
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = ref.read(sharedPreferencesProvider);
       await prefs.clear();
 
       // 3. Refresh Providers (just in case functionality remains)

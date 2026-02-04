@@ -107,7 +107,7 @@ class GetWeeklyReflectionUseCase
         // Find in last week
         final lastWeekEntry = lastWeekCats.firstWhere(
             (e) => e['category'] == name,
-            orElse: () => {'total': 0});
+            orElse: () => <String, Object>{'total': 0});
         final lastAmount = lastWeekEntry['total'] as int;
 
         if (currentAmount > lastAmount) {

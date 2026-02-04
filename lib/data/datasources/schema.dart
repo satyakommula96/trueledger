@@ -10,6 +10,7 @@ class Schema {
   static const String savingGoalsTable = 'saving_goals';
   static const String budgetsTable = 'budgets';
   static const String customCategoriesTable = 'custom_categories';
+  static const String migrationsTable = '_migrations';
 
   // Common columns
   static const String colId = 'id';
@@ -19,6 +20,8 @@ class Schema {
   static const String colCategory = 'category';
   static const String colActive = 'active';
   static const String colType = 'type';
+  static const String colVersion = 'version';
+  static const String colAppliedAt = 'applied_at';
 
   // Specific columns
   static const String colSource = 'source'; // income_sources

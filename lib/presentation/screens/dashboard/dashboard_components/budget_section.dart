@@ -80,11 +80,13 @@ class BudgetSection extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              Text(b.category.toUpperCase(),
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12),
-                                  overflow: TextOverflow.ellipsis),
+                              Flexible(
+                                child: Text(b.category.toUpperCase(),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12),
+                                    overflow: TextOverflow.ellipsis),
+                              ),
                               if (b.isStable) ...[
                                 const SizedBox(width: 8),
                                 Container(

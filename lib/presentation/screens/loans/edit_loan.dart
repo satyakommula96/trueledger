@@ -340,11 +340,29 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
   }
 
   Future<void> _delete() async {
-    final repo = ref.read(financialRepositoryProvider);
-    await repo.deleteItem('loans', widget.loan.id);
-    if (mounted) {
-      ref.invalidate(dashboardProvider);
-      Navigator.pop(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("DELETE LOAN?"),
+        content: const Text("This will permanently remove this borrowing."),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text("CANCEL")),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text("DELETE", style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final repo = ref.read(financialRepositoryProvider);
+      await repo.deleteItem('loans', widget.loan.id);
+      if (mounted) {
+        ref.invalidate(dashboardProvider);
+        Navigator.pop(context);
+      }
     }
   }
 

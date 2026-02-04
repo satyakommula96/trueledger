@@ -26,6 +26,7 @@ class AppDatabase {
     ),
   );
   static const _keyParams = 'db_key';
+  static const String _dbName = 'trueledger_secure.db';
 
   static bool get _isTest => AppConfig.isIntegrationTest || _isUnitTest;
 
@@ -75,14 +76,17 @@ class AppDatabase {
   }
 
   static Future<common.Database> _initDb() async {
-    // Use Application Documents Directory for reliable storage on Linux/Desktop
     String path;
     if (kIsWeb) {
-      path = 'tracker_enc_v${AppVersion.databaseVersion}.db';
+      path = _dbName;
     } else {
       final docsDir = await getApplicationDocumentsDirectory();
-      path =
-          join(docsDir.path, 'tracker_enc_v${AppVersion.databaseVersion}.db');
+      path = join(docsDir.path, _dbName);
+
+      // Check for legacy migrations if the new stable DB doesn't exist
+      if (!await File(path).exists()) {
+        await migrateLegacyDatabases(docsDir.path, path);
+      }
     }
 
     debugPrint('Initializing database at: $path');
@@ -109,9 +113,9 @@ class AppDatabase {
         );
       } catch (e) {
         debugPrint(
-            'CRITICAL: Web database open failed ($e). Attempting recovery...');
-        if (kDebugMode) rethrow;
-        return await _handleDatabaseReset(path, key, isDesktop: false);
+            'MIGRATION FAILED (Web) ($e). Attempting to open last known good version...');
+        if (kDebugMode && !_isTest) rethrow;
+        return await handleMigrationFallback(path, key, isDesktop: false);
       }
     } else if (Platform.isLinux ||
         Platform.isWindows ||
@@ -174,9 +178,9 @@ class AppDatabase {
         );
       } catch (e) {
         debugPrint(
-            'CRITICAL: Desktop database open failed ($e). Attempting recovery...');
-        if (kDebugMode) rethrow;
-        return await _handleDatabaseReset(path, key, isDesktop: true);
+            'MIGRATION FAILED (Desktop) ($e). Falling back to existing schema data...');
+        if (kDebugMode && !_isTest) rethrow;
+        return await handleMigrationFallback(path, key, isDesktop: true);
       }
     } else {
       // Android / iOS / macOS
@@ -196,60 +200,66 @@ class AppDatabase {
         return db;
       } catch (e) {
         debugPrint(
-            'CRITICAL: ${kIsWeb ? "Web" : Platform.operatingSystem} database open failed ($e). Attempting recovery...');
-        if (kDebugMode) rethrow;
-        return await _handleDatabaseReset(path, key,
+            'MIGRATION FAILED (Mobile) ($e). Preserving data and falling back...');
+        if (kDebugMode && !_isTest) rethrow;
+        return await handleMigrationFallback(path, key,
             isDesktop: !kIsWeb &&
                 (Platform.isWindows || Platform.isLinux || Platform.isMacOS));
       }
     }
   }
 
-  static Future<common.Database> _handleDatabaseReset(String path, String key,
+  static Future<common.Database> handleMigrationFallback(
+      String path, String key,
       {required bool isDesktop}) async {
-    if (!kIsWeb) {
-      try {
-        final file = File(path);
-        if (await file.exists()) {
-          await file.delete();
-          debugPrint('Corrupted database file deleted at: $path');
-        }
-      } catch (delErr) {
-        debugPrint('Failed to delete database file: $delErr');
-      }
-    }
-
+    debugPrint(
+        'DURABILITY: Attempting to open database WITHOUT version increment to preserve data access.');
+    // Opening without a version or with version null will just open what's on disk
+    // without triggering onCreate or onUpgrade.
     if (kIsWeb) {
       return await sqflite_web.databaseFactoryFfiWeb.openDatabase(
         path,
         options: common.OpenDatabaseOptions(
-            version: AppVersion.databaseVersion,
-            onCreate: (db, version) => _createDb(db),
-            onUpgrade: (db, old, newV) => _upgradeDb(db, old, newV)),
+            onConfigure: (db) => debugPrint('Web fallback opened.')),
       );
     } else if (isDesktop) {
       return await sqflite_ffi.databaseFactoryFfi.openDatabase(
         path,
-        options: common.OpenDatabaseOptions(
-            version: AppVersion.databaseVersion,
-            onConfigure: (db) async {
-              // Verify cipher support before applying key in recovery too
-              final result = await db.rawQuery('PRAGMA cipher_version;');
-              if (result.isNotEmpty && result.first.values.first != null) {
-                await db.execute("PRAGMA key = '$key';");
-              }
-            },
-            onCreate: (db, version) => _createDb(db),
-            onUpgrade: (db, old, newV) => _upgradeDb(db, old, newV)),
+        options: common.OpenDatabaseOptions(onConfigure: (db) async {
+          final result = await db.rawQuery('PRAGMA cipher_version;');
+          if (result.isNotEmpty && result.first.values.first != null) {
+            await db.execute("PRAGMA key = '$key';");
+          }
+        }),
       );
     } else {
       return await sqlcipher.openDatabase(
         path,
         password: key,
-        version: AppVersion.databaseVersion,
-        onCreate: (db, _) => _createDb(db),
-        onUpgrade: (db, old, newV) => _upgradeDb(db, old, newV),
       );
+    }
+  }
+
+  static Future<void> migrateLegacyDatabases(
+      String docsDirPath, String newPath) async {
+    debugPrint('Checking for legacy database files to migrate...');
+    // Traverse backwards from current version to find the latest existing DB
+    for (int v = AppVersion.databaseVersion; v >= 1; v--) {
+      final legacyPath = join(docsDirPath, 'tracker_enc_v$v.db');
+      final legacyFile = File(legacyPath);
+
+      if (await legacyFile.exists()) {
+        try {
+          debugPrint(
+              'MIGRATION: Found legacy database $legacyPath. Copying to $newPath');
+          await legacyFile.copy(newPath);
+          debugPrint('MIGRATION: Legacy data migration successful.');
+          // We keep the old file as backup for this transition version
+          break;
+        } catch (e) {
+          debugPrint('MIGRATION ERROR: Failed to copy legacy database: $e');
+        }
+      }
     }
   }
 
@@ -296,20 +306,40 @@ class AppDatabase {
         'CREATE TABLE ${Schema.budgetsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colCategory} TEXT, ${Schema.colMonthlyLimit} INTEGER, ${Schema.colLastReviewedAt} TEXT)');
     await db.execute(
         'CREATE TABLE ${Schema.customCategoriesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colType} TEXT)');
+    await db.execute(
+        'CREATE TABLE ${Schema.migrationsTable} (${Schema.colVersion} INTEGER PRIMARY KEY, ${Schema.colAppliedAt} TEXT)');
+
+    // Mark initial creation as migration version 0 or the version it was created at
+    await db.insert(Schema.migrationsTable, {
+      Schema.colVersion: AppVersion.databaseVersion,
+      Schema.colAppliedAt: DateTime.now().toIso8601String(),
+    });
   }
 
   static Future<void> _upgradeDb(
       common.DatabaseExecutor db, int oldVersion, int newVersion) async {
     final database = db as common.Database;
+
+    // Ensure migrations table exists for tracking upgrades
+    await database.execute(
+        'CREATE TABLE IF NOT EXISTS ${Schema.migrationsTable} (${Schema.colVersion} INTEGER PRIMARY KEY, ${Schema.colAppliedAt} TEXT)');
+
     for (var migration in appMigrations) {
       if (migration.version > oldVersion && migration.version <= newVersion) {
         try {
-          await migration.up(database);
+          await migration.up(db);
+          await db.insert(
+              Schema.migrationsTable,
+              {
+                Schema.colVersion: migration.version,
+                Schema.colAppliedAt: DateTime.now().toIso8601String(),
+              },
+              conflictAlgorithm: common.ConflictAlgorithm.replace);
           debugPrint(
               'Successfully applied migration to version ${migration.version}');
         } catch (e) {
           debugPrint('Migration failed for version ${migration.version}: $e');
-          // In production, we might want to handle this more strictly (e.g. backup/restore)
+          // Atomic failure: throw to trigger transaction rollback in caller
           rethrow;
         }
       }
