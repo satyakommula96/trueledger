@@ -109,6 +109,19 @@ class IntelligenceService {
   }) {
     final now = DateTime.now();
 
+    // 0. Safety Check: If data is empty, clear cache and return empty immediately
+    // This prevents "Ghost Insights" from persisting after data deletion
+    bool isEmpty = summary.totalIncome == 0 &&
+        summary.totalFixed == 0 &&
+        summary.totalVariable == 0 &&
+        summary.totalSubscriptions == 0 &&
+        summary.netWorth == 0;
+
+    if (isEmpty) {
+      _clearCache();
+      return [];
+    }
+
     // 1. Check Memory Cache
     if (!forceRefresh &&
         _memCacheDate != null &&
@@ -262,7 +275,7 @@ class IntelligenceService {
         body:
             "Recurring services consume ${((summary.totalSubscriptions / summary.totalIncome) * 100).toInt()}% of your income. This exceeds the ${(_subscriptionIncomeThreshold * 100).toInt()}% typical behavior benchmark.",
         type: InsightType.info,
-        priority: InsightPriority.low,
+        priority: InsightPriority.medium,
         value: "Subscriptions",
         currencyValue: summary.totalSubscriptions.toDouble(),
         group: InsightGroup.behavioral,
@@ -280,7 +293,7 @@ class IntelligenceService {
         body:
             "Your ${((savingsRate) * 100).toInt()}% savings rate is exceptional compared to the recommended ${(_typicalSavingsBenchmark * 100).toInt()}% benchmark.",
         type: InsightType.success,
-        priority: InsightPriority.low,
+        priority: InsightPriority.medium,
         value: "Savings Rate",
         currencyValue: (savingsRate * 100),
         group: InsightGroup.trend,
@@ -297,7 +310,7 @@ class IntelligenceService {
         body:
             "Most of your budget categories have remained stable for over 3 months. This level of consistency is a hallmark of financial maturity.",
         type: InsightType.success,
-        priority: InsightPriority.low,
+        priority: InsightPriority.medium,
         value: "Stability",
         currencyValue: null,
         group: InsightGroup.behavioral,
@@ -324,9 +337,8 @@ class IntelligenceService {
   List<AIInsight> _filterBySurface(
       List<AIInsight> insights, InsightSurface surface) {
     if (surface == InsightSurface.main) {
-      // Main surface: Allow all priorities passed by the priority logic
-      // The priority logic already ensures we don't spam (High overrides others, etc.)
-      return insights;
+      // Safety net: main surface should never show low-priority insights
+      return insights.where((i) => i.priority != InsightPriority.low).toList();
     }
     return insights;
   }

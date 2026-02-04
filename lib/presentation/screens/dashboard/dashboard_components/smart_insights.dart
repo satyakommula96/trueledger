@@ -269,6 +269,10 @@ class ScoreCard extends StatelessWidget {
       scoreColor = semantic.warning;
       label = "AVERAGE";
       icon = Icons.info_rounded;
+    } else if (score == 0) {
+      scoreColor = semantic.secondaryText;
+      label = "CALIBRATING...";
+      icon = Icons.hourglass_empty_rounded;
     } else {
       scoreColor = semantic.overspent;
       label = "AT RISK";
@@ -336,13 +340,17 @@ class ScoreCard extends StatelessWidget {
                       children: [
                         Icon(icon, size: 12, color: scoreColor),
                         const SizedBox(width: 4),
-                        Text(
-                          label,
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                            color: scoreColor,
-                            letterSpacing: 1,
+                        Flexible(
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: scoreColor,
+                              letterSpacing: 1,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],

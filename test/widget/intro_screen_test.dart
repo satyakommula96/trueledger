@@ -51,6 +51,7 @@ void main() {
     when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);
     when(() => mockPrefs.getBool(any())).thenReturn(false);
     when(() => mockPrefs.getString(any())).thenReturn(null);
+    when(() => mockPrefs.remove(any())).thenAnswer((_) async => true);
     when(() => mockNotifications.requestPermissions())
         .thenAnswer((_) async => true);
   });
