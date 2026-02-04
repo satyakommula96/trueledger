@@ -34,9 +34,9 @@ void main() {
         {'category': 'Travel', 'total': 5000},
       ];
       final monthlyHistory = [
-        {'month': '2026-01', 'total': 3000},
-        {'month': '2026-02', 'total': 4000}, // Max month
-        {'month': '2026-03', 'total': 3000},
+        {'month': '2026-01', 'expenses': 3000},
+        {'month': '2026-02', 'expenses': 4000}, // Max month
+        {'month': '2026-03', 'expenses': 3000},
       ];
 
       when(() => mockRepository.getCategorySpendingForRange(any(), any()))
@@ -111,6 +111,45 @@ void main() {
       expect(data.totalSpendCurrentYear, 0);
       expect(data.categoryStability, isEmpty);
       expect(data.avgMonthlySpend, 0);
+    });
+    test('should handle null or non-int values from repository', () async {
+      // Arrange
+      final List<Map<String, dynamic>> currentYearCats = [
+        {'category': 'Food', 'total': 12000.50}, // double
+        {'category': 'Rent', 'total': null}, // null
+      ];
+      final List<Map<String, dynamic>> previousYearCats = [
+        {'category': 'Food', 'total': 10000},
+      ];
+      final monthlyHistory = [
+        {'month': '2026-01', 'expenses': 3000},
+        {'month': '2026-02', 'expenses': null}, // null expenses
+      ];
+
+      when(() => mockRepository.getCategorySpendingForRange(any(), any()))
+          .thenAnswer((invocation) async {
+        final start = invocation.positionalArguments[0] as DateTime;
+        if (start.year == testYear) {
+          return currentYearCats;
+        } else {
+          return previousYearCats;
+        }
+      });
+
+      when(() => mockRepository.getMonthlyHistory(testYear))
+          .thenAnswer((_) async => monthlyHistory);
+
+      // Act
+      final result = await useCase.call(testYear);
+
+      // Assert
+      expect(result.isSuccess, isTrue);
+      final data = result.getOrThrow;
+      expect(data.totalSpendCurrentYear, 12000); // 12000.5 -> 12000, null -> 0
+
+      // Current implementation: if (total > 0) totalForAvg += total; monthsWithData++;
+      // So month 01 (3000) counts, month 02 (null -> 0) does NOT count toward monthsWithData.
+      expect(data.avgMonthlySpend, 3000);
     });
   });
 }

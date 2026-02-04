@@ -59,10 +59,10 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
           previousYearStart, previousYearEnd);
 
       // 2. Calculate totals
-      final totalCurrent =
-          currentYearCats.fold<int>(0, (sum, c) => sum + (c['total'] as int));
-      final totalPrevious =
-          previousYearCats.fold<int>(0, (sum, c) => sum + (c['total'] as int));
+      final totalCurrent = currentYearCats.fold<int>(
+          0, (sum, c) => sum + (c['total'] as num? ?? 0).toInt());
+      final totalPrevious = previousYearCats.fold<int>(
+          0, (sum, c) => sum + (c['total'] as num? ?? 0).toInt());
 
       // 3. Category stability analysis
       final stabilityMetrics = <CategoryStability>[];
@@ -79,8 +79,8 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
             (e) => e['category'] == cat,
             orElse: () => <String, dynamic>{'total': 0});
 
-        final currentAmount = currentEntry['total'] as int;
-        final previousAmount = previousEntry['total'] as int;
+        final currentAmount = (currentEntry['total'] as num? ?? 0).toInt();
+        final previousAmount = (previousEntry['total'] as num? ?? 0).toInt();
 
         if (currentAmount == 0 && previousAmount == 0) continue;
 
@@ -111,9 +111,11 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
       int monthsWithData = 0;
 
       for (var entry in history) {
-        final total = entry['total'] as int;
-        final monthStr = entry['month'] as String; // e.g. "2024-01"
-        final month = int.parse(monthStr.split('-')[1]);
+        final total = entry['expenses'] as int? ?? 0;
+        final monthStr = entry['month'] as String? ?? '';
+        if (monthStr.length < 7) continue;
+
+        final month = int.tryParse(monthStr.split('-')[1]) ?? 1;
 
         if (total > maxAmount) {
           maxAmount = total;
@@ -126,7 +128,7 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
       }
 
       final topCategory = currentYearCats.isNotEmpty
-          ? currentYearCats.first['category'] as String
+          ? (currentYearCats.first['category'] as String?) ?? 'None'
           : 'None';
 
       return Success(AnnualReflectionData(
