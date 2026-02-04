@@ -1,145 +1,125 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# MkDocs build output
-site/
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+# ======================================================
+# General
+# ======================================================
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
 
 # IDEs
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
+*.iml
 
-# OS
+# ======================================================
+# Flutter / Dart
+# ======================================================
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+
+# ======================================================
+# Android
+# ======================================================
+.gradle/
+local.properties
+**/build/
+
+# ======================================================
+# iOS (Flutter-managed)
+# ======================================================
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Xcode user / build junk
+**/DerivedData/
+*.xcworkspace
+**/*.xcuserdata
+**/*.xcuserstate
+**/*.pbxuser
+**/*.mode1v3
+**/*.mode2v3
+**/*.perspectivev3
+
+# ======================================================
+# macOS (Flutter-managed)
+# ======================================================
+macos/Pods/
+macos/.symlinks/
+macos/Flutter/ephemeral/
+macos/Flutter/Generated.xcconfig
+macos/Flutter/flutter_export_environment.sh
+macos/Runner/GeneratedPluginRegistrant.*
+
+# ======================================================
+# Windows
+# ======================================================
+windows/flutter/ephemeral/
+windows/build/
+
+# ======================================================
+# Linux
+# ======================================================
+linux/flutter/ephemeral/
+
+# ======================================================
+# Web
+# ======================================================
+web/build/
+
+# ======================================================
+# Coverage / Reports
+# ======================================================
+coverage/
+*.lcov
+
+# ======================================================
+# Artifacts / patches
+# ======================================================
+*.diff
+*.patch
+*.log
+
+# MkDocs build output
+site/
+
+# MkDocs cache
+.mkdocs_cache/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Python packaging
+*.egg-info/
+dist/
+build/
+
+# Coverage / test reports
+.coverage
+htmlcov/
+
+# OS junk
 .DS_Store
 Thumbs.db
 
-# Flutter/Dart
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
-build/
-*.lock
-
-# Android
-*.iml
-.gradle
-local.properties
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
-.idea/dictionaries
-.idea/libraries
-.idea/caches
-
-# iOS
-*.mode1v3
-*.mode2v3
-*.moved-aside
-*.pbxuser
-*.perspectivev3
-**/*sync/
-.sconsign.dblite
-.tags*
-**/.vagrant/
-**/DerivedData/
-Icon?
-**/Pods/
-**/.symlinks/
-profile
-xcuserdata
-**/.generated/
-Flutter/App.framework
-Flutter/Flutter.framework
-Flutter/Flutter.podspec
-Flutter/Generated.xcconfig
-Flutter/app.flx
-Flutter/app.zip
-Flutter/flutter_assets/
-Flutter/flutter_export_environment.sh
-ServiceDefinitions.json
-Runner/GeneratedPluginRegistrant.*
-
-# Web
-.dart_tool/
-.packages
-pubspec.lock
-build/
-
-# Windows
-flutter/ephemeral/
-
-# Linux
-flutter/ephemeral/
-
-# macOS
-**/Flutter/ephemeral/
-**/Pods/
-
-# Coverage
-coverage/
-
-# Symbols
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Exceptions to above rules.
-!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
-
-# Python virtual environment
-.venv/
-venv/
-/*.diff
-/*.patch
-/*.txt
+# Editor junk
+.vscode/
+.idea/
+*~
+*.swp
+*.swo

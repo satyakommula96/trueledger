@@ -1,285 +1,268 @@
-name: Build and Release
+name: TrueLedger Release
 
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FLUTTER_CHANNEL: stable
+
+# ============================================================
+# LINUX (.deb)
+# ============================================================
 jobs:
   build-linux:
-    name: Build Linux (Debian)
+    name: Linux (.deb)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
+      - run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libsecret-1-dev libjsoncpp-dev libsqlcipher-dev libssl-dev
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libsecret-1-dev \
+            libjsoncpp-dev libsqlcipher-dev libssl-dev
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
-      - name: Get Version
-        id: version
+      - run: flutter pub get
+
+      - id: version
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
-      - name: Build and Package
-        run: |
+      - run: |
           chmod +x scripts/create_deb.sh
           VERSION=${{ steps.version.outputs.VERSION }} ./scripts/create_deb.sh
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: TrueLedger-Linux-deb
+          name: linux-deb
           path: TrueLedger.deb
 
+# ============================================================
+# ANDROID (APK + AAB)
+# ============================================================
   build-android:
-    name: Build Android (APK)
+    name: Android (APK + AAB)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
-      - name: Get Version
-        id: version
+      - run: flutter pub get
+
+      - id: version
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
-      - name: Build Signed App Bundle
-        run: flutter build appbundle --release --build-name=${{ steps.version.outputs.VERSION }}
+      - run: flutter build appbundle --release --build-name=${{ steps.version.outputs.VERSION }}
+      - run: flutter build apk --release --build-name=${{ steps.version.outputs.VERSION }}
 
-      - name: Build Unsigned APK
-        run: flutter build apk --release --build-name=${{ steps.version.outputs.VERSION }}
-
-      - name: Upload Unsigned APK Artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: TrueLedger-Android-apk-unsigned
+          name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      - name: Upload Signed AAB Artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: TrueLedger-Android-aab-signed
+          name: android-aab
           path: build/app/outputs/bundle/release/app-release.aab
 
+# ============================================================
+# WINDOWS (EXE + MSIX + MSI)
+# ============================================================
   build-windows:
-    name: Build Windows (Exe)
+    name: Windows (EXE + MSIX + MSI)
     runs-on: windows-latest
+    timeout-minutes: 45
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
       - name: Install Inno Setup
-        run: |
-          choco install innosetup
+        run: choco install innosetup -y
 
-      - name: Get Version
-        id: version
+      - name: Install WiX Toolset
+        run: choco install wixtoolset -y
+
+      - id: version
         shell: bash
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
-      - name: Build Unsigned EXE
-        run: flutter build windows --release --build-name=${{ steps.version.outputs.VERSION }}
+      - run: flutter build windows --release --build-name=${{ steps.version.outputs.VERSION }}
 
-      - name: Package with Inno Setup (Unsigned)
-        run: |
+      # EXE
+      - run: |
           iscc /DAppVersion=${{ steps.version.outputs.VERSION }} scripts/windows_setup.iss
 
-      - name: Create MSIX Package (Signed)
-        # Note: In real CI, requires signing cert config in pubspec.yaml or secrets
-        run: |
-          flutter pub run msix:create --version ${{ steps.version.outputs.VERSION }}.0
+      # MSIX
+      - run: flutter pub run msix:create --version ${{ steps.version.outputs.VERSION }}.0
 
-      - name: Upload Unsigned EXE Artifact
-        uses: actions/upload-artifact@v4
+      # MSI (WiX)
+      - name: Build MSI
+        shell: bash
+        run: |
+          candle installer/TrueLedger.wxs
+          light TrueLedger.wixobj -o TrueLedger.msi
+
+      - uses: actions/upload-artifact@v4
         with:
-          name: TrueLedger-Windows-exe-unsigned
+          name: windows-exe
           path: build/windows/x64/installer/TrueLedger.exe
 
-      - name: Upload MSIX Artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: TrueLedger-Windows-msix
+          name: windows-msix
           path: build/windows/x64/runner/Release/TrueLedger.msix
 
-  build-macos:
-    name: Build macOS (DMG)
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: actions/upload-artifact@v4
         with:
-          channel: 'stable'
+          name: windows-msi
+          path: TrueLedger.msi
+
+# ============================================================
+# macOS (DMG)
+# ============================================================
+  build-macos:
+    name: macOS (DMG)
+    runs-on: macos-14
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
-      - name: Install SQLCipher (macOS)
-        if: runner.os == 'macOS'
-        run: brew install sqlcipher
+      - name: Setup macOS Environment
+        run: |
+          brew install sqlcipher
+          flutter config --enable-macos-desktop
 
-      - name: Get Version
-        id: version
+      - run: flutter pub get
+
+      - id: version
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
-      - name: Build and Package
-        run: |
+      - run: |
           chmod +x scripts/create_dmg.sh
           VERSION=${{ steps.version.outputs.VERSION }} ./scripts/create_dmg.sh
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: TrueLedger-macOS-dmg
+          name: macos-dmg
           path: TrueLedger.dmg
 
+# ============================================================
+# iOS (Unsigned IPA)
+# ============================================================
   build-ios:
-    name: Build iOS (IPA - Unsigned)
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    name: iOS (Unsigned IPA)
+    runs-on: macos-14
+    timeout-minutes: 40
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
-      - name: Get Version
-        id: version
+      - run: flutter pub get
+      - run: flutter precache --ios
+
+      - id: version
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
-      - name: Build iOS (No Codesign)
-        run: |
+      - run: |
           flutter build ios --release --no-codesign --build-name=${{ steps.version.outputs.VERSION }}
-          mkdir -p build/ios/iphoneos
-          mv build/ios/iphoneos/Runner.app build/ios/iphoneos/TrueLedger.app
           mkdir -p Payload
-          cp -r build/ios/iphoneos/TrueLedger.app Payload
+          cp -r build/ios/iphoneos/Runner.app Payload/TrueLedger.app
           zip -r TrueLedger.ipa Payload
 
-      - name: Upload iOS IPA
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: TrueLedger-iOS-ipa-unsigned
+          name: ios-ipa
           path: TrueLedger.ipa
 
+# ============================================================
+# RELEASE + GITHUB PAGES
+# ============================================================
   release:
-    name: Create Release
-    needs: [build-linux, build-android, build-windows, build-macos, build-ios]
+    name: Publish Release
+    needs:
+      - build-linux
+      - build-android
+      - build-windows
+      - build-macos
+      - build-ios
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Download Linux Artifact
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: TrueLedger-Linux-deb
+          path: dist
 
-      - name: Download Android Unsigned APK
-        uses: actions/download-artifact@v4
-        with:
-          name: TrueLedger-Android-apk-unsigned
-
-      - name: Download Android Signed AAB
-        uses: actions/download-artifact@v4
-        with:
-          name: TrueLedger-Android-aab-signed
-
-      - name: Download Windows Unsigned EXE
-        uses: actions/download-artifact@v4
-        with:
-          name: TrueLedger-Windows-exe-unsigned
-
-      - name: Download Windows Signed MSIX
-        uses: actions/download-artifact@v4
-        with:
-          name: TrueLedger-Windows-msix
-
-      - name: Download macOS Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: TrueLedger-macOS-dmg
-
-      - name: Download iOS IPA Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: TrueLedger-iOS-ipa-unsigned
-
-      - name: Get Version
-        id: version
+      - id: version
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
-      - name: Rename Files with Version
-        run: |
-          mv app-release.apk TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.apk
-          mv app-release.aab TrueLedger_${{ steps.version.outputs.VERSION }}_signed.aab
-          mv TrueLedger.deb TrueLedger_${{ steps.version.outputs.VERSION }}.deb
-          mv TrueLedger.exe TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.exe
-          mv TrueLedger.msix TrueLedger_${{ steps.version.outputs.VERSION }}_signed.msix
-          mv TrueLedger.dmg TrueLedger_${{ steps.version.outputs.VERSION }}.dmg
-          mv TrueLedger.ipa TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.ipa
+      - run: |
+          mkdir out
+          mv dist/linux-deb/TrueLedger.deb out/TrueLedger_${{ steps.version.outputs.VERSION }}.deb
+          mv dist/android-apk/app-release.apk out/TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.apk
+          mv dist/android-aab/app-release.aab out/TrueLedger_${{ steps.version.outputs.VERSION }}_signed.aab
+          mv dist/windows-exe/TrueLedger.exe out/TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.exe
+          mv dist/windows-msix/TrueLedger.msix out/TrueLedger_${{ steps.version.outputs.VERSION }}_signed.msix
+          mv dist/windows-msi/TrueLedger.msi out/TrueLedger_${{ steps.version.outputs.VERSION }}.msi
+          mv dist/macos-dmg/TrueLedger.dmg out/TrueLedger_${{ steps.version.outputs.VERSION }}.dmg
+          mv dist/ios-ipa/TrueLedger.ipa out/TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.ipa
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+      - uses: softprops/action-gh-release@v2
         with:
-          files: |
-            TrueLedger_${{ steps.version.outputs.VERSION }}.deb
-            TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.apk
-            TrueLedger_${{ steps.version.outputs.VERSION }}_signed.aab
-            TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.exe
-            TrueLedger_${{ steps.version.outputs.VERSION }}_signed.msix
-            TrueLedger_${{ steps.version.outputs.VERSION }}.dmg
-            TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.ipa
+          files: out/*
           generate_release_notes: true
 
-      - name: Prepare Pages Deployment
-        run: |
-          mkdir release_dist
-          cp TrueLedger_${{ steps.version.outputs.VERSION }}* release_dist/
-          touch release_dist/.nojekyll
+      - run: |
+          mkdir -p pages/${{ steps.version.outputs.VERSION }}
+          cp out/* pages/${{ steps.version.outputs.VERSION }}
+          touch pages/.nojekyll
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./release_dist
-          publish_branch: gh-pages
-          destination_dir: downloads/${{ steps.version.outputs.VERSION }}
+          publish_dir: pages
           keep_files: true
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'

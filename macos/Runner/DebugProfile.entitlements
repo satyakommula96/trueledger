@@ -8,5 +8,13 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
+	<key>com.apple.security.keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)com.satyakommula.TrueLedger</string>
+	</array>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)com.satyakommula.TrueLedger</string>
+	</array>
 </dict>
 </plist>

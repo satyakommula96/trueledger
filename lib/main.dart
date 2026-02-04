@@ -14,7 +14,9 @@ import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/presentation/screens/startup/startup_screen.dart';
 
 Future<void> main() async {
-  usePathUrlStrategy();
+  if (kIsWeb) {
+    usePathUrlStrategy();
+  }
   WidgetsFlutterBinding.ensureInitialized();
 
   // 1. Initial Desktop & Web Setup

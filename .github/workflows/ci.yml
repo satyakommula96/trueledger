@@ -1,178 +1,219 @@
-name: TrueLedger CI/CD
+name: TrueLedger CI
 
 on:
   push:
     branches: [ main ]
     tags: [ 'v*' ]
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.gitignore'
   pull_request:
     branches: [ main ]
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.gitignore'
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FLUTTER_VERSION: stable
+
 jobs:
-  # Test on all platforms
+# -------------------------
+# UNIT + ANALYSIS (FAST)
+# -------------------------
   test:
-    name: Test on ${{ matrix.os }}
+    name: Unit & Analysis (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-    
+
     steps:
       - uses: actions/checkout@v4
 
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: Install Dependencies
-        run: flutter pub get
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: flutter analyze
 
-      - name: Verify Formatting
-        run: dart format --output=none --set-exit-if-changed .
-
-      - name: Analyze
-        run: flutter analyze
-
-      - name: Run Tests with Coverage
-        if: matrix.os == 'ubuntu-latest'
-        run: flutter test --coverage
-
-      - name: Run Tests (No Coverage)
-        if: matrix.os != 'ubuntu-latest'
+      - name: Run tests
         run: flutter test
 
-      - name: Upload coverage to Codecov
-        if: matrix.os == 'ubuntu-latest'
-        uses: codecov/codecov-action@v4
-        with:
-          file: coverage/lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-          verbose: true
-
-      - name: Generate coverage summary
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          if [ -f coverage/lcov.info ]; then
-            echo "## 📊 Coverage Report" >> $GITHUB_STEP_SUMMARY
-            TOTAL=$(grep -c "^DA:" coverage/lcov.info || echo "0")
-            HIT=$(grep "^DA:" coverage/lcov.info | grep -v ",0$" | wc -l || echo "0")
-            if [ "$TOTAL" -gt 0 ]; then
-              PCT=$(echo "scale=2; $HIT * 100 / $TOTAL" | bc)
-              echo "**Coverage: ${PCT}%** ($HIT / $TOTAL lines)" >> $GITHUB_STEP_SUMMARY
-            fi
-          fi
-
-      - name: Upload coverage artifact
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/
-          retention-days: 30
-
-  # Slow Integration Tests
-  # Cross-Platform Integration Tests
-  integration_tests:
-    name: Integration Test (${{ matrix.target }})
+# -------------------------
+# LINUX INTEGRATION
+# -------------------------
+  integration-linux:
+    name: Integration (Linux)
     needs: test
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [android, ios, linux, macos, windows]
-        include:
-          - target: android
-            os: ubuntu-latest
-          - target: ios
-            os: macos-latest
-          - target: linux
-            os: ubuntu-latest
-          - target: macos
-            os: macos-latest
-          - target: windows
-            os: windows-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libsecret-1-dev \
+            libjsoncpp-dev libsqlite3-dev libsqlcipher-dev \
+            libssl-dev xvfb
+
+      - run: xvfb-run flutter test integration_test/app_test.dart -d linux --timeout 10m
+
+# -------------------------
+# ANDROID INTEGRATION
+# -------------------------
+  integration-android:
+    name: Integration (Android)
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
         with:
-          distribution: 'zulu'
-          java-version: '17'
+          distribution: zulu
+          java-version: 17
+
       - uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: ${{ env.FLUTTER_VERSION }}
           cache: true
+
       - run: flutter pub get
-      
-      # Linux/macOS Dependencies
-      - name: Install Platform Dependencies
-        if: runner.os == 'Linux' || runner.os == 'macOS'
-        run: |
-          if [ "${{ runner.os }}" == "Linux" ]; then
-            sudo apt-get update -y
-            sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libsecret-1-dev libjsoncpp-dev libsqlite3-dev libsqlcipher-dev libssl-dev xvfb
-          elif [ "${{ runner.os }}" == "macOS" ]; then
-            brew install sqlcipher
-          fi
 
-      # Linux Test
-      - name: Run Linux Integration Test
-        if: matrix.target == 'linux'
-        run: xvfb-run flutter test integration_test/app_test.dart -d linux
-
-      # iOS Test
-      - name: Run iOS Integration Test
-        if: matrix.target == 'ios'
-        run: |
-           echo "Finding available simulator..."
-           UDID=$(xcrun simctl list devices available -j | jq -r '.devices | to_entries | map(.value) | flatten | map(select(.isAvailable == true and (.name | test("iPhone")))) | sort_by(.name) | reverse | .[0].udid')
-           if [ -z "$UDID" ] || [ "$UDID" == "null" ]; then
-              xcrun simctl create "FlutterTester" "iPhone 15"
-              UDID=$(xcrun simctl list devices available | grep "FlutterTester" | awk -F '[()]' '{print $2}' | head -n 1)
-           fi
-           xcrun simctl boot $UDID || true
-           xcrun simctl bootstatus $UDID -b
-           sleep 5
-           flutter test integration_test/app_test.dart -d $UDID --timeout 10m
-
-      # Android Test
-      - name: Run Android Integration Test
-        if: matrix.target == 'android'
-        uses: reactivecircus/android-emulator-runner@v2
+      - uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
-          target: default
           arch: x86_64
           profile: Nexus 6
-          script: flutter test integration_test/app_test.dart
+          disable-animations: true
+          script: flutter test integration_test/app_test.dart --timeout 10m
 
-      # macOS Test
-      - name: Run macOS Integration Test
-        if: matrix.target == 'macos'
+# -------------------------
+# iOS INTEGRATION (HARD MODE)
+# -------------------------
+  integration-ios:
+    name: Integration (iOS)
+    needs: test
+    runs-on: macos-14
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter dependencies
         run: |
-          sleep 5
-          flutter test integration_test/app_test.dart -d macos --timeout 10m
+          flutter pub get
+          flutter precache --ios
+          cd ios && pod install
 
-      # Windows Test
-      - name: Run Windows Integration Test
-        if: matrix.target == 'windows'
-        run: flutter test integration_test/app_test.dart -d windows --timeout 10m
+      - name: Run iOS Integration Test
+        run: |
+          set -euo pipefail
 
+          SIM_NAME="FlutterTester"
+          DEVICE_TYPE="iPhone 15"
+
+          # Find device UDID safely (returns empty if not found, instead of exiting shell)
+          UDID=$(xcrun simctl list devices | grep "$SIM_NAME" | head -n 1 | awk -F '[()]' '{print $2}' || true)
+
+          if [ -z "$UDID" ] || [ ${#UDID} -lt 10 ]; then
+            echo "Creating new simulator: $DEVICE_TYPE"
+            UDID=$(xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE" || xcrun simctl create "$SIM_NAME" "iPhone 15")
+          else
+            echo "Found existing simulator: $UDID. Cleaning..."
+            xcrun simctl shutdown "$UDID" || true
+            xcrun simctl erase "$UDID" || true
+          fi
+
+          echo "Booting simulator ($UDID)..."
+
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+
+          echo "Waiting for simulator readiness..."
+
+          NEXT_WAIT_TIME=0
+          until xcrun simctl spawn "$UDID" launchctl print system >/dev/null 2>&1; do
+            sleep 5
+            NEXT_WAIT_TIME=$((NEXT_WAIT_TIME + 5))
+            echo "Waiting for system... ($NEXT_WAIT_TIME s)"
+            if [ $NEXT_WAIT_TIME -gt 300 ]; then echo "Timeout waiting for system"; exit 1; fi
+          done
+
+          NEXT_WAIT_TIME=0
+          until xcrun simctl spawn "$UDID" defaults read com.apple.springboard >/dev/null 2>&1; do
+            sleep 5
+            NEXT_WAIT_TIME=$((NEXT_WAIT_TIME + 5))
+            echo "Waiting for springboard... ($NEXT_WAIT_TIME s)"
+            if [ $NEXT_WAIT_TIME -gt 300 ]; then echo "Timeout waiting for springboard"; exit 1; fi
+          done
+
+          echo "Simulator ready. Starting tests..."
+
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/app_test.dart \
+            -d "$UDID" \
+            --timeout 15m
+
+# -------------------------
+# macOS DESKTOP INTEGRATION
+# -------------------------
+  integration-macos:
+    name: Integration (macOS)
+    needs: test
+    runs-on: macos-14
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Setup macOS Environment
+        run: |
+          brew install sqlcipher
+          flutter config --enable-macos-desktop
+
+      - run: flutter pub get
+      - run: flutter test integration_test/app_test.dart -d macos --timeout 10m
+
+# -------------------------
+# WINDOWS INTEGRATION
+# -------------------------
+  integration-windows:
+    name: Integration (Windows)
+    needs: test
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter test integration_test/app_test.dart -d windows --timeout 10m

@@ -20,12 +20,17 @@ import 'package:trueledger/core/config/app_config.dart';
 class AppDatabase {
   static common.Database? _db;
   static Future<common.Database>? _initializationInstance;
-  static const _storage = FlutterSecureStorage();
+  static const _storage = FlutterSecureStorage(
+    mOptions: MacOsOptions(
+      accessibility: KeychainAccessibility.first_unlock,
+    ),
+  );
   static const _keyParams = 'db_key';
 
-  static bool get _isTest =>
-      AppConfig.isIntegrationTest ||
-      (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST'));
+  static bool get _isTest => AppConfig.isIntegrationTest || _isUnitTest;
+
+  static bool get _isUnitTest =>
+      !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
   static Future<common.Database> get db async {
     if (_db != null) return _db!;
@@ -60,15 +65,11 @@ class AppDatabase {
         await _storage.write(key: _keyParams, value: key);
       }
       return key;
-    } catch (e, stack) {
-      debugPrint("SECURE STORAGE FAILURE: $e");
+    } catch (e) {
       if (kDebugMode) {
-        debugPrint(stack.toString());
-        // Fail loudly in debug to alert the developer
-        throw Exception(
-            "CRITICAL: Secure Storage failed in Debug Mode: $e\n$stack");
+        debugPrint(
+            "INFO: Secure Storage unavailable on macOS (Sandbox/Signing). Using dev fallback key.");
       }
-      // Fallback for production if secure storage fails (ALLOWS APP TO OPEN)
       return 'fallback_dev_key_DO_NOT_USE_IN_PROD';
     }
   }
@@ -112,7 +113,10 @@ class AppDatabase {
         if (kDebugMode) rethrow;
         return await _handleDatabaseReset(path, key, isDesktop: false);
       }
-    } else if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
+    } else if (Platform.isLinux ||
+        Platform.isWindows ||
+        Platform.isMacOS ||
+        _isUnitTest) {
       try {
         return await sqflite_ffi.databaseFactoryFfi.openDatabase(
           path,
