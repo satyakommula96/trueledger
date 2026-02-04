@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,7 +5,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import 'package:trueledger/core/services/backup_encryption_service.dart';
 
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/domain/models/models.dart';
@@ -124,33 +122,6 @@ void main() {
   }
 
   group('SettingsScreen', () {
-    testWidgets('covers backup encryption logic', (tester) async {
-      tester.view.physicalSize = const Size(800, 1600);
-      tester.view.devicePixelRatio = 1.0;
-
-      when(() => mockFilePicker.saveFile(
-            dialogTitle: any(named: 'dialogTitle'),
-            fileName: any(named: 'fileName'),
-            type: any(named: 'type'),
-            allowedExtensions: any(named: 'allowedExtensions'),
-          )).thenAnswer((_) async => '/tmp/test_backup.json');
-
-      await tester.pumpWidget(createSettingsScreen());
-
-      final backupTile = find.text('Secure Backup');
-      await tester.scrollUntilVisible(backupTile, 100.0);
-      await tester.tap(backupTile);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Encrypt Backup'), findsOneWidget);
-      await tester.enterText(find.byType(TextField), 'pass123');
-      await tester.tap(find.text('CREATE BACKUP'));
-      await tester.pumpAndSettle();
-
-      verify(() => mockRepo.getAllValues(any())).called(greaterThan(0));
-      tester.view.resetPhysicalSize();
-    });
-
     testWidgets('covers reset application logic', (tester) async {
       tester.view.physicalSize = const Size(800, 1600);
       tester.view.devicePixelRatio = 1.0;
@@ -203,98 +174,6 @@ void main() {
       await tester.pumpAndSettle();
 
       verify(() => mockRepo.seedRoadmapData()).called(1);
-    });
-
-    testWidgets('covers encrypted restore logic - success', (tester) async {
-      tester.view.physicalSize = const Size(800, 1600);
-
-      final encryptedData = BackupEncryptionService.encryptData(
-          jsonEncode({
-            'vars': [],
-            'income': [],
-            'fixed': [],
-            'invs': [],
-            'subs': [],
-            'cards': [],
-            'loans': [],
-            'goals': [],
-            'budgets': [],
-            'version': '1.0'
-          }),
-          'pass123');
-      final container = jsonEncode({
-        'encrypted': true,
-        'data': encryptedData,
-        'version': '2.0',
-      });
-
-      // Mock FileService reading
-      when(() => mockFileService.readAsString(any()))
-          .thenAnswer((_) async => container);
-
-      when(() => mockFilePicker.pickFiles(type: any(named: 'type')))
-          .thenAnswer((_) async => FilePickerResult([
-                PlatformFile(
-                  path: '/dummy/path/test_backup.json',
-                  name: 'test_backup.json',
-                  size: 100,
-                )
-              ]));
-
-      await tester.pumpWidget(createSettingsScreen());
-      final restoreTile = find.text('Restore Data');
-      await tester.scrollUntilVisible(restoreTile, 100);
-      await tester.tap(restoreTile);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Decrypt Backup'), findsOneWidget);
-      await tester.enterText(find.byType(TextField), 'pass123');
-      await tester.tap(find.text('DECRYPT'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Restore & Overwrite?'), findsOneWidget);
-      await tester.tap(find.text('RESTORE'));
-
-      await tester.pumpAndSettle();
-
-      verify(() => mockRestoreUseCase.call(any())).called(1);
-      tester.view.resetPhysicalSize();
-    });
-
-    testWidgets('covers encrypted restore logic - wrong password',
-        (tester) async {
-      tester.view.physicalSize = const Size(800, 1600);
-      final container = jsonEncode({
-        'encrypted': true,
-        'data': 'bad-data',
-        'version': '2.0',
-      });
-
-      // Mock FileService reading
-      when(() => mockFileService.readAsString(any()))
-          .thenAnswer((_) async => container);
-
-      when(() => mockFilePicker.pickFiles(type: any(named: 'type')))
-          .thenAnswer((_) async => FilePickerResult([
-                PlatformFile(
-                  path: '/dummy/path/test_bad_backup.json',
-                  name: 'test_bad_backup.json',
-                  size: 100,
-                )
-              ]));
-
-      await tester.pumpWidget(createSettingsScreen());
-      final restoreTile = find.text('Restore Data');
-      await tester.scrollUntilVisible(restoreTile, 100);
-      await tester.tap(restoreTile);
-      await tester.pumpAndSettle();
-
-      await tester.enterText(find.byType(TextField), 'wrongpass');
-      await tester.tap(find.text('DECRYPT'));
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('Invalid Password'), findsOneWidget);
-      tester.view.resetPhysicalSize();
     });
 
     testWidgets('covers currency picker logic', (tester) async {

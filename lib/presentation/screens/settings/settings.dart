@@ -1,15 +1,8 @@
-import 'dart:io';
-import 'package:trueledger/core/services/file_service.dart';
-import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:csv/csv.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:trueledger/core/utils/web_saver.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -24,14 +17,10 @@ import 'package:trueledger/core/providers/version_provider.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
-import 'package:trueledger/core/services/backup_encryption_service.dart';
-import 'package:trueledger/presentation/providers/usecase_providers.dart';
-import 'package:trueledger/domain/usecases/restore_backup_usecase.dart';
-import 'package:trueledger/data/datasources/database.dart';
 import 'package:trueledger/presentation/screens/settings/trust_center.dart';
-import 'package:trueledger/presentation/providers/backup_provider.dart';
 import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
 import 'package:trueledger/presentation/screens/settings/personalization_settings.dart';
+import 'package:trueledger/presentation/screens/settings/data_export_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -301,73 +290,6 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _exportToCSV(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Export Unencrypted Data?"),
-        content: const Text(
-          "This will create a CSV file with your financial data in plain text.\n\nAnyone with access to this file can read it.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text("CANCEL"),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("EXPORT ANYWAY"),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-    final repo = ref.read(financialRepositoryProvider);
-    final txs = await repo.getAllValues('variable_expenses');
-
-    if (txs.isEmpty) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("No transactions to export")));
-      }
-      return;
-    }
-
-    List<List<dynamic>> rows = [];
-    rows.add(['ID', 'Date', 'Amount', 'Category', 'Note']);
-    for (var tx in txs) {
-      rows.add(
-          [tx['id'], tx['date'], tx['amount'], tx['category'], tx['note']]);
-    }
-
-    String csv = const ListToCsvConverter().convert(rows);
-    final fileName =
-        "trueledger_export_${DateTime.now().millisecondsSinceEpoch}.csv";
-
-    if (kIsWeb) {
-      final bytes = utf8.encode(csv);
-      await saveFileWeb(bytes, fileName);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Export download started")));
-      }
-      return;
-    }
-
-    final directory = await getApplicationDocumentsDirectory();
-    final path = "${directory.path}/$fileName";
-    final file = File(path);
-    await file.writeAsString(csv);
-
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Exported to: $path"),
-          duration: const Duration(seconds: 5)));
-    }
-  }
-
   Future<void> _seedData(BuildContext context, WidgetRef ref) async {
     final option = await showDialog<String>(
         context: context,
@@ -426,342 +348,6 @@ class SettingsScreen extends ConsumerWidget {
           debugPrint(stack.toString());
           throw Exception("Data seeding failed: $e\n$stack");
         }
-      }
-    }
-  }
-
-  Future<void> _backupData(BuildContext context, WidgetRef ref) async {
-    final repo = ref.read(financialRepositoryProvider);
-
-    // 1. Ask for encryption password
-    String? password;
-    if (context.mounted) {
-      password = await showDialog<String>(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) {
-          String input = "";
-          bool obscure = true;
-          return StatefulBuilder(builder: (context, setState) {
-            return AlertDialog(
-              title: const Text("Encrypt Backup"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text("Enter a password to encrypt this backup file.",
-                      style: TextStyle(fontSize: 13)),
-                  const SizedBox(height: 16),
-                  TextField(
-                    autofocus: true,
-                    obscureText: obscure,
-                    onChanged: (v) => input = v,
-                    decoration: InputDecoration(
-                        labelText: "Password",
-                        border: const OutlineInputBorder(),
-                        suffixIcon: IconButton(
-                          icon: Icon(obscure
-                              ? Icons.visibility
-                              : Icons.visibility_off),
-                          onPressed: () => setState(() => obscure = !obscure),
-                        )),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text("CANCEL")),
-                FilledButton(
-                    onPressed: () => Navigator.pop(ctx, input),
-                    child: const Text("CREATE BACKUP")),
-              ],
-            );
-          });
-        },
-      );
-    }
-
-    if (password == null || password.isEmpty) return;
-
-    // 2. Gather Data
-    final rawData = {
-      'vars': await repo.getAllValues('variable_expenses'),
-      'income': await repo.getAllValues('income_sources'),
-      'fixed': await repo.getAllValues('fixed_expenses'),
-      'invs': await repo.getAllValues('investments'),
-      'subs': await repo.getAllValues('subscriptions'),
-      'cards': await repo.getAllValues('credit_cards'),
-      'loans': await repo.getAllValues('loans'),
-      'goals': await repo.getAllValues('saving_goals'),
-      'budgets': await repo.getAllValues('budgets'),
-      'backup_date': DateTime.now().toIso8601String(),
-      'version': '1.0' // Inner version
-    };
-
-    final jsonString = jsonEncode(rawData);
-
-    // 3. Encrypt Data
-    final encryptedData =
-        BackupEncryptionService.encryptData(jsonString, password);
-
-    // 4. Wrap in container JSON
-    final container = {
-      'version': '2.0', // Container version
-      'encrypted': true,
-      'data': encryptedData,
-      'date': DateTime.now().toIso8601String(),
-    };
-    final finalOutput = jsonEncode(container);
-
-    final fileName =
-        "trueledger_backup_enc_${DateTime.now().millisecondsSinceEpoch}.json";
-
-    if (kIsWeb) {
-      final bytes = utf8.encode(finalOutput);
-      await saveFileWeb(bytes, fileName);
-
-      await ref.read(lastBackupTimeProvider.notifier).updateLastBackupTime();
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Backup download started")));
-      }
-      return;
-    }
-
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      final outputFile = await FilePicker.platform.saveFile(
-        dialogTitle: 'Save Encrypted Backup',
-        fileName: fileName,
-        type: FileType.custom,
-        allowedExtensions: ['json'],
-      );
-
-      if (outputFile != null) {
-        final fileService = ref.read(fileServiceProvider);
-        await fileService.writeAsString(outputFile, finalOutput);
-
-        await ref.read(lastBackupTimeProvider.notifier).updateLastBackupTime();
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Encrypted backup saved to $outputFile")));
-        }
-      }
-      return;
-    }
-
-    final directory = await getTemporaryDirectory();
-    final file = File('${directory.path}/$fileName');
-    final fileService = ref.read(fileServiceProvider);
-    await fileService.writeAsString(file.path, finalOutput);
-
-    await ref.read(lastBackupTimeProvider.notifier).updateLastBackupTime();
-
-    if (context.mounted) {
-      // ignore: deprecated_member_use
-      await Share.shareXFiles([XFile(file.path)],
-          text: 'TrueLedger Encrypted Backup');
-    }
-  }
-
-  Future<void> _restoreData(BuildContext context, WidgetRef ref) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.any);
-    if (result == null || result.files.isEmpty) return;
-
-    String fileContent;
-    if (kIsWeb) {
-      final bytes = result.files.single.bytes;
-      if (bytes == null) return;
-      fileContent = utf8.decode(bytes);
-    } else {
-      final fileService = ref.read(fileServiceProvider);
-      fileContent = await fileService.readAsString(result.files.single.path!);
-    }
-
-    try {
-      final container = jsonDecode(fileContent) as Map<String, dynamic>;
-
-      // Check for encryption
-      Map<String, dynamic> data;
-      if (container['encrypted'] == true) {
-        String? password;
-
-        // 1. Try Auto-Decryption with Device Key (for auto-backups)
-        try {
-          final deviceKey = await AppDatabase.getEncryptionKey();
-          final decryptedJson =
-              BackupEncryptionService.decryptData(container['data'], deviceKey);
-          data = jsonDecode(decryptedJson) as Map<String, dynamic>;
-          debugPrint("Auto-decryption successful with device key.");
-        } catch (_) {
-          // 2. Fallback: Ask user for password
-          if (context.mounted) {
-            password = await showDialog<String>(
-              context: context,
-              barrierDismissible: false,
-              builder: (ctx) {
-                String input = "";
-                bool obscure = true;
-                return StatefulBuilder(builder: (context, setState) {
-                  return AlertDialog(
-                    title: const Text("Decrypt Backup"),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text("Enter password to decrypt this file.",
-                            style: TextStyle(fontSize: 13)),
-                        const SizedBox(height: 16),
-                        TextField(
-                          autofocus: true,
-                          obscureText: obscure,
-                          onChanged: (v) => input = v,
-                          decoration: InputDecoration(
-                              labelText: "Password",
-                              border: const OutlineInputBorder(),
-                              suffixIcon: IconButton(
-                                icon: Icon(obscure
-                                    ? Icons.visibility
-                                    : Icons.visibility_off),
-                                onPressed: () =>
-                                    setState(() => obscure = !obscure),
-                              )),
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: const Text("CANCEL")),
-                      FilledButton(
-                          onPressed: () => Navigator.pop(ctx, input),
-                          child: const Text("DECRYPT")),
-                    ],
-                  );
-                });
-              },
-            );
-          }
-
-          if (password == null) return;
-
-          try {
-            final decryptedJson = BackupEncryptionService.decryptData(
-                container['data'], password);
-            data = jsonDecode(decryptedJson) as Map<String, dynamic>;
-          } catch (e) {
-            throw "Invalid Password or Corrupted File";
-          }
-        }
-      } else {
-        // Legacy (unencrypted) support
-        data = container;
-      }
-
-      if (data['version'] != '1.0') throw "Unknown backup version";
-
-      if (!context.mounted) return;
-
-      final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-                title: Row(
-                  children: [
-                    Icon(Icons.warning_amber_rounded, color: Colors.amber[700]),
-                    const SizedBox(width: 8),
-                    const Text("Restore & Overwrite?"),
-                  ],
-                ),
-                content: const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "This will REPLACE all your current entries, budgets, and cards with those from the backup file.",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      "• Your current state will be AUTO-BACKUPED before proceeding.\n• This action is destructive and cannot be merged.",
-                      style: TextStyle(fontSize: 13),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      child: const Text("CANCEL")),
-                  FilledButton(
-                      onPressed: () => Navigator.pop(ctx, true),
-                      style:
-                          FilledButton.styleFrom(backgroundColor: Colors.red),
-                      child: const Text("RESTORE")),
-                ],
-              ));
-
-      if (confirmed == true) {
-        final repo = ref.read(financialRepositoryProvider);
-        final restoreUseCase = ref.read(restoreBackupUseCaseProvider);
-
-        // Immediate safety backup for in-app UNDO
-        Map<String, dynamic>? safetyBackup;
-        try {
-          safetyBackup = await repo.generateBackup();
-        } catch (e, stack) {
-          debugPrint("In-memory safety backup failed: $e");
-          if (kDebugMode) {
-            throw Exception("Safety backup failed: $e\n$stack");
-          }
-        }
-
-        final result = await restoreUseCase.call(RestoreBackupParams(
-          backupData: data,
-          merge: false, // Currently only replace is supported
-        ));
-
-        // When data is replaced, pre-existing notification schedules are stale.
-        final notificationService = ref.read(notificationServiceProvider);
-        await notificationService.cancelAllNotifications();
-
-        if (!context.mounted) return;
-
-        if (result.isSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: const Text("Restore Successful!"),
-            duration: const Duration(seconds: 8),
-            action: safetyBackup != null
-                ? SnackBarAction(
-                    label: "UNDO",
-                    onPressed: () async {
-                      try {
-                        await repo.clearData();
-                        await repo.restoreBackup(safetyBackup!);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text("Restore undone. Data recovered.")));
-                        }
-                      } catch (e, stack) {
-                        debugPrint("Undo failed: $e");
-                        if (kDebugMode) {
-                          throw Exception("Restore UNDO failed: $e\n$stack");
-                        }
-                      }
-                    })
-                : null,
-          ));
-          Navigator.pop(context, true); // Go back to refresh
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content:
-                  Text("Restore Failed: ${result.failureOrThrow.message}")));
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Restore Failed: $e")));
       }
     }
   }
@@ -1160,29 +746,14 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildOption(
             context,
-            "Export to CSV",
-            "Download your transaction history",
-            Icons.download_rounded,
+            "Data & Export",
+            "One-tap export (history, budgets, insights)",
+            Icons.ios_share_rounded,
             colorScheme.primary,
-            () => _exportToCSV(context, ref),
-          ),
-          const SizedBox(height: 16),
-          _buildOption(
-            context,
-            "Secure Backup",
-            "Creates an encrypted data package",
-            Icons.cloud_upload_outlined,
-            Colors.blueAccent,
-            () => _backupData(context, ref),
-          ),
-          const SizedBox(height: 16),
-          _buildOption(
-            context,
-            "Restore Data",
-            "Import from encrypted backup",
-            Icons.restore_page_outlined,
-            Colors.orange,
-            () => _restoreData(context, ref),
+            () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const DataExportScreen())),
           ),
           const SizedBox(height: 16),
           if (kDebugMode) ...[
