@@ -41,6 +41,17 @@ void main() {
       expect(result.isFailure, isTrue);
       expect(result.failureOrThrow, isA<ValidationFailure>());
     });
+
+    test('should return Failure when repository fails', () async {
+      when(() => mockRepository.updateBudget(any(), any()))
+          .thenThrow(Exception("DB Error"));
+
+      final result =
+          await useCase.call(UpdateBudgetParams(id: 1, monthlyLimit: 500));
+
+      expect(result.isFailure, isTrue);
+      expect(result.failureOrThrow.message, contains("DB Error"));
+    });
   });
 
   group('DeleteBudgetUseCase', () {

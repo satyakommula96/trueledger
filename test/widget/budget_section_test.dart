@@ -99,6 +99,31 @@ void main() {
     expect(rentText.style?.color, AppTheme.darkColors.overspent);
   });
 
+  testWidgets('renders stability badge and last reviewed date',
+      (WidgetTester tester) async {
+    final now = DateTime.now();
+    final budgets = [
+      Budget(
+        id: 1,
+        category: 'Food',
+        monthlyLimit: 500,
+        spent: 200,
+        isStable: true,
+        lastReviewedAt: now,
+      ),
+    ];
+
+    await tester.pumpWidget(createWidgetUnderTest(
+      budgets: budgets,
+      onLoad: () {},
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('STABLE'), findsOneWidget);
+    expect(find.textContaining('Last reviewed:'), findsOneWidget);
+  });
+
   testWidgets('navigates to EditBudgetScreen on tap',
       (WidgetTester tester) async {
     final budgets = [
