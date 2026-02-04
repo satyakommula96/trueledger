@@ -188,17 +188,19 @@ void main() {
       );
 
       // 2. Change data - if cached, it should still return insights1
-      final emptySummary = MonthlySummary(
-        totalIncome: 0,
+      // Note: We used to test with empty summary, but now empty summary forces cache clear (safety feature).
+      // So we test with a slightly different but valid summary to verify cache persistence for non-empty data.
+      final differentSummary = MonthlySummary(
+        totalIncome: 5000, // Different from 10000
         totalFixed: 0,
         totalVariable: 0,
         totalSubscriptions: 0,
         totalInvestments: 0,
-        netWorth: 0,
+        netWorth: 500,
       );
 
       final insights2 = service.generateInsights(
-        summary: emptySummary,
+        summary: differentSummary,
         trendData: [],
         budgets: [],
         categorySpending: [],
@@ -273,7 +275,7 @@ void main() {
         totalVariable: 0,
         totalSubscriptions: 0,
         totalInvestments: 0,
-        netWorth: 0,
+        netWorth: 10, // Non-empty to pass safety check
       );
       final budgets = [
         Budget(
@@ -287,7 +289,7 @@ void main() {
         trendData: [],
         budgets: budgets,
         categorySpending: [],
-        requestedSurface: InsightSurface.details, // Low priority shows here
+        requestedSurface: InsightSurface.main, // Medium priority shows here now
       );
 
       expect(insights.any((i) => i.id == 'stable_lifestyle'), isTrue);
