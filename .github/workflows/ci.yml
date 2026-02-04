@@ -178,6 +178,11 @@ jobs:
           channel: ${{ env.FLUTTER_VERSION }}
           cache: true
 
+      - name: Setup macOS Environment
+        run: |
+          brew install sqlcipher
+          flutter config --enable-macos-desktop
+
       - run: flutter pub get
       - run: flutter test integration_test/app_test.dart -d macos --timeout 10m
 
