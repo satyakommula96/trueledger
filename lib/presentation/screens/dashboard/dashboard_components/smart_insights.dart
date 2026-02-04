@@ -445,86 +445,48 @@ class InsightItem extends ConsumerWidget {
                     ),
                     child: Icon(icon, size: 18, color: accentColor),
                   ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        if (insight.currencyValue != null)
-                          Flexible(
-                            child: Text(
-                              "${insight.value}: ${CurrencyFormatter.format(insight.currencyValue!, isPrivate: isPrivate)}",
-                              textAlign: TextAlign.right,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 14,
-                                color: accentColor,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                        Expanded(
+                          child: Text(
+                            insight.currencyValue != null
+                                ? "${insight.value}: ${CurrencyFormatter.format(insight.currencyValue!, isPrivate: isPrivate)}"
+                                : insight.value,
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                              color: accentColor,
                             ),
-                          )
-                        else
-                          Flexible(
-                            child: Text(
-                              insight.value,
-                              textAlign: TextAlign.right,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 14,
-                                color: accentColor,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        const SizedBox(width: 8),
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(20),
-                            onTap: () async {
-                              await ref
-                                  .read(intelligenceServiceProvider)
-                                  .snoozeInsight(insight.id, days: 7);
-                              ref.invalidate(insightsProvider);
-                            },
-                            child: Tooltip(
-                              message: "Snooze for 7 days",
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: Icon(
-                                  Icons.access_time_rounded,
-                                  size: 16,
-                                  color: semantic.secondaryText
-                                      .withValues(alpha: 0.5),
-                                ),
-                              ),
-                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        _buildActionButton(
+                          icon: Icons.access_time_rounded,
+                          tooltip: "Snooze 7 days",
+                          onTap: () async {
+                            await ref
+                                .read(intelligenceServiceProvider)
+                                .snoozeInsight(insight.id, days: 7);
+                            ref.invalidate(insightsProvider);
+                          },
+                        ),
                         const SizedBox(width: 4),
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(20),
-                            onTap: () async {
-                              await ref
-                                  .read(intelligenceServiceProvider)
-                                  .dismissInsight(insight.id, insight.group);
-                              ref.invalidate(insightsProvider);
-                            },
-                            child: Tooltip(
-                              message: "Dismiss",
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: Icon(
-                                  Icons.close_rounded,
-                                  size: 16,
-                                  color: semantic.secondaryText
-                                      .withValues(alpha: 0.5),
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
+                        _buildActionButton(
+                          icon: Icons.close_rounded,
+                          tooltip: "Dismiss",
+                          onTap: () async {
+                            await ref
+                                .read(intelligenceServiceProvider)
+                                .dismissInsight(insight.id, insight.group);
+                            ref.invalidate(insightsProvider);
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -553,6 +515,31 @@ class InsightItem extends ConsumerWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Tooltip(
+          message: tooltip,
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: Icon(
+              icon,
+              size: 16,
+              color: semantic.secondaryText.withValues(alpha: 0.5),
+            ),
           ),
         ),
       ),

@@ -139,36 +139,44 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Flexible(
-                          child: GestureDetector(
-                            onTap: widget.onTapNetWorth,
-                            child: _buildHeaderPill(context, "NET WORTH",
-                                Icons.account_balance_wallet_rounded),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: GestureDetector(
+                              onTap: widget.onTapNetWorth,
+                              child: _buildHeaderPill(context, "NET WORTH",
+                                  Icons.account_balance_wallet_rounded),
+                            ),
                           ),
                         ),
-                        if (widget.activeStreak > 0)
+                        if (widget.activeStreak > 0) ...[
+                          const SizedBox(width: 12),
                           Flexible(
-                            child: Builder(builder: (context) {
-                              final pillContent = _buildHeaderPill(
-                                context,
-                                widget.hasLoggedToday
-                                    ? "${widget.activeStreak} DAY STREAK"
-                                    : "${widget.activeStreak} DAY STREAK",
-                                Icons.whatshot_rounded,
-                                isAlt: true,
-                                color: widget.hasLoggedToday
-                                    ? Colors.orange
-                                    : Colors.blueGrey.shade300,
-                              );
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Builder(builder: (context) {
+                                final pillContent = _buildHeaderPill(
+                                  context,
+                                  widget.hasLoggedToday
+                                      ? "${widget.activeStreak} DAY STREAK"
+                                      : "${widget.activeStreak} DAY STREAK",
+                                  Icons.whatshot_rounded,
+                                  isAlt: true,
+                                  color: widget.hasLoggedToday
+                                      ? Colors.orange
+                                      : Colors.blueGrey.shade300,
+                                );
 
-                              Widget pill;
-                              if (!widget.hasLoggedToday) {
-                                pill = pillContent;
-                              } else {
-                                pill = pillContent.animate();
-                              }
-                              return pill;
-                            }),
+                                Widget pill;
+                                if (!widget.hasLoggedToday) {
+                                  pill = pillContent;
+                                } else {
+                                  pill = pillContent.animate();
+                                }
+                                return pill;
+                              }),
+                            ),
                           ),
+                        ],
                       ],
                     ),
                     const Spacer(),
