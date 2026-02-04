@@ -75,7 +75,9 @@ void main() {
     expect(find.text("DATA HEALTH"), findsOneWidget);
     expect(find.text("Total Records"), findsOneWidget);
     expect(find.text("20"), findsOneWidget);
-    expect(find.text("Privacy First"), findsOneWidget);
+    expect(find.text("Trust Center"), findsOneWidget);
+    expect(find.text("OUR GUARANTEES"), findsOneWidget);
+    expect(find.text("WHAT WE NEVER DO"), findsOneWidget);
   });
 
   testWidgets('TrustCenterScreen renders backups and shows restore dialog',
@@ -129,7 +131,9 @@ void main() {
     expect(find.byIcon(Icons.history_rounded), findsOneWidget);
 
     // Tap Restore icon
-    await tester.tap(find.byIcon(Icons.settings_backup_restore_rounded));
+    final restoreButton = find.byIcon(Icons.settings_backup_restore_rounded);
+    await tester.ensureVisible(restoreButton);
+    await tester.tap(restoreButton);
     await tester.pumpAndSettle();
 
     // Verify dialog

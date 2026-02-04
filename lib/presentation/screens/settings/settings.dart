@@ -683,8 +683,8 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildOption(
             context,
-            "Trust & Privacy",
-            "Data health & security",
+            "Trust Center",
+            "Explicit guarantees & data health",
             Icons.verified_user_outlined,
             Colors.green,
             () => Navigator.push(context,

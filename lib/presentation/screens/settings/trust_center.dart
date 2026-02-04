@@ -41,17 +41,17 @@ class TrustCenterScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildPrivacyCard(context, semantic),
+            _buildHeroSection(context, semantic),
             const SizedBox(height: 32),
-            Text(
-              "DATA HEALTH",
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 2,
-                color: semantic.secondaryText,
-              ),
-            ),
+            _buildSectionHeader("OUR GUARANTEES", semantic),
+            const SizedBox(height: 16),
+            _buildGuaranteesGrid(semantic),
+            const SizedBox(height: 32),
+            _buildSectionHeader("WHAT WE NEVER DO", semantic),
+            const SizedBox(height: 16),
+            _buildNeverList(semantic),
+            const SizedBox(height: 32),
+            _buildSectionHeader("DATA HEALTH", semantic),
             const SizedBox(height: 16),
             statsAsync.when(
               data: (stats) => GridView.count(
@@ -88,15 +88,7 @@ class TrustCenterScreen extends ConsumerWidget {
               error: (e, s) => Text("Error loading stats: $e"),
             ),
             const SizedBox(height: 32),
-            Text(
-              "BACKUP CONFIDENCE",
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 2,
-                color: semantic.secondaryText,
-              ),
-            ),
+            _buildSectionHeader("BACKUP CONFIDENCE", semantic),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(20),
@@ -151,15 +143,8 @@ class TrustCenterScreen extends ConsumerWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    "AVAILABLE LOCAL BACKUPS",
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                      color: semantic.secondaryText,
-                    ),
-                  ),
+                  child:
+                      _buildSectionHeader("AVAILABLE LOCAL BACKUPS", semantic),
                 ),
                 if (!kIsWeb &&
                     (Platform.isWindows ||
@@ -237,50 +222,206 @@ class TrustCenterScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPrivacyCard(BuildContext context, AppColors semantic) {
+  Widget _buildSectionHeader(String title, AppColors semantic) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 2,
+        color: semantic.secondaryText,
+      ),
+    );
+  }
+
+  Widget _buildHeroSection(BuildContext context, AppColors semantic) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        color: Colors.green.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [
+            Colors.green.withValues(alpha: 0.15),
+            Colors.green.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(32),
         border: Border.all(color: Colors.green.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.security_rounded, color: Colors.green),
-              SizedBox(width: 12),
-              Text(
-                "Privacy First",
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.green),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.shield_rounded,
+                    color: Colors.green, size: 28),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Trust Center",
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.green),
+                    ),
+                    Text(
+                      "Your Privacy is Sovereign",
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Text(
-            "Your financial data is yours alone. It is stored locally on your device and never touches our servers. We have no way of seeing what you log.",
+            "TrueLedger is built on the principle that your financial life is yours alone. We believe in absolute privacy, which is why your data never leaves your device unless you choose to move it.",
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 15,
               color: semantic.text,
               fontWeight: FontWeight.w500,
-              height: 1.5,
+              height: 1.6,
             ),
           ),
         ],
       ),
-    ).animate().fadeIn().slideY(begin: 0.1, end: 0);
+    )
+        .animate()
+        .fadeIn(duration: 600.ms)
+        .slideY(begin: 0.1, end: 0, curve: Curves.easeOutCubic);
+  }
+
+  Widget _buildGuaranteesGrid(AppColors semantic) {
+    final guarantees = [
+      (
+        Icons.block_rounded,
+        "No Ads",
+        "We will never clutter your experience with advertisements or sponsored content."
+      ),
+      (
+        Icons.location_off_rounded,
+        "No Tracking",
+        "We don't track your behavior, location, or usage patterns. You are not a data point."
+      ),
+      (
+        Icons.person_off_rounded,
+        "No Profiling",
+        "Your financial habits are private. We don't build profiles for targeting or selling."
+      ),
+      (
+        Icons.devices_rounded,
+        "100% Local",
+        "Your database exists only on your device. We have no 'cloud' access to your logs."
+      ),
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 0.85,
+      ),
+      itemCount: guarantees.length,
+      itemBuilder: (context, index) {
+        final g = guarantees[index];
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: semantic.surfaceCombined,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: semantic.divider),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(g.$1, color: semantic.income, size: 24),
+              const SizedBox(height: 12),
+              Text(g.$2,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w900, fontSize: 14)),
+              const SizedBox(height: 4),
+              Expanded(
+                child: Text(
+                  g.$3,
+                  style: TextStyle(
+                      fontSize: 11, color: semantic.secondaryText, height: 1.4),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.05, end: 0);
+  }
+
+  Widget _buildNeverList(AppColors semantic) {
+    final nevers = [
+      "Sell your personal or financial data to third parties.",
+      "Share your transactions with any external servers.",
+      "Require an internet connection for core functionality.",
+      "Lock your data behind proprietary formats or subscriptions.",
+      "Use your data to train AI models without your consent.",
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: semantic.overspent.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: semantic.overspent.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        children: nevers
+            .map((item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.cancel_outlined,
+                          color: semantic.overspent, size: 18),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          "We will NEVER $item",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: semantic.text,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ))
+            .toList(),
+      ),
+    ).animate().fadeIn(delay: 400.ms);
   }
 
   Widget _buildBackupItem(BuildContext context, WidgetRef ref, BackupFile file,
