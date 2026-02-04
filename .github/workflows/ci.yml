@@ -132,17 +132,19 @@ jobs:
           SIM_NAME="FlutterTester"
           DEVICE_TYPE="iPhone 15"
 
-          RUNTIME=$(xcrun simctl list runtimes | grep "iOS" | grep available | tail -1 | awk -F '[()]' '{print $2}')
-          echo "Using runtime: $RUNTIME"
+          # Find device UDID safely (returns empty if not found, instead of exiting shell)
+          UDID=$(xcrun simctl list devices | grep "$SIM_NAME" | head -n 1 | awk -F '[()]' '{print $2}' || true)
 
-          UDID=$(xcrun simctl list devices | grep "$SIM_NAME" | awk -F '[()]' '{print $2}' | head -n 1)
-
-          if [ -z "$UDID" ]; then
-            UDID=$(xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE" "$RUNTIME")
+          if [ -z "$UDID" ] || [ ${#UDID} -lt 10 ]; then
+            echo "Creating new simulator: $DEVICE_TYPE"
+            UDID=$(xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE" || xcrun simctl create "$SIM_NAME" "iPhone 15")
           else
+            echo "Found existing simulator: $UDID. Cleaning..."
             xcrun simctl shutdown "$UDID" || true
-            xcrun simctl erase "$UDID"
+            xcrun simctl erase "$UDID" || true
           fi
+
+          echo "Booting simulator ($UDID)..."
 
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
