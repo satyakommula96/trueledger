@@ -87,8 +87,13 @@ class StartupUseCase extends UseCase<StartupResult, NoParams> {
 
         if (lastDigestDate != todayStr) {
           billsDueToday = filtered;
+          final currentCount = filtered.length;
+          final currentTotal = filtered.fold(0, (sum, b) => sum + b.amount);
+
           // We mark it as shown now in the domain logic to ensure deduplication
           await prefs.setString('last_bill_digest_date', todayStr);
+          await prefs.setInt('last_bill_digest_count', currentCount);
+          await prefs.setInt('last_bill_digest_total', currentTotal);
         }
       }
 

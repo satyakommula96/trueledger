@@ -60,9 +60,13 @@ void main() {
         .thenAnswer((_) async => const Success(null));
 
     // Default setup for digest (empty)
+    when(() => mockRepository.getTodaySpend()).thenAnswer((_) async => 0);
+    when(() => mockRepository.checkAndProcessRecurring())
+        .thenAnswer((_) async {});
     when(() => mockRepository.getUpcomingBills()).thenAnswer((_) async => []);
     when(() => mockPrefs.getString(any())).thenReturn(null);
     when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);
+    when(() => mockPrefs.setInt(any(), any())).thenAnswer((_) async => true);
   });
 
   tearDown(() async {
