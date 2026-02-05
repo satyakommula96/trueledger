@@ -26,11 +26,6 @@ class NotificationService {
 
   /// Starting range for credit card specific reminders to avoid collisions.
   static const int creditCardBaseId = 10000;
-
-  // SharedPreferences Keys
-  static const String keyLastDigestDate = 'last_bill_digest_date';
-  static const String keyLastDigestCount = 'last_bill_digest_count';
-  static const String keyLastDigestTotal = 'last_bill_digest_total';
   // Injected for testability
   final SharedPreferences _prefs;
   bool _isInitialized = false;

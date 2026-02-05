@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
@@ -9,9 +8,9 @@ import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/presentation/providers/backup_provider.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/usecases/startup_usecase.dart';
-import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/core/config/app_config.dart';
 import 'package:trueledger/core/providers/secure_storage_provider.dart';
+import 'package:trueledger/domain/usecases/manage_daily_digest_usecase.dart';
 
 final bootProvider = FutureProvider<String?>((ref) async {
   final startupUseCase = ref.watch(startupUseCaseProvider);
@@ -39,50 +38,21 @@ final bootProvider = FutureProvider<String?>((ref) async {
     }
 
     // 2. Daily Bill Digest Logic (Aggregated)
-    // NOTE: This is currently tied to the app lifecycle (boot/resume).
-    // It triggers a notification immediately if the digest content has changed.
-    // Real "morning scheduling" without opening the app requires a background worker
-    // or platform-specific alarm manager which is intentionally deferred for now.
-    // We check this regardless of whether list is empty, because we might need to CANCEL existing notifications.
-    final prefs = ref.read(sharedPreferencesProvider);
-    final now = DateTime.now();
-    final todayStr = DateFormat('yyyy-MM-dd').format(now);
+    final digestUseCase = ref.read(manageDailyDigestUseCaseProvider);
+    final state = WidgetsBinding.instance.lifecycleState;
 
-    final lastDigestDate =
-        prefs.getString(NotificationService.keyLastDigestDate);
-    final lastCount = prefs.getInt(NotificationService.keyLastDigestCount);
-    final lastTotal = prefs.getInt(NotificationService.keyLastDigestTotal);
+    final runContext = state == AppLifecycleState.resumed
+        ? AppRunContext.resume
+        : (state == null ? AppRunContext.coldStart : AppRunContext.background);
 
-    final currentCount = startupResult.billsDueToday.length;
-    final currentTotal =
-        startupResult.billsDueToday.fold(0, (sum, b) => sum + b.amount);
+    final action =
+        await digestUseCase.execute(startupResult.billsDueToday, runContext);
 
-    final bool contentChanged = (lastCount != currentCount) ||
-        (lastTotal != currentTotal) ||
-        (lastDigestDate != todayStr);
-
-    if (contentChanged) {
-      // Logic:
-      // 1. If currently 0 bills (all paid), cancel any stale notification.
-      // 2. If app is RESUMED (user looking at it), cancel notification (don't need it in tray).
-      // 3. Otherwise (background/inactive), show/update the notification.
-
-      final state = WidgetsBinding.instance.lifecycleState;
-      final bool shouldCancel =
-          currentCount == 0 || state == AppLifecycleState.resumed;
-
-      if (shouldCancel) {
-        await notificationService
-            .cancelNotification(NotificationService.dailyBillDigestId);
-      } else {
-        await notificationService
-            .showDailyBillDigest(startupResult.billsDueToday);
-      }
-
-      // 3. Persist State
-      await prefs.setString(NotificationService.keyLastDigestDate, todayStr);
-      await prefs.setInt(NotificationService.keyLastDigestCount, currentCount);
-      await prefs.setInt(NotificationService.keyLastDigestTotal, currentTotal);
+    if (action is ShowDigestAction) {
+      await notificationService.showDailyBillDigest(action.bills);
+    } else if (action is CancelDigestAction) {
+      await notificationService
+          .cancelNotification(NotificationService.dailyBillDigestId);
     }
   }
 
