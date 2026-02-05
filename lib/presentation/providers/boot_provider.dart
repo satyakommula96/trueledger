@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
@@ -8,7 +9,7 @@ import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/presentation/providers/backup_provider.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/usecases/startup_usecase.dart';
-
+import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/core/config/app_config.dart';
 import 'package:trueledger/core/providers/secure_storage_provider.dart';
 
@@ -44,6 +45,18 @@ final bootProvider = FutureProvider<String?>((ref) async {
       if (state != AppLifecycleState.resumed) {
         await notificationService
             .showDailyBillDigest(startupResult.billsDueToday);
+
+        // 3. Persist State (Side Effect) - Only after successful dispatch
+        final prefs = ref.read(sharedPreferencesProvider);
+        final now = DateTime.now();
+        final todayStr = DateFormat('yyyy-MM-dd').format(now);
+        final count = startupResult.billsDueToday.length;
+        final total =
+            startupResult.billsDueToday.fold(0, (sum, b) => sum + b.amount);
+
+        await prefs.setString('last_bill_digest_date', todayStr);
+        await prefs.setInt('last_bill_digest_count', count);
+        await prefs.setInt('last_bill_digest_total', total);
       }
     }
   }

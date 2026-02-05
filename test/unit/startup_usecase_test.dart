@@ -139,8 +139,7 @@ void main() {
       final data = result.getOrThrow;
       expect(data.billsDueToday.length, 2);
       expect(data.billsDueToday.first.name, 'Rent');
-      verify(() => mockPrefs.setString('last_bill_digest_date', any()))
-          .called(1);
+      verifyNever(() => mockPrefs.setString('last_bill_digest_date', any()));
     });
 
     test('should deduplicate digest if already shown today', () async {
