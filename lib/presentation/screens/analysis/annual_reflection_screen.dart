@@ -96,10 +96,12 @@ class AnnualReflectionScreen extends ConsumerWidget {
                   icon: Icons.calendar_month_rounded,
                   iconColor: semantic.warning,
                   title: "Peak Spending",
-                  content:
-                      "${_getMonthName(data.mostExpensiveMonth)} was the year's highest spending month.",
-                  subContent:
-                      "Monthly average: ${CurrencyFormatter.format(data.avgMonthlySpend)}.",
+                  content: data.mostExpensiveMonth != null
+                      ? "${_getMonthName(data.mostExpensiveMonth!)} was the year's highest spending month."
+                      : "No significant spending peaks found.",
+                  subContent: data.mostExpensiveMonth != null
+                      ? "Monthly average: ${CurrencyFormatter.format(data.avgMonthlySpend)}."
+                      : "Record more transactions to see trends.",
                 ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.1, end: 0),
 
                 const SizedBox(height: 16),

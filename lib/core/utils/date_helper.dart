@@ -69,4 +69,40 @@ class DateHelper {
 
     return null;
   }
+
+  static DateTime? getNextOccurrence(String due) {
+    if (due.toLowerCase() == 'flexible' || due.toLowerCase() == 'recurring') {
+      return null;
+    }
+
+    final now = DateTime.now();
+    int? day;
+
+    try {
+      final date = DateTime.parse(due);
+      // If it's a specific date in the past, it might not have a next occurrence
+      // in the same sense, but for credit cards we treat it as "next occurrence of this day"
+      day = date.day;
+    } catch (_) {
+      try {
+        final date = DateFormat('dd-MM-yyyy').parse(due);
+        day = date.day;
+      } catch (_) {
+        final clean = due.replaceAll(RegExp(r'[^0-9]'), '');
+        if (clean.isNotEmpty && clean.length <= 2) {
+          day = int.tryParse(clean);
+        }
+      }
+    }
+
+    if (day != null && day > 0 && day <= 31) {
+      var next = DateTime(now.year, now.month, day);
+      if (next.isBefore(DateTime(now.year, now.month, now.day))) {
+        next = DateTime(now.year, now.month + 1, day);
+      }
+      return next;
+    }
+
+    return null;
+  }
 }

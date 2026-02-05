@@ -81,11 +81,17 @@ void main() {
       await repo.addCreditCard('Amex', 100000, 5000, 1000, '20th', '5th');
       await repo.addLoan(
           'Car Loan', 'Bank', 500000, 400000, 8000, 9.0, '10th', '2024-01-01');
+      await repo.addLoan(
+          'Amit', 'Individual', 10000, 7000, 500, 0, '1st', '2024-01-01');
 
       final bills = await repo.getUpcomingBills();
       expect(bills.any((b) => b['type'] == 'SUBSCRIPTION'), isTrue);
       expect(bills.any((b) => b['type'] == 'CREDIT DUE'), isTrue);
       expect(bills.any((b) => b['type'] == 'LOAN EMI'), isTrue);
+
+      final borrowing = bills.firstWhere((b) => b['type'] == 'BORROWING DUE');
+      expect(borrowing['amount'],
+          7000); // Should use remaining_amount (7000) not emi (500)
     });
 
     test('Saving goals and loans CRUD', () async {

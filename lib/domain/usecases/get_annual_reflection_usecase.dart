@@ -25,7 +25,7 @@ class AnnualReflectionData {
   final int totalSpendPreviousYear;
   final List<CategoryStability> categoryStability;
   final String topCategory;
-  final int mostExpensiveMonth; // 1-12
+  final int? mostExpensiveMonth; // 1-12, null if no spending
   final int avgMonthlySpend;
 
   AnnualReflectionData({
@@ -34,7 +34,7 @@ class AnnualReflectionData {
     required this.totalSpendPreviousYear,
     required this.categoryStability,
     required this.topCategory,
-    required this.mostExpensiveMonth,
+    this.mostExpensiveMonth,
     required this.avgMonthlySpend,
   });
 }
@@ -105,27 +105,37 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
 
       // 4. Find most expensive month
       final history = await repository.getMonthlyHistory(year);
-      int maxMonth = 1;
-      int maxAmount = -1;
+      int? maxMonth;
+      int maxAmount = 0;
       int totalForAvg = 0;
       int monthsWithData = 0;
 
       for (var entry in history) {
-        final total = entry['expenses'] as int? ?? 0;
+        final total = (entry['expenses'] as num? ?? 0).toInt();
         final monthStr = entry['month'] as String? ?? '';
         if (monthStr.length < 7) continue;
 
-        final month = int.tryParse(monthStr.split('-')[1]) ?? 1;
+        final month = int.tryParse(monthStr.split('-')[1]);
+        if (month == null) continue;
 
         if (total > maxAmount) {
           maxAmount = total;
           maxMonth = month;
+        } else if (maxMonth == null && total >= 0 && history.length == 1) {
+          // If there's only one month even with 0 spending, we could pick it,
+          // but user said "even it is 0 on peak spending" so we should probably keep it null if 0.
         }
+
         if (total > 0) {
           totalForAvg += total;
           monthsWithData++;
         }
       }
+
+      // If no month had > 0 spending, we check if we should pick the first available month anyway
+      // but only if there's SOMETHING in history.
+      // Actually, if the user complained about "showing highest spending month even it is 0",
+      // then we should probably only show it if maxAmount > 0.
 
       final topCategory = currentYearCats.isNotEmpty
           ? (currentYearCats.first['category'] as String?) ?? 'None'

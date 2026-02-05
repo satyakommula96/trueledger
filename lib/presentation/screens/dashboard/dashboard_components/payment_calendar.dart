@@ -6,6 +6,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/utils/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 
 class PaymentCalendar extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> bills;
@@ -32,19 +33,48 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
     return DateTime(date.year, date.month + 1, 0).day;
   }
 
-  List<Map<String, dynamic>> _getEventsForDay(int day) {
+  List<Map<String, dynamic>> _getEventsForDay(
+      int day, List<String> paidLabels) {
     final targetDate = DateTime(_focusedMonth.year, _focusedMonth.month, day);
     final events = <Map<String, dynamic>>[];
 
     for (var bill in widget.bills) {
       final dueDateStr = bill['due']?.toString() ?? '';
+
+      if (bill['isRecurring'] == false) {
+        final nextDue = DateHelper.getNextOccurrence(dueDateStr);
+        if (nextDue != null) {
+          if (nextDue.year != targetDate.year ||
+              nextDue.month != targetDate.month ||
+              nextDue.day != targetDate.day) {
+            continue;
+          }
+        }
+      }
+
       final date = _parseDueDate(dueDateStr);
       if (date != null) {
-        // Check if it matches this day
         if (date.year == targetDate.year &&
             date.month == targetDate.month &&
             date.day == targetDate.day) {
-          events.add(bill);
+          final billCopy = Map<String, dynamic>.from(bill);
+          final name = (billCopy['name'] ?? billCopy['title'] ?? '')
+              .toString()
+              .toLowerCase();
+
+          if (billCopy['type'] == 'CREDIT DUE') {
+            final isCurrentMonth = _focusedMonth.year == DateTime.now().year &&
+                _focusedMonth.month == DateTime.now().month;
+            if (!isCurrentMonth) {
+              billCopy['isPaid'] = false;
+            }
+          } else if (name.isNotEmpty) {
+            billCopy['isPaid'] = paidLabels.any((label) {
+              final l = label.toLowerCase();
+              return l.contains(name) || name.contains(l);
+            });
+          }
+          events.add(billCopy);
         }
       }
     }
@@ -63,6 +93,10 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
 
     final isTouch = Theme.of(context).platform == TargetPlatform.iOS ||
         Theme.of(context).platform == TargetPlatform.android;
+
+    final monthStr = DateFormat('yyyy-MM').format(_focusedMonth);
+    final paidLabelsAsync = ref.watch(paidLabelsProvider(monthStr));
+    final paidLabels = paidLabelsAsync.value ?? [];
 
     final mainContent = AnimatedContainer(
       duration: 300.ms,
@@ -148,7 +182,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
                 return const SizedBox();
               }
               final day = index - (firstDayWeekday - 1) + 1;
-              final events = _getEventsForDay(day);
+              final events = _getEventsForDay(day, paidLabels);
               final isToday = day == DateTime.now().day &&
                   _focusedMonth.month == DateTime.now().month &&
                   _focusedMonth.year == DateTime.now().year;
@@ -192,11 +226,23 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: events.take(3).map((e) {
                             Color dotColor = widget.semantic.secondaryText;
-                            if (e['type'] == 'SUBSCRIPTION') {
+                            final allPaid =
+                                events.every((e) => e['isPaid'] == true);
+
+                            if (allPaid) {
+                              dotColor = widget.semantic.divider;
+                            } else if (events
+                                .any((e) => e['type'] == 'SUBSCRIPTION')) {
                               dotColor = widget.semantic.overspent;
-                            }
-                            if (e['type'] == 'LOAN EMI') {
+                            } else if (events
+                                .any((e) => e['type'] == 'LOAN EMI')) {
                               dotColor = Colors.orange;
+                            } else if (events
+                                .any((e) => e['type'] == 'CREDIT DUE')) {
+                              dotColor = Colors.red;
+                            } else if (events
+                                .any((e) => e['type'] == 'BORROWING DUE')) {
+                              dotColor = Colors.purple;
                             }
 
                             return Container(
@@ -282,53 +328,95 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
     } else if (bill['type'] == 'LOAN EMI') {
       icon = Icons.account_balance;
       color = Colors.orange;
+    } else if (bill['type'] == 'CREDIT DUE') {
+      icon = Icons.credit_card;
+      color = Colors.red;
+    } else if (bill['type'] == 'BORROWING DUE') {
+      icon = Icons.person;
+      color = Colors.purple;
     }
+
+    final isPaid = bill['isPaid'] == true;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: widget.semantic.divider),
+        color: widget.semantic.surfaceCombined
+            .withValues(alpha: isPaid ? 0.4 : 1.0),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: isPaid
+                ? widget.semantic.divider.withValues(alpha: 0.2)
+                : widget.semantic.divider.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: color.withValues(alpha: isPaid ? 0.05 : 0.1),
+              shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 20, color: color),
+            child: Icon(isPaid ? Icons.check_circle_rounded : icon,
+                color: isPaid ? widget.semantic.secondaryText : color,
+                size: 16),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(bill['name'] ?? 'Bill',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: Theme.of(context).colorScheme.onSurface),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                Text(bill['type'] ?? 'PAYMENT',
-                    style: TextStyle(
-                        fontSize: 10,
-                        color: widget.semantic.secondaryText,
-                        fontWeight: FontWeight.w600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  bill['name'] ?? bill['title'] ?? 'Bill',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      decoration: isPaid ? TextDecoration.lineThrough : null,
+                      color: isPaid
+                          ? widget.semantic.secondaryText
+                          : Theme.of(context).colorScheme.onSurface),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  bill['type'].toString().toUpperCase(),
+                  style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      color:
+                          widget.semantic.secondaryText.withValues(alpha: 0.6),
+                      letterSpacing: 1),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
-          Text(CurrencyFormatter.format(bill['amount']),
-              style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                  color: widget.semantic.overspent)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                CurrencyFormatter.format(bill['amount']),
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    decoration: isPaid ? TextDecoration.lineThrough : null,
+                    color: isPaid
+                        ? widget.semantic.secondaryText
+                        : widget.semantic.overspent),
+              ),
+              if (isPaid)
+                Text(
+                  "PAID",
+                  style: TextStyle(
+                      fontSize: 8,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.green.shade700,
+                      letterSpacing: 1),
+                ),
+            ],
+          ),
         ],
       ),
     );

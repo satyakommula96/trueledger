@@ -55,4 +55,5 @@ abstract class IFinancialRepository {
       DateTime start, DateTime end);
   Future<String?> getRecommendedCategory(String note);
   Future<Map<String, int>> getDatabaseStats();
+  Future<List<String>> getPaidBillLabels(String monthStr);
 }

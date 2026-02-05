@@ -111,6 +111,30 @@ void main() {
       expect(data.totalSpendCurrentYear, 0);
       expect(data.categoryStability, isEmpty);
       expect(data.avgMonthlySpend, 0);
+      expect(data.mostExpensiveMonth, isNull);
+    });
+
+    test(
+        'should return null for mostExpensiveMonth if all months have zero spending',
+        () async {
+      // Arrange
+      final List<Map<String, dynamic>> monthlyHistory = [
+        {'month': '2026-01', 'expenses': 0},
+        {'month': '2026-02', 'expenses': 0},
+      ];
+
+      when(() => mockRepository.getCategorySpendingForRange(any(), any()))
+          .thenAnswer((_) async => []);
+      when(() => mockRepository.getMonthlyHistory(testYear))
+          .thenAnswer((_) async => monthlyHistory);
+
+      // Act
+      final result = await useCase.call(testYear);
+
+      // Assert
+      expect(result.isSuccess, isTrue);
+      final data = result.getOrThrow;
+      expect(data.mostExpensiveMonth, isNull);
     });
     test('should handle null or non-int values from repository', () async {
       // Arrange

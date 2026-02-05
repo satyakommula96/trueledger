@@ -117,24 +117,57 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     final ccBills = await db.query('credit_cards');
     final loanBills = await db.query('loans');
 
+    final now = DateTime.now();
+    final currentMonth = DateFormat('yyyy-MM').format(now);
+
+    // Get all transactions for current month to check for matching payments
+    final currentMonthTx = await db.rawQuery('''
+      SELECT note as label FROM variable_expenses WHERE substr(date, 1, 7) = ?
+      UNION ALL
+      SELECT name as label FROM fixed_expenses WHERE substr(date, 1, 7) = ?
+    ''', [currentMonth, currentMonth]);
+
+    bool checkPaid(String name) {
+      final n = name.toLowerCase();
+      return currentMonthTx.any((tx) {
+        final label = (tx['label'] ?? '').toString().toLowerCase();
+        return label.contains(n) || n.contains(label);
+      });
+    }
+
     return [
       ...subBills.map((s) => {
+            'id': 'sub_${s['id']}',
+            'name': s['name'],
             'title': s['name'],
             'amount': s['amount'],
             'type': 'SUBSCRIPTION',
-            'due': 'RECURRING'
+            'due': s['billing_date'], // Use day number instead of 'RECURRING'
+            'isRecurring': true,
+            'isPaid': checkPaid(s['name'] as String? ?? ''),
           }),
       ...ccBills.map((c) => {
+            'id': 'cc_${c['id']}',
+            'name': c['bank'],
             'title': c['bank'],
-            'amount': c['min_due'],
+            'amount': c['statement_balance'],
             'type': 'CREDIT DUE',
-            'due': c['due_date']
+            'due': c['due_date'],
+            'isRecurring': false,
+            'isPaid': (c['statement_balance'] as num? ?? 0) <= 0,
           }),
       ...loanBills.map((l) => {
+            'id': 'loan_${l['id']}',
+            'name': l['name'],
             'title': l['name'],
-            'amount': l['emi'],
-            'type': 'LOAN EMI',
-            'due': l['due_date']
+            'amount': l['loan_type'] == 'Individual'
+                ? l['remaining_amount']
+                : l['emi'],
+            'type':
+                l['loan_type'] == 'Individual' ? 'BORROWING DUE' : 'LOAN EMI',
+            'due': l['due_date'],
+            'isRecurring': true,
+            'isPaid': checkPaid(l['name'] as String? ?? ''),
           }),
     ];
   }
@@ -914,5 +947,17 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       'budgets': budgetsCount,
       'total_records': variableCount + fixedCount + incomeCount + budgetsCount,
     };
+  }
+
+  @override
+  Future<List<String>> getPaidBillLabels(String monthStr) async {
+    final db = await AppDatabase.db;
+    final result = await db.rawQuery('''
+      SELECT note as label FROM variable_expenses WHERE substr(date, 1, 7) = ?
+      UNION ALL
+      SELECT name as label FROM fixed_expenses WHERE substr(date, 1, 7) = ?
+    ''', [monthStr, monthStr]);
+
+    return result.map((e) => (e['label'] ?? '').toString()).toList();
   }
 }
