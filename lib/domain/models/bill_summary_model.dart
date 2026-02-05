@@ -6,6 +6,7 @@ class BillSummary {
   final int amount;
   final DateTime? dueDate;
   final String type;
+  final bool isPaid;
 
   BillSummary({
     required this.id,
@@ -13,6 +14,7 @@ class BillSummary {
     required this.amount,
     this.dueDate,
     required this.type,
+    this.isPaid = false,
   });
 
   factory BillSummary.fromMap(Map<String, dynamic> map) {
@@ -22,6 +24,7 @@ class BillSummary {
       amount: _parseAmount(map['amount']),
       dueDate: DateHelper.parseDue(map['due']?.toString() ?? ''),
       type: map['type']?.toString() ?? 'BILL',
+      isPaid: map['isPaid'] == true || map['isPaid'] == 1,
     );
   }
 
@@ -41,5 +44,6 @@ class BillSummary {
         'amount': amount,
         'due': dueDate?.toIso8601String(),
         'type': type,
+        'isPaid': isPaid,
       };
 }

@@ -76,8 +76,10 @@ class StartupUseCase extends UseCase<StartupResult, NoParams> {
 
       billsDueToday = upcomingBills
           .map((m) => BillSummary.fromMap(m))
-          .where(
-              (b) => b.dueDate != null && DateHelper.isSameDay(b.dueDate!, now))
+          .where((b) =>
+              b.dueDate != null &&
+              DateHelper.isSameDay(b.dueDate!, now) &&
+              !b.isPaid)
           .toList();
 
       return Success(StartupResult(
