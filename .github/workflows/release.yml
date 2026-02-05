@@ -120,18 +120,22 @@ jobs:
 
       - run: flutter build windows --release --build-name=${{ steps.version.outputs.VERSION }}
 
-      # EXE
-      - run: |
+      # ---------------- EXE ----------------
+      - name: Build EXE
+        run: |
           iscc /DAppVersion=${{ steps.version.outputs.VERSION }} scripts/windows_setup.iss
 
-      # MSIX
-      - run: flutter pub run msix:create --version ${{ steps.version.outputs.VERSION }}.0
+      # ---------------- MSIX ----------------
+      - name: Build MSIX
+        run: flutter pub run msix:create --version ${{ steps.version.outputs.VERSION }}.0
 
-      # MSI (WiX)
+      # ---------------- MSI (WiX) ----------------
       - name: Build MSI
         shell: bash
         run: |
-          candle installer/TrueLedger.wxs
+          set -e
+          test -f windows/installer/TrueLedger.wxs
+          candle windows/installer/TrueLedger.wxs
           light TrueLedger.wixobj -o TrueLedger.msi
 
       - uses: actions/upload-artifact@v4
@@ -165,8 +169,7 @@ jobs:
           channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
-      - name: Setup macOS Environment
-        run: |
+      - run: |
           brew install sqlcipher
           flutter config --enable-macos-desktop
 
@@ -208,7 +211,7 @@ jobs:
 
       - run: |
           flutter build ios --release --no-codesign --build-name=${{ steps.version.outputs.VERSION }}
-          mkdir -p Payload
+          mkdir Payload
           cp -r build/ios/iphoneos/Runner.app Payload/TrueLedger.app
           zip -r TrueLedger.ipa Payload
 
@@ -218,7 +221,7 @@ jobs:
           path: TrueLedger.ipa
 
 # ============================================================
-# RELEASE + GITHUB PAGES
+# RELEASE
 # ============================================================
   release:
     name: Publish Release
@@ -232,7 +235,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/download-artifact@v4
         with:
           path: dist
@@ -255,14 +257,3 @@ jobs:
         with:
           files: out/*
           generate_release_notes: true
-
-      - run: |
-          mkdir -p pages/${{ steps.version.outputs.VERSION }}
-          cp out/* pages/${{ steps.version.outputs.VERSION }}
-          touch pages/.nojekyll
-
-      - uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: pages
-          keep_files: true
