@@ -19,10 +19,20 @@ class BillSummary {
     return BillSummary(
       id: (map['id'] ?? '').toString(),
       name: (map['name'] ?? map['title'] ?? 'Bill').toString(),
-      amount: (map['amount'] as num?)?.toInt() ?? 0,
+      amount: _parseAmount(map['amount']),
       dueDate: DateHelper.parseDue(map['due']?.toString() ?? ''),
       type: map['type']?.toString() ?? 'BILL',
     );
+  }
+
+  static int _parseAmount(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toInt();
+    if (value is String) {
+      if (value.trim().isEmpty) return 0;
+      return int.tryParse(value) ?? double.tryParse(value)?.toInt() ?? 0;
+    }
+    return 0;
   }
 
   Map<String, dynamic> toJson() => {
