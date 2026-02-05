@@ -45,9 +45,21 @@ final bootProvider = FutureProvider<String?>((ref) async {
       final now = DateTime.now();
       final todayStr = DateFormat('yyyy-MM-dd').format(now);
       final lastDigestDate = prefs.getString('last_bill_digest_date');
+      final lastCount = prefs.getInt('last_bill_digest_count');
+      final lastTotal = prefs.getInt('last_bill_digest_total');
 
-      // Only proceed if not already shown today
-      if (lastDigestDate != todayStr) {
+      final currentCount = startupResult.billsDueToday.length;
+      final currentTotal =
+          startupResult.billsDueToday.fold(0, (sum, b) => sum + b.amount);
+
+      // Show if:
+      // 1. Not shown today yet
+      // 2. OR Content changed (e.g. user paid a bill, so count/total decreased)
+      final bool shouldShow = (lastDigestDate != todayStr) ||
+          (lastCount != currentCount) ||
+          (lastTotal != currentTotal);
+
+      if (shouldShow) {
         // Foreground suppression: Only notify if not actively in the app
         final state = WidgetsBinding.instance.lifecycleState;
         if (state != AppLifecycleState.resumed) {
