@@ -130,5 +130,39 @@ void main() {
       expect(data.billsDueToday.length, 2);
       expect(data.billsDueToday.first.name, 'Rent');
     });
+
+    test('should exclude paid bills from digest', () async {
+      // Arrange
+      final now = DateTime.now();
+      final bills = [
+        {
+          'id': 1,
+          'name': 'Paid Bill',
+          'amount': 500,
+          'due': now.toIso8601String(),
+          'type': 'BILL',
+          'isPaid': true
+        },
+        {
+          'id': 2,
+          'name': 'Unpaid Bill',
+          'amount': 1000,
+          'due': now.toIso8601String(),
+          'type': 'BILL',
+          'isPaid': false
+        },
+      ];
+      when(() => mockRepository.getUpcomingBills())
+          .thenAnswer((_) async => bills);
+
+      // Act
+      final result = await useCase.call(NoParams());
+
+      // Assert
+      expect(result.isSuccess, isTrue);
+      final data = result.getOrThrow;
+      expect(data.billsDueToday.length, 1);
+      expect(data.billsDueToday.first.name, 'Unpaid Bill');
+    });
   });
 }

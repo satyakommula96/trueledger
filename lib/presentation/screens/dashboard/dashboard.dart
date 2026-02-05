@@ -9,8 +9,6 @@ import 'package:trueledger/presentation/providers/insights_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
-import 'package:trueledger/core/utils/date_helper.dart';
-import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/asset_liability_card.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/dashboard_bottom_bar.dart';
@@ -115,20 +113,9 @@ class Dashboard extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           sliver: SliverList(
                             delegate: SliverChildListDelegate([
-                              if (upcomingBills.isNotEmpty)
+                              if (data.billsDueToday.isNotEmpty)
                                 ...(() {
-                                  final billsToday = upcomingBills
-                                      .map((m) => BillSummary.fromMap(m))
-                                      .where((b) =>
-                                          b.dueDate != null &&
-                                          DateHelper.isSameDay(
-                                              b.dueDate!, DateTime.now()))
-                                      .toList();
-
-                                  if (billsToday.isEmpty) {
-                                    return [const SizedBox.shrink()];
-                                  }
-
+                                  final billsToday = data.billsDueToday;
                                   final total = billsToday.fold(
                                       0, (sum, b) => sum + b.amount);
 

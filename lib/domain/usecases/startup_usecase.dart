@@ -11,7 +11,6 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:trueledger/core/config/app_config.dart';
 import 'package:trueledger/domain/models/models.dart';
-import 'package:trueledger/core/utils/date_helper.dart';
 
 class StartupResult {
   final bool shouldScheduleReminder;
@@ -74,13 +73,7 @@ class StartupUseCase extends UseCase<StartupResult, NoParams> {
       final upcomingBills = await repository.getUpcomingBills();
       final now = DateTime.now();
 
-      billsDueToday = upcomingBills
-          .map((m) => BillSummary.fromMap(m))
-          .where((b) =>
-              b.dueDate != null &&
-              DateHelper.isSameDay(b.dueDate!, now) &&
-              !b.isPaid)
-          .toList();
+      billsDueToday = BillSummary.filterDueEntries(upcomingBills, now);
 
       return Success(StartupResult(
         shouldScheduleReminder: shouldScheduleReminder,

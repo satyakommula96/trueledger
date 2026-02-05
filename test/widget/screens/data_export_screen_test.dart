@@ -92,6 +92,7 @@ void main() {
     ),
     budgets: [],
     upcomingBills: [],
+    billsDueToday: [],
     trendData: [],
     categorySpending: [],
     savingGoals: [],

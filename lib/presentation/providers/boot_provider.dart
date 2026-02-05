@@ -38,44 +38,51 @@ final bootProvider = FutureProvider<String?>((ref) async {
           .cancelNotification(NotificationService.dailyReminderId);
     }
 
-    // 2. Trigger Daily Bill Digest (Aggregated)
-    if (startupResult.billsDueToday.isNotEmpty) {
-      // Logic Check: Have we already shown this today?
-      final prefs = ref.read(sharedPreferencesProvider);
-      final now = DateTime.now();
-      final todayStr = DateFormat('yyyy-MM-dd').format(now);
-      final lastDigestDate = prefs.getString('last_bill_digest_date');
-      final lastCount = prefs.getInt('last_bill_digest_count');
-      final lastTotal = prefs.getInt('last_bill_digest_total');
+    // 2. Daily Bill Digest Logic (Aggregated)
+    // NOTE: This is currently tied to the app lifecycle (boot/resume).
+    // It triggers a notification immediately if the digest content has changed.
+    // Real "morning scheduling" without opening the app requires a background worker
+    // or platform-specific alarm manager which is intentionally deferred for now.
+    // We check this regardless of whether list is empty, because we might need to CANCEL existing notifications.
+    final prefs = ref.read(sharedPreferencesProvider);
+    final now = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(now);
 
-      final currentCount = startupResult.billsDueToday.length;
-      final currentTotal =
-          startupResult.billsDueToday.fold(0, (sum, b) => sum + b.amount);
+    final lastDigestDate =
+        prefs.getString(NotificationService.keyLastDigestDate);
+    final lastCount = prefs.getInt(NotificationService.keyLastDigestCount);
+    final lastTotal = prefs.getInt(NotificationService.keyLastDigestTotal);
 
-      // Show if:
-      // 1. Not shown today yet
-      // 2. OR Content changed (e.g. user paid a bill, so count/total decreased)
-      final bool shouldShow = (lastDigestDate != todayStr) ||
-          (lastCount != currentCount) ||
-          (lastTotal != currentTotal);
+    final currentCount = startupResult.billsDueToday.length;
+    final currentTotal =
+        startupResult.billsDueToday.fold(0, (sum, b) => sum + b.amount);
 
-      if (shouldShow) {
-        // Foreground suppression: Only notify if not actively in the app
-        final state = WidgetsBinding.instance.lifecycleState;
-        if (state != AppLifecycleState.resumed) {
-          await notificationService
-              .showDailyBillDigest(startupResult.billsDueToday);
+    final bool contentChanged = (lastCount != currentCount) ||
+        (lastTotal != currentTotal) ||
+        (lastDigestDate != todayStr);
 
-          // 3. Persist State (Side Effect) - Only after successful dispatch
-          final count = startupResult.billsDueToday.length;
-          final total =
-              startupResult.billsDueToday.fold(0, (sum, b) => sum + b.amount);
+    if (contentChanged) {
+      // Logic:
+      // 1. If currently 0 bills (all paid), cancel any stale notification.
+      // 2. If app is RESUMED (user looking at it), cancel notification (don't need it in tray).
+      // 3. Otherwise (background/inactive), show/update the notification.
 
-          await prefs.setString('last_bill_digest_date', todayStr);
-          await prefs.setInt('last_bill_digest_count', count);
-          await prefs.setInt('last_bill_digest_total', total);
-        }
+      final state = WidgetsBinding.instance.lifecycleState;
+      final bool shouldCancel =
+          currentCount == 0 || state == AppLifecycleState.resumed;
+
+      if (shouldCancel) {
+        await notificationService
+            .cancelNotification(NotificationService.dailyBillDigestId);
+      } else {
+        await notificationService
+            .showDailyBillDigest(startupResult.billsDueToday);
       }
+
+      // 3. Persist State
+      await prefs.setString(NotificationService.keyLastDigestDate, todayStr);
+      await prefs.setInt(NotificationService.keyLastDigestCount, currentCount);
+      await prefs.setInt(NotificationService.keyLastDigestTotal, currentTotal);
     }
   }
 

@@ -92,6 +92,7 @@ void main() {
               savingGoals: [],
               trendData: [],
               upcomingBills: [],
+              billsDueToday: [],
               todaySpend: 0,
               thisWeekSpend: 0,
               lastWeekSpend: 0,

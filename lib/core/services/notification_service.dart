@@ -12,10 +12,25 @@ import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 
 class NotificationService {
-  // Notification IDs are deterministic to support cancel/update across restarts
+  /// Notification IDs must be deterministic and stable to allow:
+  /// 1. Cancellation across app restarts (e.g. dailyReminderId).
+  /// 2. Overwriting/Updating existing notifications in the tray (e.g. dailyBillDigestId).
+  ///
+  /// IMPORTANT: Never reuse these specific IDs for other notification types,
+  /// otherwise they will silently overwrite each other.
   static const int dailyReminderId = 888;
+
+  /// Specifically used for the aggregated daily summary. Overwriting this ID
+  /// ensures the user doesn't get flooded with multiple digest entries in the tray.
   static const int dailyBillDigestId = 999;
+
+  /// Starting range for credit card specific reminders to avoid collisions.
   static const int creditCardBaseId = 10000;
+
+  // SharedPreferences Keys
+  static const String keyLastDigestDate = 'last_bill_digest_date';
+  static const String keyLastDigestCount = 'last_bill_digest_count';
+  static const String keyLastDigestTotal = 'last_bill_digest_total';
   // Injected for testability
   final SharedPreferences _prefs;
   bool _isInitialized = false;

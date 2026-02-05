@@ -1,4 +1,6 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/core/utils/result.dart';
@@ -10,6 +12,8 @@ import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:trueledger/domain/models/models.dart';
 
 import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
@@ -44,6 +48,13 @@ class FailureStartupUseCase extends StartupUseCase {
 }
 
 void main() {
+  setUpAll(() {
+    WidgetsFlutterBinding.ensureInitialized();
+    registerFallbackValue(NoParams());
+    registerFallbackValue(<BillSummary>[]);
+    registerFallbackValue(0);
+  });
+
   test('bootProvider success', () async {
     final mockNotification = MockNotificationService();
     when(() => mockNotification.init()).thenAnswer((_) async {});
@@ -51,12 +62,23 @@ void main() {
         .thenAnswer((_) async => true);
     when(() => mockNotification.scheduleDailyReminder())
         .thenAnswer((_) async {});
+    when(() => mockNotification.cancelNotification(any()))
+        .thenAnswer((_) async {});
+    when(() => mockNotification.showDailyBillDigest(any()))
+        .thenAnswer((_) async {});
 
     final mockStorage = MockSecureStorage();
     when(() => mockStorage.read(key: 'app_pin')).thenAnswer((_) async => null);
 
+    final mockPrefs = MockPrefs();
+    when(() => mockPrefs.getInt(any())).thenReturn(null);
+    when(() => mockPrefs.getString(any())).thenReturn(null);
+    when(() => mockPrefs.setString(any(), any())).thenAnswer((_) async => true);
+    when(() => mockPrefs.setInt(any(), any())).thenAnswer((_) async => true);
+
     final container = ProviderContainer(
       overrides: [
+        sharedPreferencesProvider.overrideWithValue(mockPrefs),
         startupUseCaseProvider.overrideWith((ref) => SuccessStartupUseCase()),
         notificationServiceProvider.overrideWithValue(mockNotification),
         secureStorageProvider.overrideWithValue(mockStorage),

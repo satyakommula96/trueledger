@@ -46,4 +46,16 @@ class BillSummary {
         'type': type,
         'isPaid': isPaid,
       };
+
+  /// Shared logic to identify unpaid bills due on a specific day from raw database maps.
+  static List<BillSummary> filterDueEntries(
+      List<dynamic> entries, DateTime date) {
+    return entries
+        .map((e) => BillSummary.fromMap(Map<String, dynamic>.from(e)))
+        .where((b) =>
+            b.dueDate != null &&
+            DateHelper.isSameDay(b.dueDate!, date) &&
+            !b.isPaid)
+        .toList();
+  }
 }
