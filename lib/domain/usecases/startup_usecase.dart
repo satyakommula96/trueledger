@@ -25,6 +25,8 @@ class StartupResult {
   });
 }
 
+// NOTE: StartupUseCase is intentionally capped.
+// Do not add more behavioral logic here.
 class StartupUseCase extends UseCase<StartupResult, NoParams> {
   final IFinancialRepository repository;
   final AutoBackupUseCase autoBackup;
