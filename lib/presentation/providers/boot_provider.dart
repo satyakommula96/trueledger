@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
@@ -10,7 +9,6 @@ import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/usecases/startup_usecase.dart';
 import 'package:trueledger/core/config/app_config.dart';
 import 'package:trueledger/core/providers/secure_storage_provider.dart';
-import 'package:trueledger/domain/usecases/manage_daily_digest_usecase.dart';
 
 final bootProvider = FutureProvider<String?>((ref) async {
   final startupUseCase = ref.watch(startupUseCaseProvider);
@@ -36,25 +34,10 @@ final bootProvider = FutureProvider<String?>((ref) async {
       await notificationService
           .cancelNotification(NotificationService.dailyReminderId);
     }
-
-    // 2. Daily Bill Digest Logic (Aggregated)
-    final digestUseCase = ref.read(manageDailyDigestUseCaseProvider);
-    final state = WidgetsBinding.instance.lifecycleState;
-
-    final runContext = state == AppLifecycleState.resumed
-        ? AppRunContext.resume
-        : (state == null ? AppRunContext.coldStart : AppRunContext.background);
-
-    final action =
-        await digestUseCase.execute(startupResult.billsDueToday, runContext);
-
-    if (action is ShowDigestAction) {
-      await notificationService.showDailyBillDigest(action.bills);
-    } else if (action is CancelDigestAction) {
-      await notificationService
-          .cancelNotification(NotificationService.dailyBillDigestId);
-    }
   }
+
+  // 2. The Daily Bill Digest logic is now handled reactively by
+  // dailyDigestOrchestratorProvider to support resume and real-time updates.
 
   // Bypass Secure Storage during tests to avoid UI blocking hangs
   if (AppConfig.isIntegrationTest) {
