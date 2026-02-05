@@ -11,7 +11,8 @@ import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
 class LockScreen extends ConsumerStatefulWidget {
   final int? expectedPinLength;
-  const LockScreen({super.key, this.expectedPinLength});
+  final VoidCallback? onUnlocked;
+  const LockScreen({super.key, this.expectedPinLength, this.onUnlocked});
 
   @override
   ConsumerState<LockScreen> createState() => _LockScreenState();
@@ -53,8 +54,12 @@ class _LockScreenState extends ConsumerState<LockScreen> {
 
       if (storedPin == _pin) {
         if (mounted) {
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (_) => const Dashboard()));
+          if (widget.onUnlocked != null) {
+            widget.onUnlocked!();
+          } else {
+            Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (_) => const Dashboard()));
+          }
         }
       } else {
         setState(() {
@@ -184,10 +189,14 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                                 const SnackBar(
                                     content: Text(
                                         "Identity Verified. PIN has been removed.")));
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const Dashboard()));
+                            if (widget.onUnlocked != null) {
+                              widget.onUnlocked!();
+                            } else {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const Dashboard()));
+                            }
                           }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -236,8 +245,12 @@ class _LockScreenState extends ConsumerState<LockScreen> {
 
       // 4. Navigate
       if (mounted) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => const Dashboard()));
+        if (widget.onUnlocked != null) {
+          widget.onUnlocked!();
+        } else {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (_) => const Dashboard()));
+        }
       }
     }
   }

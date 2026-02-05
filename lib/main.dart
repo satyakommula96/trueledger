@@ -12,6 +12,7 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/presentation/providers/digest_provider.dart';
+import 'package:trueledger/presentation/components/privacy_guard.dart';
 import 'package:trueledger/presentation/screens/startup/startup_screen.dart';
 
 Future<void> main() async {
@@ -79,7 +80,7 @@ class TrueLedgerApp extends ConsumerWidget {
               PointerDeviceKind.trackpad
             },
           ),
-          home: const StartupScreen(),
+          home: const PrivacyGuard(child: StartupScreen()),
         );
       },
     );

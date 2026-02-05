@@ -50,6 +50,7 @@ class DashboardBottomBar extends StatelessWidget {
                         context,
                         Icons.account_balance_rounded,
                         "LOANS",
+                        const Color(0xFF10B981), // Emerald Green
                         () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -61,6 +62,7 @@ class DashboardBottomBar extends StatelessWidget {
                         context,
                         Icons.credit_card_outlined,
                         "CARDS",
+                        const Color(0xFF6366F1), // Indigo/Blue
                         () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -72,6 +74,7 @@ class DashboardBottomBar extends StatelessWidget {
                         context,
                         Icons.analytics_outlined,
                         "ANALYSIS",
+                        const Color(0xFFA855F7), // Purple/Violet
                         () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -83,6 +86,7 @@ class DashboardBottomBar extends StatelessWidget {
                         context,
                         Icons.history_outlined,
                         "HISTORY",
+                        const Color(0xFFF59E0B), // Amber/Orange
                         () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -99,14 +103,14 @@ class DashboardBottomBar extends StatelessWidget {
   }
 
   Widget _buildActionIcon(BuildContext context, IconData icon, String label,
-      VoidCallback onTap, AppColors semantic) {
+      Color iconColor, VoidCallback onTap, AppColors semantic) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 24, color: semantic.secondaryText),
+          Icon(icon, size: 24, color: iconColor),
           const SizedBox(height: 4),
           Flexible(
             child: Semantics(

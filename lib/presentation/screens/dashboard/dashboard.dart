@@ -28,6 +28,8 @@ import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
 import 'package:trueledger/presentation/screens/transactions/transactions_detail.dart';
 import 'package:trueledger/presentation/screens/transactions/monthly_history.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/onboarding_cards.dart';
+import 'package:trueledger/presentation/screens/analysis/analysis_screen.dart';
 
 class Dashboard extends ConsumerWidget {
   const Dashboard({super.key});
@@ -152,6 +154,40 @@ class Dashboard extends ConsumerWidget {
                                   end: 0,
                                   curve: Curves.easeOutQuint),
                               const SizedBox(height: 24),
+                              if (summary.totalIncome == 0 &&
+                                  (summary.totalFixed +
+                                          summary.totalVariable) ==
+                                      0) ...[
+                                OnboardingActionCards(
+                                  semantic: semantic,
+                                  onAddTransaction: () async {
+                                    final added =
+                                        await showModalBottomSheet<bool>(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder: (context) =>
+                                          const QuickAddBottomSheet(),
+                                    );
+                                    if (added == true) reload();
+                                  },
+                                  onAddBudget: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const AnalysisScreen()));
+                                  },
+                                  onCheckAnalysis: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (_) =>
+                                                const AnalysisScreen()));
+                                  },
+                                ),
+                                const SizedBox(height: 32),
+                              ],
                               DailyClosureCard(
                                 transactionCount: data.todayTransactionCount,
                                 todaySpend: data.todaySpend,

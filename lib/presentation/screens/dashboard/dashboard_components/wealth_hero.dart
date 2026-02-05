@@ -183,21 +183,31 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                              CurrencyFormatter.format(widget.summary.netWorth,
-                                  compact: false, isPrivate: isPrivate),
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 40,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -1.5,
-                                  height: 1.0),
-                              maxLines: 1),
+                        TweenAnimationBuilder<double>(
+                          tween: Tween<double>(
+                              begin: 0,
+                              end: widget.summary.netWorth.toDouble()),
+                          duration: 1500.ms,
+                          curve: Curves.easeOutExpo,
+                          builder: (context, value, child) {
+                            return FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                  CurrencyFormatter.format(value.toInt(),
+                                      compact: false, isPrivate: isPrivate),
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -1.5,
+                                      height: 1.0),
+                                  maxLines: 1),
+                            );
+                          },
                         ),
+                        const SizedBox(height: 12),
                       ],
-                    ).animate().fadeIn(duration: 600.ms),
+                    ),
                   ],
                 ),
               ),
