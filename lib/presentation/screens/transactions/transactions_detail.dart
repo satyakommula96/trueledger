@@ -15,6 +15,7 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/presentation/components/empty_state.dart';
+import 'package:trueledger/presentation/providers/privacy_provider.dart';
 
 class TransactionsDetailScreen extends ConsumerStatefulWidget {
   final String title;
@@ -106,10 +107,16 @@ class _TransactionsDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final isPrivate = ref.watch(privacyProvider);
+
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title.toUpperCase())),
+      backgroundColor: semantic.surfaceCombined,
+      appBar: AppBar(
+        title: Text(widget.title.toUpperCase()),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final added = await showModalBottomSheet<bool>(
@@ -122,106 +129,13 @@ class _TransactionsDetailScreenState
             _loadData();
           }
         },
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
+        backgroundColor: semantic.primary,
+        foregroundColor: Colors.white,
         child: const Icon(Icons.add_rounded, size: 32),
       ),
       body: Column(
         children: [
-          Builder(builder: (context) {
-            final items = _getFilteredItems();
-            final total =
-                items.fold<double>(0, (sum, item) => sum + item.amount);
-            final isIncome = typeFilter == "Income";
-
-            return Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              margin: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isIncome
-                      ? [
-                          semantic.income.withValues(alpha: 0.15),
-                          semantic.income.withValues(alpha: 0.05)
-                        ]
-                      : [
-                          semantic.overspent.withValues(alpha: 0.15),
-                          semantic.overspent.withValues(alpha: 0.05)
-                        ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                    color: (isIncome ? semantic.income : semantic.overspent)
-                        .withValues(alpha: 0.1)),
-                boxShadow: [
-                  BoxShadow(
-                    color: (isIncome ? semantic.income : semantic.overspent)
-                        .withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("${typeFilter.toUpperCase()} TOTAL",
-                            style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
-                                color: (isIncome
-                                    ? semantic.income
-                                    : semantic.overspent),
-                                letterSpacing: 2)),
-                        const SizedBox(height: 4),
-                        Semantics(
-                          container: true,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(CurrencyFormatter.format(total),
-                                style: TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w900,
-                                    color: (isIncome
-                                        ? semantic.income
-                                        : semantic.overspent),
-                                    letterSpacing: -0.5)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: (isIncome ? semantic.income : semantic.overspent)
-                          .withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      isIncome
-                          ? Icons.trending_up_rounded
-                          : Icons.trending_down_rounded,
-                      color: (isIncome ? semantic.income : semantic.overspent),
-                      size: 28,
-                    ),
-                  ),
-                ],
-              ),
-            )
-                .animate()
-                .fadeIn()
-                .slideY(begin: -0.1, end: 0, curve: Curves.easeOutQuint);
-          }),
+          _buildSummaryHeader(semantic, isPrivate),
           MonthDetailHeader(
             searchQuery: searchQuery,
             typeFilter: typeFilter,
@@ -232,184 +146,254 @@ class _TransactionsDetailScreenState
           ).animate().fadeIn(delay: 100.ms),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: CircularProgressIndicator(color: semantic.primary))
                 : _error != null
                     ? AppErrorView(
                         error: _error!,
                         onRetry: _loadData,
                       )
-                    : Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 800),
-                          child: Builder(builder: (context) {
-                            final items = _getFilteredItems();
-                            if (items.isEmpty) {
-                              return EmptyState(
-                                message: "No entries yet",
-                                subMessage:
-                                    "No transactions found for this period.",
-                                icon: Icons.receipt_long_rounded,
-                              );
-                            }
-
-                            return ListView.builder(
-                              padding: EdgeInsets.fromLTRB(24, 8, 24,
-                                  24 + MediaQuery.of(context).padding.bottom),
-                              itemCount: items.length,
-                              itemBuilder: (context, i) {
-                                final item = items[i];
-                                final String type = item.type;
-                                final isIncome = type == 'Income';
-                                final label = item.label;
-
-                                return HoverWrapper(
-                                  borderRadius: 16,
-                                  onTap: () async {
-                                    await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (_) =>
-                                                EditEntryScreen(entry: item)));
-                                    _loadData();
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        color: colorScheme.surface,
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                            color: semantic.divider
-                                                .withValues(alpha: 0.5))),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Row(
-                                        children: [
-                                          CategoryIcon(
-                                              type: type,
-                                              label: label,
-                                              semantic: semantic),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                    label
-                                                        .toString()
-                                                        .toUpperCase(),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                        fontSize: 14,
-                                                        letterSpacing: 0,
-                                                        color: colorScheme
-                                                            .onSurface)),
-                                                const SizedBox(height: 4),
-                                                Row(
-                                                  children: [
-                                                    Flexible(
-                                                      child: Text(
-                                                          type.toUpperCase(),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style: TextStyle(
-                                                              fontSize: 10,
-                                                              color: semantic
-                                                                  .secondaryText,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w800,
-                                                              letterSpacing:
-                                                                  0.5)),
-                                                    ),
-                                                    if (item.note != null &&
-                                                        item.note!
-                                                            .isNotEmpty) ...[
-                                                      const SizedBox(width: 4),
-                                                      Icon(Icons.notes_rounded,
-                                                          size: 10,
-                                                          color: semantic
-                                                              .secondaryText),
-                                                    ],
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Flexible(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              children: [
-                                                Semantics(
-                                                  container: true,
-                                                  child: FittedBox(
-                                                    fit: BoxFit.scaleDown,
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Text(
-                                                        CurrencyFormatter
-                                                            .format(
-                                                                item.amount),
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w900,
-                                                            fontSize: 16,
-                                                            color: isIncome
-                                                                ? semantic
-                                                                    .income
-                                                                : colorScheme
-                                                                    .onSurface)),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Semantics(
-                                                  container: true,
-                                                  child: FittedBox(
-                                                    fit: BoxFit.scaleDown,
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Text(
-                                                      DateFormat('dd-MM-yyyy')
-                                                          .format(
-                                                              DateTime.parse(
-                                                                  item.date)),
-                                                      style: TextStyle(
-                                                          fontSize: 10,
-                                                          color: semantic
-                                                              .secondaryText,
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                    .animate()
-                                    .fadeIn(
-                                        delay: (15 * i).clamp(0, 300).ms,
-                                        duration: 400.ms)
-                                    .slideX(
-                                        begin: 0.05,
-                                        end: 0,
-                                        curve: Curves.easeOutQuint);
-                              },
-                            );
-                          }),
-                        ),
-                      ),
+                    : _buildLedgerList(semantic, isPrivate),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryHeader(AppColors semantic, bool isPrivate) {
+    final items = _getFilteredItems();
+    final total = items.fold<double>(0, (sum, item) => sum + item.amount);
+    final isIncome = typeFilter == "Income";
+    final displayColor = isIncome
+        ? semantic.income
+        : (typeFilter == "All" ? semantic.primary : semantic.overspent);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(28),
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      decoration: BoxDecoration(
+        color: semantic.surfaceCombined.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: semantic.divider, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: displayColor.withValues(alpha: 0.05),
+            blurRadius: 40,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "${typeFilter.toUpperCase()} TOTAL",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: displayColor,
+                    letterSpacing: 2.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    CurrencyFormatter.format(total, isPrivate: isPrivate),
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      color: semantic.text,
+                      letterSpacing: -1.5,
+                      height: 1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 20),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: displayColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: displayColor.withValues(alpha: 0.2)),
+            ),
+            child: Icon(
+              isIncome
+                  ? Icons.trending_up_rounded
+                  : (typeFilter == "All"
+                      ? Icons.analytics_rounded
+                      : Icons.trending_down_rounded),
+              color: displayColor,
+              size: 28,
+            ),
+          ),
+        ],
+      ),
+    )
+        .animate()
+        .fadeIn(duration: 600.ms)
+        .slideY(begin: 0.05, end: 0, curve: Curves.easeOutQuart);
+  }
+
+  Widget _buildLedgerList(AppColors semantic, bool isPrivate) {
+    final items = _getFilteredItems();
+    if (items.isEmpty) {
+      return const EmptyState(
+        message: "NO ENTRIES YET",
+        subMessage: "NO TRANSACTIONS FOUND FOR THIS PERIOD.",
+        icon: Icons.receipt_long_rounded,
+      );
+    }
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 800),
+        child: ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          padding: EdgeInsets.fromLTRB(
+              24, 8, 24, 24 + MediaQuery.of(context).padding.bottom),
+          itemCount: items.length,
+          itemBuilder: (context, i) {
+            final item = items[i];
+            final String type = item.type;
+            final isIncome = type == 'Income';
+            final label = item.label;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: HoverWrapper(
+                borderRadius: 24,
+                scale: 1.01,
+                translateY: -2,
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditEntryScreen(entry: item),
+                    ),
+                  );
+                  _loadData();
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: semantic.surfaceCombined.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: semantic.divider, width: 1.5),
+                  ),
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    children: [
+                      CategoryIcon(
+                        type: type,
+                        label: label,
+                        semantic: semantic,
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              label.toString().toUpperCase(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13,
+                                letterSpacing: 0.2,
+                                color: semantic.text,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        semantic.divider.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    type.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 8,
+                                      color: semantic.secondaryText,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                ),
+                                if (item.note != null &&
+                                    item.note!.isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.notes_rounded,
+                                    size: 11,
+                                    color: semantic.secondaryText
+                                        .withValues(alpha: 0.5),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              CurrencyFormatter.format(item.amount,
+                                  isPrivate: isPrivate),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 17,
+                                color:
+                                    isIncome ? semantic.income : semantic.text,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            DateFormat('dd MMM')
+                                .format(DateTime.parse(item.date))
+                                .toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 9,
+                              color:
+                                  semantic.secondaryText.withValues(alpha: 0.4),
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+                .animate()
+                .fadeIn(
+                    delay: (100 + (25 * i)).clamp(0, 600).ms, duration: 500.ms)
+                .slideX(begin: 0.03, end: 0, curve: Curves.easeOutQuart);
+          },
+        ),
       ),
     );
   }

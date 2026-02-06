@@ -160,7 +160,10 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
       itemCount: monthSummaries.length,
       itemBuilder: (_, i) {
         final s = monthSummaries[i];
-        final netValue = (s['net'] ?? 0) as int;
+        final netValue = (s['net'] as num? ?? 0).toInt();
+        final income = (s['income'] as num? ?? 0).toInt();
+        final expenses = (s['expenses'] as num? ?? 0).toInt();
+        final invested = (s['invested'] as num? ?? 0).toInt();
         final positive = netValue >= 0;
 
         return Padding(
@@ -270,7 +273,7 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
                       Expanded(
                         child: _buildStatItem(
                           "INCOME",
-                          CurrencyFormatter.format(s['income'] ?? 0,
+                          CurrencyFormatter.format(income,
                               isPrivate: isPrivate),
                           Icons.arrow_downward_rounded,
                           semantic.income,
@@ -281,7 +284,7 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
                       Expanded(
                         child: _buildStatItem(
                           "SPENDING",
-                          CurrencyFormatter.format(s['expenses'] ?? 0,
+                          CurrencyFormatter.format(expenses,
                               isPrivate: isPrivate),
                           Icons.arrow_upward_rounded,
                           semantic.overspent,
@@ -292,7 +295,7 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
                       Expanded(
                         child: _buildStatItem(
                           "INVESTED",
-                          CurrencyFormatter.format(s['invested'] ?? 0,
+                          CurrencyFormatter.format(invested,
                               isPrivate: isPrivate),
                           Icons.account_balance_rounded,
                           semantic.primary,

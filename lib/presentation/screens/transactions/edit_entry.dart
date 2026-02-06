@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/category_provider.dart';
+import 'package:trueledger/core/theme/theme.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class EditEntryScreen extends ConsumerStatefulWidget {
   final LedgerItem entry;
@@ -36,130 +38,206 @@ class _EditEntryScreenState extends ConsumerState<EditEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<AppColors>()!;
 
     return Scaffold(
+      backgroundColor: semantic.surfaceCombined,
       appBar: AppBar(
         title: Text("EDIT ${widget.entry.type.toUpperCase()}"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
-              onPressed: _confirmDelete,
-              icon: Icon(Icons.delete_outline,
-                  color: colorScheme.onSurface.withValues(alpha: 0.3))),
+            onPressed: _confirmDelete,
+            icon: Icon(
+              Icons.delete_outline,
+              color: semantic.overspent.withValues(alpha: 0.6),
+            ),
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-            32, 32, 32, 32 + MediaQuery.of(context).padding.bottom),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("AMOUNT",
-                style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                    color: Colors.grey)),
-            TextField(
-              controller: amountCtrl,
-              keyboardType: TextInputType.number,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w900, fontSize: 48, letterSpacing: -2),
-              decoration: InputDecoration(
-                  prefixText: "${CurrencyFormatter.symbol} ",
-                  border: InputBorder.none),
-            ),
-            const SizedBox(height: 48),
-            Text(widget.entry.type == 'Income' ? "SOURCE" : "LABEL",
-                style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                    color: Colors.grey)),
-            TextField(
-              controller: labelCtrl,
-              decoration: const InputDecoration(border: UnderlineInputBorder()),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            if (widget.entry.type == 'Variable') ...[
-              const SizedBox(height: 16),
-              Consumer(
-                builder: (context, ref, child) {
-                  final categoriesAsync =
-                      ref.watch(categoriesProvider('Variable'));
-                  return categoriesAsync.when(
-                    data: (categories) {
-                      if (categories.isEmpty) return const SizedBox.shrink();
-                      return Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: categories.map((cat) {
-                          final active = labelCtrl.text == cat.name;
-                          return ActionChip(
-                            label: Text(cat.name.toUpperCase()),
-                            onPressed: () => setState(() {
-                              labelCtrl.text = cat.name;
-                            }),
-                            backgroundColor: active
-                                ? colorScheme.onSurface.withValues(alpha: 0.05)
-                                : Colors.transparent,
-                            side: BorderSide(
-                                color: active
-                                    ? colorScheme.onSurface
-                                    : colorScheme.onSurface
-                                        .withValues(alpha: 0.05)),
-                            labelStyle: TextStyle(
-                                color: colorScheme.onSurface,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 9,
-                                letterSpacing: 1),
-                          );
-                        }).toList(),
-                      );
-                    },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (err, stack) => Text("Error: $err"),
-                  );
-                },
-              ),
-              const SizedBox(height: 48),
-              const Text("NOTE",
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                      color: Colors.grey)),
-              TextField(
-                controller: noteCtrl,
-                decoration:
-                    const InputDecoration(border: UnderlineInputBorder()),
-              ),
-            ],
-            const SizedBox(height: 64),
-            SizedBox(
-              width: double.infinity,
-              height: 64,
-              child: ElevatedButton(
-                onPressed: _update,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.onSurface,
-                  foregroundColor: colorScheme.surface,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
-                ),
-                child: const Text("UPDATE ENTRY",
+            _buildAmountHeader(semantic),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                  32, 32, 32, 32 + MediaQuery.of(context).padding.bottom),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.entry.type == 'Income' ? "SOURCE" : "LABEL",
+                      style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                          color: Colors.grey)),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: labelCtrl,
                     style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12,
-                        letterSpacing: 2)),
+                        fontWeight: FontWeight.w900, color: semantic.text),
+                    decoration: InputDecoration(
+                        filled: true,
+                        fillColor:
+                            semantic.surfaceCombined.withValues(alpha: 0.5),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide(color: semantic.divider),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide(color: semantic.divider),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide(color: semantic.primary),
+                        )),
+                  ),
+                  if (widget.entry.type == 'Variable') ...[
+                    const SizedBox(height: 20),
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final categoriesAsync =
+                            ref.watch(categoriesProvider('Variable'));
+                        return categoriesAsync.when(
+                          data: (categories) {
+                            if (categories.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: categories.map((cat) {
+                                final active = labelCtrl.text == cat.name;
+                                return ActionChip(
+                                  label: Text(cat.name.toUpperCase()),
+                                  onPressed: () => setState(() {
+                                    labelCtrl.text = cat.name;
+                                  }),
+                                  backgroundColor: active
+                                      ? semantic.primary
+                                      : Colors.transparent,
+                                  side: BorderSide(
+                                      color: active
+                                          ? semantic.primary
+                                          : semantic.divider),
+                                  labelStyle: TextStyle(
+                                      color:
+                                          active ? Colors.black : semantic.text,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 9,
+                                      letterSpacing: 1),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                );
+                              }).toList(),
+                            );
+                          },
+                          loading: () => const SizedBox.shrink(),
+                          error: (err, stack) => const SizedBox.shrink(),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 48),
+                    const Text("NOTE",
+                        style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2,
+                            color: Colors.grey)),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: noteCtrl,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w700, color: semantic.text),
+                      decoration: InputDecoration(
+                          filled: true,
+                          fillColor:
+                              semantic.surfaceCombined.withValues(alpha: 0.5),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(color: semantic.divider),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(color: semantic.divider),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(color: semantic.primary),
+                          )),
+                    ),
+                  ],
+                  const SizedBox(height: 64),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 64,
+                    child: ElevatedButton(
+                      onPressed: _update,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: semantic.primary,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        elevation: 0,
+                      ),
+                      child: const Text("UPDATE ENTRY",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12,
+                              letterSpacing: 2)),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildAmountHeader(AppColors semantic) {
+    final isIncome = widget.entry.type == 'Income';
+    final displayColor = isIncome ? semantic.income : semantic.text;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: semantic.surfaceCombined.withValues(alpha: 0.5),
+        border: Border(bottom: BorderSide(color: semantic.divider)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("AMOUNT",
+              style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                  color: Colors.grey)),
+          TextField(
+            controller: amountCtrl,
+            keyboardType: TextInputType.number,
+            style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 56,
+                letterSpacing: -3,
+                color: displayColor),
+            decoration: InputDecoration(
+                prefixText: "${CurrencyFormatter.symbol} ",
+                prefixStyle: TextStyle(
+                    color: displayColor.withValues(alpha: 0.3),
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900),
+                border: InputBorder.none),
+          ),
+        ],
+      ),
+    ).animate().fadeIn().slideY(begin: -0.1, end: 0);
   }
 
   Future<void> _update() async {

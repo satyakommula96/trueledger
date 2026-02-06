@@ -82,7 +82,9 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.widgetWithText(TextField, '50'), '100');
-    await tester.tap(find.text('UPDATE ENTRY'));
+    final button = find.text('UPDATE ENTRY');
+    await tester.ensureVisible(button);
+    await tester.tap(button);
 
     // SnackBar visibility depends on timing and tree state
     await tester.pump();
