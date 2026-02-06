@@ -41,9 +41,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text("DAY CLOSURE"), findsOneWidget);
-      expect(find.text("Review your day"), findsOneWidget);
-      expect(find.text("You logged 3 expenses today."), findsOneWidget);
+      expect(find.text("DAY RITUAL"), findsOneWidget);
+      expect(find.text("Daily Review"), findsOneWidget);
+      expect(find.text("You've logged 3 entries today."), findsOneWidget);
     });
 
     testWidgets('renders empty state when no transactions', (tester) async {
@@ -67,10 +67,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text("DAY CLOSURE"), findsOneWidget);
-      expect(find.text("No expenses today?"), findsOneWidget);
-      expect(find.textContaining("Did you forget to log something?"),
-          findsOneWidget);
+      expect(find.text("DAY RITUAL"), findsOneWidget);
+      expect(find.text("Still Day?"), findsOneWidget);
+      expect(
+          find.textContaining("No transactions logged today."), findsOneWidget);
     });
   });
 }

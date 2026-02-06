@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
+import 'package:trueledger/core/config/app_config.dart';
 
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/insights_provider.dart';
@@ -123,8 +124,9 @@ class Dashboard extends ConsumerWidget {
                             ],
                           ),
                         ),
-                      ).animate(onPlay: (c) => c.repeat(reverse: true)).move(
-                          duration: 10.seconds, end: const Offset(-40, 40)),
+                      ).animate(onPlay: (c) {
+                        if (!AppConfig.isTest) c.repeat(reverse: true);
+                      }).move(duration: 10.seconds, end: const Offset(-40, 40)),
                     ),
                     Positioned(
                       bottom: 100,
@@ -141,8 +143,9 @@ class Dashboard extends ConsumerWidget {
                             ],
                           ),
                         ),
-                      ).animate(onPlay: (c) => c.repeat(reverse: true)).move(
-                          duration: 12.seconds, end: const Offset(50, -30)),
+                      ).animate(onPlay: (c) {
+                        if (!AppConfig.isTest) c.repeat(reverse: true);
+                      }).move(duration: 12.seconds, end: const Offset(50, -30)),
                     ),
                     SafeArea(
                       child: RefreshIndicator(

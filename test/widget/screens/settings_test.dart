@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trueledger/core/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -115,8 +116,9 @@ void main() {
         restoreBackupUseCaseProvider.overrideWithValue(mockRestoreUseCase),
         autoBackupUseCaseProvider.overrideWithValue(mockAutoBackupUseCase),
       ],
-      child: const MaterialApp(
-        home: SettingsScreen(),
+      child: MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: const SettingsScreen(),
       ),
     );
   }
@@ -128,12 +130,12 @@ void main() {
 
       await tester.pumpWidget(createSettingsScreen());
 
-      final resetTile = find.text('Reset Application');
+      final resetTile = find.text('RESET APPLICATION');
       await tester.scrollUntilVisible(resetTile, 100.0);
       await tester.tap(resetTile);
       await tester.pumpAndSettle();
 
-      expect(find.text('Delete All Data?'), findsOneWidget);
+      expect(find.text('DELETE ALL DATA?'), findsOneWidget);
       await tester.tap(find.text('DELETE ALL'));
       await tester.pumpAndSettle();
 
@@ -143,10 +145,10 @@ void main() {
 
     testWidgets('covers name picker logic', (tester) async {
       await tester.pumpWidget(createSettingsScreen());
-      await tester.tap(find.text('User Name'));
+      await tester.tap(find.text('USER NAME'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Set User Name'), findsOneWidget);
+      expect(find.text('SET USER NAME'), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'New Name');
       await tester.tap(find.text('SAVE'));
       await tester.pumpAndSettle();
@@ -154,23 +156,23 @@ void main() {
 
     testWidgets('covers theme picker logic', (tester) async {
       await tester.pumpWidget(createSettingsScreen());
-      await tester.tap(find.text('Appearance'));
+      await tester.tap(find.text('APPEARANCE'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Select Theme'), findsOneWidget);
-      await tester.tap(find.text('Dark Mode'));
+      expect(find.text('SELECT THEME'), findsOneWidget);
+      await tester.tap(find.text('DARK MODE'));
       await tester.pumpAndSettle();
     });
 
     testWidgets('covers seed data logic', (tester) async {
       await tester.pumpWidget(createSettingsScreen());
-      final seedTile = find.text('Seed Sample Data');
+      final seedTile = find.text('SEED SAMPLE DATA');
       await tester.scrollUntilVisible(seedTile, 100);
       await tester.tap(seedTile);
       await tester.pumpAndSettle();
 
-      expect(find.text('Select Data Scenario'), findsOneWidget);
-      await tester.tap(find.text('Complete Demo'));
+      expect(find.text('SELECT DATA SCENARIO'), findsOneWidget);
+      await tester.tap(find.text('COMPLETE DEMO'));
       await tester.pumpAndSettle();
 
       verify(() => mockRepo.seedRoadmapData()).called(1);
@@ -178,12 +180,12 @@ void main() {
 
     testWidgets('covers currency picker logic', (tester) async {
       await tester.pumpWidget(createSettingsScreen());
-      final currencyTile = find.text('Currency');
+      final currencyTile = find.text('CURRENCY');
       await tester.scrollUntilVisible(currencyTile, 100);
       await tester.tap(currencyTile);
       await tester.pumpAndSettle();
 
-      expect(find.text('Select Currency'), findsOneWidget);
+      expect(find.text('SELECT CURRENCY'), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'USD');
       await tester.pumpAndSettle();
 

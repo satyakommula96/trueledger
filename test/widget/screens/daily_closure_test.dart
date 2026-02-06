@@ -55,10 +55,10 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text("DAY CLOSURE"), findsOneWidget);
-    expect(find.text("Review your day"), findsOneWidget);
-    expect(find.textContaining("5 expenses"), findsOneWidget);
-    expect(find.text("Mark day as complete"), findsOneWidget);
+    expect(find.text("DAY RITUAL"), findsOneWidget);
+    expect(find.text("Daily Review"), findsOneWidget);
+    expect(find.textContaining("5 entries"), findsOneWidget);
+    expect(find.text("Finish Daily Review"), findsOneWidget);
   });
 
   testWidgets('DailyClosureCard shows success state when closed',
@@ -87,6 +87,6 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.textContaining("Day ritual complete"), findsOneWidget);
+    expect(find.textContaining("Ritual complete. Rest well."), findsOneWidget);
   });
 }

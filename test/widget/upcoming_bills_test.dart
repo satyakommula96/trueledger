@@ -41,7 +41,7 @@ void main() {
 
   testWidgets('renders empty state', (WidgetTester tester) async {
     await tester.pumpWidget(createWidgetUnderTest(bills: []));
-    expect(find.text('Clean slate'), findsOneWidget);
+    expect(find.text('All bills are clear'), findsOneWidget);
   });
 
   testWidgets('renders bills', (WidgetTester tester) async {
@@ -63,12 +63,12 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest(bills: bills));
     await tester.pumpAndSettle();
 
-    expect(find.text('Credit Card'), findsOneWidget);
+    expect(find.text('CREDIT CARD'), findsOneWidget);
     expect(find.text('HDFC VISA'), findsOneWidget);
     expect(find.textContaining('1.5K'), findsOneWidget);
 
-    expect(find.text('Loan'), findsOneWidget);
-    expect(find.text('HOME LOAN'), findsOneWidget);
+    expect(find.text('LOAN'), findsOneWidget);
+    expect(find.text('Home Loan'), findsOneWidget);
     expect(find.textContaining('2.5K'), findsOneWidget);
   });
 }

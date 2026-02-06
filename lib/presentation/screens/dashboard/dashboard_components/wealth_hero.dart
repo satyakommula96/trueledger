@@ -6,6 +6,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:confetti/confetti.dart';
+import 'package:trueledger/core/config/app_config.dart';
 
 class WealthHero extends ConsumerStatefulWidget {
   final MonthlySummary summary;
@@ -123,9 +124,11 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                       ),
                     ),
                   )
-                      .animate(
-                          onPlay: (controller) =>
-                              controller.repeat(reverse: true))
+                      .animate(onPlay: (controller) {
+                        if (!AppConfig.isTest) {
+                          controller.repeat(reverse: true);
+                        }
+                      })
                       .move(
                           duration: 4.seconds,
                           begin: const Offset(0, 0),
@@ -151,9 +154,11 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                       ),
                     ),
                   )
-                      .animate(
-                          onPlay: (controller) =>
-                              controller.repeat(reverse: true))
+                      .animate(onPlay: (controller) {
+                        if (!AppConfig.isTest) {
+                          controller.repeat(reverse: true);
+                        }
+                      })
                       .move(
                           duration: 5.seconds,
                           begin: const Offset(0, 0),
@@ -189,8 +194,9 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           _buildHeaderPill(
                             context,
@@ -200,17 +206,20 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                             semantic: semantic,
                           ),
                           if (widget.activeStreak > 0)
-                            _buildHeaderPill(
-                              context,
-                              "${widget.activeStreak} DAY STREAK",
-                              Icons.whatshot_rounded,
-                              onTap: widget.onTapStreak,
-                              isAlt: true,
-                              semantic: semantic,
-                              color: widget.hasLoggedToday
-                                  ? Colors.orange
-                                  : Colors.white.withValues(alpha: 0.5),
-                              showPulse: !widget.hasLoggedToday,
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: _buildHeaderPill(
+                                context,
+                                "${widget.activeStreak} DAY STREAK",
+                                Icons.whatshot_rounded,
+                                onTap: widget.onTapStreak,
+                                isAlt: true,
+                                semantic: semantic,
+                                color: widget.hasLoggedToday
+                                    ? Colors.orange
+                                    : Colors.white.withValues(alpha: 0.5),
+                                showPulse: !widget.hasLoggedToday,
+                              ),
                             ),
                         ],
                       ),
@@ -341,12 +350,12 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
     return GestureDetector(
       onTap: onTap,
       child: showPulse
-          ? pill
-              .animate(onPlay: (controller) => controller.repeat(reverse: true))
-              .scale(
-                  duration: 800.ms,
-                  begin: const Offset(1, 1),
-                  end: const Offset(1.05, 1.05))
+          ? pill.animate(onPlay: (controller) {
+              if (!AppConfig.isTest) controller.repeat(reverse: true);
+            }).scale(
+              duration: 800.ms,
+              begin: const Offset(1, 1),
+              end: const Offset(1.05, 1.05))
           : pill.animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
     );
   }

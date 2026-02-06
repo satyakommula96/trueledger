@@ -85,6 +85,7 @@ void main() {
   group('AddExpense Widget Tests', () {
     testWidgets('renders all entry types when not restricted', (tester) async {
       await tester.pumpWidget(createWidget(const AddExpense()));
+      await tester.pumpAndSettle();
 
       expect(find.text('INCOME'), findsOneWidget);
       expect(find.text('VARIABLE'), findsOneWidget);
@@ -99,6 +100,7 @@ void main() {
         initialType: 'Income',
         allowedTypes: ['Income'],
       )));
+      await tester.pumpAndSettle();
 
       expect(find.text('ENTRY TYPE'), findsNothing);
       expect(find.text('NEW INCOME'), findsOneWidget);
@@ -109,6 +111,7 @@ void main() {
         initialType: 'Variable',
         allowedTypes: ['Variable', 'Fixed'],
       )));
+      await tester.pumpAndSettle();
 
       expect(find.text('VARIABLE'), findsOneWidget);
       expect(find.text('FIXED'), findsOneWidget);
@@ -117,6 +120,7 @@ void main() {
 
     testWidgets('allows changing type and category', (tester) async {
       await tester.pumpWidget(createWidget(const AddExpense()));
+      await tester.pumpAndSettle();
 
       // Change type to Fixed
       await tester.tap(find.text('FIXED'));
@@ -154,12 +158,13 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(createWidget(const AddExpense()));
+      await tester.pumpAndSettle();
 
       // Tap Save without entering amount
       final button = find.text('COMMIT TO LEDGER');
       await tester.ensureVisible(button);
       await tester.tap(button);
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.text('Please enter an amount'), findsOneWidget);
     });

@@ -24,7 +24,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('LOANS'), findsOneWidget);
+      expect(find.text('Accounts'), findsOneWidget);
     });
 
     testWidgets('renders CARDS label', (tester) async {
@@ -36,7 +36,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('CARDS'), findsOneWidget);
+      expect(find.text('Cards'), findsOneWidget);
     });
 
     testWidgets('renders ANALYSIS label', (tester) async {
@@ -48,7 +48,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('ANALYSIS'), findsOneWidget);
+      expect(find.text('Analysis'), findsOneWidget);
     });
 
     testWidgets('renders HISTORY label', (tester) async {
@@ -60,7 +60,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('HISTORY'), findsOneWidget);
+      expect(find.text('History'), findsOneWidget);
     });
 
     testWidgets('renders all navigation icons', (tester) async {
@@ -73,9 +73,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.account_balance_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.credit_card_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.analytics_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.history_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.credit_card_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.auto_graph_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.history_toggle_off_rounded), findsOneWidget);
     });
   });
 }

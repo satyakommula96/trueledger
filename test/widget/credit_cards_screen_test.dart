@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/cards/credit_cards.dart';
@@ -10,17 +12,23 @@ import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
+class MockSharedPreferences extends Mock implements SharedPreferences {}
+
 void main() {
   late MockFinancialRepository mockRepository;
+  late MockSharedPreferences mockPrefs;
 
   setUp(() {
     mockRepository = MockFinancialRepository();
+    mockPrefs = MockSharedPreferences();
+    when(() => mockPrefs.getBool(any())).thenReturn(false);
   });
 
   Widget createWidgetUnderTest() {
     return ProviderScope(
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepository),
+        sharedPreferencesProvider.overrideWithValue(mockPrefs),
       ],
       child: MaterialApp(
         theme: AppTheme.darkTheme,
@@ -64,7 +72,7 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      expect(find.text('NO CARDS REGISTERED.'), findsOneWidget);
+      expect(find.text('NO CARDS REGISTERED'), findsOneWidget);
     });
 
     testWidgets('should open pay dialog when Record Payment is pressed',
@@ -88,7 +96,10 @@ void main() {
       await tester.tap(find.text('RECORD PAYMENT'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Record Payment - HDFC'), findsOneWidget);
+      // Dialog Title
+      expect(find.text('RECORD PAYMENT'), findsWidgets);
+      // Bank Name in Dialog
+      expect(find.text('HDFC'), findsWidgets);
       expect(find.byType(TextField), findsOneWidget);
 
       // Dismiss dialog

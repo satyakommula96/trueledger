@@ -64,11 +64,11 @@ void main() {
     // Verify Content
     expect(find.text("ANNUAL VOLUME"), findsOneWidget);
     expect(find.text("PEAK SPENDING"), findsOneWidget);
-    expect(find.text("MAJOR CATEGORY"), findsOneWidget);
+    expect(find.text("TOP CATEGORY"), findsOneWidget);
     expect(find.textContaining("reached"),
         findsOneWidget); // Part of the total spend description
-    expect(find.textContaining("Food"), findsOneWidget); // Stability section
-    expect(find.textContaining("Rent"), findsOneWidget); // Top category
+    expect(find.textContaining("FOOD"), findsOneWidget); // Stability section
+    expect(find.textContaining("RENT"), findsOneWidget); // Top category
   });
 
   testWidgets('AnnualReflectionScreen shows error view on failure',

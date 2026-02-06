@@ -60,10 +60,10 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      expect(find.text('Remember last-used values'), findsOneWidget);
-      expect(find.text('Personal baseline reflections'), findsOneWidget);
+      expect(find.text('REMEMBER LAST-USED'), findsOneWidget);
+      expect(find.text('BASELINE REFLECTIONS'), findsOneWidget);
 
-      final coffeeFinder = find.text('Coffee');
+      final coffeeFinder = find.text('COFFEE');
       await tester.scrollUntilVisible(coffeeFinder, 100);
       expect(coffeeFinder, findsOneWidget);
     });
@@ -76,7 +76,7 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Time-of-day suggestions'));
+      await tester.tap(find.text('TIME-OF-DAY SUGGESTIONS'));
       await tester.pumpAndSettle();
 
       verify(() => mockService.updateSettings(any())).called(1);
@@ -105,12 +105,12 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      final resetTile = find.text('Reset Personalization');
+      final resetTile = find.text('RESET PERSONALIZATION');
       await tester.scrollUntilVisible(resetTile, 100);
       await tester.tap(resetTile);
       await tester.pumpAndSettle();
 
-      expect(find.text('Reset Personalization?'), findsOneWidget);
+      expect(find.text('RESET PERSONALIZATION?'), findsOneWidget);
       await tester.tap(find.text('RESET'));
       await tester.pumpAndSettle();
 

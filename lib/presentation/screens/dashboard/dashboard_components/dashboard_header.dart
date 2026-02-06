@@ -6,6 +6,7 @@ import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/providers/user_provider.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/core/theme/theme.dart';
+import 'package:trueledger/core/config/app_config.dart';
 
 import 'package:trueledger/presentation/screens/settings/settings.dart';
 import 'package:trueledger/presentation/screens/settings/notifications_screen.dart';
@@ -96,9 +97,11 @@ class DashboardHeader extends ConsumerWidget {
                             shape: BoxShape.circle,
                           ),
                         )
-                            .animate(
-                                onPlay: (controller) =>
-                                    controller.repeat(reverse: true))
+                            .animate(onPlay: (controller) {
+                              if (!AppConfig.isTest) {
+                                controller.repeat(reverse: true);
+                              }
+                            })
                             .scale(
                                 duration: 1.seconds,
                                 begin: const Offset(0.8, 0.8),

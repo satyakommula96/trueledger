@@ -5,19 +5,19 @@ import 'package:trueledger/core/theme/theme.dart';
 void main() {
   group('AppColors', () {
     test('darkColors should have correct income color', () {
-      expect(AppTheme.darkColors.income, const Color(0xFF34D399));
+      expect(AppTheme.darkColors.income, const Color(0xFF10B981));
     });
 
     test('lightColors should have correct income color', () {
-      expect(AppTheme.lightColors.income, const Color(0xFF2ECC71));
+      expect(AppTheme.lightColors.income, const Color(0xFF059669));
     });
 
     test('darkColors should have correct overspent color', () {
-      expect(AppTheme.darkColors.overspent, const Color(0xFFF87171));
+      expect(AppTheme.darkColors.overspent, const Color(0xFFF43F5E));
     });
 
     test('lightColors should have correct overspent color', () {
-      expect(AppTheme.lightColors.overspent, const Color(0xFFE74C3C));
+      expect(AppTheme.lightColors.overspent, const Color(0xFFE11D48));
     });
 
     test('copyWith should work correctly', () {

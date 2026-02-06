@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
@@ -10,11 +12,16 @@ import 'package:trueledger/core/theme/theme.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
+class MockSharedPreferences extends Mock implements SharedPreferences {}
+
 void main() {
   late MockFinancialRepository mockRepository;
+  late MockSharedPreferences mockPrefs;
 
   setUp(() {
     mockRepository = MockFinancialRepository();
+    mockPrefs = MockSharedPreferences();
+    when(() => mockPrefs.getBool(any())).thenReturn(false);
 
     // Default mock setup
     when(() => mockRepository.getCategories(any())).thenAnswer((_) async => []);
@@ -24,6 +31,7 @@ void main() {
     return ProviderScope(
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepository),
+        sharedPreferencesProvider.overrideWithValue(mockPrefs),
       ],
       child: MaterialApp(
         theme: AppTheme.darkTheme,
@@ -38,9 +46,8 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      expect(find.text('No categories'), findsOneWidget);
-      expect(
-          find.text('Add your first category for this type'), findsOneWidget);
+      expect(find.text('NO CATEGORIES YET'), findsOneWidget);
+      expect(find.text('Add your first category for Variable'), findsOneWidget);
     });
 
     testWidgets('should display list of categories', (tester) async {
@@ -55,11 +62,8 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      expect(find.text('FOOD'),
-          findsNothing); // It's case depends on how it's displayed, but model says name
-      // Looking at code: Text(cat.name, style: const TextStyle(fontWeight: FontWeight.bold))
-      expect(find.text('Food'), findsOneWidget);
-      expect(find.text('Transport'), findsOneWidget);
+      expect(find.text('FOOD'), findsOneWidget);
+      expect(find.text('TRANSPORT'), findsOneWidget);
     });
 
     testWidgets('should add a new category', (tester) async {
@@ -108,6 +112,7 @@ void main() {
       await tester.pumpWidget(ProviderScope(
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepository),
+          sharedPreferencesProvider.overrideWithValue(mockPrefs),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,
@@ -168,6 +173,7 @@ void main() {
       await tester.pumpWidget(ProviderScope(
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepository),
+          sharedPreferencesProvider.overrideWithValue(mockPrefs),
         ],
         child: MaterialApp(
           theme: AppTheme.darkTheme,

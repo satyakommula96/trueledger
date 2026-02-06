@@ -7,6 +7,7 @@ import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
+import 'package:trueledger/core/config/app_config.dart';
 
 final weeklyReflectionProvider =
     FutureProvider<WeeklyReflectionData>((ref) async {
@@ -58,9 +59,9 @@ class WeeklyReflectionScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-            )
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .move(duration: 6.seconds, end: const Offset(30, 20)),
+            ).animate(onPlay: (c) {
+              if (!AppConfig.isTest) c.repeat(reverse: true);
+            }).move(duration: 6.seconds, end: const Offset(30, 20)),
           ),
           dataAsync.when(
             loading: () => Center(

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:trueledger/core/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -114,8 +115,9 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
         notificationServiceProvider.overrideWithValue(mockNotificationService),
       ],
-      child: const MaterialApp(
-        home: DataExportScreen(),
+      child: MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: const DataExportScreen(),
       ),
     );
   }
@@ -130,8 +132,9 @@ void main() {
           )).thenAnswer((_) async => '/tmp/test_export.json');
 
       await tester.pumpWidget(createExportScreen());
+      await tester.pumpAndSettle();
 
-      final exportBtn = find.text('Export Everything (JSON)');
+      final exportBtn = find.text('ONE-TAP EXPORT');
       await tester.tap(exportBtn);
       await tester.pumpAndSettle();
 
@@ -139,12 +142,20 @@ void main() {
     });
 
     testWidgets('covers secure backup logic', (tester) async {
+      tester.view.physicalSize = const Size(1200, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
       // TODO: Fix test flakiness - dialog input not propagating in test env
       // This test is temporarily disabled to unblock CI.
       // logic is covered by manual testing and similar flows in export.
     });
 
     testWidgets('covers encrypted restore logic - success', (tester) async {
+      tester.view.physicalSize = const Size(1200, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
       final encryptedData = BackupEncryptionService.encryptData(
           jsonEncode({
             'vars': [],
@@ -179,17 +190,18 @@ void main() {
               ]));
 
       await tester.pumpWidget(createExportScreen());
-      final restoreTile = find.text('Restore Data');
-      await tester.scrollUntilVisible(restoreTile, 100);
+      await tester.pumpAndSettle();
+      final restoreTile = find.byIcon(Icons.settings_backup_restore_rounded);
+      await tester.ensureVisible(restoreTile);
       await tester.tap(restoreTile);
       await tester.pumpAndSettle();
 
-      expect(find.text('Decrypt Backup'), findsOneWidget);
+      expect(find.text('DECRYPT BACKUP'), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'pass123');
       await tester.tap(find.text('DECRYPT'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Restore Data?'),
+      expect(find.text('RESTORE DATA?'),
           findsOneWidget); // Expect overwrite warning
       await tester.tap(find.text('RESTORE'));
       await tester.pumpAndSettle();
@@ -199,6 +211,10 @@ void main() {
 
     testWidgets('covers encrypted restore logic - wrong password',
         (tester) async {
+      tester.view.physicalSize = const Size(1200, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
       final container = jsonEncode({
         'encrypted': true,
         'data': 'bad-data',
@@ -219,8 +235,9 @@ void main() {
               ]));
 
       await tester.pumpWidget(createExportScreen());
-      final restoreTile = find.text('Restore Data');
-      await tester.scrollUntilVisible(restoreTile, 100);
+      await tester.pumpAndSettle();
+      final restoreTile = find.byIcon(Icons.settings_backup_restore_rounded);
+      await tester.ensureVisible(restoreTile);
       await tester.tap(restoreTile);
       await tester.pumpAndSettle();
 

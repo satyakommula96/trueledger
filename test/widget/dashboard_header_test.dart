@@ -67,7 +67,7 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
 
     // Greeting changes based on time, but it should contain "Test User"
-    expect(find.textContaining('Test User'), findsOneWidget);
+    expect(find.textContaining('TEST USER'), findsOneWidget);
     expect(find.text('TrueLedger'), findsOneWidget);
   });
 
@@ -95,7 +95,7 @@ void main() {
         .pumpWidget(createWidgetUnderTest(onLoad: () => onLoadCalledCount++));
     await tester.pump(const Duration(seconds: 2));
 
-    final settingsIconFinder = find.byIcon(Icons.settings_rounded);
+    final settingsIconFinder = find.byIcon(Icons.sort_rounded);
     expect(settingsIconFinder, findsOneWidget);
 
     await tester.tap(settingsIconFinder);
@@ -104,7 +104,7 @@ void main() {
 
     // Verify we are on Settings screen (or at least it pushed)
     // We can check for some text in SettingsScreen
-    expect(find.text('Settings & Tools'), findsOneWidget);
+    expect(find.text('SETTINGS'), findsOneWidget);
 
     // Better: just pop
     await tester.pageBack();
@@ -123,16 +123,16 @@ void main() {
         .pumpWidget(createWidgetUnderTest(onLoad: () => onLoadCalledCount++));
     await tester.pump(const Duration(seconds: 2));
 
-    await tester.tap(find.byIcon(Icons.settings_rounded));
+    await tester.tap(find.byIcon(Icons.sort_rounded));
     await tester.pumpAndSettle();
 
     // Verify we are on Settings screen
-    expect(find.text('Settings & Tools'), findsOneWidget);
+    expect(find.text('SETTINGS'), findsOneWidget);
 
     // Navigate back - simulating a return without modification
     // In real usage, onLoad is only called when Navigator.pop returns true
     // For this test, we just verify the navigation works
-    Navigator.of(tester.element(find.text('Settings & Tools'))).pop();
+    Navigator.of(tester.element(find.text('SETTINGS'))).pop();
     await tester.pumpAndSettle();
 
     // Should be back on dashboard

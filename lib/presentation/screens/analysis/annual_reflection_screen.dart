@@ -6,6 +6,7 @@ import 'package:trueledger/domain/usecases/get_annual_reflection_usecase.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
+import 'package:trueledger/core/config/app_config.dart';
 
 final annualReflectionProvider =
     FutureProvider.family<AnnualReflectionData, int>((ref, year) async {
@@ -58,9 +59,9 @@ class AnnualReflectionScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-            )
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .move(duration: 10.seconds, end: const Offset(-50, 50)),
+            ).animate(onPlay: (c) {
+              if (!AppConfig.isTest) c.repeat(reverse: true);
+            }).move(duration: 10.seconds, end: const Offset(-50, 50)),
           ),
           Positioned(
             bottom: -100,
@@ -77,9 +78,9 @@ class AnnualReflectionScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-            )
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .move(duration: 8.seconds, end: const Offset(40, -40)),
+            ).animate(onPlay: (c) {
+              if (!AppConfig.isTest) c.repeat(reverse: true);
+            }).move(duration: 8.seconds, end: const Offset(40, -40)),
           ),
           dataAsync.when(
             loading: () => Center(

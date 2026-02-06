@@ -121,7 +121,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('STABLE'), findsOneWidget);
-    expect(find.textContaining('Last reviewed:'), findsOneWidget);
+    expect(find.textContaining('Analyzed'), findsOneWidget);
   });
 
   testWidgets('navigates to EditBudgetScreen on tap',
@@ -142,7 +142,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify EditBudgetScreen title
-    expect(find.textContaining('Food'), findsWidgets);
+    expect(find.textContaining('FOOD'), findsWidgets);
 
     await tester.pageBack();
     await tester.pumpAndSettle();
