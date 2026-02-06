@@ -79,6 +79,14 @@ jobs:
       - id: version
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
+      - name: Configure Android Signing
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=upload-keystore.jks" >> android/key.properties
+
       - run: flutter build appbundle --release --build-name=${{ steps.version.outputs.VERSION }}
       - run: flutter build apk --release --build-name=${{ steps.version.outputs.VERSION }}
 
@@ -257,3 +265,14 @@ jobs:
         with:
           files: out/*
           generate_release_notes: true
+      
+      - run: |
+          mkdir -p pages/${{ steps.version.outputs.VERSION }}
+          cp out/* pages/${{ steps.version.outputs.VERSION }}
+          touch pages/.nojekyll
+
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: pages
+          keep_files: true

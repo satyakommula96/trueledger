@@ -281,7 +281,11 @@ class NotificationService {
     await _saveScheduledNotification(dailyReminderId, 'Daily Reminder',
         'Add your expenses for today!', routeDashboard);
 
-    if (kIsWeb || Platform.isLinux || _isTest || _initFailed) {
+    if (kIsWeb ||
+        Platform.isLinux ||
+        Platform.isWindows ||
+        _isTest ||
+        _initFailed) {
       return;
     }
 
