@@ -135,8 +135,8 @@ jobs:
         run: |
           set -e
           test -f windows/installer/TrueLedger.wxs
-          candle -dAppVersion=${{ steps.version.outputs.VERSION }} windows/installer/TrueLedger.wxs
-          light TrueLedger.wixobj -o TrueLedger.msi
+          candle -arch x64 -dAppVersion=${{ steps.version.outputs.VERSION }} windows/installer/TrueLedger.wxs
+          light -arch x64 TrueLedger.wixobj -o TrueLedger.msi
 
       - uses: actions/upload-artifact@v4
         with:

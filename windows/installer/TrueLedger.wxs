@@ -27,15 +27,15 @@
 
     <Fragment>
         <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-            <Component Id="TrueLedgerEXE" Guid="*">
+            <Component Id="TrueLedgerEXE" Guid="*" Win64="yes">
                 <File Id="TrueLedgerEXE" Source="build\windows\x64\runner\Release\trueledger.exe" KeyPath="yes" Checksum="yes"/>
                 <Shortcut Id="ApplicationStartMenuShortcut" Name="TrueLedger" Description="Premium Personal Finance &amp; Expense Tracking" Directory="ApplicationProgramsFolder" WorkingDirectory="INSTALLFOLDER" Icon="app_icon.ico" IconIndex="0" Advertise="yes" />
                 <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
             </Component>
-            <Component Id="FlutterWindowsDLL" Guid="*">
+            <Component Id="FlutterWindowsDLL" Guid="*" Win64="yes">
                 <File Id="FlutterWindowsDLL" Source="build\windows\x64\runner\Release\flutter_windows.dll" KeyPath="yes" />
             </Component>
-            <Component Id="Sqlite3DLL" Guid="*">
+            <Component Id="Sqlite3DLL" Guid="*" Win64="yes">
                 <File Id="Sqlite3DLL" Source="build\windows\x64\runner\Release\sqlite3.dll" KeyPath="yes" />
             </Component>
         </ComponentGroup>
