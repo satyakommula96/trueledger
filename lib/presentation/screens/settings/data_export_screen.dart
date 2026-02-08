@@ -333,6 +333,34 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         }
         fileName =
             "trueledger_insights_${DateTime.now().millisecondsSinceEpoch}.csv";
+      } else if (type == 'loans') {
+        final loans = await repo.getLoans();
+        rows.add([
+          'ID',
+          'Name',
+          'Type',
+          'Total Amount',
+          'Remaining',
+          'EMI',
+          'Rate',
+          'Due Day',
+          'Last Payment'
+        ]);
+        for (var l in loans) {
+          rows.add([
+            l.id,
+            l.name,
+            l.loanType,
+            l.totalAmount,
+            l.remainingAmount,
+            l.emi,
+            l.interestRate,
+            l.dueDate,
+            l.lastPaymentDate ?? 'N/A'
+          ]);
+        }
+        fileName =
+            "trueledger_loans_${DateTime.now().millisecondsSinceEpoch}.csv";
       }
 
       if (rows.length <= 1) {
@@ -703,6 +731,15 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                 icon: Icons.auto_awesome_outlined,
                 color: Colors.purple,
                 onTap: () => _exportCSV('insights'),
+                semantic: semantic,
+              ),
+              const SizedBox(height: 16),
+              _buildExportOption(
+                title: "LOANS",
+                subtitle: "Active loans and borrowing details",
+                icon: Icons.account_balance_rounded,
+                color: Colors.redAccent,
+                onTap: () => _exportCSV('loans'),
                 semantic: semantic,
               ),
               const SizedBox(height: 48),
