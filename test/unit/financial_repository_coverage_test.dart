@@ -184,19 +184,27 @@ void main() {
       expect(list.any((b) => b.id == id), isFalse);
     });
 
-    test('getActiveStreak calculates correctly', () async {
+    test('getActiveStreak calculates correctly across types', () async {
       final now = DateTime.now();
       final today = now.toIso8601String().substring(0, 10);
       final yesterday = now
           .subtract(const Duration(days: 1))
           .toIso8601String()
           .substring(0, 10);
+      final dayBefore = now
+          .subtract(const Duration(days: 2))
+          .toIso8601String()
+          .substring(0, 10);
 
-      await repo.addEntry('Variable', 10, 'Test', '', today);
-      await repo.addEntry('Variable', 10, 'Test', '', yesterday);
+      // Today: Variable Expense
+      await repo.addEntry('Variable', 10, 'Test Var', '', today);
+      // Yesterday: Fixed Expense (e.g. Loan Payment)
+      await repo.addEntry('Fixed', 100, 'Loan EMI', '', yesterday);
+      // Day Before: Income
+      await repo.addEntry('Income', 5000, 'Salary', '', dayBefore);
 
       final streak = await repo.getActiveStreak();
-      expect(streak, 2);
+      expect(streak, 3);
     });
 
     test('backup and restore', () async {

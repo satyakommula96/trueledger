@@ -789,14 +789,17 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
 
   /// Calculates the active daily streak of "tracking" events.
-  /// Definition: A tracking event is a manual entry in the [variable_expenses] table.
-  /// Fixed expenses (like rent), one-off Income, or Investments do not count
-  /// toward the "habitual tracking" streak.
+  /// Definition: A tracking event is ANY entry in [variable_expenses], [fixed_expenses], or [income_sources].
+  /// This ensures that logging rent, EMI, or salary also counts as "tracking".
   @override
   Future<int> getActiveStreak() async {
     final db = await AppDatabase.db;
     final results = await db.rawQuery('''
       SELECT DISTINCT substr(date, 1, 10) as day FROM variable_expenses
+      UNION
+      SELECT DISTINCT substr(date, 1, 10) as day FROM fixed_expenses
+      UNION
+      SELECT DISTINCT substr(date, 1, 10) as day FROM income_sources
       ORDER BY day DESC
     ''');
 
