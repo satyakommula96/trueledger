@@ -138,7 +138,8 @@ void main() {
       await tester.ensureVisible(find.byType(TextField).at(5));
       await tester.tap(find.byType(TextField).at(5));
       await tester.pumpAndSettle();
-      expect(find.byType(DatePickerDialog), findsOneWidget);
+      expect(find.text('SELECT DUE DAY'), findsOneWidget);
+      expect(find.byType(AlertDialog), findsOneWidget);
     });
   });
 }

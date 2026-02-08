@@ -10,6 +10,7 @@ import 'package:trueledger/core/config/app_config.dart';
 import 'package:trueledger/core/utils/hash_utils.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/core/utils/date_helper.dart';
 
 class NotificationService {
   /// Notification IDs must be deterministic and stable to allow:
@@ -320,17 +321,17 @@ class NotificationService {
     // Use a stable deterministic hash instead of Object.hash
     final int id = generateStableHash('cc_reminder_$bank');
 
+    final String ordinal = DateHelper.getOrdinal(day);
     await showNotification(
       id: id,
       title: 'Reminder Set: $bank',
-      body:
-          'We will remind you on the ${day}th of every month to update your bill.',
+      body: 'Monthly bill reminder active for the $day$ordinal.',
       payload: routeCards,
     );
 
     // Also save as if it were scheduled, for UI demo purposes
-    await _saveScheduledNotification(
-        id, 'Reminder: $bank', 'Bill payment due on day $day', routeCards);
+    await _saveScheduledNotification(id, 'Reminder: $bank',
+        'Bill payment due on the $day$ordinal of every month', routeCards);
   }
 
   Future<void> showDailyBillDigest(List<BillSummary> bills) async {

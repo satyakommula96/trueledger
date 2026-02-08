@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/core/utils/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
@@ -27,20 +28,41 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
   late TextEditingController genDateCtrl;
   DateTime? _selectedDueDate;
   DateTime? _selectedGenDate;
+  int? _dueDay;
+  int? _genDay;
 
   Future<void> _pickDueDate() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
+    final picked = await showDialog<int>(
       context: context,
-      initialDate: _selectedDueDate ?? now,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 5),
+      builder: (context) => AlertDialog(
+        title: const Text("SELECT DUE DAY"),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7),
+            itemCount: 31,
+            itemBuilder: (context, index) {
+              final day = index + 1;
+              return InkWell(
+                onTap: () => Navigator.pop(context, day),
+                child: Center(
+                  child: Text(day.toString(),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
     );
 
     if (picked != null) {
       setState(() {
-        _selectedDueDate = picked;
-        dueDateCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
+        _dueDay = picked;
+        final ordinal = DateHelper.getOrdinal(picked);
+        dueDateCtrl.text = '$picked$ordinal of month';
       });
     }
   }
@@ -57,7 +79,9 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     if (picked != null) {
       setState(() {
         _selectedGenDate = picked;
-        genDateCtrl.text = 'Day ${picked.day}';
+        _genDay = picked.day;
+        genDateCtrl.text =
+            '${picked.day}${DateHelper.getOrdinal(picked.day)} of month';
       });
     }
   }
@@ -72,19 +96,49 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     minDueCtrl = TextEditingController(text: widget.card.minDue.toString());
     dueDateCtrl = TextEditingController(text: widget.card.dueDate);
     genDateCtrl = TextEditingController(text: widget.card.statementDate);
-    try {
-      _selectedDueDate = DateFormat('dd-MM-yyyy').parse(widget.card.dueDate);
-    } catch (_) {
-      try {
-        _selectedDueDate = DateFormat('dd-MM-yy').parse(widget.card.dueDate);
-      } catch (_) {}
+    if (widget.card.dueDate.isNotEmpty) {
+      if (widget.card.dueDate.contains(' ')) {
+        final parts = widget.card.dueDate.split(' ');
+        final dayStr = parts[0].replaceAll(RegExp(r'[^0-9]'), '');
+        final day = int.tryParse(dayStr);
+        if (day != null) {
+          final now = DateTime.now();
+          _selectedDueDate = DateTime(now.year, now.month, day);
+          _dueDay = day;
+        }
+      } else {
+        try {
+          _selectedDueDate =
+              DateFormat('dd-MM-yyyy').parse(widget.card.dueDate);
+          // Auto-convert old full date to new "Xth of month" format in the field
+          final day = _selectedDueDate!.day;
+          _dueDay = day;
+          dueDateCtrl.text = '$day${DateHelper.getOrdinal(day)} of month';
+        } catch (_) {
+          try {
+            _selectedDueDate =
+                DateFormat('dd-MM-yy').parse(widget.card.dueDate);
+            final day = _selectedDueDate!.day;
+            _dueDay = day;
+            dueDateCtrl.text = '$day${DateHelper.getOrdinal(day)} of month';
+          } catch (_) {}
+        }
+      }
     }
     if (widget.card.statementDate.isNotEmpty) {
-      if (widget.card.statementDate.startsWith('Day ')) {
-        final day = int.tryParse(widget.card.statementDate.split(' ')[1]);
+      if (widget.card.statementDate.contains(' ')) {
+        final parts = widget.card.statementDate.split(' ');
+        String rawDay =
+            widget.card.statementDate.startsWith('Day ') ? parts[1] : parts[0];
+        final day = int.tryParse(rawDay.replaceAll(RegExp(r'[^0-9]'), ''));
         if (day != null) {
           final now = DateTime.now();
           _selectedGenDate = DateTime(now.year, now.month, day);
+          _genDay = day;
+          // Set text properly for the field if it was in the old format
+          if (widget.card.statementDate.startsWith('Day ')) {
+            genDateCtrl.text = '$day${DateHelper.getOrdinal(day)} of month';
+          }
         }
       } else {
         // Fallback for old format
@@ -236,11 +290,11 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
         genDateCtrl.text);
 
     // Trigger notification
-    final reminderDate = _selectedGenDate ?? _selectedDueDate;
-    if (reminderDate != null) {
+    final reminderDay = _dueDay ?? _genDay;
+    if (reminderDay != null) {
       await ref
           .read(notificationServiceProvider)
-          .scheduleCreditCardReminder(bankCtrl.text, reminderDate.day);
+          .scheduleCreditCardReminder(bankCtrl.text, reminderDay);
       ref.invalidate(pendingNotificationsProvider);
       ref.invalidate(pendingNotificationCountProvider);
     }

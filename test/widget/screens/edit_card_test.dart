@@ -30,8 +30,8 @@ void main() {
     creditLimit: 5000,
     statementBalance: 1000,
     minDue: 50,
-    dueDate: '25-12-2024',
-    statementDate: 'Day 10',
+    dueDate: '25th of month',
+    statementDate: '10th of month',
   );
 
   Widget createEditCardScreen() {
@@ -56,7 +56,7 @@ void main() {
 
     expect(find.text('Edit Credit Card'), findsOneWidget);
     expect(find.widgetWithText(TextField, 'Test Bank'), findsOneWidget);
-    expect(find.text('Day 10'), findsOneWidget);
+    expect(find.text('10th of month'), findsOneWidget);
   });
 
   testWidgets('Should call update when Update button is pressed',
@@ -79,7 +79,8 @@ void main() {
     await tester.pumpAndSettle();
 
     verify(() => mockRepo.updateCreditCard(
-        1, 'Test Bank', 5000, 1000, 50, '25-12-2024', 'Day 10')).called(1);
+            1, 'Test Bank', 5000, 1000, 50, '25th of month', '10th of month'))
+        .called(1);
   });
 
   testWidgets('Should call delete when Delete icon is pressed and confirmed',

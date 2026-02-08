@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:trueledger/domain/models/models.dart';
 
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/core/utils/date_helper.dart';
 import 'package:trueledger/core/theme/theme.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1232,7 +1233,12 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
-        dueCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
+        if (selectedType == 'Individual') {
+          dueCtrl.text = DateFormat('dd MMM yyyy').format(picked);
+        } else {
+          dueCtrl.text =
+              "${picked.day}${DateHelper.getOrdinal(picked.day)} of month";
+        }
       });
     }
   }

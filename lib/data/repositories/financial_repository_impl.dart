@@ -127,16 +127,21 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     }
 
     return [
-      ...subBills.map((s) => {
-            'id': 'sub_${s['id']}',
-            'name': s['name'],
-            'title': s['name'],
-            'amount': s['amount'],
-            'type': 'SUBSCRIPTION',
-            'due': s['billing_date'], // Use day number instead of 'RECURRING'
-            'isRecurring': true,
-            'isPaid': checkPaid(s['name'] as String? ?? ''),
-          }),
+      ...subBills.map((s) {
+        final name = s['name'] as String;
+        final isSIP = name.toUpperCase().contains('SIP') ||
+            name.toUpperCase().contains('FUND');
+        return {
+          'id': 'sub_${s['id']}',
+          'name': name,
+          'title': name,
+          'amount': s['amount'],
+          'type': isSIP ? 'INVESTMENT DUE' : 'SUBSCRIPTION',
+          'due': s['billing_date'],
+          'isRecurring': true,
+          'isPaid': checkPaid(name),
+        };
+      }),
       ...ccBills.map((c) => {
             'id': 'cc_${c['id']}',
             'name': c['bank'],
@@ -144,7 +149,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
             'amount': c['statement_balance'],
             'type': 'CREDIT DUE',
             'due': c['due_date'],
-            'isRecurring': false,
+            'isRecurring': true,
             'isPaid': (c['statement_balance'] as num? ?? 0) <= 0,
           }),
       ...loanBills.map((l) => {
