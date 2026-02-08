@@ -66,7 +66,7 @@ void main() {
     addTearDown(() => tester.view.resetPhysicalSize());
 
     when(() => mockRepo.updateCreditCard(
-            any(), any(), any(), any(), any(), any(), any()))
+            any(), any(), any(), any(), any(), any(), any(), any()))
         .thenAnswer((_) async => {});
     when(() => mockNotification.scheduleCreditCardReminder(any(), any()))
         .thenAnswer((_) async => {});
@@ -78,9 +78,8 @@ void main() {
     await tester.tap(find.text('UPDATE CARD'));
     await tester.pumpAndSettle();
 
-    verify(() => mockRepo.updateCreditCard(
-            1, 'Test Bank', 5000, 1000, 50, '25th of month', '10th of month'))
-        .called(1);
+    verify(() => mockRepo.updateCreditCard(1, 'Test Bank', 5000, 1000, 50,
+        '25th of month', '10th of month', 0.0)).called(1);
   });
 
   testWidgets('Should call delete when Delete icon is pressed and confirmed',

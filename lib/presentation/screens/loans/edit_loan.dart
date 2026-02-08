@@ -903,7 +903,7 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
           'EMI / Payment: ${nameCtrl.text}',
           'Loan payment for ${nameCtrl.text}',
           nowIso,
-          {TransactionTag.loanEmi});
+          tags: {TransactionTag.loanEmi});
 
       // Forensic Audit Log
       await repo.recordLoanAudit(
@@ -1009,7 +1009,7 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
           'Prepayment / Loan: ${nameCtrl.text}',
           'Prepayment for ${nameCtrl.text}',
           nowIso,
-          {TransactionTag.loanPrepayment});
+          tags: {TransactionTag.loanPrepayment});
 
       // Prepayment Forensic Audit Log
       await repo.recordLoanAudit(

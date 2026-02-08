@@ -35,7 +35,8 @@ void main() {
           any(),
           any(),
           any(),
-          any(),
+          paymentMethod: any(named: 'paymentMethod'),
+          tags: any(named: 'tags'),
         )).thenAnswer((_) async {});
     when(() => mockRepo.recordLoanAudit(
           loanId: any(named: 'loanId'),
@@ -147,7 +148,7 @@ void main() {
           'EMI / Payment: Car Loan',
           any(),
           any(),
-          any(),
+          tags: any(named: 'tags'),
         )).called(1);
 
     verify(() => mockRepo.updateLoan(

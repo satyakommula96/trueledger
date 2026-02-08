@@ -62,6 +62,9 @@ void main() {
         .thenReturn(null);
     when(() => mockPersonalizationService.findShortcutSuggestion())
         .thenReturn(null);
+
+    // Mock credit cards fetching
+    when(() => mockRepository.getCreditCards()).thenAnswer((_) async => []);
   });
 
   Widget createWidgetUnderTest() {

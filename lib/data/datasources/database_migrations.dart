@@ -246,4 +246,21 @@ final List<Migration> appMigrations = [
   MigrationV8(),
   MigrationV9(),
   MigrationV10(),
+  MigrationV11(),
 ];
+
+class MigrationV11 extends Migration {
+  MigrationV11() : super(11);
+
+  @override
+  Future<void> up(common.DatabaseExecutor db) async {
+    await addColumnSafe(db, Schema.creditCardsTable, Schema.colCurrentBalance,
+        "REAL DEFAULT 0");
+    // Initialize current_balance with statement_balance for existing records
+    await db.execute(
+        "UPDATE ${Schema.creditCardsTable} SET ${Schema.colCurrentBalance} = ${Schema.colStatementBalance}");
+  }
+
+  @override
+  Future<void> down(common.DatabaseExecutor db) async {}
+}

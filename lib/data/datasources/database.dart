@@ -282,6 +282,7 @@ class AppDatabase {
             ${Schema.colBank} TEXT,
             ${Schema.colCreditLimit} REAL,
             ${Schema.colStatementBalance} REAL,
+            ${Schema.colCurrentBalance} REAL,
             ${Schema.colMinDue} REAL,
             ${Schema.colDueDate} TEXT,
             ${Schema.colStatementDate} TEXT

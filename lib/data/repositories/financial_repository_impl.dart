@@ -241,9 +241,22 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
   Future<void> addEntry(
       String type, double amount, String category, String note, String date,
-      [Set<TransactionTag>? tags]) async {
+      {String? paymentMethod, Set<TransactionTag>? tags}) async {
     final db = await AppDatabase.db;
     final tagStr = tags?.map((t) => t.name).join(',');
+
+    // Handle credit card balance update if payment method matches a card name
+    if (paymentMethod != null && type != 'Income') {
+      final cardList = await db
+          .query('credit_cards', where: 'bank = ?', whereArgs: [paymentMethod]);
+      if (cardList.isNotEmpty) {
+        final card = cardList.first;
+        final currentBal = (card['current_balance'] as num?)?.toDouble() ?? 0.0;
+        await db.update(
+            'credit_cards', {'current_balance': currentBal + amount},
+            where: 'id = ?', whereArgs: [card['id']]);
+      }
+    }
 
     switch (type) {
       case 'Income':
@@ -295,7 +308,25 @@ class FinancialRepositoryImpl implements IFinancialRepository {
 
   @override
   Future<void> checkAndProcessRecurring() async {
-    // Reverted to empty for V1 start
+    final db = await AppDatabase.db;
+    final now = DateTime.now();
+    final todayDay = now.day;
+
+    // Check Credit Card Statement Generation
+    final cards = await db.query('credit_cards');
+    for (final c in cards) {
+      final stmtStr = c['statement_date'] as String? ?? '';
+      // Format matches "12th of month" or just "12"
+      final match = RegExp(r'^(\d+)').firstMatch(stmtStr);
+      if (match != null) {
+        final stmtDay = int.tryParse(match.group(1)!);
+        if (stmtDay == todayDay) {
+          final currentBal = (c['current_balance'] as num?)?.toDouble() ?? 0.0;
+          await db.update('credit_cards', {'statement_balance': currentBal},
+              where: 'id = ?', whereArgs: [c['id']]);
+        }
+      }
+    }
   }
 
   @override
@@ -463,12 +494,14 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       double statementBalance,
       double minDue,
       String dueDate,
-      String statementDate) async {
+      String statementDate,
+      [double currentBalance = 0.0]) async {
     final db = await AppDatabase.db;
     await db.insert('credit_cards', {
       'bank': bank,
       'credit_limit': creditLimit,
       'statement_balance': statementBalance,
+      'current_balance': currentBalance,
       'min_due': minDue,
       'due_date': dueDate,
       'statement_date': statementDate,
@@ -483,18 +516,25 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       double statementBalance,
       double minDue,
       String dueDate,
-      String statementDate) async {
+      String statementDate,
+      [double? currentBalance]) async {
     final db = await AppDatabase.db;
+    final Map<String, dynamic> values = {
+      'bank': bank,
+      'credit_limit': creditLimit,
+      'statement_balance': statementBalance,
+      'min_due': minDue,
+      'due_date': dueDate,
+      'statement_date': statementDate,
+    };
+
+    if (currentBalance != null) {
+      values['current_balance'] = currentBalance;
+    }
+
     await db.update(
       'credit_cards',
-      {
-        'bank': bank,
-        'credit_limit': creditLimit,
-        'statement_balance': statementBalance,
-        'min_due': minDue,
-        'due_date': dueDate,
-        'statement_date': statementDate,
-      },
+      values,
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -507,18 +547,30 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         await db.query('credit_cards', where: 'id = ?', whereArgs: [id]);
     if (cardList.isNotEmpty) {
       final card = cardList.first;
-      double currentBal = (card['statement_balance'] as num).toDouble();
+      double stmtBal = (card['statement_balance'] as num).toDouble();
+      double currentBal =
+          (card['current_balance'] as num?)?.toDouble() ?? stmtBal;
       double currentMin = (card['min_due'] as num).toDouble();
 
-      double newBal = currentBal - amount;
-      if (newBal < 0) newBal = 0;
+      double newStmtBal = stmtBal - amount;
+      if (newStmtBal < 0) newStmtBal = 0;
+
+      double newCurrentBal = currentBal - amount;
+      // Current balance can technically go negative (if overpaid/refunded), but let's keep it 0 for now unless user wants overpayment tracking
+      if (newCurrentBal < 0) newCurrentBal = 0;
 
       double newMin = currentMin - amount;
       if (newMin < 0) newMin = 0;
 
       await db.update(
-          'credit_cards', {'statement_balance': newBal, 'min_due': newMin},
-          where: 'id = ?', whereArgs: [id]);
+          'credit_cards',
+          {
+            'statement_balance': newStmtBal,
+            'current_balance': newCurrentBal,
+            'min_due': newMin
+          },
+          where: 'id = ?',
+          whereArgs: [id]);
     }
   }
 

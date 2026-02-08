@@ -9,7 +9,7 @@ abstract class IFinancialRepository {
   Future<List<Budget>> getBudgets();
   Future<void> addEntry(
       String type, double amount, String category, String note, String date,
-      [Set<TransactionTag>? tags]);
+      {String? paymentMethod, Set<TransactionTag>? tags});
   Future<void> checkAndProcessRecurring();
   Future<List<Map<String, dynamic>>> getMonthlyHistory([int? year]);
   Future<List<int>> getAvailableYears();
@@ -32,7 +32,8 @@ abstract class IFinancialRepository {
       double statementBalance,
       double minDue,
       String dueDate,
-      String statementDate);
+      String statementDate,
+      [double currentBalance = 0.0]);
   Future<void> updateCreditCard(
       int id,
       String bank,
@@ -40,7 +41,8 @@ abstract class IFinancialRepository {
       double statementBalance,
       double minDue,
       String dueDate,
-      String statementDate);
+      String statementDate,
+      [double? currentBalance]);
   Future<void> payCreditCardBill(int id, double amount);
   Future<void> addGoal(String name, double targetAmount);
   Future<void> updateGoal(

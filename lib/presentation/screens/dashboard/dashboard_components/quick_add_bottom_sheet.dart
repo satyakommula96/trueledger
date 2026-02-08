@@ -31,7 +31,13 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
   String? _suggestedReason;
   QuickAddPreset? _shortcutSuggestion;
   String? _paymentMethod;
-  final List<String> _paymentMethods = ['Cash', 'UPI', 'Card', 'Net Banking'];
+  final List<String> _paymentMethods = [
+    'Cash',
+    'UPI',
+    'Net Banking',
+    'Generic Card'
+  ];
+  Set<String> _creditCardNames = {};
   final FocusNode _focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _categoryKey = GlobalKey();
@@ -41,6 +47,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
   void initState() {
     super.initState();
     _loadDefaults();
+    _loadCreditCards();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
@@ -82,6 +89,21 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
           _suggestedReason = "Based on your daily routine";
         });
       }
+    }
+  }
+
+  Future<void> _loadCreditCards() async {
+    final repo = ref.read(financialRepositoryProvider);
+    final cards = await repo.getCreditCards();
+    if (cards.isNotEmpty && mounted) {
+      setState(() {
+        _creditCardNames = cards.map((c) => c.bank).toSet();
+        for (final card in cards) {
+          if (!_paymentMethods.contains(card.bank)) {
+            _paymentMethods.add(card.bank);
+          }
+        }
+      });
     }
   }
 
@@ -157,7 +179,18 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
         );
       }
 
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) {
+        if (_creditCardNames.contains(_paymentMethod)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Recorded! $_paymentMethod balance updated."),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.green.shade800,
+            ),
+          );
+        }
+        Navigator.pop(context, true);
+      }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -699,7 +732,14 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (isSuggested) ...[
+                          if (_creditCardNames.contains(method)) ...[
+                            Icon(Icons.credit_card_rounded,
+                                size: 12,
+                                color: isSelected
+                                    ? colorScheme.primary
+                                    : colorScheme.onSurfaceVariant),
+                            const SizedBox(width: 6),
+                          ] else if (isSuggested) ...[
                             Icon(Icons.auto_awesome_rounded,
                                 size: 12, color: colorScheme.primary),
                             const SizedBox(width: 6),

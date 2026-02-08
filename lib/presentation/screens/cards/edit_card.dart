@@ -23,6 +23,7 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
   late TextEditingController bankCtrl;
   late TextEditingController limitCtrl;
   late TextEditingController stmtCtrl;
+  late TextEditingController currentCtrl;
   late TextEditingController minDueCtrl;
   late TextEditingController dueDateCtrl;
   late TextEditingController genDateCtrl;
@@ -93,6 +94,8 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     limitCtrl = TextEditingController(text: widget.card.creditLimit.toString());
     stmtCtrl =
         TextEditingController(text: widget.card.statementBalance.toString());
+    currentCtrl =
+        TextEditingController(text: widget.card.currentBalance.toString());
     minDueCtrl = TextEditingController(text: widget.card.minDue.toString());
     dueDateCtrl = TextEditingController(text: widget.card.dueDate);
     genDateCtrl = TextEditingController(text: widget.card.statementDate);
@@ -156,7 +159,28 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Edit Credit Card"),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Edit Credit Card", style: TextStyle(fontSize: 16)),
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: stmtCtrl,
+              builder: (context, value, _) {
+                final balance = double.tryParse(value.text) ?? 0;
+                final isPaid = balance <= 0;
+                return Text(
+                  isPaid ? "STATUS: PAID" : "STATUS: PENDING PAYMENT",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1,
+                    color: isPaid ? Colors.green : Colors.orange,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
@@ -173,7 +197,10 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
             _buildField("Credit Limit", limitCtrl, Icons.speed,
                 isNumber: true, prefix: CurrencyFormatter.symbol),
             _buildField(
-                "Statement Balance", stmtCtrl, Icons.account_balance_wallet,
+                "Last Statement Balance (Billed)", stmtCtrl, Icons.receipt_long,
+                isNumber: true, prefix: CurrencyFormatter.symbol),
+            _buildField("Current Outstanding Balance (Total Used)", currentCtrl,
+                Icons.account_balance_wallet,
                 isNumber: true, prefix: CurrencyFormatter.symbol),
             _buildField("Minimum Due", minDueCtrl, Icons.low_priority,
                 isNumber: true, prefix: CurrencyFormatter.symbol),
@@ -183,41 +210,6 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
             _buildField("Payment Due Date", dueDateCtrl, Icons.calendar_today,
                 readOnly: true, onTap: _pickDueDate),
             const SizedBox(height: 20),
-
-            // New Bill Section
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                    color: colorScheme.primary.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.receipt_long,
-                          color: colorScheme.primary, size: 20),
-                      const SizedBox(width: 8),
-                      Text("NEW BILL GENERATED?",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: colorScheme.primary,
-                              letterSpacing: 1)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                      "Update the statement details below for the new billing cycle.",
-                      style: TextStyle(fontSize: 12)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 40),
-
             SizedBox(
               width: double.infinity,
               height: 60,
@@ -272,11 +264,12 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     if (bankCtrl.text.isEmpty || limitCtrl.text.isEmpty) return;
     final repo = ref.read(financialRepositoryProvider);
     final limit = double.tryParse(limitCtrl.text) ?? 0.0;
-    final balance = double.tryParse(stmtCtrl.text) ?? 0.0;
+    final stmtBalance = double.tryParse(stmtCtrl.text) ?? 0.0;
+    final currentBalance = double.tryParse(currentCtrl.text) ?? stmtBalance;
 
-    if (balance > limit) {
+    if (currentBalance > limit) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Statement balance cannot exceed credit limit")));
+          content: Text("Current balance cannot exceed credit limit")));
       return;
     }
 
@@ -284,10 +277,11 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
         widget.card.id,
         bankCtrl.text,
         limit,
-        balance,
+        stmtBalance,
         double.tryParse(minDueCtrl.text) ?? 0.0,
         dueDateCtrl.text,
-        genDateCtrl.text);
+        genDateCtrl.text,
+        currentBalance);
 
     // Trigger notification
     final reminderDay = _dueDay ?? _genDay;

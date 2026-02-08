@@ -46,7 +46,7 @@ void main() {
 
     test('addEntry saves explicit tags correctly', () async {
       await repo.addEntry('Fixed', 500.0, 'EMI', 'Note', '2024-02-01',
-          {TransactionTag.loanEmi});
+          tags: {TransactionTag.loanEmi});
 
       final items = await repo.getTransactionsForRange(
           DateTime(2024, 02, 01), DateTime(2024, 02, 01));
