@@ -6,8 +6,8 @@ import 'usecase_base.dart';
 class CategoryStability {
   final String category;
   final double variance; // % change from previous year
-  final int currentYearTotal;
-  final int previousYearTotal;
+  final double currentYearTotal;
+  final double previousYearTotal;
 
   CategoryStability({
     required this.category,
@@ -21,12 +21,12 @@ class CategoryStability {
 
 class AnnualReflectionData {
   final int year;
-  final int totalSpendCurrentYear;
-  final int totalSpendPreviousYear;
+  final double totalSpendCurrentYear;
+  final double totalSpendPreviousYear;
   final List<CategoryStability> categoryStability;
   final String topCategory;
   final int? mostExpensiveMonth; // 1-12, null if no spending
-  final int avgMonthlySpend;
+  final double avgMonthlySpend;
 
   AnnualReflectionData({
     required this.year,
@@ -59,10 +59,10 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
           previousYearStart, previousYearEnd);
 
       // 2. Calculate totals
-      final totalCurrent = currentYearCats.fold<int>(
-          0, (sum, c) => sum + (c['total'] as num? ?? 0).toInt());
-      final totalPrevious = previousYearCats.fold<int>(
-          0, (sum, c) => sum + (c['total'] as num? ?? 0).toInt());
+      final totalCurrent = currentYearCats.fold<double>(
+          0, (sum, c) => sum + (c['total'] as num? ?? 0).toDouble());
+      final totalPrevious = previousYearCats.fold<double>(
+          0, (sum, c) => sum + (c['total'] as num? ?? 0).toDouble());
 
       // 3. Category stability analysis
       final stabilityMetrics = <CategoryStability>[];
@@ -79,8 +79,8 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
             (e) => e['category'] == cat,
             orElse: () => <String, dynamic>{'total': 0});
 
-        final currentAmount = (currentEntry['total'] as num? ?? 0).toInt();
-        final previousAmount = (previousEntry['total'] as num? ?? 0).toInt();
+        final currentAmount = (currentEntry['total'] as num? ?? 0).toDouble();
+        final previousAmount = (previousEntry['total'] as num? ?? 0).toDouble();
 
         if (currentAmount == 0 && previousAmount == 0) continue;
 
@@ -106,12 +106,12 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
       // 4. Find most expensive month
       final history = await repository.getMonthlyHistory(year);
       int? maxMonth;
-      int maxAmount = 0;
-      int totalForAvg = 0;
+      double maxAmount = 0;
+      double totalForAvg = 0;
       int monthsWithData = 0;
 
       for (var entry in history) {
-        final total = (entry['expenses'] as num? ?? 0).toInt();
+        final total = (entry['expenses'] as num? ?? 0).toDouble();
         final monthStr = entry['month'] as String? ?? '';
         if (monthStr.length < 7) continue;
 
@@ -149,7 +149,7 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
         topCategory: topCategory,
         mostExpensiveMonth: maxMonth,
         avgMonthlySpend:
-            monthsWithData > 0 ? (totalForAvg ~/ monthsWithData) : 0,
+            monthsWithData > 0 ? (totalForAvg / monthsWithData) : 0,
       ));
     } catch (e) {
       return Failure(

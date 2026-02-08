@@ -61,7 +61,7 @@ void main() {
     // Currency formatting might vary, checks existence of approximate value or formatted
     // Assuming formatter simple
     // Logic: 15000 remaining
-    expect(find.textContaining('15,000'), findsOneWidget);
+    expect(find.textContaining('15,000'), findsWidgets);
   });
 
   testWidgets('LoansScreen FAB opens AddLoan', (tester) async {

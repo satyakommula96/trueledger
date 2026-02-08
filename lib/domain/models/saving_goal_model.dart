@@ -1,8 +1,8 @@
 class SavingGoal {
   final int id;
   final String name;
-  final int targetAmount;
-  final int currentAmount;
+  final double targetAmount;
+  final double currentAmount;
 
   SavingGoal({
     required this.id,
@@ -15,8 +15,8 @@ class SavingGoal {
     return SavingGoal(
       id: map['id'] as int,
       name: map['name'] as String,
-      targetAmount: map['target_amount'] as int,
-      currentAmount: map['current_amount'] as int,
+      targetAmount: (map['target_amount'] as num).toDouble(),
+      currentAmount: (map['current_amount'] as num).toDouble(),
     );
   }
 

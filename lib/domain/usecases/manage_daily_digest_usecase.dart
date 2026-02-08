@@ -60,7 +60,7 @@ class ManageDailyDigestUseCase {
     final lastTotal = _store.getLastDigestTotal();
 
     final currentCount = billsDueToday.length;
-    final currentTotal = billsDueToday.fold(0, (sum, b) => sum + b.amount);
+    final currentTotal = billsDueToday.fold(0.0, (sum, b) => sum + b.amount);
 
     final bool contentChanged = (lastCount != currentCount) ||
         (lastTotal != currentTotal) ||

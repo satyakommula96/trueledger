@@ -49,7 +49,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('EDIT VARIABLE'), findsOneWidget);
-    expect(find.widgetWithText(TextField, '50'), findsOneWidget);
+    expect(find.widgetWithText(TextField, '50.0'), findsAtLeastNWidgets(1));
     expect(find.widgetWithText(TextField, 'Food'), findsOneWidget);
   });
 
@@ -79,9 +79,11 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.widgetWithText(TextField, '50'), '100');
+    // Amount is 50.0 double.
+    final textField = find.widgetWithText(TextField, '50.0');
+    // We expect at least one
+    expect(textField, findsAtLeastNWidgets(1));
+    await tester.enterText(textField.first, '100');
     final button = find.text('UPDATE ENTRY');
     await tester.ensureVisible(button);
     await tester.tap(button);

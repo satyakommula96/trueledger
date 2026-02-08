@@ -228,7 +228,7 @@ void main() {
       await tester
           .pumpAndSettle(const Duration(seconds: 1)); // Wait for animation
 
-      expect(_amountController(tester).text, '300');
+      expect(_amountController(tester).text, '300.0');
     });
   });
 }

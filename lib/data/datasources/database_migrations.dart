@@ -122,10 +122,66 @@ class MigrationV6 extends Migration {
   Future<void> down(common.DatabaseExecutor db) async {}
 }
 
+class MigrationV7 extends Migration {
+  MigrationV7() : super(7);
+
+  @override
+  Future<void> up(common.DatabaseExecutor db) async {
+    await addColumnSafe(
+        db, Schema.loansTable, Schema.colLastPaymentDate, "TEXT");
+  }
+
+  @override
+  Future<void> down(common.DatabaseExecutor db) async {}
+}
+
+class MigrationV8 extends Migration {
+  MigrationV8() : super(8);
+
+  @override
+  Future<void> up(common.DatabaseExecutor db) async {
+    await addColumnSafe(db, Schema.loansTable, Schema.colInterestEngineVersion,
+        "INTEGER DEFAULT 1");
+  }
+
+  @override
+  Future<void> down(common.DatabaseExecutor db) async {}
+}
+
+class MigrationV9 extends Migration {
+  MigrationV9() : super(9);
+
+  @override
+  Future<void> up(common.DatabaseExecutor db) async {
+    await db.execute('''
+          CREATE TABLE IF NOT EXISTS ${Schema.loanAuditLogTable} (
+            ${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT,
+            ${Schema.colLoanId} INTEGER,
+            ${Schema.colDate} TEXT,
+            ${Schema.colOpeningBalance} REAL,
+            ${Schema.colInterestRate} REAL,
+            ${Schema.colPaymentAmount} REAL,
+            ${Schema.colDaysAccrued} INTEGER,
+            ${Schema.colInterestAccrued} REAL,
+            ${Schema.colPrincipalApplied} REAL,
+            ${Schema.colClosingBalance} REAL,
+            ${Schema.colEngineVersion} INTEGER,
+            ${Schema.colType} TEXT
+          )
+        ''');
+  }
+
+  @override
+  Future<void> down(common.DatabaseExecutor db) async {}
+}
+
 final List<Migration> appMigrations = [
   MigrationV2(),
   MigrationV3(),
   MigrationV4(),
   MigrationV5(),
   MigrationV6(),
+  MigrationV7(),
+  MigrationV8(),
+  MigrationV9(),
 ];

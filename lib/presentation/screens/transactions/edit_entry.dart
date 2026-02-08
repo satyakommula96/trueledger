@@ -221,7 +221,7 @@ class _EditEntryScreenState extends ConsumerState<EditEntryScreen> {
                   color: Colors.grey)),
           TextField(
             controller: amountCtrl,
-            keyboardType: TextInputType.number,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
             style: TextStyle(
                 fontWeight: FontWeight.w900,
                 fontSize: 56,
@@ -243,7 +243,7 @@ class _EditEntryScreenState extends ConsumerState<EditEntryScreen> {
   Future<void> _update() async {
     final repo = ref.read(financialRepositoryProvider);
     final Map<String, dynamic> updates = {};
-    final amount = int.tryParse(amountCtrl.text) ?? 0;
+    final amount = double.tryParse(amountCtrl.text) ?? 0.0;
     if (widget.entry.type == 'Variable') {
       updates['amount'] = amount;
       updates['category'] = labelCtrl.text;

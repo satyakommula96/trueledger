@@ -17,6 +17,8 @@ void main() {
   setUp(() {
     mockRepo = MockFinancialRepository();
     registerFallbackValue(NoParams());
+    when(() => mockRepo.getTransactionsForRange(any(), any()))
+        .thenAnswer((_) async => []);
   });
 
   final tLoan = Loan(

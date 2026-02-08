@@ -13,46 +13,37 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     final db = await AppDatabase.db;
     final nowStr = DateTime.now().toIso8601String().substring(0, 7); // YYYY-MM
 
-    final income = Sqflite.firstIntValue(await db.rawQuery(
-            'SELECT SUM(amount) FROM income_sources WHERE substr(date, 1, 7) = ?',
-            [nowStr])) ??
-        0;
-    final fixed = Sqflite.firstIntValue(await db.rawQuery(
-            'SELECT SUM(amount) FROM fixed_expenses WHERE substr(date, 1, 7) = ?',
-            [nowStr])) ??
-        0;
-    final variable = Sqflite.firstIntValue(await db.rawQuery(
-            'SELECT SUM(amount) FROM variable_expenses WHERE substr(date, 1, 7) = ?',
-            [nowStr])) ??
-        0;
-    final subs = Sqflite.firstIntValue(await db.rawQuery(
-            'SELECT SUM(amount) FROM subscriptions WHERE active=1')) ??
-        0;
+    double getSum(List<Map<String, dynamic>> res) =>
+        (res.first.values.first as num? ?? 0).toDouble();
 
-    final investmentsTotal = Sqflite.firstIntValue(await db
-            .rawQuery('SELECT SUM(amount) FROM investments WHERE active=1')) ??
-        0;
+    final income = getSum(await db.rawQuery(
+        'SELECT SUM(amount) FROM income_sources WHERE substr(date, 1, 7) = ?',
+        [nowStr]));
+    final fixed = getSum(await db.rawQuery(
+        'SELECT SUM(amount) FROM fixed_expenses WHERE substr(date, 1, 7) = ?',
+        [nowStr]));
+    final variable = getSum(await db.rawQuery(
+        'SELECT SUM(amount) FROM variable_expenses WHERE substr(date, 1, 7) = ?',
+        [nowStr]));
+    final subs = getSum(await db
+        .rawQuery('SELECT SUM(amount) FROM subscriptions WHERE active=1'));
+
+    final investmentsTotal = getSum(await db
+        .rawQuery('SELECT SUM(amount) FROM investments WHERE active=1'));
 
     // Net worth calc elements (Global snapshots)
-    final npsTotal = Sqflite.firstIntValue(await db.rawQuery(
-            "SELECT SUM(amount) FROM retirement_contributions WHERE type = 'NPS'")) ??
-        0;
-    final pfTotal = Sqflite.firstIntValue(await db.rawQuery(
-            "SELECT SUM(amount) FROM retirement_contributions WHERE type = 'EPF'")) ??
-        0;
-    final otherRetirement = Sqflite.firstIntValue(await db.rawQuery(
-            "SELECT SUM(amount) FROM retirement_contributions WHERE type NOT IN ('NPS', 'EPF')")) ??
-        0;
-    final creditCardDebt = Sqflite.firstIntValue(await db
-            .rawQuery("SELECT SUM(statement_balance) FROM credit_cards")) ??
-        0;
-    final loansTotal = Sqflite.firstIntValue(
-            await db.rawQuery("SELECT SUM(remaining_amount) FROM loans")) ??
-        0;
+    final npsTotal = getSum(await db.rawQuery(
+        "SELECT SUM(amount) FROM retirement_contributions WHERE type = 'NPS'"));
+    final pfTotal = getSum(await db.rawQuery(
+        "SELECT SUM(amount) FROM retirement_contributions WHERE type = 'EPF'"));
+    final otherRetirement = getSum(await db.rawQuery(
+        "SELECT SUM(amount) FROM retirement_contributions WHERE type NOT IN ('NPS', 'EPF')"));
+    final creditCardDebt = getSum(
+        await db.rawQuery("SELECT SUM(statement_balance) FROM credit_cards"));
+    final loansTotal =
+        getSum(await db.rawQuery("SELECT SUM(remaining_amount) FROM loans"));
 
-    final totalEMI = Sqflite.firstIntValue(
-            await db.rawQuery("SELECT SUM(emi) FROM loans")) ??
-        0;
+    final totalEMI = getSum(await db.rawQuery("SELECT SUM(emi) FROM loans"));
 
     final netWorth = (investmentsTotal + npsTotal + pfTotal + otherRetirement) -
         (creditCardDebt + loansTotal);
@@ -211,15 +202,15 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     final List<Budget> budgets = [];
     for (var row in res) {
       final category = row['category'] as String;
-      final limit = row['monthly_limit'] as int;
+      final limit = (row['monthly_limit'] as num).toInt();
 
       // Check stability: Did we overspend in any of the last 3 months?
       bool isStable = true;
       for (var month in last3Months) {
-        final monthSpend = Sqflite.firstIntValue(await db.rawQuery(
-                'SELECT SUM(amount) FROM variable_expenses WHERE category = ? AND substr(date, 1, 7) = ?',
-                [category, month])) ??
-            0;
+        final res = await db.rawQuery(
+            'SELECT SUM(amount) FROM variable_expenses WHERE category = ? AND substr(date, 1, 7) = ?',
+            [category, month]);
+        final monthSpend = (res.first.values.first as num? ?? 0).toDouble();
         if (monthSpend > limit) {
           isStable = false;
           break;
@@ -243,8 +234,8 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<void> addEntry(String type, int amount, String category, String note,
-      String date) async {
+  Future<void> addEntry(String type, double amount, String category,
+      String note, String date) async {
     final db = await AppDatabase.db;
     switch (type) {
       case 'Income':
@@ -340,15 +331,15 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     ]);
 
     return res.map((row) {
-      final income = row['income'] as num? ?? 0;
-      final expenses = row['expenses'] as num? ?? 0;
-      final invested = row['invested'] as num? ?? 0;
+      final income = (row['income'] as num? ?? 0).toDouble();
+      final expenses = (row['expenses'] as num? ?? 0).toDouble();
+      final invested = (row['invested'] as num? ?? 0).toDouble();
       return {
         'month': row['month'],
-        'income': income.toInt(),
-        'expenses': expenses.toInt(),
-        'invested': invested.toInt(),
-        'net': (income - (expenses + invested)).toInt(),
+        'income': income,
+        'expenses': expenses,
+        'invested': invested,
+        'net': income - (expenses + invested),
       };
     }).toList()
       ..sort((a, b) {
@@ -402,14 +393,14 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<void> addBudget(String category, int monthlyLimit) async {
+  Future<void> addBudget(String category, double monthlyLimit) async {
     final db = await AppDatabase.db;
     await db.insert(
         'budgets', {'category': category, 'monthly_limit': monthlyLimit});
   }
 
   @override
-  Future<void> updateBudget(int id, int monthlyLimit) async {
+  Future<void> updateBudget(int id, double monthlyLimit) async {
     final db = await AppDatabase.db;
     await db.update('budgets', {'monthly_limit': monthlyLimit},
         where: 'id = ?', whereArgs: [id]);
@@ -451,8 +442,13 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<void> addCreditCard(String bank, int creditLimit, int statementBalance,
-      int minDue, String dueDate, String statementDate) async {
+  Future<void> addCreditCard(
+      String bank,
+      double creditLimit,
+      double statementBalance,
+      double minDue,
+      String dueDate,
+      String statementDate) async {
     final db = await AppDatabase.db;
     await db.insert('credit_cards', {
       'bank': bank,
@@ -468,9 +464,9 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   Future<void> updateCreditCard(
       int id,
       String bank,
-      int creditLimit,
-      int statementBalance,
-      int minDue,
+      double creditLimit,
+      double statementBalance,
+      double minDue,
       String dueDate,
       String statementDate) async {
     final db = await AppDatabase.db;
@@ -490,19 +486,19 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<void> payCreditCardBill(int id, int amount) async {
+  Future<void> payCreditCardBill(int id, double amount) async {
     final db = await AppDatabase.db;
     final cardList =
         await db.query('credit_cards', where: 'id = ?', whereArgs: [id]);
     if (cardList.isNotEmpty) {
       final card = cardList.first;
-      int currentBal = card['statement_balance'] as int;
-      int currentMin = card['min_due'] as int;
+      double currentBal = (card['statement_balance'] as num).toDouble();
+      double currentMin = (card['min_due'] as num).toDouble();
 
-      int newBal = currentBal - amount;
+      double newBal = currentBal - amount;
       if (newBal < 0) newBal = 0;
 
-      int newMin = currentMin - amount;
+      double newMin = currentMin - amount;
       if (newMin < 0) newMin = 0;
 
       await db.update(
@@ -512,7 +508,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<void> addGoal(String name, int targetAmount) async {
+  Future<void> addGoal(String name, double targetAmount) async {
     final db = await AppDatabase.db;
     await db.insert('saving_goals',
         {'name': name, 'target_amount': targetAmount, 'current_amount': 0});
@@ -520,7 +516,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
 
   @override
   Future<void> updateGoal(
-      int id, String name, int targetAmount, int currentAmount) async {
+      int id, String name, double targetAmount, double currentAmount) async {
     final db = await AppDatabase.db;
     await db.update(
         'saving_goals',
@@ -534,8 +530,8 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<void> addLoan(String name, String type, int total, int remaining,
-      int emi, double rate, String due, String date) async {
+  Future<void> addLoan(String name, String type, double total, double remaining,
+      double emi, double rate, String due, String date) async {
     final db = await AppDatabase.db;
     await db.insert('loans', {
       'name': name,
@@ -550,27 +546,28 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<void> updateLoan(int id, String name, String type, int total,
-      int remaining, int emi, double rate, String due) async {
+  Future<void> updateLoan(int id, String name, String type, double total,
+      double remaining, double emi, double rate, String due,
+      [String? lastPaymentDate]) async {
     final db = await AppDatabase.db;
-    await db.update(
-        'loans',
-        {
-          'name': name,
-          'loan_type': type,
-          'total_amount': total,
-          'remaining_amount': remaining,
-          'emi': emi,
-          'interest_rate': rate,
-          'due_date': due,
-        },
-        where: 'id = ?',
-        whereArgs: [id]);
+    final data = {
+      'name': name,
+      'loan_type': type,
+      'total_amount': total,
+      'remaining_amount': remaining,
+      'emi': emi,
+      'interest_rate': rate,
+      'due_date': due,
+    };
+    if (lastPaymentDate != null) {
+      data['last_payment_date'] = lastPaymentDate;
+    }
+    await db.update('loans', data, where: 'id = ?', whereArgs: [id]);
   }
 
   @override
   Future<void> addSubscription(
-      String name, int amount, String billingDate) async {
+      String name, double amount, String billingDate) async {
     final db = await AppDatabase.db;
     await db.insert('subscriptions', {
       'name': name,
@@ -732,14 +729,14 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<int> getTodaySpend() async {
+  Future<double> getTodaySpend() async {
     final db = await AppDatabase.db;
     final todayStr =
         DateTime.now().toIso8601String().substring(0, 10); // YYYY-MM-DD
     final result = await db.rawQuery(
         'SELECT SUM(amount) FROM variable_expenses WHERE substr(date, 1, 10) = ?',
         [todayStr]);
-    return Sqflite.firstIntValue(result) ?? 0;
+    return (result.first.values.first as num? ?? 0).toDouble();
   }
 
   @override
@@ -754,7 +751,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<Map<String, int>> getWeeklySummary() async {
+  Future<Map<String, double>> getWeeklySummary() async {
     final db = await AppDatabase.db;
     final now = DateTime.now();
 
@@ -784,22 +781,25 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     ]);
 
     return {
-      'thisWeek': Sqflite.firstIntValue(thisWeekResult) ?? 0,
-      'lastWeek': Sqflite.firstIntValue(lastWeekResult) ?? 0,
+      'thisWeek': (thisWeekResult.first.values.first as num? ?? 0).toDouble(),
+      'lastWeek': (lastWeekResult.first.values.first as num? ?? 0).toDouble(),
     };
   }
 
   @override
 
   /// Calculates the active daily streak of "tracking" events.
-  /// Definition: A tracking event is a manual entry in the [variable_expenses] table.
-  /// Fixed expenses (like rent), one-off Income, or Investments do not count
-  /// toward the "habitual tracking" streak.
+  /// Definition: A tracking event is ANY entry in [variable_expenses], [fixed_expenses], or [income_sources].
+  /// This ensures that logging rent, EMI, or salary also counts as "tracking".
   @override
   Future<int> getActiveStreak() async {
     final db = await AppDatabase.db;
     final results = await db.rawQuery('''
-      SELECT DISTINCT substr(date, 1, 10) as day FROM variable_expenses
+      SELECT substr(date, 1, 10) as day FROM variable_expenses
+      UNION
+      SELECT substr(date, 1, 10) as day FROM fixed_expenses
+      UNION
+      SELECT substr(date, 1, 10) as day FROM income_sources
       ORDER BY day DESC
     ''');
 
@@ -959,5 +959,42 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     ''', [monthStr, monthStr]);
 
     return result.map((e) => (e['label'] ?? '').toString()).toList();
+  }
+
+  @override
+  Future<void> recordLoanAudit({
+    required int loanId,
+    required String date,
+    required double openingBalance,
+    required double interestRate,
+    required double paymentAmount,
+    required int daysAccrued,
+    required double interestAccrued,
+    required double principalApplied,
+    required double closingBalance,
+    required int engineVersion,
+    required String type,
+  }) async {
+    final db = await AppDatabase.db;
+    await db.insert('loan_audit_log', {
+      'loan_id': loanId,
+      'date': date,
+      'opening_balance': openingBalance,
+      'interest_rate': interestRate,
+      'payment_amount': paymentAmount,
+      'days_accrued': daysAccrued,
+      'interest_accrued': interestAccrued,
+      'principal_applied': principalApplied,
+      'closing_balance': closingBalance,
+      'engine_version': engineVersion,
+      'type': type,
+    });
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getLoanAuditLog(int loanId) async {
+    final db = await AppDatabase.db;
+    return await db.query('loan_audit_log',
+        where: 'loan_id = ?', whereArgs: [loanId], orderBy: 'date DESC');
   }
 }

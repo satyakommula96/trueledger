@@ -165,7 +165,7 @@ class Dashboard extends ConsumerWidget {
                                     ...(() {
                                       final billsToday = data.billsDueToday;
                                       final total = billsToday.fold(
-                                          0, (sum, b) => sum + b.amount);
+                                          0.0, (sum, b) => sum + b.amount);
 
                                       return [
                                         Container(
@@ -272,11 +272,10 @@ class Dashboard extends ConsumerWidget {
                                     dailyBudget: data.budgets.isEmpty
                                         ? 0
                                         : (data.budgets.fold(
-                                                    0,
-                                                    (sum, b) =>
-                                                        sum + b.monthlyLimit) /
-                                                30)
-                                            .round(),
+                                                0.0,
+                                                (sum, b) =>
+                                                    sum + b.monthlyLimit) /
+                                            30),
                                     semantic: semantic,
                                   )
                                       .animate(delay: 200.ms)
@@ -292,12 +291,12 @@ class Dashboard extends ConsumerWidget {
                                                     .budgets.isEmpty
                                                 ? null
                                                 : data.budgets.fold(
-                                                        0,
+                                                        0.0,
                                                         (sum, b) =>
                                                             sum +
                                                             b.monthlyLimit) -
                                                     data.budgets.fold(
-                                                        0,
+                                                        0.0,
                                                         (sum, b) =>
                                                             sum + b.spent),
                                             semantic: semantic,

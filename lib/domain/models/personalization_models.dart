@@ -1,7 +1,7 @@
 class QuickAddPreset {
   final String id;
   final String title;
-  final int amount;
+  final double amount;
   final String category;
   final String? note;
   final String? paymentMethod;
@@ -27,7 +27,7 @@ class QuickAddPreset {
   factory QuickAddPreset.fromJson(Map<String, dynamic> json) => QuickAddPreset(
         id: json['id'],
         title: json['title'],
-        amount: json['amount'],
+        amount: (json['amount'] as num).toDouble(),
         category: json['category'],
         note: json['note'],
         paymentMethod: json['paymentMethod'],

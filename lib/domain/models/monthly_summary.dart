@@ -1,9 +1,9 @@
 class MonthlySummary {
-  final int totalIncome;
-  final int totalFixed;
-  final int totalVariable;
-  final int totalSubscriptions;
-  final int totalInvestments;
+  final double totalIncome;
+  final double totalFixed;
+  final double totalVariable;
+  final double totalSubscriptions;
+  final double totalInvestments;
 
   MonthlySummary({
     required this.totalIncome,
@@ -17,12 +17,12 @@ class MonthlySummary {
     this.totalMonthlyEMI = 0,
   });
 
-  final int netWorth;
-  final int creditCardDebt;
-  final int loansTotal;
-  final int totalMonthlyEMI;
+  final double netWorth;
+  final double creditCardDebt;
+  final double loansTotal;
+  final double totalMonthlyEMI;
 
-  int get net =>
+  double get net =>
       totalIncome -
       totalFixed -
       totalVariable -

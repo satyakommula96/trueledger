@@ -194,9 +194,8 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Wrap(
-                        alignment: WrapAlignment.spaceBetween,
-                        crossAxisAlignment: WrapCrossAlignment.center,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           _buildHeaderPill(
                             context,
@@ -205,22 +204,18 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                             onTap: widget.onTapNetWorth,
                             semantic: semantic,
                           ),
-                          if (widget.activeStreak > 0)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: _buildHeaderPill(
-                                context,
-                                "${widget.activeStreak} DAY STREAK",
-                                Icons.whatshot_rounded,
-                                onTap: widget.onTapStreak,
-                                isAlt: true,
-                                semantic: semantic,
-                                color: widget.hasLoggedToday
-                                    ? Colors.orange
-                                    : Colors.white.withValues(alpha: 0.5),
-                                showPulse: !widget.hasLoggedToday,
-                              ),
-                            ),
+                          _buildHeaderPill(
+                            context,
+                            "${widget.activeStreak} DAY STREAK",
+                            Icons.whatshot_rounded,
+                            onTap: widget.onTapStreak,
+                            isAlt: true,
+                            semantic: semantic,
+                            color: widget.hasLoggedToday
+                                ? Colors.orange
+                                : Colors.white.withValues(alpha: 0.5),
+                            showPulse: !widget.hasLoggedToday,
+                          ),
                         ],
                       ),
                       const Spacer(),
@@ -243,7 +238,7 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                         curve: Curves.easeOutExpo,
                         builder: (context, value, child) {
                           final text = CurrencyFormatter.format(
-                            value.toInt(),
+                            value,
                             compact: false,
                             isPrivate: isPrivate,
                           );

@@ -149,14 +149,17 @@ class AnalysisScreen extends ConsumerWidget {
       );
     }
 
-    final maxVal = data.fold<int>(0,
-        (prev, e) => (e['total'] as int) > prev ? (e['total'] as int) : prev);
+    final maxVal = data.fold<double>(
+        0.0,
+        (prev, e) => (e['total'] as num).toDouble() > prev
+            ? (e['total'] as num).toDouble()
+            : prev);
 
     return Column(
       children: data.asMap().entries.map((entry) {
         final index = entry.key;
         final item = entry.value;
-        final total = item['total'] as int;
+        final total = (item['total'] as num).toDouble();
         final progress = maxVal == 0 ? 0.0 : total / maxVal;
 
         return Container(
@@ -235,8 +238,8 @@ class AnalysisScreen extends ConsumerWidget {
   Widget _buildInsightCard(BuildContext context,
       List<Map<String, dynamic>> data, AppColors semantic, bool isPrivate) {
     if (data.length < 2) return const SizedBox();
-    final current = data.last['total'] as int;
-    final last = data[data.length - 2]['total'] as int;
+    final current = (data.last['total'] as num).toDouble();
+    final last = (data[data.length - 2]['total'] as num).toDouble();
     final diff = current - last;
     final isIncrease = diff > 0;
 

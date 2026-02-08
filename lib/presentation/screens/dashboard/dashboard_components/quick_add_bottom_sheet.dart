@@ -12,6 +12,7 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/services/personalization_service.dart';
+import 'package:trueledger/core/utils/currency_formatter.dart';
 
 class QuickAddBottomSheet extends ConsumerStatefulWidget {
   const QuickAddBottomSheet({super.key});
@@ -107,7 +108,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
   }
 
   Future<void> _handleSave() async {
-    final amount = int.tryParse(_amountController.text);
+    final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid amount')),
@@ -269,7 +270,8 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
               TextField(
                 controller: _amountController,
                 focusNode: _focusNode,
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 48,
@@ -618,7 +620,8 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
             itemBuilder: (context, index) {
               final preset = presets[index];
               return ActionChip(
-                label: Text("${preset.title} · ₹${preset.amount}"),
+                label: Text(
+                    "${preset.title} · ${CurrencyFormatter.format(preset.amount, compact: false)}"),
                 onPressed: () {
                   _amountController.text = preset.amount.toString();
                   _noteController.text = preset.note ?? preset.title;

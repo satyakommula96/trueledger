@@ -7,8 +7,8 @@ import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 
 class WeeklySummary extends ConsumerWidget {
-  final int thisWeekSpend;
-  final int lastWeekSpend;
+  final double thisWeekSpend;
+  final double lastWeekSpend;
   final AppColors semantic;
   final VoidCallback? onTap;
 

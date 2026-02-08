@@ -408,7 +408,7 @@ class _PersonalizationSettingsScreenState
                                   fontSize: 13,
                                   color: semantic.text)),
                           Text(
-                              "${CurrencyFormatter.symbol}${p.amount} · ${p.category}",
+                              "${CurrencyFormatter.format(p.amount, compact: false)} · ${p.category}",
                               style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -614,7 +614,8 @@ class _PersonalizationSettingsScreenState
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide(color: semantic.divider)),
                 ),
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
               ),
               const SizedBox(height: 16),
               Consumer(builder: (context, ref, _) {
@@ -670,7 +671,7 @@ class _PersonalizationSettingsScreenState
                   final preset = QuickAddPreset(
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                     title: titleController.text,
-                    amount: int.parse(amountController.text),
+                    amount: double.parse(amountController.text),
                     category: category!,
                   );
                   ref.read(personalizationServiceProvider).addPreset(preset);

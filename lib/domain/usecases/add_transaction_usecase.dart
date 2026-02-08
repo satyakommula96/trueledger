@@ -8,7 +8,7 @@ import 'usecase_base.dart';
 
 class AddTransactionParams {
   final String type;
-  final int amount;
+  final double amount;
   final String category;
   final String note;
   final String date;

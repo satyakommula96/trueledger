@@ -116,8 +116,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                                   color: semantic.secondaryText,
                                   letterSpacing: 1)),
                           Text(
-                            CurrencyFormatter.format(
-                                card.statementBalance.toInt(),
+                            CurrencyFormatter.format(card.statementBalance,
                                 isPrivate: isPrivate),
                             style: TextStyle(
                                 fontSize: 24,
@@ -134,7 +133,8 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
               const SizedBox(height: 28),
               TextField(
                 controller: controller,
-                keyboardType: TextInputType.number,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 autofocus: true,
                 style: TextStyle(
                     color: semantic.text,
@@ -172,7 +172,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                   if (card.minDue > 0)
                     Expanded(
                       child: _buildPillAction(
-                        "MIN: ${CurrencyFormatter.format(card.minDue.toInt(), isPrivate: isPrivate)}",
+                        "MIN: ${CurrencyFormatter.format(card.minDue, isPrivate: isPrivate)}",
                         () => controller.text = card.minDue.toString(),
                         semantic,
                       ),
@@ -215,7 +215,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                     child: ElevatedButton(
                       onPressed: () async {
                         if (controller.text.isEmpty) return;
-                        final amount = int.tryParse(controller.text);
+                        final amount = double.tryParse(controller.text);
                         if (amount == null || amount <= 0) return;
 
                         Navigator.pop(ctx);
@@ -406,7 +406,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                "LIMIT: ${CurrencyFormatter.format(limit.toInt(), isPrivate: isPrivate)}",
+                                "LIMIT: ${CurrencyFormatter.format(limit, isPrivate: isPrivate)}",
                                 style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w900,
@@ -460,7 +460,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  CurrencyFormatter.format(stmt.toInt(),
+                                  CurrencyFormatter.format(stmt,
                                       isPrivate: isPrivate),
                                   style: TextStyle(
                                       fontSize: 32,
@@ -551,7 +551,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                               letterSpacing: 0.5),
                         ),
                         Text(
-                          "LEFT: ${CurrencyFormatter.format((limit - stmt).toInt(), isPrivate: isPrivate)}",
+                          "LEFT: ${CurrencyFormatter.format(limit - stmt, isPrivate: isPrivate)}",
                           style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
@@ -625,7 +625,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            CurrencyFormatter.format(totalBalance.toInt(),
+            CurrencyFormatter.format(totalBalance,
                 compact: false, isPrivate: isPrivate),
             style: TextStyle(
               color: semantic.text,

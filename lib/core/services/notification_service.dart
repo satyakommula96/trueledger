@@ -338,7 +338,7 @@ class NotificationService {
     if (!_isInitialized) await init();
 
     final int count = bills.length;
-    final int total = bills.fold(0, (sum, b) => sum + b.amount);
+    final double total = bills.fold(0.0, (sum, b) => sum + b.amount);
 
     final String title = "Daily Bill Digest";
     final String body =

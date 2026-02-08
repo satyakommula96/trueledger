@@ -33,7 +33,8 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
             const SizedBox(height: 20),
             TextField(
               controller: targetCtrl,
-              keyboardType: TextInputType.number,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
                 labelText: "Target Amount",
                 prefixText: "${CurrencyFormatter.symbol} ",
@@ -57,7 +58,7 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
   Future<void> _save() async {
     if (nameCtrl.text.isEmpty || targetCtrl.text.isEmpty) return;
     final repo = ref.read(financialRepositoryProvider);
-    await repo.addGoal(nameCtrl.text, int.parse(targetCtrl.text));
+    await repo.addGoal(nameCtrl.text, double.parse(targetCtrl.text));
     if (mounted) Navigator.pop(context);
   }
 }

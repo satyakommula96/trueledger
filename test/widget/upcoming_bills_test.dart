@@ -65,10 +65,12 @@ void main() {
 
     expect(find.text('CREDIT CARD'), findsOneWidget);
     expect(find.text('HDFC VISA'), findsOneWidget);
-    expect(find.textContaining('1.5K'), findsOneWidget);
+    expect(find.textContaining('1.5K'), findsNothing); // Compact not used
+    expect(find.textContaining('\$1,500'), findsOneWidget);
 
     expect(find.text('LOAN'), findsOneWidget);
     expect(find.text('Home Loan'), findsOneWidget);
-    expect(find.textContaining('2.5K'), findsOneWidget);
+    expect(find.textContaining('2.5K'), findsNothing); // Compact not used
+    expect(find.textContaining('\$2,500'), findsOneWidget);
   });
 }

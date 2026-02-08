@@ -79,10 +79,10 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
 
     double assets = 0;
     for (var i in investments) {
-      assets += (i['amount'] as int);
+      assets += (i['amount'] as num).toDouble();
     }
     for (var r in retirement) {
-      assets += (r['amount'] as int);
+      assets += (r['amount'] as num).toDouble();
     }
 
     if (mounted) {
@@ -530,7 +530,7 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                CurrencyFormatter.format(amount.toInt(), compact: false),
+                CurrencyFormatter.format(amount, compact: false),
                 style: TextStyle(
                   color: color,
                   fontSize: 32,

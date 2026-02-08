@@ -1,9 +1,9 @@
 class CreditCard {
   final int id;
   final String bank;
-  final int creditLimit;
-  final int statementBalance;
-  final int minDue;
+  final double creditLimit;
+  final double statementBalance;
+  final double minDue;
   final String dueDate;
   final String statementDate;
 
@@ -21,9 +21,9 @@ class CreditCard {
     return CreditCard(
       id: map['id'] as int,
       bank: map['bank'] as String,
-      creditLimit: map['credit_limit'] as int,
-      statementBalance: map['statement_balance'] as int,
-      minDue: map['min_due'] as int,
+      creditLimit: (map['credit_limit'] as num).toDouble(),
+      statementBalance: (map['statement_balance'] as num).toDouble(),
+      minDue: (map['min_due'] as num).toDouble(),
       dueDate: map['due_date'] as String,
       statementDate: map['statement_date'] as String? ?? '',
     );

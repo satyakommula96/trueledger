@@ -12,9 +12,9 @@ class DashboardData {
   final List<Map<String, dynamic>> trendData;
   final List<Map<String, dynamic>> upcomingBills;
   final List<BillSummary> billsDueToday;
-  final int todaySpend;
-  final int thisWeekSpend;
-  final int lastWeekSpend;
+  final double todaySpend;
+  final double thisWeekSpend;
+  final double lastWeekSpend;
   final int activeStreak;
   final int todayTransactionCount;
 
@@ -55,7 +55,7 @@ class GetDashboardDataUseCase extends UseCase<DashboardData, NoParams> {
         repository.getTodayTransactionCount(),
       ]);
 
-      final weeklySummary = results[7] as Map<String, int>;
+      final weeklySummary = results[7] as Map<String, double>;
 
       final summary = results[0] as MonthlySummary;
       final upcomingBills = (results[5] as List).cast<Map<String, dynamic>>();
@@ -69,9 +69,9 @@ class GetDashboardDataUseCase extends UseCase<DashboardData, NoParams> {
         upcomingBills: upcomingBills,
         billsDueToday:
             BillSummary.filterDueEntries(results[5] as List, DateTime.now()),
-        todaySpend: results[6] as int,
-        thisWeekSpend: weeklySummary['thisWeek'] ?? 0,
-        lastWeekSpend: weeklySummary['lastWeek'] ?? 0,
+        todaySpend: results[6] as double,
+        thisWeekSpend: weeklySummary['thisWeek'] ?? 0.0,
+        lastWeekSpend: weeklySummary['lastWeek'] ?? 0.0,
         activeStreak: results[8] as int,
         todayTransactionCount: results[9] as int,
       ));

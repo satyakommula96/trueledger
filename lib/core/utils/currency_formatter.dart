@@ -37,7 +37,7 @@ class CurrencyFormatter {
   static String get symbol => currencies[currencyNotifier.value] ?? '₹';
 
   static String format(num value,
-      {bool compact = true, bool isPrivate = false}) {
+      {bool compact = false, bool isPrivate = false}) {
     // Safety check: ensure privacy is respected
     if (isPrivate) return '****';
 

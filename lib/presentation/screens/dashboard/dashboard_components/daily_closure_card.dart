@@ -8,8 +8,8 @@ import 'package:trueledger/presentation/providers/day_closure_provider.dart';
 
 class DailyClosureCard extends ConsumerStatefulWidget {
   final int transactionCount;
-  final int todaySpend;
-  final int dailyBudget;
+  final double todaySpend;
+  final double dailyBudget;
   final AppColors semantic;
   final bool forceShow;
 

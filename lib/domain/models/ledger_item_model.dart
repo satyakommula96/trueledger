@@ -1,7 +1,7 @@
 class LedgerItem {
   final int id;
   final String label; // Unifies name, category, source
-  final int amount;
+  final double amount;
   final String date;
   final String type; // 'Variable', 'Income', 'Fixed', 'Investment'
   final String? note;
@@ -29,7 +29,7 @@ class LedgerItem {
     return LedgerItem(
       id: map['id'] as int,
       label: label,
-      amount: map['amount'] as int,
+      amount: (map['amount'] as num).toDouble(),
       date: map['date'] as String? ?? '',
       type: map['entryType'] as String? ?? 'Unknown',
       note: map['note'] as String?,

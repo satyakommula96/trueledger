@@ -78,7 +78,8 @@ class _AddSubscriptionScreenState extends ConsumerState<AddSubscriptionScreen> {
             const SizedBox(height: 20),
             TextField(
               controller: amountCtrl,
-              keyboardType: TextInputType.number,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
                 labelText: "Monthly Amount",
                 prefixText: "${CurrencyFormatter.symbol} ",
@@ -118,7 +119,7 @@ class _AddSubscriptionScreenState extends ConsumerState<AddSubscriptionScreen> {
       return;
     }
     final repo = ref.read(financialRepositoryProvider);
-    final amount = int.parse(amountCtrl.text);
+    final amount = double.parse(amountCtrl.text);
 
     // Store ISO string if date selected, else raw text (legacy fallback)
     final billingDate = _selectedDate?.toIso8601String() ?? dateCtrl.text;

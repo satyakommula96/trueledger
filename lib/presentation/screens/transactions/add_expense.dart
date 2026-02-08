@@ -159,7 +159,8 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
             const SizedBox(height: 8),
             TextField(
               controller: amountCtrl,
-              keyboardType: TextInputType.number,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               autofocus: true,
               style: TextStyle(
                   fontWeight: FontWeight.w900,
@@ -188,10 +189,11 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                     if (budget.id == -1) return const SizedBox.shrink();
 
                     final currentSpent = budget.spent;
-                    final addedAmount = int.tryParse(amountCtrl.text) ?? 0;
+                    final addedAmount = double.tryParse(amountCtrl.text) ?? 0.0;
                     final totalAfter = currentSpent + addedAmount;
                     final limit = budget.monthlyLimit;
-                    final progress = (totalAfter / limit).clamp(0.0, 1.0);
+                    final progress =
+                        limit > 0 ? (totalAfter / limit).clamp(0.0, 1.0) : 0.0;
                     final isExceeded = totalAfter > limit;
                     final color =
                         isExceeded ? semantic.overspent : semantic.income;
@@ -445,7 +447,7 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
       return;
     }
 
-    final amount = int.tryParse(amountText);
+    final amount = double.tryParse(amountText);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Please enter a valid positive amount")));

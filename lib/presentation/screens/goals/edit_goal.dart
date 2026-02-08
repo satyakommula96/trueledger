@@ -78,7 +78,9 @@ class _EditGoalScreenState extends ConsumerState<EditGoalScreen> {
       padding: const EdgeInsets.only(bottom: 20),
       child: TextField(
         controller: ctrl,
-        keyboardType: isNum ? TextInputType.number : TextInputType.text,
+        keyboardType: isNum
+            ? const TextInputType.numberWithOptions(decimal: true)
+            : TextInputType.text,
         decoration: InputDecoration(
           labelText: label,
           prefixText: prefix != null ? "$prefix " : null,
@@ -94,8 +96,8 @@ class _EditGoalScreenState extends ConsumerState<EditGoalScreen> {
   }
 
   Future<void> _update() async {
-    final target = int.tryParse(targetCtrl.text) ?? 0;
-    final current = int.tryParse(currentCtrl.text) ?? 0;
+    final target = double.tryParse(targetCtrl.text) ?? 0.0;
+    final current = double.tryParse(currentCtrl.text) ?? 0.0;
 
     if (current > target) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

@@ -89,13 +89,14 @@ void main() {
 
     expect(find.text('FOOD'), findsOneWidget);
     expect(find.text('RENT'), findsOneWidget);
-    expect(find.textContaining('200'), findsOneWidget);
+    expect(find.textContaining('200'),
+        findsWidgets); // Found multiple times (200 spent, and contained in 1200)
     expect(find.textContaining('500'), findsOneWidget);
-    // 1200 might be formatted as 1.2K
-    expect(find.textContaining('1.2K'), findsOneWidget);
+    // 1200 is formatted as $1,200 (not compact)
+    expect(find.textContaining('\$1,200'), findsWidgets);
 
     // Rent is overspent, should have overspent color
-    final rentText = tester.widget<Text>(find.textContaining('1.2K'));
+    final rentText = tester.widget<Text>(find.textContaining('\$1,200').first);
     expect(rentText.style?.color, AppTheme.darkColors.overspent);
   });
 

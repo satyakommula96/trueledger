@@ -94,13 +94,15 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
                 Expanded(
                     child: _buildField("REMAINING BALANCE", remainingCtrl,
                         hint: "0",
-                        type: TextInputType.number,
+                        type: const TextInputType.numberWithOptions(
+                            decimal: true),
                         prefix: CurrencyFormatter.symbol)),
                 const SizedBox(width: 16),
                 Expanded(
                     child: _buildField("TOTAL LOAN", totalCtrl,
                         hint: "0",
-                        type: TextInputType.number,
+                        type: const TextInputType.numberWithOptions(
+                            decimal: true),
                         prefix: CurrencyFormatter.symbol)),
               ],
             ),
@@ -111,13 +113,15 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
                   Expanded(
                       child: _buildField("MONTHLY EMI", emiCtrl,
                           hint: "0",
-                          type: TextInputType.number,
+                          type: const TextInputType.numberWithOptions(
+                              decimal: true),
                           prefix: CurrencyFormatter.symbol)),
                   const SizedBox(width: 16),
                   Expanded(
                       child: _buildField("INTEREST RATE", rateCtrl,
                           hint: "0.0",
-                          type: TextInputType.number,
+                          type: const TextInputType.numberWithOptions(
+                              decimal: true),
                           prefix: "%")),
                 ],
               ),
@@ -150,6 +154,17 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
                   ),
                 ],
               ],
+            ),
+            const SizedBox(height: 16),
+            const Center(
+              child: Text(
+                "Interest calculation: Reducing balance (daily)",
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic),
+              ),
             ),
             const SizedBox(height: 48),
             SizedBox(
@@ -286,8 +301,8 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
     }
 
     final repo = ref.read(financialRepositoryProvider);
-    final total = int.tryParse(totalCtrl.text) ?? 0;
-    final remaining = int.tryParse(remainingCtrl.text) ?? 0;
+    final total = double.tryParse(totalCtrl.text) ?? 0.0;
+    final remaining = double.tryParse(remainingCtrl.text) ?? 0.0;
 
     if (remaining > total) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -300,7 +315,7 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
       selectedType,
       total,
       remaining,
-      int.tryParse(emiCtrl.text) ?? 0,
+      double.tryParse(emiCtrl.text) ?? 0.0,
       double.tryParse(rateCtrl.text) ?? 0.0,
       dueCtrl.text,
       DateTime.now().toIso8601String(),

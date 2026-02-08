@@ -1,7 +1,7 @@
 class Subscription {
   final int id;
   final String name;
-  final int amount;
+  final double amount;
   final String billingDate;
   final int active;
   final String? date;
@@ -19,7 +19,7 @@ class Subscription {
     return Subscription(
       id: map['id'] as int,
       name: map['name'] as String,
-      amount: map['amount'] as int,
+      amount: (map['amount'] as num).toDouble(),
       billingDate: map['billing_date'] as String,
       active: map['active'] as int,
       date: map['date'] as String?,

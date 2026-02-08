@@ -5,7 +5,7 @@ import 'usecase_base.dart';
 
 class AddBudgetParams {
   final String category;
-  final int monthlyLimit;
+  final double monthlyLimit;
 
   AddBudgetParams({required this.category, required this.monthlyLimit});
 }
@@ -35,7 +35,7 @@ class AddBudgetUseCase extends UseCase<void, AddBudgetParams> {
 
 class UpdateBudgetParams {
   final int id;
-  final int monthlyLimit;
+  final double monthlyLimit;
 
   UpdateBudgetParams({required this.id, required this.monthlyLimit});
 }

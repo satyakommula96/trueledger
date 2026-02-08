@@ -5,11 +5,11 @@ import 'usecase_base.dart';
 
 class WeeklyReflectionData {
   final int daysUnderBudget;
-  final int budgetDailyAverage;
+  final double budgetDailyAverage;
   final Map<String, dynamic>?
       largestCategoryIncrease; // {category, increaseAmount, isNew}
-  final int totalThisWeek;
-  final int totalLastWeek;
+  final double totalThisWeek;
+  final double totalLastWeek;
   final String? topCategory;
 
   WeeklyReflectionData({
@@ -49,30 +49,30 @@ class GetWeeklyReflectionUseCase
           await repository.getTransactionsForRange(thisWeekStart, thisWeekEnd);
 
       // Group by day (YYYY-MM-DD)
-      final dailySpend = <String, int>{};
+      final dailySpend = <String, double>{};
       for (var tx in thisWeekTransactions) {
         if (tx.type != 'Variable') {
           continue; // Only count variable spend against budget
         }
         final day = tx.date.substring(0, 10);
-        dailySpend[day] = (dailySpend[day] ?? 0) + tx.amount;
+        dailySpend[day] = (dailySpend[day] ?? 0.0) + tx.amount;
       }
 
       // Calculate "Daily Budget" from budgets
       // We assume Monthly / 30 for simplicity or sum of all budget limits
       final budgets = await repository.getBudgets();
       final totalMonthlyBudget =
-          budgets.fold(0, (sum, b) => sum + b.monthlyLimit);
-      final dailyBudgetLimit = totalMonthlyBudget > 0
-          ? (totalMonthlyBudget / 30).round()
-          : 500; // Fallback or strict 0? Let's use a sane default or 0 makes it hard to be "under".
+          budgets.fold(0.0, (sum, b) => sum + b.monthlyLimit);
+      final double dailyBudgetLimit = totalMonthlyBudget > 0
+          ? (totalMonthlyBudget / 30)
+          : 500.0; // Fallback or strict 0? Let's use a sane default or 0 makes it hard to be "under".
       // If user hasn't set budget, this metric is meaningless.
       // Let's assume a default "spend" if 0? Or maybe skip.
       // Requirement: "This week you stayed under budget 4 days."
 
-      int limitToCheck = dailyBudgetLimit > 0
+      double limitToCheck = dailyBudgetLimit > 0
           ? dailyBudgetLimit
-          : 2000; // Default 2k/day if no budget set?
+          : 2000.0; // Default 2k/day if no budget set?
 
       // Count days under budget
       // We check each day from Monday to Today
@@ -102,13 +102,13 @@ class GetWeeklyReflectionUseCase
 
       for (var cat in thisWeekCats) {
         final name = cat['category'];
-        final currentAmount = cat['total'] as int;
+        final currentAmount = (cat['total'] as num).toDouble();
 
         // Find in last week
         final lastWeekEntry = lastWeekCats.firstWhere(
             (e) => e['category'] == name,
             orElse: () => <String, Object>{'total': 0});
-        final lastAmount = lastWeekEntry['total'] as int;
+        final lastAmount = (lastWeekEntry['total'] as num).toDouble();
 
         if (currentAmount > lastAmount) {
           final diff = currentAmount - lastAmount;
@@ -124,10 +124,10 @@ class GetWeeklyReflectionUseCase
       }
 
       // 3. Totals and Top Category
-      final totalThisWeek =
-          thisWeekCats.fold(0, (sum, c) => sum + (c['total'] as int));
-      final totalLastWeek =
-          lastWeekCats.fold(0, (sum, c) => sum + (c['total'] as int));
+      final totalThisWeek = thisWeekCats.fold(
+          0.0, (sum, c) => sum + (c['total'] as num).toDouble());
+      final totalLastWeek = lastWeekCats.fold(
+          0.0, (sum, c) => sum + (c['total'] as num).toDouble());
       final topCategory = thisWeekCats.isNotEmpty
           ? thisWeekCats.first['category'] as String
           : null;

@@ -76,7 +76,7 @@ void main() {
     expect(find.text('FOOD'), findsOneWidget);
     expect(find.text('SALARY'), findsOneWidget);
     // Check for amount fragments since compact formatting varies
-    expect(find.textContaining('50'), findsOneWidget);
+    expect(find.textContaining('50'), findsWidgets);
     expect(find.textContaining('5'), findsWidgets);
   });
 

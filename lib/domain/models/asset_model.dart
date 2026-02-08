@@ -1,7 +1,7 @@
 class Asset {
   final int id;
   final String name;
-  final int amount;
+  final double amount;
   final String type;
   final String date;
   final int active;
@@ -21,7 +21,7 @@ class Asset {
       name: (map['name'] as String?)?.trim().isNotEmpty == true
           ? map['name']
           : 'Unknown Asset',
-      amount: map['amount'] is num ? (map['amount'] as num).toInt() : 0,
+      amount: map['amount'] is num ? (map['amount'] as num).toDouble() : 0.0,
       type: map['type'] is String ? map['type'] : 'Other',
       date: map['date'] is String
           ? map['date']

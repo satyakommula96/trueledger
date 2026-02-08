@@ -41,7 +41,7 @@ class PersonalizationService {
     required String category,
     required String? paymentMethod,
     String? merchant,
-    int? amount,
+    double? amount,
     String? note,
   }) async {
     final settings = getSettings();
@@ -236,7 +236,7 @@ class PersonalizationService {
     for (final s in signals) {
       final String? note = s.meta['note'];
       final String? cat = s.meta['category'];
-      final int? amount = s.meta['amount'];
+      final double? amount = (s.meta['amount'] as num?)?.toDouble();
 
       if (note != null && cat != null && amount != null && note.isNotEmpty) {
         final key = '$note|$cat|$amount';
@@ -257,7 +257,7 @@ class PersonalizationService {
       final parts = best.key.split('|');
       final note = parts[0];
       final cat = parts[1];
-      final amount = int.parse(parts[2]);
+      final amount = double.parse(parts[2]);
 
       final alreadyPreset = existingPresets.any((p) =>
           p.title.toLowerCase() == note.toLowerCase() ||

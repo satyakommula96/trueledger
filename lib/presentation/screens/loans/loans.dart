@@ -203,7 +203,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            CurrencyFormatter.format(remaining.toInt()),
+                            CurrencyFormatter.format(remaining),
                             style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.w900,
@@ -249,7 +249,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            CurrencyFormatter.format(emi.toInt()),
+                            CurrencyFormatter.format(emi),
                             style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w900,
@@ -309,7 +309,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                         letterSpacing: 0.5),
                   ),
                   Text(
-                    "OF ${CurrencyFormatter.format(total.toInt())}",
+                    "OF ${CurrencyFormatter.format(total)}",
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
@@ -355,7 +355,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            CurrencyFormatter.format(totalRemaining.toInt(), compact: false),
+            CurrencyFormatter.format(totalRemaining, compact: false),
             style: TextStyle(
               color: semantic.overspent,
               fontSize: 36,

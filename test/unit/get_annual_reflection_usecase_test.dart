@@ -79,7 +79,8 @@ void main() {
       expect(travelStability.variance, -100.0);
 
       expect(data.mostExpensiveMonth, 2);
-      expect(data.avgMonthlySpend, 3333); // (3000+4000+3000) / 3 = 3333.33...
+      expect(data.avgMonthlySpend,
+          closeTo(3333.33, 0.01)); // (3000+4000+3000) / 3 = 3333.33...
     });
 
     test('should return Failure when repository call fails', () async {
@@ -169,7 +170,7 @@ void main() {
       // Assert
       expect(result.isSuccess, isTrue);
       final data = result.getOrThrow;
-      expect(data.totalSpendCurrentYear, 12000); // 12000.5 -> 12000, null -> 0
+      expect(data.totalSpendCurrentYear, 12000.5); // 12000.5 kept as double
 
       // Current implementation: if (total > 0) totalForAvg += total; monthsWithData++;
       // So month 01 (3000) counts, month 02 (null -> 0) does NOT count toward monthsWithData.

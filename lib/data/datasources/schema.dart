@@ -10,6 +10,7 @@ class Schema {
   static const String savingGoalsTable = 'saving_goals';
   static const String budgetsTable = 'budgets';
   static const String customCategoriesTable = 'custom_categories';
+  static const String loanAuditLogTable = 'loan_audit_log';
   static const String migrationsTable = '_migrations';
 
   // Common columns
@@ -42,6 +43,18 @@ class Schema {
   static const String colRemainingAmount = 'remaining_amount';
   static const String colEmi = 'emi';
   static const String colInterestRate = 'interest_rate';
+  static const String colLastPaymentDate = 'last_payment_date';
+  static const String colInterestEngineVersion = 'interest_engine_version';
+
+  // Loan Audit
+  static const String colLoanId = 'loan_id';
+  static const String colOpeningBalance = 'opening_balance';
+  static const String colInterestAccrued = 'interest_accrued';
+  static const String colPrincipalApplied = 'principal_applied';
+  static const String colClosingBalance = 'closing_balance';
+  static const String colPaymentAmount = 'payment_amount';
+  static const String colDaysAccrued = 'days_accrued';
+  static const String colEngineVersion = 'engine_version';
 
   // Saving Goals
   static const String colTargetAmount = 'target_amount';

@@ -3,7 +3,7 @@ import 'package:trueledger/core/utils/date_helper.dart';
 class BillSummary {
   final String id;
   final String name;
-  final int amount;
+  final double amount;
   final DateTime? dueDate;
   final String type;
   final bool isPaid;
@@ -28,12 +28,12 @@ class BillSummary {
     );
   }
 
-  static int _parseAmount(dynamic value) {
+  static double _parseAmount(dynamic value) {
     if (value == null) return 0;
-    if (value is num) return value.toInt();
+    if (value is num) return value.toDouble();
     if (value is String) {
-      if (value.trim().isEmpty) return 0;
-      return int.tryParse(value) ?? double.tryParse(value)?.toInt() ?? 0;
+      if (value.trim().isEmpty) return 0.0;
+      return double.tryParse(value) ?? 0.0;
     }
     return 0;
   }

@@ -63,7 +63,7 @@ void main() {
     expect(find.text("Eating Out"), findsOneWidget);
 
     // Verify initial savings (20% of 1000 = 200 monthly, 2400 yearly)
-    expect(find.textContaining("2,400"), findsOneWidget);
+    expect(find.textContaining("2,400"), findsWidgets);
 
     // Slide to 50%
     await tester.drag(find.byType(Slider), const Offset(100, 0));

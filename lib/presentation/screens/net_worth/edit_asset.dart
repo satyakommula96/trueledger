@@ -79,7 +79,9 @@ class _EditAssetScreenState extends ConsumerState<EditAssetScreen> {
       padding: const EdgeInsets.only(bottom: 20),
       child: TextField(
         controller: ctrl,
-        keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+        keyboardType: isNumber
+            ? const TextInputType.numberWithOptions(decimal: true)
+            : TextInputType.text,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
@@ -105,7 +107,7 @@ class _EditAssetScreenState extends ConsumerState<EditAssetScreen> {
       return;
     }
 
-    final amount = int.tryParse(amountText);
+    final amount = double.tryParse(amountText);
     if (amount == null || amount < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

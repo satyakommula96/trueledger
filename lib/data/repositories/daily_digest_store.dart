@@ -12,15 +12,20 @@ class DailyDigestStore {
 
   String? getLastDigestDate() => _prefs.getString(_keyLastDate);
   int? getLastDigestCount() => _prefs.getInt(_keyLastCount);
-  int? getLastDigestTotal() => _prefs.getInt(_keyLastTotal);
+  double? getLastDigestTotal() {
+    final value = _prefs.get(_keyLastTotal);
+    if (value is int) return value.toDouble();
+    if (value is double) return value;
+    return null;
+  }
 
   Future<void> saveState({
     required String date,
     required int count,
-    required int total,
+    required double total,
   }) async {
     await _prefs.setString(_keyLastDate, date);
     await _prefs.setInt(_keyLastCount, count);
-    await _prefs.setInt(_keyLastTotal, total);
+    await _prefs.setDouble(_keyLastTotal, total);
   }
 }

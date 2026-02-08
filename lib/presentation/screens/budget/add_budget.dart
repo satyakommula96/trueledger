@@ -146,7 +146,8 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: limitCtrl,
-              keyboardType: TextInputType.number,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               style: TextStyle(
                 fontWeight: FontWeight.w900,
                 fontSize: 48,
@@ -208,7 +209,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
       return;
     }
 
-    final limit = int.tryParse(limitText);
+    final limit = double.tryParse(limitText);
     if (limit == null || limit < 0) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Please enter a valid non-negative limit")));

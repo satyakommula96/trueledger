@@ -265,24 +265,24 @@ class AppDatabase {
 
   static Future<void> _createDb(common.DatabaseExecutor db) async {
     await db.execute(
-        'CREATE TABLE ${Schema.incomeSourcesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colSource} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colDate} TEXT)');
+        'CREATE TABLE ${Schema.incomeSourcesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colSource} TEXT, ${Schema.colAmount} REAL, ${Schema.colDate} TEXT)');
     await db.execute(
-        'CREATE TABLE ${Schema.fixedExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colCategory} TEXT, ${Schema.colDate} TEXT)');
+        'CREATE TABLE ${Schema.fixedExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} REAL, ${Schema.colCategory} TEXT, ${Schema.colDate} TEXT)');
     await db.execute(
-        'CREATE TABLE ${Schema.variableExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colDate} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colCategory} TEXT, ${Schema.colNote} TEXT)');
+        'CREATE TABLE ${Schema.variableExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colDate} TEXT, ${Schema.colAmount} REAL, ${Schema.colCategory} TEXT, ${Schema.colNote} TEXT)');
     await db.execute(
-        'CREATE TABLE ${Schema.investmentsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colActive} INTEGER, ${Schema.colType} TEXT, ${Schema.colDate} TEXT)');
+        'CREATE TABLE ${Schema.investmentsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} REAL, ${Schema.colActive} INTEGER, ${Schema.colType} TEXT, ${Schema.colDate} TEXT)');
     await db.execute(
-        'CREATE TABLE ${Schema.subscriptionsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colBillingDate} TEXT, ${Schema.colActive} INTEGER, ${Schema.colDate} TEXT)');
+        'CREATE TABLE ${Schema.subscriptionsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} REAL, ${Schema.colBillingDate} TEXT, ${Schema.colActive} INTEGER, ${Schema.colDate} TEXT)');
     await db.execute(
-        'CREATE TABLE ${Schema.retirementContributionsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colType} TEXT, ${Schema.colAmount} INTEGER, ${Schema.colDate} TEXT)');
+        'CREATE TABLE ${Schema.retirementContributionsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colType} TEXT, ${Schema.colAmount} REAL, ${Schema.colDate} TEXT)');
     await db.execute('''
           CREATE TABLE ${Schema.creditCardsTable} (
             ${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT,
             ${Schema.colBank} TEXT,
-            ${Schema.colCreditLimit} INTEGER,
-            ${Schema.colStatementBalance} INTEGER,
-            ${Schema.colMinDue} INTEGER,
+            ${Schema.colCreditLimit} REAL,
+            ${Schema.colStatementBalance} REAL,
+            ${Schema.colMinDue} REAL,
             ${Schema.colDueDate} TEXT,
             ${Schema.colStatementDate} TEXT
           )
@@ -292,18 +292,36 @@ class AppDatabase {
             ${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT,
             ${Schema.colName} TEXT,
             ${Schema.colLoanType} TEXT,
-            ${Schema.colTotalAmount} INTEGER,
-            ${Schema.colRemainingAmount} INTEGER,
-            ${Schema.colEmi} INTEGER,
+            ${Schema.colTotalAmount} REAL,
+            ${Schema.colRemainingAmount} REAL,
+            ${Schema.colEmi} REAL,
             ${Schema.colInterestRate} REAL,
             ${Schema.colDueDate} TEXT,
-            ${Schema.colDate} TEXT
+            ${Schema.colDate} TEXT,
+            ${Schema.colLastPaymentDate} TEXT,
+            ${Schema.colInterestEngineVersion} INTEGER DEFAULT 1
+          )
+        ''');
+    await db.execute('''
+          CREATE TABLE ${Schema.loanAuditLogTable} (
+            ${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT,
+            ${Schema.colLoanId} INTEGER,
+            ${Schema.colDate} TEXT,
+            ${Schema.colOpeningBalance} REAL,
+            ${Schema.colInterestRate} REAL,
+            ${Schema.colPaymentAmount} REAL,
+            ${Schema.colDaysAccrued} INTEGER,
+            ${Schema.colInterestAccrued} REAL,
+            ${Schema.colPrincipalApplied} REAL,
+            ${Schema.colClosingBalance} REAL,
+            ${Schema.colEngineVersion} INTEGER,
+            ${Schema.colType} TEXT
           )
         ''');
     await db.execute(
-        'CREATE TABLE ${Schema.savingGoalsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colTargetAmount} INTEGER, ${Schema.colCurrentAmount} INTEGER)');
+        'CREATE TABLE ${Schema.savingGoalsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colTargetAmount} REAL, ${Schema.colCurrentAmount} REAL)');
     await db.execute(
-        'CREATE TABLE ${Schema.budgetsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colCategory} TEXT, ${Schema.colMonthlyLimit} INTEGER, ${Schema.colLastReviewedAt} TEXT)');
+        'CREATE TABLE ${Schema.budgetsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colCategory} TEXT, ${Schema.colMonthlyLimit} REAL, ${Schema.colLastReviewedAt} TEXT)');
     await db.execute(
         'CREATE TABLE ${Schema.customCategoriesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colType} TEXT)');
     await db.execute(

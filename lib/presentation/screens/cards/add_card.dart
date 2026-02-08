@@ -116,7 +116,9 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
       padding: const EdgeInsets.only(bottom: 20),
       child: TextField(
         controller: ctrl,
-        keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+        keyboardType: isNumber
+            ? const TextInputType.numberWithOptions(decimal: true)
+            : TextInputType.text,
         readOnly: readOnly,
         onTap: onTap,
         decoration: InputDecoration(
@@ -136,8 +138,8 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
   Future<void> _save() async {
     if (bankCtrl.text.isEmpty || limitCtrl.text.isEmpty) return;
     final repo = ref.read(financialRepositoryProvider);
-    final limit = int.tryParse(limitCtrl.text) ?? 0;
-    final balance = int.tryParse(stmtCtrl.text) ?? 0;
+    final limit = double.tryParse(limitCtrl.text) ?? 0.0;
+    final balance = double.tryParse(stmtCtrl.text) ?? 0.0;
 
     if (balance > limit) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -145,8 +147,13 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
       return;
     }
 
-    await repo.addCreditCard(bankCtrl.text, limit, balance,
-        int.tryParse(minDueCtrl.text) ?? 0, dueDateCtrl.text, genDateCtrl.text);
+    await repo.addCreditCard(
+        bankCtrl.text,
+        limit,
+        balance,
+        double.tryParse(minDueCtrl.text) ?? 0.0,
+        dueDateCtrl.text,
+        genDateCtrl.text);
 
     // Trigger notification
     if (_selectedGenDate != null) {
