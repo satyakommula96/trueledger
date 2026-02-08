@@ -44,11 +44,7 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
     selectedType = widget.loan.loanType;
 
     // Try to parse existing date if it looks like a full date (e.g. 15 Feb 2026)
-    try {
-      _selectedDate = DateFormat('dd-MM-yyyy').parse(widget.loan.dueDate);
-    } catch (_) {
-      // Ignore if parsing fails (e.g. just Day number)
-    }
+    _selectedDate = DateHelper.parseSafe(widget.loan.dueDate);
     _fetchHistory();
   }
 
@@ -92,16 +88,11 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
         DateTime.now().subtract(const Duration(days: 365)), DateTime.now());
 
     // Parse Loan Start Date (if available) to filter out older transactions
-    DateTime? loanStart;
-    if (widget.loan.date != null) {
-      try {
-        // TODO: Normalize date storage to DateTime or enforce ISO format to prevent parse errors
-        loanStart = DateTime.parse(widget.loan.date!);
-        // Reset to start of day to be inclusive of same-day payments
-        loanStart = DateTime(loanStart.year, loanStart.month, loanStart.day);
-      } catch (_) {
-        // Ignore invalid start date; proceed without date filtering
-      }
+    // Parse Loan Start Date (if available) to filter out older transactions
+    DateTime? loanStart = DateHelper.parseSafe(widget.loan.date);
+    if (loanStart != null) {
+      // Reset to start of day to be inclusive of same-day payments
+      loanStart = DateTime(loanStart.year, loanStart.month, loanStart.day);
     }
 
     final filtered = all.where((item) {
@@ -522,16 +513,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
     final remaining = double.tryParse(remainingCtrl.text) ?? 0.0;
     final rate = double.tryParse(rateCtrl.text) ?? 0.0;
 
-    final lastDateStr = widget.loan.lastPaymentDate ??
-        widget.loan.date ??
-        DateTime.now().toIso8601String();
-
-    DateTime lastDate;
-    try {
-      lastDate = DateTime.parse(lastDateStr);
-    } catch (_) {
-      lastDate = DateTime.now().subtract(const Duration(days: 30));
-    }
+    final lastDate = DateHelper.parseSafe(widget.loan.lastPaymentDate) ??
+        DateHelper.parseSafe(widget.loan.date) ??
+        DateTime.now().subtract(const Duration(days: 30));
 
     final now = DateTime.now();
     int days = now.difference(lastDate).inDays;
@@ -715,15 +699,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
     final emi = double.tryParse(emiCtrl.text) ?? 0.0;
 
     // Daily Interest Calculation (Tier 1 Model)
-    final lastDateStr = widget.loan.lastPaymentDate ??
-        widget.loan.date ??
-        DateTime.now().toIso8601String();
-    DateTime lastDate;
-    try {
-      lastDate = DateTime.parse(lastDateStr);
-    } catch (_) {
-      lastDate = DateTime.now().subtract(const Duration(days: 30));
-    }
+    final lastDate = DateHelper.parseSafe(widget.loan.lastPaymentDate) ??
+        DateHelper.parseSafe(widget.loan.date) ??
+        DateTime.now().subtract(const Duration(days: 30));
 
     final now = DateTime.now();
     int days = now.difference(lastDate).inDays;

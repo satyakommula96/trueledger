@@ -143,4 +143,24 @@ class DateHelper {
         return 'th';
     }
   }
+
+  static DateTime? parseSafe(String? input) {
+    if (input == null || input.isEmpty) return null;
+    try {
+      return DateTime.parse(input);
+    } catch (_) {}
+    try {
+      return DateFormat('dd-MM-yyyy').parse(input);
+    } catch (_) {}
+    try {
+      return DateFormat('dd/MM/yyyy').parse(input);
+    } catch (_) {}
+    try {
+      return DateFormat('d/M/yyyy').parse(input);
+    } catch (_) {}
+    try {
+      return DateFormat('dd MMM yyyy').parse(input);
+    } catch (_) {}
+    return null;
+  }
 }
