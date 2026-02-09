@@ -122,7 +122,7 @@ class RecurringTransactionsScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "${item.frequency} • ${item.category}".toUpperCase(),
+                      _buildFrequencyText(item).toUpperCase(),
                       style: TextStyle(
                           color: semantic.secondaryText,
                           fontSize: 10,
@@ -369,5 +369,24 @@ class RecurringTransactionsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  String _buildFrequencyText(RecurringTransaction item) {
+    String dayInfo = '';
+    if (item.frequency == 'MONTHLY' && item.dayOfMonth != null) {
+      dayInfo = ' • Day ${item.dayOfMonth}';
+    } else if (item.frequency == 'WEEKLY' && item.dayOfWeek != null) {
+      const days = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday'
+      ];
+      dayInfo = ' • ${days[item.dayOfWeek! % 7]}';
+    }
+    return '${item.frequency} • ${item.category}$dayInfo';
   }
 }

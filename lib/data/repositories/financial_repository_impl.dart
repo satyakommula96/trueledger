@@ -108,6 +108,8 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     final subBills = await db.query('subscriptions', where: 'active = 1');
     final ccBills = await db.query('credit_cards');
     final loanBills = await db.query('loans');
+    final recurringTx =
+        await db.query('recurring_transactions', where: 'active = 1');
 
     final now = DateTime.now();
     final currentMonth = DateFormat('yyyy-MM').format(now);
@@ -168,6 +170,31 @@ class FinancialRepositoryImpl implements IFinancialRepository {
             'isRecurring': true,
             'isPaid': checkPaid(l['name'] as String? ?? ''),
           }),
+      ...recurringTx.map((r) {
+        // Format due date based on frequency
+        String dueDate;
+        final dayOfMonth = r['day_of_month'] as int?;
+        if (dayOfMonth != null) {
+          // For monthly recurring, use day of month
+          dueDate =
+              '${now.year}-${now.month.toString().padLeft(2, '0')}-${dayOfMonth.toString().padLeft(2, '0')}';
+        } else {
+          // For other frequencies, use current date as placeholder
+          dueDate = DateFormat('yyyy-MM-dd').format(now);
+        }
+
+        return {
+          'id': 'recurring_${r['id']}',
+          'name': r['name'],
+          'title': r['name'],
+          'amount': r['amount'],
+          'type':
+              r['type'] == 'INCOME' ? 'RECURRING INCOME' : 'RECURRING EXPENSE',
+          'due': dueDate,
+          'isRecurring': true,
+          'isPaid': checkPaid(r['name'] as String? ?? ''),
+        };
+      }),
     ];
   }
 

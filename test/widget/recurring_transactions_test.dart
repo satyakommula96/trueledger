@@ -71,7 +71,7 @@ void main() {
 
       expect(find.text('RENT'), findsOneWidget);
       expect(find.text('SALARY'), findsOneWidget);
-      expect(find.text('MONTHLY • HOUSING'), findsOneWidget);
+      expect(find.text('MONTHLY • HOUSING • DAY 1'), findsOneWidget);
     });
 
     testWidgets('opens add dialog when FAB is pressed', (tester) async {
