@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/presentation/providers/investments_provider.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 
@@ -429,6 +430,7 @@ class InvestmentsScreen extends ConsumerWidget {
                       DateTime.now().toIso8601String(),
                     );
                 ref.invalidate(investmentsProvider);
+                ref.invalidate(dashboardProvider);
                 if (context.mounted) Navigator.pop(context);
               },
               child: const Text("SAVE"),

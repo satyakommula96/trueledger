@@ -9,6 +9,7 @@ import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/screens/net_worth/net_worth_details.dart';
 import 'package:trueledger/presentation/screens/investments/investments_screen.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/core/constants/widget_keys.dart';
 
 class NetWorthTrackingScreen extends ConsumerStatefulWidget {
   const NetWorthTrackingScreen({super.key});
@@ -307,6 +308,7 @@ class _NetWorthTrackingScreenState
                     child: Text(
                       CurrencyFormatter.format(_currentNetWorth,
                           isPrivate: isPrivate),
+                      key: WidgetKeys.dashboardNetWorthValue,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 42,
@@ -339,6 +341,7 @@ class _NetWorthTrackingScreenState
             ),
             borderRadius: 20,
             child: Container(
+              key: WidgetKeys.dashboardAssetsButton,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: semantic.income.withValues(alpha: 0.08),
@@ -491,6 +494,7 @@ class _NetWorthTrackingScreenState
     final padding = range * 0.1; // 10% padding
 
     return Container(
+      key: WidgetKeys.analysisTrendChart,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: semantic.surfaceCombined.withValues(alpha: 0.5),

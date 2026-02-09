@@ -4,6 +4,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 
 class EditGoalScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> goal;
@@ -112,12 +113,14 @@ class _EditGoalScreenState extends ConsumerState<EditGoalScreen> {
       target,
       current,
     );
+    ref.invalidate(dashboardProvider);
     if (mounted) Navigator.pop(context);
   }
 
   Future<void> _delete() async {
     final repo = ref.read(financialRepositoryProvider);
     await repo.deleteItem('saving_goals', widget.goal['id']);
+    ref.invalidate(dashboardProvider);
     if (mounted) Navigator.pop(context);
   }
 }

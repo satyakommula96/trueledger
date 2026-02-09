@@ -9,6 +9,7 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/category_provider.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:trueledger/core/constants/widget_keys.dart';
 
 class EditEntryScreen extends ConsumerStatefulWidget {
   final LedgerItem entry;
@@ -48,6 +49,7 @@ class _EditEntryScreenState extends ConsumerState<EditEntryScreen> {
         elevation: 0,
         actions: [
           IconButton(
+            key: WidgetKeys.deleteButton,
             onPressed: _confirmDelete,
             icon: Icon(
               Icons.delete_outline,
@@ -175,6 +177,7 @@ class _EditEntryScreenState extends ConsumerState<EditEntryScreen> {
                     width: double.infinity,
                     height: 64,
                     child: ElevatedButton(
+                      key: WidgetKeys.saveButton,
                       onPressed: _update,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: semantic.primary,

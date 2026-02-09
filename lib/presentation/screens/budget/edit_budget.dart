@@ -4,6 +4,7 @@ import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 
 import 'package:trueledger/domain/usecases/budget_usecases.dart';
@@ -174,6 +175,7 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
     if (!mounted) return;
 
     if (result.isSuccess) {
+      ref.invalidate(dashboardProvider);
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context)
@@ -198,6 +200,7 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
     if (!mounted) return;
 
     if (result.isSuccess) {
+      ref.invalidate(dashboardProvider);
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context)
@@ -212,6 +215,7 @@ class _EditBudgetScreenState extends ConsumerState<EditBudgetScreen> {
     if (!mounted) return;
 
     if (result.isSuccess) {
+      ref.invalidate(dashboardProvider);
       if (mounted) Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

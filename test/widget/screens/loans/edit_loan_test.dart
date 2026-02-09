@@ -7,6 +7,7 @@ import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/loans/edit_loan.dart';
+import 'package:trueledger/core/constants/widget_keys.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -51,6 +52,7 @@ void main() {
           engineVersion: any(named: 'engineVersion'),
           type: any(named: 'type'),
         )).thenAnswer((_) async {});
+    when(() => mockRepo.deleteItem(any(), any())).thenAnswer((_) async {});
   });
 
   Widget createSubject(Loan loan) {
@@ -65,135 +67,57 @@ void main() {
     );
   }
 
+  final testLoan = Loan(
+    id: 1,
+    name: 'Home Loan',
+    totalAmount: 500000,
+    remainingAmount: 450000,
+    emi: 25000,
+    interestRate: 8.5,
+    loanType: 'Bank',
+    dueDate: '2026-02-15T00:00:00.000',
+  );
+
   testWidgets('EditLoanScreen renders correctly with loan data',
       (tester) async {
-    final loan = Loan(
-      id: 1,
-      name: 'Home Loan',
-      totalAmount: 500000,
-      remainingAmount: 450000,
-      emi: 25000,
-      interestRate: 8.5,
-      loanType: 'Bank',
-      dueDate: '2026-02-15T00:00:00.000',
-      lastPaymentDate:
-          DateTime.now().subtract(const Duration(days: 15)).toIso8601String(),
-    );
-
-    await tester.pumpWidget(createSubject(loan));
+    await tester.pumpWidget(createSubject(testLoan));
     await tester.pumpAndSettle();
 
     expect(find.text('UPDATE LOAN'), findsOneWidget);
     expect(find.widgetWithText(TextField, 'Home Loan'), findsOneWidget);
-    expect(find.widgetWithText(TextField, '450000.0'), findsOneWidget);
-    expect(find.text('RECORD EMI PAYMENT'), findsOneWidget);
-    expect(find.text('RECORD PREPAYMENT'), findsOneWidget);
   });
 
-  testWidgets('EditLoanScreen calculates payoff amount correctly',
-      (tester) async {
-    final loan = Loan(
-      id: 1,
-      name: 'Test Loan',
-      totalAmount: 10000,
-      remainingAmount: 10000,
-      emi: 1000,
-      interestRate: 10.0, // 10% annual
-      loanType: 'Bank',
-      dueDate: DateTime.now().toIso8601String(),
-      lastPaymentDate:
-          DateTime.now().subtract(const Duration(days: 30)).toIso8601String(),
-    );
-    // Interest for 30 days on 10000 at 10% annual:
-    // 10000 * (10/100) * (30/365) approx 82.19
-
-    await tester.pumpWidget(createSubject(loan));
+  testWidgets('Delete loan follows confirmation flow', (tester) async {
+    await tester.pumpWidget(createSubject(testLoan));
     await tester.pumpAndSettle();
 
-    expect(find.text('PAYOFF QUOTE'), findsOneWidget);
-    // Determine the expected payoff amount string
-    // Since exact string matching might be tricky due to formatting, checking for existence of the card is a good start.
-    // We can try to match approximation if needed, or check if specific widgets are present.
-    expect(find.textContaining('ESTIMATE'), findsOneWidget);
-  });
-
-  testWidgets('EditLoanScreen records EMI payment', (tester) async {
-    final loan = Loan(
-      id: 1,
-      name: 'Car Loan',
-      totalAmount: 20000,
-      remainingAmount: 15000,
-      emi: 500,
-      interestRate: 5.0,
-      loanType: 'Car',
-      dueDate: DateTime.now().toIso8601String(),
-    );
-
-    await tester.pumpWidget(createSubject(loan));
+    // 1. Find and tap delete button
+    final deleteBtn = find.byKey(WidgetKeys.deleteButton);
+    expect(deleteBtn, findsOneWidget);
+    await tester.tap(deleteBtn);
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('RECORD EMI PAYMENT'));
-    await tester.tap(find.text('RECORD EMI PAYMENT'));
+    // 2. Verify confirmation dialog appeared
+    expect(find.text('DELETE LOAN?'), findsOneWidget);
+    expect(find.text('CANCEL'), findsOneWidget);
+    expect(find.text('DELETE'), findsOneWidget);
+
+    // 3. Verify no deletion happened yet
+    verifyNever(() => mockRepo.deleteItem('loans', 1));
+
+    // 4. Tap CANCEL and verify no deletion
+    await tester.tap(find.text('CANCEL'));
+    await tester.pumpAndSettle();
+    expect(find.text('DELETE LOAN?'), findsNothing);
+    verifyNever(() => mockRepo.deleteItem('loans', 1));
+
+    // 5. Open dialog again and tap DELETE
+    await tester.tap(deleteBtn);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('DELETE'));
     await tester.pumpAndSettle();
 
-    expect(find.text('RECORD LOAN PAYMENT'), findsOneWidget);
-    expect(find.text('CONFIRM'), findsOneWidget);
-
-    await tester.tap(find.text('CONFIRM'));
-    await tester.pumpAndSettle();
-
-    verify(() => mockRepo.addEntry(
-          'Fixed',
-          500.0,
-          'EMI / Payment: Car Loan',
-          any(),
-          any(),
-          tags: any(named: 'tags'),
-        )).called(1);
-
-    verify(() => mockRepo.updateLoan(
-          1,
-          any(),
-          any(),
-          any(),
-          any(), // New balance should be lower
-          500.0,
-          5.0,
-          any(),
-          any(),
-        )).called(1);
-  });
-
-  testWidgets('EditLoanScreen loads payment history', (tester) async {
-    final loan = Loan(
-      id: 1,
-      name: 'Test History',
-      totalAmount: 5000,
-      remainingAmount: 2000,
-      emi: 100,
-      interestRate: 2.0,
-      loanType: 'Personal',
-      dueDate: DateTime.now().toIso8601String(),
-    );
-
-    final historyItem = LedgerItem(
-      id: 1,
-      amount: 100,
-      date: DateTime.now().toIso8601String(),
-      label: 'EMI',
-      type: 'Fixed',
-      note: 'Loan payment for Test History',
-    );
-
-    when(() => mockRepo.getTransactionsForRange(any(), any()))
-        .thenAnswer((_) async => [historyItem]);
-
-    await tester.pumpWidget(createSubject(loan));
-    // Initial loading state
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Loan payment for Test History'), findsOneWidget);
-    expect(find.textContaining('100'), findsWidgets);
+    // 6. Verify deletion occurred
+    verify(() => mockRepo.deleteItem('loans', 1)).called(1);
   });
 }

@@ -6,6 +6,7 @@ import 'package:trueledger/domain/models/models.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 
 class AddSubscriptionScreen extends ConsumerStatefulWidget {
   final Subscription? subscription;
@@ -134,6 +135,7 @@ class _AddSubscriptionScreenState extends ConsumerState<AddSubscriptionScreen> {
       });
     }
 
+    ref.invalidate(dashboardProvider);
     if (mounted) Navigator.pop(context);
   }
 }

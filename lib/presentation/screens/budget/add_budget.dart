@@ -4,6 +4,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/category_provider.dart';
 import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
 import 'package:trueledger/core/theme/theme.dart';
@@ -218,6 +219,7 @@ class _AddBudgetScreenState extends ConsumerState<AddBudgetScreen> {
 
     final repo = ref.read(financialRepositoryProvider);
     await repo.addBudget(category, limit);
+    ref.invalidate(dashboardProvider);
     if (mounted) Navigator.pop(context);
   }
 }
