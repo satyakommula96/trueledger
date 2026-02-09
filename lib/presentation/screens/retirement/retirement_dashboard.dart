@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/presentation/providers/retirement_provider.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 
 class RetirementDashboard extends ConsumerWidget {
@@ -453,6 +454,7 @@ class RetirementDashboard extends ConsumerWidget {
                   ref
                       .read(retirementSettingsProvider.notifier)
                       .updateSettings(newSettings);
+                  ref.invalidate(dashboardProvider);
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(

@@ -4,6 +4,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 
 class AddGoalScreen extends ConsumerStatefulWidget {
   const AddGoalScreen({super.key});
@@ -59,6 +60,7 @@ class _AddGoalScreenState extends ConsumerState<AddGoalScreen> {
     if (nameCtrl.text.isEmpty || targetCtrl.text.isEmpty) return;
     final repo = ref.read(financialRepositoryProvider);
     await repo.addGoal(nameCtrl.text, double.parse(targetCtrl.text));
+    ref.invalidate(dashboardProvider);
     if (mounted) Navigator.pop(context);
   }
 }
