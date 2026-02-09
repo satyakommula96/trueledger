@@ -291,13 +291,18 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
       ],
     );
 
-    if (isTouch) return mainContent.animate().fadeIn(duration: 600.ms);
+    final clickableContent = GestureDetector(
+      onTap: widget.onTapNetWorth,
+      child: mainContent,
+    );
+
+    if (isTouch) return clickableContent.animate().fadeIn(duration: 600.ms);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
-      child: mainContent.animate().fadeIn(duration: 600.ms),
+      child: clickableContent.animate().fadeIn(duration: 600.ms),
     );
   }
 
