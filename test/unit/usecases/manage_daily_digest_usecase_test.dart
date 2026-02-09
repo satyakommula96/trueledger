@@ -34,7 +34,7 @@ void main() {
         BillSummary(id: '1', name: 'Bill 1', amount: 100, type: 'BILL')
       ];
 
-      final result = await useCase.execute(bills, AppRunContext.coldStart);
+      final result = await useCase.execute(bills, AppRunContext.background);
 
       expect(result, isA<ShowDigestAction>());
       expect((result as ShowDigestAction).bills, bills);

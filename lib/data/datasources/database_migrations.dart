@@ -237,17 +237,35 @@ class MigrationV10 extends Migration {
 }
 
 final List<Migration> appMigrations = [
-  MigrationV2(),
-  MigrationV3(),
-  MigrationV4(),
-  MigrationV5(),
-  MigrationV6(),
-  MigrationV7(),
-  MigrationV8(),
-  MigrationV9(),
   MigrationV10(),
   MigrationV11(),
+  MigrationV12(),
 ];
+
+class MigrationV12 extends Migration {
+  MigrationV12() : super(12);
+
+  @override
+  Future<void> up(common.DatabaseExecutor db) async {
+    await db.execute('''
+          CREATE TABLE IF NOT EXISTS ${Schema.recurringTransactionsTable} (
+            ${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT,
+            ${Schema.colName} TEXT,
+            ${Schema.colAmount} REAL,
+            ${Schema.colCategory} TEXT,
+            ${Schema.colType} TEXT,
+            ${Schema.colFrequency} TEXT,
+            ${Schema.colDayOfMonth} INTEGER,
+            ${Schema.colDayOfWeek} INTEGER,
+            ${Schema.colLastProcessed} TEXT,
+            ${Schema.colActive} INTEGER DEFAULT 1
+          )
+        ''');
+  }
+
+  @override
+  Future<void> down(common.DatabaseExecutor db) async {}
+}
 
 class MigrationV11 extends Migration {
   MigrationV11() : super(11);

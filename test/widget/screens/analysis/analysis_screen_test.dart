@@ -9,7 +9,7 @@ import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/usecases/get_analysis_data_usecase.dart';
 import 'package:trueledger/presentation/providers/analysis_provider.dart';
 import 'package:trueledger/presentation/screens/analysis/analysis_screen.dart';
-import 'package:trueledger/presentation/screens/budget/add_budget.dart';
+
 import 'dart:async';
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
@@ -95,25 +95,7 @@ void main() {
         findsOneWidget);
     expect(find.text('MONTHLY TREND'), findsOneWidget);
     expect(find.text('DISTRIBUTION'), findsOneWidget);
-    expect(find.text('BUDGETS'), findsOneWidget);
+    // Budget section is not present in AnalysisScreen
     expect(find.text('FOOD'), findsWidgets);
-  });
-
-  testWidgets('AnalysisScreen FAB opens AddBudget', (tester) async {
-    final emptyData = AnalysisData(
-      budgets: [],
-      trendData: [],
-      categoryData: [],
-    );
-
-    await tester.pumpWidget(createSubject(
-      override: (ref) => emptyData,
-    ));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byIcon(Icons.add_rounded));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(AddBudgetScreen), findsOneWidget);
   });
 }

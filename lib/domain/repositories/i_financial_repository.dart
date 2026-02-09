@@ -86,4 +86,19 @@ abstract class IFinancialRepository {
   });
   Future<List<Map<String, dynamic>>> getLoanAuditLog(int loanId);
   Future<void> updateEntryTags(String type, int id, Set<TransactionTag> tags);
+  Future<List<RetirementAccount>> getRetirementAccounts();
+  Future<void> updateRetirementAccount(int id, double amount, String date);
+  Future<List<Asset>> getInvestments();
+  Future<void> addInvestment(
+      String name, double amount, String type, String date);
+  Future<List<RecurringTransaction>> getRecurringTransactions();
+  Future<void> addRecurringTransaction({
+    required String name,
+    required double amount,
+    required String category,
+    required String type,
+    required String frequency,
+    int? dayOfMonth,
+    int? dayOfWeek,
+  });
 }

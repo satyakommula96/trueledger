@@ -9,6 +9,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:trueledger/core/utils/web_saver.dart';
 import 'package:trueledger/core/services/file_service.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
@@ -33,6 +36,7 @@ class DataExportScreen extends ConsumerStatefulWidget {
 class _DataExportScreenState extends ConsumerState<DataExportScreen> {
   bool _isExporting = false;
   bool _encryptFullExport = false;
+  DateTimeRange? _selectedDateRange;
 
   Future<void> _exportCompleteData() async {
     setState(() => _isExporting = true);
@@ -258,45 +262,36 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         final fixed = await repo.getAllValues('fixed_expenses');
         final investments = await repo.getAllValues('investments');
 
+        final allItems = [
+          ...txs.map((e) => {...e, 'type': 'Expense'}),
+          ...income.map((e) => {...e, 'type': 'Income'}),
+          ...fixed.map((e) => {...e, 'type': 'Fixed Expense'}),
+          ...investments.map((e) => {...e, 'type': 'Investment'}),
+        ];
+
+        // Filter by date range if selected
+        final filteredItems = _selectedDateRange == null
+            ? allItems
+            : allItems.where((item) {
+                final date = DateTime.parse(item['date']);
+                return date.isAfter(_selectedDateRange!.start
+                        .subtract(const Duration(days: 1))) &&
+                    date.isBefore(
+                        _selectedDateRange!.end.add(const Duration(days: 1)));
+              }).toList();
+
+        // Sort by date descending
+        filteredItems.sort((a, b) => b['date'].compareTo(a['date']));
+
         rows.add(['ID', 'Date', 'Type', 'Amount', 'Label/Category', 'Note']);
-        for (var tx in txs) {
+        for (var item in filteredItems) {
           rows.add([
-            tx['id'],
-            tx['date'],
-            'Expense',
-            tx['amount'],
-            tx['category'],
-            tx['note']
-          ]);
-        }
-        for (var inc in income) {
-          rows.add([
-            inc['id'],
-            inc['date'],
-            'Income',
-            inc['amount'],
-            inc['source'],
-            inc['note']
-          ]);
-        }
-        for (var f in fixed) {
-          rows.add([
-            f['id'],
-            f['date'],
-            'Fixed Expense',
-            f['amount'],
-            f['category'],
-            f['note']
-          ]);
-        }
-        for (var inv in investments) {
-          rows.add([
-            inv['id'],
-            inv['date'],
-            'Investment',
-            inv['amount'],
-            inv['name'],
-            inv['note']
+            item['id'],
+            item['date'],
+            item['type'],
+            item['amount'],
+            item['category'] ?? item['source'] ?? item['name'] ?? '',
+            item['note'] ?? ''
           ]);
         }
         fileName =
@@ -324,6 +319,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
           categorySpending: dashboardData.categorySpending,
           requestedSurface: InsightSurface.details,
           forceRefresh: true,
+          ignoreCooldown: true,
         );
 
         rows.add(['ID', 'Title', 'Type', 'Priority', 'Body', 'Value']);
@@ -424,6 +420,187 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("CSV EXPORT FAILED: $e".toUpperCase()),
+            backgroundColor: semantic.overspent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
+
+  Future<void> _exportPDF() async {
+    setState(() => _isExporting = true);
+    final semantic = Theme.of(context).extension<AppColors>()!;
+    try {
+      final repo = ref.read(financialRepositoryProvider);
+
+      final txs = await repo.getAllValues('variable_expenses');
+      final income = await repo.getAllValues('income_sources');
+      final fixed = await repo.getAllValues('fixed_expenses');
+      final investments = await repo.getAllValues('investments');
+
+      final allItems = [
+        ...txs.map((e) => {...e, 'type': 'Expense'}),
+        ...income.map((e) => {...e, 'type': 'Income'}),
+        ...fixed.map((e) => {...e, 'type': 'Fixed Expense'}),
+        ...investments.map((e) => {...e, 'type': 'Investment'}),
+      ];
+
+      // Filter by date range
+      final filteredItems = _selectedDateRange == null
+          ? allItems
+          : allItems.where((item) {
+              final date = DateTime.parse(item['date']);
+              return date.isAfter(_selectedDateRange!.start
+                      .subtract(const Duration(days: 1))) &&
+                  date.isBefore(
+                      _selectedDateRange!.end.add(const Duration(days: 1)));
+            }).toList();
+
+      filteredItems.sort((a, b) => b['date'].compareTo(a['date']));
+
+      final pdf = pw.Document();
+
+      // Calculate totals
+      double totalIncome = 0;
+      double totalExpense = 0;
+
+      for (var item in filteredItems) {
+        final amount = (item['amount'] as num).toDouble();
+        if (item['type'] == 'Income') {
+          totalIncome += amount;
+        } else {
+          totalExpense += amount;
+        }
+      }
+
+      // Load fonts with fallback to default
+      pw.Font? font;
+      pw.Font? fontBold;
+      try {
+        font = await PdfGoogleFonts.notoSansRegular();
+        fontBold = await PdfGoogleFonts.notoSansBold();
+      } catch (e) {
+        // Fallback to default fonts if asset loading fails
+        font = null;
+        fontBold = null;
+      }
+
+      pdf.addPage(
+        pw.MultiPage(
+          maxPages: 1000,
+          pageFormat: PdfPageFormat.a4,
+          theme: font != null && fontBold != null
+              ? pw.ThemeData.withFont(base: font, bold: fontBold)
+              : null,
+          build: (pw.Context context) {
+            return [
+              pw.Header(
+                level: 0,
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('TrueLedger Report',
+                        style: pw.TextStyle(
+                            fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                    pw.Text(
+                        _selectedDateRange != null
+                            ? '${_selectedDateRange!.start.toString().split(' ')[0]} to ${_selectedDateRange!.end.toString().split(' ')[0]}'
+                            : 'All Time',
+                        style: const pw.TextStyle(fontSize: 12)),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+                children: [
+                  pw.Column(children: [
+                    pw.Text('Total Income',
+                        style: const pw.TextStyle(fontSize: 10)),
+                    pw.Text(totalIncome.toStringAsFixed(2),
+                        style: pw.TextStyle(
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.green)),
+                  ]),
+                  pw.Column(children: [
+                    pw.Text('Total Expenses',
+                        style: const pw.TextStyle(fontSize: 10)),
+                    pw.Text(totalExpense.toStringAsFixed(2),
+                        style: pw.TextStyle(
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.red)),
+                  ]),
+                  pw.Column(children: [
+                    pw.Text('Net Savings',
+                        style: const pw.TextStyle(fontSize: 10)),
+                    pw.Text((totalIncome - totalExpense).toStringAsFixed(2),
+                        style: pw.TextStyle(
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.blue)),
+                  ]),
+                ],
+              ),
+              pw.SizedBox(height: 20),
+              pw.TableHelper.fromTextArray(
+                headers: ['Date', 'Type', 'Category', 'Note', 'Amount'],
+                data: filteredItems.map((item) {
+                  return [
+                    item['date'].toString().split(' ')[0],
+                    item['type'],
+                    item['category'] ?? item['source'] ?? item['name'] ?? '',
+                    (item['note'] ?? '').toString().length > 20
+                        ? "${(item['note'] ?? '').toString().substring(0, 20)}..."
+                        : (item['note'] ?? ''),
+                    (item['amount'] as num).toStringAsFixed(2),
+                  ];
+                }).toList(),
+                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                headerDecoration:
+                    const pw.BoxDecoration(color: PdfColors.grey300),
+                rowDecoration: const pw.BoxDecoration(
+                  border: pw.Border(
+                      bottom: pw.BorderSide(color: PdfColors.grey200)),
+                ),
+                cellAlignments: {
+                  0: pw.Alignment.centerLeft,
+                  1: pw.Alignment.centerLeft,
+                  2: pw.Alignment.centerLeft,
+                  3: pw.Alignment.centerLeft,
+                  4: pw.Alignment.centerRight,
+                },
+              ),
+            ];
+          },
+        ),
+      );
+
+      final fileName =
+          "trueledger_report_${DateTime.now().millisecondsSinceEpoch}.pdf";
+
+      if (kIsWeb) {
+        await saveFileWeb(await pdf.save(), fileName);
+      } else {
+        await Printing.sharePdf(bytes: await pdf.save(), filename: fileName);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("PDF REPORT GENERATED SUCCESSFULLY"),
+            backgroundColor: semantic.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("PDF EXPORT FAILED: $e".toUpperCase()),
             backgroundColor: semantic.overspent,
           ),
         );
@@ -705,42 +882,87 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
               const SizedBox(height: 32),
               _buildRestoreSection(semantic),
               const SizedBox(height: 32),
-              _buildSectionHeader("INDIVIDUAL REPORTS (CSV)", semantic),
+              _buildSectionHeader("INDIVIDUAL REPORTS (CSV / PDF)", semantic),
               const SizedBox(height: 12),
-              _buildExportOption(
-                title: "TRANSACTIONS",
-                subtitle: "Expenses, income and investments",
-                icon: Icons.list_alt_rounded,
-                color: Colors.blue,
-                onTap: () => _exportCSV('transactions'),
-                semantic: semantic,
-              ),
+              _buildDateFilter(semantic),
               const SizedBox(height: 16),
-              _buildExportOption(
-                title: "BUDGETS",
-                subtitle: "Monthly limits and category targets",
-                icon: Icons.pie_chart_outline_rounded,
-                color: Colors.orange,
-                onTap: () => _exportCSV('budgets'),
-                semantic: semantic,
-              ),
-              const SizedBox(height: 16),
-              _buildExportOption(
-                title: "AI INSIGHTS",
-                subtitle: "Financial patterns and health analysis",
-                icon: Icons.auto_awesome_outlined,
-                color: Colors.purple,
-                onTap: () => _exportCSV('insights'),
-                semantic: semantic,
-              ),
-              const SizedBox(height: 16),
-              _buildExportOption(
-                title: "LOANS",
-                subtitle: "Active loans and borrowing details",
-                icon: Icons.account_balance_rounded,
-                color: Colors.redAccent,
-                onTap: () => _exportCSV('loans'),
-                semantic: semantic,
+
+              // Adaptive Grid Layout for export options
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth > 500;
+                  return Wrap(
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      SizedBox(
+                        width: isWide
+                            ? (constraints.maxWidth - 16) / 2
+                            : constraints.maxWidth,
+                        child: _buildExportOption(
+                          title: "TRANSACTIONS",
+                          subtitle: "Expenses, income (CSV)",
+                          icon: Icons.list_alt_rounded,
+                          color: Colors.blue,
+                          onTap: () => _exportCSV('transactions'),
+                          semantic: semantic,
+                        ),
+                      ),
+                      SizedBox(
+                        width: isWide
+                            ? (constraints.maxWidth - 16) / 2
+                            : constraints.maxWidth,
+                        child: _buildExportOption(
+                          title: "PDF REPORT",
+                          subtitle: "Printable financial report",
+                          icon: Icons.picture_as_pdf_rounded,
+                          color: Colors.red,
+                          onTap: _exportPDF,
+                          semantic: semantic,
+                        ),
+                      ),
+                      SizedBox(
+                        width: isWide
+                            ? (constraints.maxWidth - 16) / 2
+                            : constraints.maxWidth,
+                        child: _buildExportOption(
+                          title: "BUDGETS",
+                          subtitle: "Limits and targets (CSV)",
+                          icon: Icons.pie_chart_outline_rounded,
+                          color: Colors.orange,
+                          onTap: () => _exportCSV('budgets'),
+                          semantic: semantic,
+                        ),
+                      ),
+                      SizedBox(
+                        width: isWide
+                            ? (constraints.maxWidth - 16) / 2
+                            : constraints.maxWidth,
+                        child: _buildExportOption(
+                          title: "AI INSIGHTS",
+                          subtitle: "Health analysis (CSV)",
+                          icon: Icons.auto_awesome_outlined,
+                          color: Colors.purple,
+                          onTap: () => _exportCSV('insights'),
+                          semantic: semantic,
+                        ),
+                      ),
+                      SizedBox(
+                        width: isWide
+                            ? (constraints.maxWidth - 16) / 2
+                            : constraints.maxWidth,
+                        child: _buildExportOption(
+                          title: "LOANS",
+                          subtitle: "Borrowing details (CSV)",
+                          icon: Icons.account_balance_rounded,
+                          color: Colors.redAccent,
+                          onTap: () => _exportCSV('loans'),
+                          semantic: semantic,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 48),
               _buildOwnershipNotice(semantic),
@@ -1013,6 +1235,91 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
               ),
             ),
             Icon(Icons.download_rounded, color: semantic.divider, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateFilter(AppColors semantic) {
+    return HoverWrapper(
+      onTap: () async {
+        final picked = await showDateRangePicker(
+          context: context,
+          firstDate: DateTime(2020),
+          lastDate: DateTime.now(),
+          initialDateRange: _selectedDateRange,
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: ColorScheme.dark(
+                  primary: semantic.primary,
+                  onPrimary: Colors.white,
+                  surface: semantic.surfaceCombined,
+                  onSurface: semantic.text,
+                ),
+              ),
+              child: child!,
+            );
+          },
+        );
+        if (picked != null) {
+          setState(() => _selectedDateRange = picked);
+        }
+      },
+      borderRadius: 24,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+            color: semantic.surfaceCombined.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: semantic.divider, width: 1.5)),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: semantic.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.date_range_rounded,
+                  size: 18, color: semantic.primary),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "DATE RANGE",
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: semantic.secondaryText,
+                        letterSpacing: 1.5),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _selectedDateRange == null
+                        ? "All Time"
+                        : "${_selectedDateRange!.start.toString().split(' ')[0]} - ${_selectedDateRange!.end.toString().split(' ')[0]}",
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: semantic.text),
+                  ),
+                ],
+              ),
+            ),
+            if (_selectedDateRange != null)
+              IconButton(
+                icon: const Icon(Icons.close_rounded, size: 20),
+                onPressed: () => setState(() => _selectedDateRange = null),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            const SizedBox(width: 8),
+            Icon(Icons.expand_more_rounded, color: semantic.divider),
           ],
         ),
       ),

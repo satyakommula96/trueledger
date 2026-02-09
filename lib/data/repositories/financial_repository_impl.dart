@@ -1,6 +1,7 @@
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:intl/intl.dart';
 import 'package:trueledger/data/datasources/database.dart';
+import 'package:trueledger/data/datasources/schema.dart';
 import 'package:trueledger/domain/models/models.dart';
 import '../../domain/repositories/i_financial_repository.dart';
 import 'package:flutter/foundation.dart';
@@ -313,12 +314,12 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     final db = await AppDatabase.db;
     final now = DateTime.now();
     final todayDay = now.day;
+    final todayStr = DateFormat('yyyy-MM-dd').format(now);
 
-    // Check Credit Card Statement Generation
+    // 1. Check Credit Card Statement Generation
     final cards = await db.query('credit_cards');
     for (final c in cards) {
       final stmtStr = c['statement_date'] as String? ?? '';
-      // Format matches "12th of month" or just "12"
       final match = RegExp(r'^(\d+)').firstMatch(stmtStr);
       if (match != null) {
         final stmtDay = int.tryParse(match.group(1)!);
@@ -327,6 +328,58 @@ class FinancialRepositoryImpl implements IFinancialRepository {
           await db.update('credit_cards', {'statement_balance': currentBal},
               where: 'id = ?', whereArgs: [c['id']]);
         }
+      }
+    }
+
+    // 2. Process User-Defined Recurring Transactions
+    final recurring = await db.query(Schema.recurringTransactionsTable,
+        where: '${Schema.colActive} = ?', whereArgs: [1]);
+
+    for (final r in recurring) {
+      final item = RecurringTransaction.fromMap(r);
+      final lastProcessed = item.lastProcessed;
+
+      // Skip if already processed today
+      if (lastProcessed != null && lastProcessed.startsWith(todayStr)) continue;
+
+      bool shouldProcess = false;
+
+      switch (item.frequency) {
+        case 'DAILY':
+          shouldProcess = true;
+          break;
+        case 'WEEKLY':
+          if (now.weekday == item.dayOfWeek) {
+            shouldProcess = true;
+          }
+          break;
+        case 'MONTHLY':
+          if (todayDay == item.dayOfMonth) {
+            shouldProcess = true;
+          } else if (item.dayOfMonth != null &&
+              item.dayOfMonth! > 28 &&
+              todayDay == DateTime(now.year, now.month + 1, 0).day) {
+            // Handle last day of month
+            shouldProcess = true;
+          }
+          break;
+      }
+
+      if (shouldProcess) {
+        await addEntry(
+          item.type == 'INCOME' ? 'Income' : 'Variable',
+          item.amount,
+          item.category,
+          "${item.name} (Auto)",
+          todayStr,
+        );
+
+        await db.update(
+          Schema.recurringTransactionsTable,
+          {Schema.colLastProcessed: now.toIso8601String()},
+          where: 'id = ?',
+          whereArgs: [item.id],
+        );
       }
     }
   }
@@ -1090,5 +1143,71 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     }
     await db.update(table, {'tags': tags.map((t) => t.name).join(',')},
         where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<List<RetirementAccount>> getRetirementAccounts() async {
+    final db = await AppDatabase.db;
+    final list = await db.query('retirement_contributions');
+    return list.map((e) => RetirementAccount.fromMap(e)).toList();
+  }
+
+  @override
+  Future<void> updateRetirementAccount(
+      int id, double amount, String date) async {
+    final db = await AppDatabase.db;
+    await db.update(
+        'retirement_contributions', {'amount': amount, 'date': date},
+        where: 'id = ?', whereArgs: [id]);
+  }
+
+  @override
+  Future<List<Asset>> getInvestments() async {
+    final db = await AppDatabase.db;
+    final list = await db.query('investments', where: 'active = 1');
+    return list.map((e) => Asset.fromMap(e)).toList();
+  }
+
+  @override
+  Future<void> addInvestment(
+      String name, double amount, String type, String date) async {
+    final db = await AppDatabase.db;
+    await db.insert('investments', {
+      'name': name,
+      'amount': amount,
+      'type': type,
+      'date': date,
+      'active': 1,
+    });
+  }
+
+  @override
+  Future<List<RecurringTransaction>> getRecurringTransactions() async {
+    final db = await AppDatabase.db;
+    final list = await db.query(Schema.recurringTransactionsTable);
+    return list.map((e) => RecurringTransaction.fromMap(e)).toList();
+  }
+
+  @override
+  Future<void> addRecurringTransaction({
+    required String name,
+    required double amount,
+    required String category,
+    required String type,
+    required String frequency,
+    int? dayOfMonth,
+    int? dayOfWeek,
+  }) async {
+    final db = await AppDatabase.db;
+    await db.insert(Schema.recurringTransactionsTable, {
+      Schema.colName: name,
+      Schema.colAmount: amount,
+      Schema.colCategory: category,
+      Schema.colType: type,
+      Schema.colFrequency: frequency,
+      Schema.colDayOfMonth: dayOfMonth,
+      Schema.colDayOfWeek: dayOfWeek,
+      Schema.colActive: 1,
+    });
   }
 }

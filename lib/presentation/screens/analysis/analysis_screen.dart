@@ -4,15 +4,14 @@ import 'package:trueledger/core/theme/theme.dart';
 
 import 'package:trueledger/presentation/providers/analysis_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
-import 'package:trueledger/presentation/screens/dashboard/dashboard_components/budget_section.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/trend_chart.dart';
-import 'package:trueledger/presentation/screens/budget/add_budget.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/presentation/screens/analysis/annual_reflection_screen.dart';
+import 'package:trueledger/presentation/screens/retirement/retirement_dashboard.dart';
 
 class AnalysisScreen extends ConsumerWidget {
   const AnalysisScreen({super.key});
@@ -30,13 +29,8 @@ class AnalysisScreen extends ConsumerWidget {
       ),
       error: (err, stack) => Scaffold(body: Center(child: Text("Error: $err"))),
       data: (data) {
-        final budgets = data.budgets;
         final trendData = data.trendData;
         final categoryData = data.categoryData;
-
-        void reload() {
-          ref.invalidate(analysisProvider);
-        }
 
         return Scaffold(
           extendBodyBehindAppBar: true,
@@ -51,59 +45,133 @@ class AnalysisScreen extends ConsumerWidget {
               ),
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () async {
-              await Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const AddBudgetScreen()));
-              reload();
-            },
-            backgroundColor: semantic.primary,
-            foregroundColor: Colors.white,
-            elevation: 8,
-            child: const Icon(Icons.add_rounded, size: 28),
-          ),
-          body: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(
-                20, MediaQuery.of(context).padding.top + 80, 20, 100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (trendData.length >= 2) ...[
-                  _buildInsightCard(context, trendData, semantic, isPrivate)
-                      .animate()
-                      .fadeIn(duration: 600.ms)
-                      .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint),
-                  const SizedBox(height: 32),
-                ],
-                _buildAnnualReflectionBanner(context, semantic)
-                    .animate()
-                    .fadeIn(delay: 200.ms),
-                const SizedBox(height: 48),
-                _buildSectionHeader(
-                    semantic, "MONTHLY TREND", "SPENDING & INCOME"),
-                const SizedBox(height: 20),
-                TrendChart(
-                        trendData: trendData,
-                        semantic: semantic,
-                        isPrivate: isPrivate)
-                    .animate()
-                    .fadeIn(delay: 400.ms, duration: 600.ms)
-                    .slideY(begin: 0.05, end: 0, curve: Curves.easeOutQuint),
-                const SizedBox(height: 48),
-                _buildSectionHeader(semantic, "DISTRIBUTION", "BY CATEGORY"),
-                const SizedBox(height: 24),
-                _buildCategoryBreakdown(
-                    context, categoryData, semantic, isPrivate),
-                const SizedBox(height: 48),
-                _buildSectionHeader(semantic, "BUDGETS", "LIVE TRACKING"),
-                const SizedBox(height: 24),
-                BudgetSection(
-                        budgets: budgets, semantic: semantic, onLoad: reload)
-                    .animate()
-                    .fadeIn(delay: 600.ms),
-              ],
-            ),
-          ),
+          body: LayoutBuilder(builder: (context, constraints) {
+            final isWide = constraints.maxWidth > 900;
+            return SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                  20, MediaQuery.of(context).padding.top + 80, 20, 100),
+              child: isWide
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (trendData.length >= 2)
+                              Expanded(
+                                child: _buildInsightCard(
+                                        context, trendData, semantic, isPrivate)
+                                    .animate()
+                                    .fadeIn(duration: 600.ms)
+                                    .slideY(
+                                        begin: 0.1,
+                                        end: 0,
+                                        curve: Curves.easeOutQuint),
+                              ),
+                            if (trendData.length >= 2)
+                              const SizedBox(width: 20),
+                            Expanded(
+                              child: _buildAnnualReflectionBanner(
+                                      context, semantic)
+                                  .animate()
+                                  .fadeIn(delay: 200.ms),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: _buildRetirementBanner(context, semantic)
+                                  .animate()
+                                  .fadeIn(delay: 300.ms),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 48),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildSectionHeader(semantic, "MONTHLY TREND",
+                                      "SPENDING & INCOME"),
+                                  const SizedBox(height: 20),
+                                  TrendChart(
+                                          trendData: trendData,
+                                          semantic: semantic,
+                                          isPrivate: isPrivate)
+                                      .animate()
+                                      .fadeIn(delay: 400.ms, duration: 600.ms)
+                                      .slideY(
+                                          begin: 0.05,
+                                          end: 0,
+                                          curve: Curves.easeOutQuint),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 48),
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildSectionHeader(
+                                      semantic, "DISTRIBUTION", "BY CATEGORY"),
+                                  const SizedBox(height: 24),
+                                  _buildCategoryBreakdown(context, categoryData,
+                                      semantic, isPrivate),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (trendData.length >= 2) ...[
+                          _buildInsightCard(
+                                  context, trendData, semantic, isPrivate)
+                              .animate()
+                              .fadeIn(duration: 600.ms)
+                              .slideY(
+                                  begin: 0.1,
+                                  end: 0,
+                                  curve: Curves.easeOutQuint),
+                          const SizedBox(height: 32),
+                        ],
+                        _buildAnnualReflectionBanner(context, semantic)
+                            .animate()
+                            .fadeIn(delay: 200.ms),
+                        const SizedBox(height: 16),
+                        _buildRetirementBanner(context, semantic)
+                            .animate()
+                            .fadeIn(delay: 300.ms),
+                        const SizedBox(height: 48),
+                        _buildSectionHeader(
+                            semantic, "MONTHLY TREND", "SPENDING & INCOME"),
+                        const SizedBox(height: 20),
+                        TrendChart(
+                                trendData: trendData,
+                                semantic: semantic,
+                                isPrivate: isPrivate)
+                            .animate()
+                            .fadeIn(delay: 400.ms, duration: 600.ms)
+                            .slideY(
+                                begin: 0.05,
+                                end: 0,
+                                curve: Curves.easeOutQuint),
+                        const SizedBox(height: 48),
+                        _buildSectionHeader(
+                            semantic, "DISTRIBUTION", "BY CATEGORY"),
+                        const SizedBox(height: 24),
+                        _buildCategoryBreakdown(
+                            context, categoryData, semantic, isPrivate),
+                      ],
+                    ),
+            );
+          }),
         );
       },
     );
@@ -382,5 +450,64 @@ class AnalysisScreen extends ConsumerWidget {
         delay: 1.seconds,
         duration: 2.seconds,
         color: semantic.primary.withValues(alpha: 0.15));
+  }
+
+  Widget _buildRetirementBanner(BuildContext context, AppColors semantic) {
+    return HoverWrapper(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const RetirementDashboard()),
+      ),
+      borderRadius: 24,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: semantic.primary.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+              color: semantic.primary.withValues(alpha: 0.2), width: 1.5),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: semantic.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(Icons.beach_access_rounded,
+                  color: semantic.primary, size: 24),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "FINANCIAL FREEDOM",
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                        color: semantic.secondaryText),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Retirement Deep Dive",
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: semantic.text,
+                        letterSpacing: -0.2),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: semantic.secondaryText),
+          ],
+        ),
+      ),
+    );
   }
 }

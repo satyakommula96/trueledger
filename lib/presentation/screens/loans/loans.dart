@@ -7,6 +7,7 @@ import 'package:trueledger/core/utils/date_helper.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/loans/add_loan.dart';
 import 'package:trueledger/presentation/screens/loans/edit_loan.dart';
+import 'package:trueledger/presentation/screens/loans/debt_payoff_planner.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/core/theme/color_helper.dart';
@@ -96,6 +97,8 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
           20, 16, 20, 100 + MediaQuery.of(context).padding.bottom),
       children: [
         _buildTotalSummaryCard(semantic),
+        const SizedBox(height: 16),
+        _buildPlannerBanner(context, semantic),
         const SizedBox(height: 32),
         ...loans.asMap().entries.map((entry) {
           final i = entry.key;
@@ -372,5 +375,56 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
         .animate()
         .fadeIn(duration: 600.ms)
         .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuart);
+  }
+
+  Widget _buildPlannerBanner(BuildContext context, AppColors semantic) {
+    return HoverWrapper(
+      onTap: () => Navigator.push(context,
+          MaterialPageRoute(builder: (_) => const DebtPayoffPlannerScreen())),
+      borderRadius: 24,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: semantic.primary.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+              color: semantic.primary.withValues(alpha: 0.2), width: 1.5),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: semantic.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(Icons.auto_graph_rounded,
+                  color: semantic.primary, size: 24),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("STRATEGY",
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: semantic.secondaryText,
+                          letterSpacing: 1.5)),
+                  const SizedBox(height: 4),
+                  Text("Debt Payoff Planner",
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: semantic.text)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: semantic.secondaryText),
+          ],
+        ),
+      ),
+    );
   }
 }

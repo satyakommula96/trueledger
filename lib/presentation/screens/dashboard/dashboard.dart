@@ -9,6 +9,8 @@ import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/insights_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
+import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/core/providers/lifecycle_provider.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/asset_liability_card.dart';
@@ -28,9 +30,10 @@ import 'package:trueledger/presentation/screens/dashboard/weekly_reflection.dart
 import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
 import 'package:trueledger/presentation/screens/transactions/transactions_detail.dart';
 import 'package:trueledger/presentation/screens/transactions/monthly_history.dart';
+import 'package:trueledger/presentation/screens/analysis/analysis_screen.dart';
+import 'package:trueledger/presentation/screens/net_worth/net_worth_tracking_screen.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/onboarding_cards.dart';
-import 'package:trueledger/presentation/screens/analysis/analysis_screen.dart';
 
 class Dashboard extends ConsumerWidget {
   const Dashboard({super.key});
@@ -38,6 +41,13 @@ class Dashboard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(dashboardProvider);
+
+    // Process recurring transactions on app resume
+    ref.listen(appLifecycleProvider, (prev, next) {
+      if (next == AppLifecycleState.resumed) {
+        ref.read(financialRepositoryProvider).checkAndProcessRecurring();
+      }
+    });
 
     final colorScheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<AppColors>()!;
@@ -156,305 +166,81 @@ class Dashboard extends ConsumerWidget {
                           physics: const BouncingScrollPhysics(),
                           slivers: [
                             DashboardHeader(isDark: isDark, onLoad: reload),
-                            SliverPadding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              sliver: SliverList(
-                                delegate: SliverChildListDelegate([
-                                  if (data.billsDueToday.isNotEmpty)
-                                    ...(() {
-                                      final billsToday = data.billsDueToday;
-                                      final total = billsToday.fold(
-                                          0.0, (sum, b) => sum + b.amount);
-
-                                      return [
-                                        Container(
-                                          margin: const EdgeInsets.symmetric(
-                                              vertical: 12),
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20, vertical: 14),
-                                          decoration: BoxDecoration(
-                                            color: semantic.primary
-                                                .withValues(alpha: 0.1),
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            border: Border.all(
-                                                color: semantic.primary
-                                                    .withValues(alpha: 0.2),
-                                                width: 1.5),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                  Icons
-                                                      .notification_important_rounded,
-                                                  size: 20,
-                                                  color: semantic.primary),
-                                              const SizedBox(width: 16),
-                                              Expanded(
-                                                child: Text(
-                                                  "${billsToday.length} ${billsToday.length == 1 ? 'BILL' : 'BILLS'} DUE TODAY · ${CurrencyFormatter.format(total)}",
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w900,
-                                                    color: semantic.primary,
-                                                    letterSpacing: 1.2,
-                                                  ),
-                                                ),
+                            SliverLayoutBuilder(
+                                builder: (context, constraints) {
+                              final isWide = constraints.crossAxisExtent > 800;
+                              return SliverPadding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                sliver: isWide
+                                    ? SliverToBoxAdapter(
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                children: [
+                                                  ..._buildTopSection(
+                                                      semantic,
+                                                      data,
+                                                      summary,
+                                                      ref,
+                                                      reload),
+                                                  const SizedBox(height: 24),
+                                                  ..._buildSummariesSection(
+                                                      semantic,
+                                                      data,
+                                                      summary,
+                                                      ref,
+                                                      currentMonth),
+                                                  const SizedBox(height: 32),
+                                                  _buildAssetsSection(semantic,
+                                                      summary, reload),
+                                                  const SizedBox(height: 120),
+                                                ],
                                               ),
-                                              Icon(Icons.chevron_right_rounded,
-                                                  size: 18,
-                                                  color: semantic.primary
-                                                      .withValues(alpha: 0.5)),
-                                            ],
-                                          ),
-                                        )
-                                            .animate()
-                                            .fadeIn()
-                                            .slideY(begin: 0.1, end: 0),
-                                        const SizedBox(height: 8),
-                                      ];
-                                    })(),
-                                  WealthHero(
-                                    summary: summary,
-                                    activeStreak: data.activeStreak,
-                                    hasLoggedToday: data.todaySpend > 0,
-                                    onTapStreak: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (_) =>
-                                                  const MonthlyHistoryScreen()));
-                                    },
-                                  ).animate().fade(duration: 800.ms).slideY(
-                                      begin: 0.1,
-                                      end: 0,
-                                      curve: Curves.easeOutQuart),
-                                  const SizedBox(height: 24),
-                                  if (summary.totalIncome == 0 &&
-                                      (summary.totalFixed +
-                                              summary.totalVariable) ==
-                                          0) ...[
-                                    OnboardingActionCards(
-                                      semantic: semantic,
-                                      onAddTransaction: () async {
-                                        final added =
-                                            await showModalBottomSheet<bool>(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          builder: (context) =>
-                                              const QuickAddBottomSheet(),
-                                        );
-                                        if (added == true) reload();
-                                      },
-                                      onAddBudget: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const AnalysisScreen()));
-                                      },
-                                      onCheckAnalysis: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const AnalysisScreen()));
-                                      },
-                                    ),
-                                    const SizedBox(height: 32),
-                                  ],
-                                  DailyClosureCard(
-                                    transactionCount:
-                                        data.todayTransactionCount,
-                                    todaySpend: data.todaySpend,
-                                    dailyBudget: data.budgets.isEmpty
-                                        ? 0
-                                        : (data.budgets.fold(
-                                                0.0,
-                                                (sum, b) =>
-                                                    sum + b.monthlyLimit) /
-                                            30),
-                                    semantic: semantic,
-                                  )
-                                      .animate(delay: 200.ms)
-                                      .fadeIn()
-                                      .slideY(begin: 0.1, end: 0),
-                                  const SizedBox(height: 24),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: DailySummary(
-                                            todaySpend: data.todaySpend,
-                                            totalBudgetRemaining: data
-                                                    .budgets.isEmpty
-                                                ? null
-                                                : data.budgets.fold(
-                                                        0.0,
-                                                        (sum, b) =>
-                                                            sum +
-                                                            b.monthlyLimit) -
-                                                    data.budgets.fold(
-                                                        0.0,
-                                                        (sum, b) =>
-                                                            sum + b.spent),
-                                            semantic: semantic,
-                                            onTap: () {
-                                              final now = DateTime.now();
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (_) =>
-                                                          TransactionsDetailScreen(
-                                                            title:
-                                                                "Today's Ledger",
-                                                            startDate: now,
-                                                            endDate: now,
-                                                          )));
-                                            }),
+                                            ),
+                                            const SizedBox(width: 32),
+                                            Expanded(
+                                              child: Column(
+                                                children: [
+                                                  _buildInsightsSection(
+                                                      semantic,
+                                                      ref,
+                                                      summary,
+                                                      budgets),
+                                                  const SizedBox(height: 32),
+                                                  _buildCalendarSection(
+                                                      semantic, upcomingBills),
+                                                  const SizedBox(height: 120),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : SliverList(
+                                        delegate: SliverChildListDelegate([
+                                          ..._buildTopSection(semantic, data,
+                                              summary, ref, reload),
+                                          const SizedBox(height: 24),
+                                          ..._buildSummariesSection(semantic,
+                                              data, summary, ref, currentMonth),
+                                          const SizedBox(height: 32),
+                                          _buildAssetsSection(
+                                              semantic, summary, reload),
+                                          const SizedBox(height: 32),
+                                          _buildInsightsSection(
+                                              semantic, ref, summary, budgets),
+                                          const SizedBox(height: 32),
+                                          _buildCalendarSection(
+                                              semantic, upcomingBills),
+                                          const SizedBox(height: 120),
+                                        ]),
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: WeeklySummary(
-                                            thisWeekSpend: data.thisWeekSpend,
-                                            lastWeekSpend: data.lastWeekSpend,
-                                            semantic: semantic,
-                                            onTap: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (_) =>
-                                                          const WeeklyReflectionScreen()));
-                                            }),
-                                      ),
-                                    ],
-                                  )
-                                      .animate(delay: 300.ms)
-                                      .fade(duration: 800.ms)
-                                      .slideY(
-                                          begin: 0.1,
-                                          end: 0,
-                                          curve: Curves.easeOutQuart),
-                                  const SizedBox(height: 32),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                          child: SummaryCard(
-                                              label: "Income",
-                                              value: CurrencyFormatter.format(
-                                                  summary.totalIncome,
-                                                  isPrivate: ref
-                                                      .watch(privacyProvider)),
-                                              valueColor: semantic.income,
-                                              semantic: semantic,
-                                              icon: Icons.payments_rounded,
-                                              onTap: () {
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (_) =>
-                                                            MonthDetailScreen(
-                                                              month:
-                                                                  currentMonth,
-                                                              initialTypeFilter:
-                                                                  'Income',
-                                                              showFilters:
-                                                                  false,
-                                                            )));
-                                              })),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                          child: SummaryCard(
-                                              label: "Expenses",
-                                              value: CurrencyFormatter.format(
-                                                  summary.totalFixed +
-                                                      summary.totalVariable +
-                                                      summary
-                                                          .totalSubscriptions,
-                                                  isPrivate: ref
-                                                      .watch(privacyProvider)),
-                                              valueColor: semantic.overspent,
-                                              semantic: semantic,
-                                              icon: Icons
-                                                  .shopping_cart_checkout_rounded,
-                                              onTap: () {
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (_) =>
-                                                            MonthDetailScreen(
-                                                              month:
-                                                                  currentMonth,
-                                                              initialTypeFilter:
-                                                                  'Expenses',
-                                                              showFilters:
-                                                                  false,
-                                                            )));
-                                              })),
-                                    ],
-                                  )
-                                      .animate(delay: 400.ms)
-                                      .fade(duration: 800.ms)
-                                      .slideY(
-                                          begin: 0.1,
-                                          end: 0,
-                                          curve: Curves.easeOutQuart),
-                                  const SizedBox(height: 32),
-                                  SectionHeader(
-                                          title: "Financial Overview",
-                                          sub: "Assets vs Liabilities",
-                                          semantic: semantic)
-                                      .animate(delay: 500.ms)
-                                      .fade(duration: 800.ms),
-                                  const SizedBox(height: 16),
-                                  AssetLiabilityCard(
-                                          summary: summary,
-                                          semantic: semantic,
-                                          onLoad: reload)
-                                      .animate(delay: 600.ms)
-                                      .fade(duration: 800.ms)
-                                      .slideY(
-                                          begin: 0.1,
-                                          end: 0,
-                                          curve: Curves.easeOutQuart),
-                                  const SizedBox(height: 32),
-                                  SmartInsightsCard(
-                                    insights: ref.watch(insightsProvider),
-                                    score: IntelligenceService
-                                        .calculateHealthScore(
-                                      summary: summary,
-                                      budgets: budgets,
-                                    ),
-                                    semantic: semantic,
-                                  )
-                                      .animate(delay: 700.ms)
-                                      .fade(duration: 800.ms)
-                                      .slideY(
-                                          begin: 0.1,
-                                          end: 0,
-                                          curve: Curves.easeOutQuart),
-                                  const SizedBox(height: 32),
-                                  SectionHeader(
-                                          title: "Payment Calendar",
-                                          sub: "Month view",
-                                          semantic: semantic)
-                                      .animate(delay: 800.ms)
-                                      .fade(duration: 800.ms),
-                                  const SizedBox(height: 16),
-                                  PaymentCalendar(
-                                          bills: upcomingBills,
-                                          semantic: semantic)
-                                      .animate(delay: 900.ms)
-                                      .fade(duration: 800.ms)
-                                      .slideY(
-                                          begin: 0.1,
-                                          end: 0,
-                                          curve: Curves.easeOutQuart),
-                                  const SizedBox(height: 120),
-                                ]),
-                              ),
-                            ),
+                              );
+                            }),
                           ],
                         ),
                       ),
@@ -464,6 +250,251 @@ class Dashboard extends ConsumerWidget {
               );
             });
       },
+    );
+  }
+
+  List<Widget> _buildTopSection(AppColors semantic, dynamic data,
+      dynamic summary, WidgetRef ref, VoidCallback reload) {
+    final billsToday = data.billsDueToday as List;
+    final total = billsToday.fold(0.0, (sum, dynamic b) => sum + b.amount);
+
+    return [
+      if (billsToday.isNotEmpty) ...[
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: BoxDecoration(
+            color: semantic.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+                color: semantic.primary.withValues(alpha: 0.2), width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.notification_important_rounded,
+                  size: 20, color: semantic.primary),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  "${billsToday.length} ${billsToday.length == 1 ? 'BILL' : 'BILLS'} DUE TODAY · ${CurrencyFormatter.format(total)}",
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    color: semantic.primary,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded,
+                  size: 18, color: semantic.primary.withValues(alpha: 0.5)),
+            ],
+          ),
+        ).animate().fadeIn().slideY(begin: 0.1, end: 0),
+        const SizedBox(height: 8),
+      ],
+      WealthHero(
+        summary: summary,
+        activeStreak: data.activeStreak,
+        hasLoggedToday: data.todaySpend > 0,
+        onTapNetWorth: () {
+          Navigator.push(
+            ref.context,
+            MaterialPageRoute(
+              builder: (_) => const NetWorthTrackingScreen(),
+            ),
+          ).then((_) => reload());
+        },
+        onTapStreak: () {
+          Navigator.push(ref.context,
+              MaterialPageRoute(builder: (_) => const MonthlyHistoryScreen()));
+        },
+      )
+          .animate()
+          .fade(duration: 800.ms)
+          .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
+      const SizedBox(height: 24),
+      if (summary.totalIncome == 0 &&
+          (summary.totalFixed + summary.totalVariable) == 0) ...[
+        OnboardingActionCards(
+          semantic: semantic,
+          onAddTransaction: () async {
+            final added = await showModalBottomSheet<bool>(
+              context: ref.context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const QuickAddBottomSheet(),
+            );
+            if (added == true) reload();
+          },
+          onAddBudget: () {
+            Navigator.push(ref.context,
+                MaterialPageRoute(builder: (_) => const AnalysisScreen()));
+          },
+          onCheckAnalysis: () {
+            Navigator.push(ref.context,
+                MaterialPageRoute(builder: (_) => const AnalysisScreen()));
+          },
+        ),
+        const SizedBox(height: 32),
+      ],
+      DailyClosureCard(
+        transactionCount: data.todayTransactionCount,
+        todaySpend: data.todaySpend,
+        dailyBudget: data.budgets.isEmpty
+            ? 0
+            : (data.budgets
+                    .fold(0.0, (sum, dynamic b) => sum + b.monthlyLimit) /
+                30),
+        semantic: semantic,
+      ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.1, end: 0),
+    ];
+  }
+
+  List<Widget> _buildSummariesSection(AppColors semantic, dynamic data,
+      dynamic summary, WidgetRef ref, String currentMonth) {
+    return [
+      Row(
+        children: [
+          Expanded(
+            child: DailySummary(
+                todaySpend: data.todaySpend,
+                totalBudgetRemaining: data.budgets.isEmpty
+                    ? null
+                    : data.budgets.fold(
+                            0.0, (sum, dynamic b) => sum + b.monthlyLimit) -
+                        data.budgets
+                            .fold(0.0, (sum, dynamic b) => sum + b.spent),
+                semantic: semantic,
+                onTap: () {
+                  final now = DateTime.now();
+                  Navigator.push(
+                      ref.context,
+                      MaterialPageRoute(
+                          builder: (_) => TransactionsDetailScreen(
+                                title: "Today's Ledger",
+                                startDate: now,
+                                endDate: now,
+                              )));
+                }),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: WeeklySummary(
+                thisWeekSpend: data.thisWeekSpend,
+                lastWeekSpend: data.lastWeekSpend,
+                semantic: semantic,
+                onTap: () {
+                  Navigator.push(
+                      ref.context,
+                      MaterialPageRoute(
+                          builder: (_) => const WeeklyReflectionScreen()));
+                }),
+          ),
+        ],
+      )
+          .animate(delay: 300.ms)
+          .fade(duration: 800.ms)
+          .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
+      const SizedBox(height: 32),
+      Row(
+        children: [
+          Expanded(
+              child: SummaryCard(
+                  label: "Income",
+                  value: CurrencyFormatter.format(summary.totalIncome,
+                      isPrivate: ref.watch(privacyProvider)),
+                  valueColor: semantic.income,
+                  semantic: semantic,
+                  icon: Icons.payments_rounded,
+                  onTap: () {
+                    Navigator.push(
+                        ref.context,
+                        MaterialPageRoute(
+                            builder: (_) => MonthDetailScreen(
+                                  month: currentMonth,
+                                  initialTypeFilter: 'Income',
+                                  showFilters: false,
+                                )));
+                  })),
+          const SizedBox(width: 12),
+          Expanded(
+              child: SummaryCard(
+                  label: "Expenses",
+                  value: CurrencyFormatter.format(
+                      summary.totalFixed +
+                          summary.totalVariable +
+                          summary.totalSubscriptions,
+                      isPrivate: ref.watch(privacyProvider)),
+                  valueColor: semantic.overspent,
+                  semantic: semantic,
+                  icon: Icons.shopping_cart_checkout_rounded,
+                  onTap: () {
+                    Navigator.push(
+                        ref.context,
+                        MaterialPageRoute(
+                            builder: (_) => MonthDetailScreen(
+                                  month: currentMonth,
+                                  initialTypeFilter: 'Expenses',
+                                  showFilters: false,
+                                )));
+                  })),
+        ],
+      )
+          .animate(delay: 400.ms)
+          .fade(duration: 800.ms)
+          .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
+    ];
+  }
+
+  Widget _buildAssetsSection(
+      AppColors semantic, dynamic summary, VoidCallback reload) {
+    return Column(
+      children: [
+        SectionHeader(
+                title: "Financial Overview",
+                sub: "Assets vs Liabilities",
+                semantic: semantic)
+            .animate(delay: 500.ms)
+            .fade(duration: 800.ms),
+        const SizedBox(height: 16),
+        AssetLiabilityCard(summary: summary, semantic: semantic, onLoad: reload)
+            .animate(delay: 600.ms)
+            .fade(duration: 800.ms)
+            .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
+      ],
+    );
+  }
+
+  Widget _buildInsightsSection(
+      AppColors semantic, WidgetRef ref, dynamic summary, dynamic budgets) {
+    return SmartInsightsCard(
+      insights: ref.watch(insightsProvider),
+      score: IntelligenceService.calculateHealthScore(
+        summary: summary,
+        budgets: budgets,
+      ),
+      semantic: semantic,
+    )
+        .animate(delay: 700.ms)
+        .fade(duration: 800.ms)
+        .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart);
+  }
+
+  Widget _buildCalendarSection(AppColors semantic, dynamic upcomingBills) {
+    return Column(
+      children: [
+        SectionHeader(
+                title: "Payment Calendar",
+                sub: "Month view",
+                semantic: semantic)
+            .animate(delay: 800.ms)
+            .fade(duration: 800.ms),
+        const SizedBox(height: 16),
+        PaymentCalendar(bills: upcomingBills, semantic: semantic)
+            .animate(delay: 900.ms)
+            .fade(duration: 800.ms)
+            .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
+      ],
     );
   }
 }

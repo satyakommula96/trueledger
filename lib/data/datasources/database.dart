@@ -325,6 +325,20 @@ class AppDatabase {
         'CREATE TABLE ${Schema.budgetsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colCategory} TEXT, ${Schema.colMonthlyLimit} REAL, ${Schema.colLastReviewedAt} TEXT)');
     await db.execute(
         'CREATE TABLE ${Schema.customCategoriesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colType} TEXT)');
+    await db.execute('''
+          CREATE TABLE ${Schema.recurringTransactionsTable} (
+            ${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT,
+            ${Schema.colName} TEXT,
+            ${Schema.colAmount} REAL,
+            ${Schema.colCategory} TEXT,
+            ${Schema.colType} TEXT,
+            ${Schema.colFrequency} TEXT,
+            ${Schema.colDayOfMonth} INTEGER,
+            ${Schema.colDayOfWeek} INTEGER,
+            ${Schema.colLastProcessed} TEXT,
+            ${Schema.colActive} INTEGER DEFAULT 1
+          )
+        ''');
     await db.execute(
         'CREATE TABLE ${Schema.migrationsTable} (${Schema.colVersion} INTEGER PRIMARY KEY, ${Schema.colAppliedAt} TEXT)');
 

@@ -106,6 +106,7 @@ class IntelligenceService {
     required List<Map<String, dynamic>> categorySpending,
     InsightSurface requestedSurface = InsightSurface.main,
     bool forceRefresh = false,
+    bool ignoreCooldown = false,
   }) {
     final now = DateTime.now();
 
@@ -316,6 +317,11 @@ class IntelligenceService {
         group: InsightGroup.behavioral,
         cooldown: const Duration(days: 21), // Patterns: 21 days
       ));
+    }
+
+    // If ignoreCooldown is true (for exports), return all potential insights
+    if (ignoreCooldown) {
+      return _filterBySurface(allPotentialInsights, requestedSurface);
     }
 
     // Filter by Cooldown

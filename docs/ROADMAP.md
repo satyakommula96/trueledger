@@ -1,106 +1,92 @@
-# Product Success Roadmap (TrueLedger)
+# 🎯 TrueLedger Roadmap
 
-This roadmap focuses on features that drive **retention, trust, and habit formation**.
-We implement these phases sequentially.
-
-## Phase 1: Retention (Goal: Daily Usage Hook)
-
-- [x] **"Today" Screen / Widget on Dashboard**
-    - [x] Show today's total spend (large, bold).
-    - [x] Show remaining budget for today (if applicable) or month.
-    - [x] Simple daily summary text: "You've spent ₹820 today."
-
-- [x] **One-Tap Expense Entry**
-    - [x] Floating Action Button (FAB) visible on Dashboard.
-    - [x] Simplified "Quick Add" dialog:
-        - [x] Amount keypad opens immediately.
-        - [x] Category defaults to last used or "General".
-        - [x] "Save" button is easily reachable.
-        - [x] No full-screen navigation for quick entry.
-
-- [x] **Budgets (Core Value)**
-    - [x] Create `Budget` model (Category-based).
-    - [x] "Add Budget" screen (Amount per Category).
-    - [x] Visual progress bars on a dedicated "Budgets" tab.
-    - [x] Colors: Green (Safe), Yellow (>75%), Red (>100%).
-
-- [x] **Smart Reminders**
-    - [x] "Daily Log" reminder (e.g., at 9 PM) *only if* no transaction added today.
-    - [x] Daily Bill Digest (aggregated morning summary of items due today).
-    - [x] Budget proximity warning notification.
-
-## Phase 2: Trust (Goal: Reliability & Correction)
-
-- [x] **Search & Edit**
-    - [x] Search bar in Transactions list (Amount, Category, Note).
-    - [x] Edit/Delete capabilities for existing transactions.
-    - [x] Undo option for deletions.
-
-- [x] **Backup & Restore**
-    - [x] Encrypted JSON Export/Import.
-    - [x] Auto-backup to local file (Desktop/Mobile).
-    - [x] Web browser download support.
-
-- [x] **Web Support**
-    - [x] Full responsive dashboard.
-    - [x] SQLite WASM persistence.
-
-- [x] **Weekly/Monthly Insights**
-    - [x] "You spent 12% more than last week" (Plain text insights).
-
-## Phase 3: Delight (Goal: Polish & Engagement)
-
-- [x] **Streaks**
-    - [x] "Daily Streak" counter on Dashboard.
-    - [x] Confetti animation for hitting streak milestones.
-
-- [x] **Performance Polish**
-    - [x] Ensure app opens < 1s.
-    - [x] Optimistic UI updates (don't wait for DB to update UI).
-
-## Phase 4: Intelligence (Goal: Actionable Data)
-
-- [x] **Smart Insights Engine**
-    - [x] Spending forensics (week-over-week, month-over-month, top categories).
-    - [x] Budget proximity warnings based on velocity.
-    - [x] Snooze & Dismiss capabilities (persistent).
-- [x] **Financial Health Score**
-    - [x] Habit-based analysis and visual health indicator.
-- [x] **Scenario Mode (What If?)**
-    - [x] Simulate future progress and wealth projections.
-
-## Phase 5: Personalization Without Creep (Goal: Adaptive Utility)
-
-> **Principle**: The app adapts to reduce effort — never to predict, judge, or manipulate behavior. [Full Spec & Principles](features/personalization.md)
-
-- [x] **Phase 5.1: Zero Risk (Foundations)**
-    - [x] **Last-Used Memory**
-        - [x] Default to last category, payment method, and merchant with UI feedback.
-    - [x] **Quick-Add Presets**
-        - [x] User-authored amount + category combos (e.g., "₹120 · Coffee").
-    - [x] **Explicit Reminder Time**
-        - [x] User-selectable time with a first-class "Off" option.
-
-- [x] **Phase 5.2: Gentle Adaptation (High Friction)**
-    - [x] **Time-of-Day Defaults**
-        - [x] Suggest AM/PM categories after ≥ 14 days and 5+ similar entries.
-    - [x] **Salary Cycle Awareness**
-        - [x] Explicit pay date prompt for budget resets and forecast framing.
-    - [x] **Shortcut Suggestions**
-        - [x] Suggest pinned shortcuts for frequent repeats; include 30-day cooldown on dismissal.
-
-- [x] **Phase 5.3: Trust & Control (Crucial)**
-    - [x] **Transparency Engine**
-        - [x] "Why am I seeing this?" functionality for every adaptive choice.
-    - [x] **Reset & Granular Toggles**
-        - [x] One-tap personalization reset + per-feature opt-outs in Settings.
-    - [x] **Personal Baseline Reflections**
-        - [x] Comparison against 3-week local history (e.g., "Higher than your usual Friday").
+TrueLedger is an offline-first, private financial intelligence tool designed to drive **retention, trust, and habit formation**. This roadmap outlines our journey from a simple tracker to a comprehensive wealth management suite.
 
 ---
 
-## What NOT to build (Yet)
-- Bank Sync
-- AI Categorization
-- Multi-currency complexity
-- Social Sharing
+## ✅ Phase 1: Retention (Daily Usage Hook)
+*Goal: Create a seamless daily entry habit.*
+
+- [x] **Large "Today" Glance** — Immediate feedback on daily spending.
+- [x] **Quick-Add FAB** — Keypad opens instantly, zero-friction entry.
+- [x] **Smart Budgets** — Category-based limits with visual traffic-light indicators.
+- [x] **Log Reminders** — Intelligent notifications only when you forget to log.
+- [x] **Daily Bill Digest** — Morning briefing on all payments due today.
+
+---
+
+## ✅ Phase 2: Trust (Reliability & Correction)
+*Goal: Ensure the tool is accurate and the data is safe.*
+
+- [x] **Search & Edit** — Powerful search for historical corrections.
+- [x] **Encrypted Backups** — JSON export/import with AES-256 encryption.
+- [x] **Cross-Platform** — Full support for Linux, Windows, and Web (WASM).
+- [x] **Undo Framework** — Safety net for accidental deletions.
+
+---
+
+## ✅ Phase 3: Delight (Polish & Engagement)
+*Goal: Celebrate progress and optimize performance.*
+
+- [x] **Habit Streaks** — Visual momentum with celebration milestones.
+- [x] **Confetti Engine** — High-quality animations for hitting goals/streaks.
+- [x] **Performance Optimization** — Sub-second cold start on all platforms.
+
+---
+
+## ✅ Phase 4: Intelligence (Actionable Data)
+*Goal: Move beyond tracking into analysis.*
+
+- [x] **Forensics Engine** — Spending velocity and trend analysis.
+- [x] **Financial Health Score** — Proprietary habit-based health metrics.
+- [x] **Scenario Simulator** — "What-if" projections for future wealth.
+
+---
+
+## ✅ Phase 5: Personalization (Adaptive Utility)
+*Goal: Reduce effort through gentle adaptation.*
+
+- [x] **Last-Used Memory** — Defaults to previous category/merchant.
+- [x] **Time-of-Day Context** — Adapts suggestions based on morning/evening habits.
+- [x] **Transparency Engine** — "Why am I seeing this?" labels for all AI choices.
+- [x] **Privacy Hub** — Granular toggles for every adaptive feature.
+
+---
+
+## ✅ Phase 6: Wealth Management (Deep Strategy)
+*Goal: Holistic view of total net worth.*
+
+- [x] **Net Worth Tracking** — Historical evolution with asset/liability breakdown.
+- [x] **Retirement Dashboard** — EPF/NPS tracking with corpus projections.
+- [x] **Enhanced Portfolio** — Asset allocation charts and category management.
+- [x] **Goal Milestones** — Progress tracking with celebratory completion feedback.
+
+---
+
+## ✅ Phase 7: Intelligence & Automation (Expert Mode)
+*Goal: Hands-free tracking and expert planning.*
+
+- [x] **Automation Engine** — Recurring income/expense processing based on calendar.
+- [x] **Debt Payoff Planner** — Snowball/Avalanche simulators with interest savings.
+- [x] **Advanced Bill Calendar** — interactive month view with payment status.
+- [x] **Centralized Hub** — "More" menu for managing all advanced strategy tools.
+
+---
+
+## 🚀 Phase 8: Polish & Scale (Upcoming)
+*Goal: Global utility and refined reporting.*
+
+- [ ] **Multi-Currency Support** — Foreign travel and global asset tracking.
+- [x] **Export Enhancements** — PDF/CSV reporting with custom date ranges.
+- [ ] **Asset Management** — Physical assets (Car, Property) with depreciation logic.
+- [ ] **Family Profiles** — Support for shared household budgets.
+- [x] **Adaptive UI** — Refined layouts for tablets and foldables.
+
+---
+
+## 🛠️ Known Limitations
+- **Windows Notifications**: Scheduled repeats currently use a fallback system due to platform plugin constraints.
+- **Offline Sync**: Multi-device sync is not planned (TrueLedger is strictly offline-first).
+
+---
+*Last Updated: February 2026*

@@ -12,6 +12,7 @@ class Schema {
   static const String customCategoriesTable = 'custom_categories';
   static const String loanAuditLogTable = 'loan_audit_log';
   static const String migrationsTable = '_migrations';
+  static const String recurringTransactionsTable = 'recurring_transactions';
 
   // Common columns
   static const String colId = 'id';
@@ -29,6 +30,10 @@ class Schema {
   static const String colSource = 'source'; // income_sources
   static const String colNote = 'note'; // variable_expenses
   static const String colBillingDate = 'billing_date'; // subscriptions
+  static const String colFrequency = 'frequency'; // recurring
+  static const String colDayOfMonth = 'day_of_month'; // recurring
+  static const String colDayOfWeek = 'day_of_week'; // recurring
+  static const String colLastProcessed = 'last_processed'; // recurring
 
   // Credit Cards
   static const String colBank = 'bank';

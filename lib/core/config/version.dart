@@ -4,5 +4,5 @@ class AppVersion {
 
   // Database Version (Integer) - Used for SQLite Migrations
   // Increment this ONLY when you modify the database schema (db/schema.dart)
-  static const int databaseVersion = 11;
+  static const int databaseVersion = 12;
 }

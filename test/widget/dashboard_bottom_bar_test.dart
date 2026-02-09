@@ -15,7 +15,7 @@ void main() {
   }
 
   group('DashboardBottomBar', () {
-    testWidgets('renders LOANS label', (tester) async {
+    testWidgets('renders Accounts label', (tester) async {
       await tester.pumpWidget(createTestWidget(
         Scaffold(
           bottomNavigationBar: DashboardBottomBar(onLoad: () {}),
@@ -27,7 +27,7 @@ void main() {
       expect(find.text('Accounts'), findsOneWidget);
     });
 
-    testWidgets('renders CARDS label', (tester) async {
+    testWidgets('renders Cards label', (tester) async {
       await tester.pumpWidget(createTestWidget(
         Scaffold(
           bottomNavigationBar: DashboardBottomBar(onLoad: () {}),
@@ -39,7 +39,7 @@ void main() {
       expect(find.text('Cards'), findsOneWidget);
     });
 
-    testWidgets('renders ANALYSIS label', (tester) async {
+    testWidgets('renders Analysis label', (tester) async {
       await tester.pumpWidget(createTestWidget(
         Scaffold(
           bottomNavigationBar: DashboardBottomBar(onLoad: () {}),
@@ -51,7 +51,7 @@ void main() {
       expect(find.text('Analysis'), findsOneWidget);
     });
 
-    testWidgets('renders HISTORY label', (tester) async {
+    testWidgets('renders More label', (tester) async {
       await tester.pumpWidget(createTestWidget(
         Scaffold(
           bottomNavigationBar: DashboardBottomBar(onLoad: () {}),
@@ -60,10 +60,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('History'), findsOneWidget);
+      expect(find.text('More'), findsOneWidget);
     });
 
-    testWidgets('renders all navigation icons', (tester) async {
+    testWidgets('renders all 4 main navigation icons', (tester) async {
       await tester.pumpWidget(createTestWidget(
         Scaffold(
           bottomNavigationBar: DashboardBottomBar(onLoad: () {}),
@@ -75,7 +75,7 @@ void main() {
       expect(find.byIcon(Icons.account_balance_rounded), findsOneWidget);
       expect(find.byIcon(Icons.credit_card_rounded), findsOneWidget);
       expect(find.byIcon(Icons.auto_graph_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.history_toggle_off_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.grid_view_rounded), findsOneWidget);
     });
   });
 }

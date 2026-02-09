@@ -166,6 +166,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
               ],
             ),
           ),
+          _buildSummaryBar(paidLabels),
           GridView.builder(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             shrinkWrap: true,
@@ -187,26 +188,35 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
                   _focusedMonth.month == DateTime.now().month &&
                   _focusedMonth.year == DateTime.now().year;
 
+              final allPaid =
+                  events.isNotEmpty && events.every((e) => e['isPaid'] == true);
+
               return InkWell(
                 onTap: events.isNotEmpty
                     ? () => _showDayDetails(day, events)
                     : null,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
+                borderRadius: BorderRadius.circular(12),
+                child: AnimatedContainer(
+                  duration: 400.ms,
                   decoration: BoxDecoration(
                     color: isToday
                         ? Theme.of(context)
                             .colorScheme
                             .primary
                             .withValues(alpha: 0.1)
-                        : (events.isNotEmpty
-                            ? widget.semantic.surfaceCombined
-                            : Colors.transparent),
-                    borderRadius: BorderRadius.circular(8),
+                        : (allPaid
+                            ? Colors.green.withValues(alpha: 0.05)
+                            : (events.isNotEmpty
+                                ? widget.semantic.surfaceCombined
+                                : Colors.transparent)),
+                    borderRadius: BorderRadius.circular(12),
                     border: isToday
                         ? Border.all(
                             color: Theme.of(context).colorScheme.primary)
-                        : null,
+                        : (allPaid
+                            ? Border.all(
+                                color: Colors.green.withValues(alpha: 0.2))
+                            : null),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -215,45 +225,45 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
                           style: TextStyle(
                               fontSize: 12,
                               fontWeight: events.isNotEmpty || isToday
-                                  ? FontWeight.bold
+                                  ? FontWeight.w900
                                   : FontWeight.normal,
-                              color: events.isNotEmpty || isToday
-                                  ? Theme.of(context).colorScheme.onSurface
-                                  : Colors.grey)),
+                              color: allPaid
+                                  ? Colors.green
+                                  : (events.isNotEmpty || isToday
+                                      ? Theme.of(context).colorScheme.onSurface
+                                      : Colors.grey))),
                       if (events.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: events.take(3).map((e) {
-                            Color dotColor = widget.semantic.secondaryText;
-                            final allPaid =
-                                events.every((e) => e['isPaid'] == true);
+                        const SizedBox(height: 2),
+                        if (allPaid)
+                          const Icon(Icons.check_rounded,
+                              size: 10, color: Colors.green)
+                        else
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: events.take(4).map((e) {
+                              Color dotColor = widget.semantic.secondaryText;
+                              if (e['isPaid'] == true) {
+                                dotColor = widget.semantic.divider;
+                              } else {
+                                if (e['type'] == 'CREDIT DUE') {
+                                  dotColor = Colors.red;
+                                } else if (e['type'] == 'LOAN EMI') {
+                                  dotColor = Colors.orange;
+                                } else if (e['type'] == 'SUBSCRIPTION') {
+                                  dotColor = widget.semantic.overspent;
+                                }
+                              }
 
-                            if (allPaid) {
-                              dotColor = widget.semantic.divider;
-                            } else if (events
-                                .any((e) => e['type'] == 'SUBSCRIPTION')) {
-                              dotColor = widget.semantic.overspent;
-                            } else if (events
-                                .any((e) => e['type'] == 'LOAN EMI')) {
-                              dotColor = Colors.orange;
-                            } else if (events
-                                .any((e) => e['type'] == 'CREDIT DUE')) {
-                              dotColor = Colors.red;
-                            } else if (events
-                                .any((e) => e['type'] == 'BORROWING DUE')) {
-                              dotColor = Colors.purple;
-                            }
-
-                            return Container(
-                              width: 4,
-                              height: 4,
-                              margin: const EdgeInsets.symmetric(horizontal: 1),
-                              decoration: BoxDecoration(
-                                  color: dotColor, shape: BoxShape.circle),
-                            );
-                          }).toList(),
-                        )
+                              return Container(
+                                width: 3,
+                                height: 3,
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 1),
+                                decoration: BoxDecoration(
+                                    color: dotColor, shape: BoxShape.circle),
+                              );
+                            }).toList(),
+                          )
                       ]
                     ],
                   ),
@@ -280,6 +290,66 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
       child: mainContent,
+    );
+  }
+
+  Widget _buildSummaryBar(List<String> paidLabels) {
+    double totalDue = 0;
+    double totalPaid = 0;
+
+    final daysInMonth = _getDaysInMonth(_focusedMonth);
+    for (int d = 1; d <= daysInMonth; d++) {
+      final events = _getEventsForDay(d, paidLabels);
+      for (var e in events) {
+        totalDue += (e['amount'] as num).toDouble();
+        if (e['isPaid'] == true) {
+          totalPaid += (e['amount'] as num).toDouble();
+        }
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: widget.semantic.surfaceCombined.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          _buildSummaryItem("TOTAL DUE", totalDue, widget.semantic.overspent),
+          Container(
+            width: 1,
+            height: 24,
+            color: widget.semantic.divider,
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+          ),
+          _buildSummaryItem("PAID", totalPaid, Colors.green),
+          const Spacer(),
+          if (totalDue > 0)
+            CircularProgressIndicator(
+              value: totalPaid / totalDue,
+              strokeWidth: 3,
+              backgroundColor: widget.semantic.divider,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+            ),
+        ],
+      ),
+    ).animate().fadeIn(delay: 200.ms);
+  }
+
+  Widget _buildSummaryItem(String label, double amount, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: const TextStyle(
+                fontSize: 8, fontWeight: FontWeight.w900, color: Colors.grey)),
+        const SizedBox(height: 2),
+        Text(CurrencyFormatter.format(amount, compact: true),
+            style: TextStyle(
+                fontSize: 14, fontWeight: FontWeight.w900, color: color)),
+      ],
     );
   }
 

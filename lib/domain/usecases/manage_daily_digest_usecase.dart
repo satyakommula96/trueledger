@@ -75,11 +75,12 @@ class ManageDailyDigestUseCase {
 
     // Logic for deciding Show vs Cancel:
     // 1. If currently 0 bills (all paid), cancel any stale notification.
-    // 2. If app is RESUMED (user looking at it), cancel notification (don't need it in tray).
-    // 3. Otherwise (background/coldStart), show/update the notification.
+    // 2. If app is RESUMED or COLD START (user looking at it), cancel notification (don't need it in tray).
+    // 3. Otherwise (background), show/update the notification.
 
-    final bool shouldCancel =
-        currentCount == 0 || runContext == AppRunContext.resume;
+    final bool shouldCancel = currentCount == 0 ||
+        runContext == AppRunContext.resume ||
+        runContext == AppRunContext.coldStart;
 
     if (shouldCancel) {
       await _store.saveState(
