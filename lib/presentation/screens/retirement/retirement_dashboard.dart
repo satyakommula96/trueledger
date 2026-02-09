@@ -7,6 +7,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/presentation/providers/retirement_provider.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
+import 'package:trueledger/core/constants/widget_keys.dart';
 
 class RetirementDashboard extends ConsumerWidget {
   const RetirementDashboard({super.key});
@@ -216,6 +217,7 @@ class RetirementDashboard extends ConsumerWidget {
                     fit: BoxFit.scaleDown,
                     child: Text(
                       CurrencyFormatter.format(total, isPrivate: isPrivate),
+                      key: WidgetKeys.retirementCorpusValue,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 48,
@@ -236,6 +238,7 @@ class RetirementDashboard extends ConsumerWidget {
 
   Widget _buildAccountCard(dynamic acc, AppColors semantic, bool isPrivate) {
     return Container(
+      key: WidgetKeys.retirementAccountItem(acc.id),
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

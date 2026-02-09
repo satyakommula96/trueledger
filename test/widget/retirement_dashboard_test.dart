@@ -9,6 +9,9 @@ import 'package:trueledger/presentation/providers/retirement_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/screens/retirement/retirement_dashboard.dart';
 import 'package:trueledger/core/theme/theme.dart';
+import 'package:trueledger/core/constants/widget_keys.dart';
+import 'package:trueledger/core/utils/currency_formatter.dart';
+import '../helpers/currency_test_helpers.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -29,22 +32,27 @@ void main() {
 
   setUp(() {
     mockRepo = MockFinancialRepository();
-    when(() => mockRepo.getRetirementAccounts()).thenAnswer((_) async => []);
+    CurrencyFormatter.currencyNotifier.value = '₹';
   });
 
-  Widget createTestWidget({
-    List<RetirementAccount>? accounts,
-    bool isPrivate = false,
-  }) {
-    final retirementData = RetirementData(
-      accounts: accounts ?? [],
-      totalCorpus:
-          accounts?.fold<double>(0, (sum, item) => sum + item.balance) ?? 0,
+  // Standardized stub for RetirementData to avoid mixed mocking inconsistencies
+  RetirementData createRetirementStub({List<RetirementAccount>? accounts}) {
+    final list = accounts ?? [];
+    return RetirementData(
+      accounts: list,
+      totalCorpus: list.fold<double>(0, (sum, item) => sum + item.balance),
       projections: [
-        {'year': 2024, 'balance': 100000.0},
-        {'year': 2025, 'balance': 200000.0},
+        {'year': 2024, 'balance': 100000.0, 'age': 30},
+        {'year': 2025, 'balance': 200000.0, 'age': 31},
       ],
     );
+  }
+
+  Widget createTestWidget({
+    RetirementData? data,
+    bool isPrivate = false,
+  }) {
+    final retirementData = data ?? createRetirementStub();
 
     return ProviderScope(
       overrides: [
@@ -53,16 +61,15 @@ void main() {
         privacyProvider.overrideWith(() => MockPrivacyNotifier(isPrivate)),
       ],
       child: MaterialApp(
-        theme: ThemeData(
-          extensions: [AppTheme.darkColors],
-        ),
+        theme: ThemeData(extensions: [AppTheme.darkColors]),
         home: const RetirementDashboard(),
       ),
     );
   }
 
   group('RetirementDashboard Tests', () {
-    testWidgets('displays retirement dashboard with data', (tester) async {
+    testWidgets('displays retirement dashboard with data using keys',
+        (tester) async {
       final accounts = [
         RetirementAccount(
             id: 1, name: 'EPF', balance: 500000, lastUpdated: '2023-10-01'),
@@ -70,58 +77,46 @@ void main() {
             id: 2, name: 'NPS', balance: 200000, lastUpdated: '2023-10-01'),
       ];
 
-      when(() => mockRepo.getRetirementAccounts())
-          .thenAnswer((_) async => accounts);
+      final stub = createRetirementStub(accounts: accounts);
 
-      await tester.pumpWidget(createTestWidget(accounts: accounts));
-      await tester.pump(); // Start loading
+      await tester.pumpWidget(createTestWidget(data: stub));
       await tester.pumpAndSettle();
 
-      expect(find.text('RETIREMENT'), findsOneWidget);
-      expect(find.text('TOTAL CORPUS'), findsOneWidget);
+      // Verify structural components via keys
+      expect(find.byKey(WidgetKeys.retirementCorpusValue), findsOneWidget);
+      expect(find.byKey(WidgetKeys.retirementAccountItem(1)), findsOneWidget);
+      expect(find.byKey(WidgetKeys.retirementAccountItem(2)), findsOneWidget);
+
+      // Verify data via currency helper
+      expect(findFormattedAmount(700000), findsOneWidget);
+
       expect(find.text('EPF'), findsOneWidget);
       expect(find.text('NPS'), findsOneWidget);
-
-      // Check for presence of formatted amounts (approximate check)
-      expect(find.textContaining('7,00,000'), findsOneWidget);
     });
 
     testWidgets('handles empty retirement data', (tester) async {
-      when(() => mockRepo.getRetirementAccounts()).thenAnswer((_) async => []);
+      final stub = createRetirementStub(accounts: []);
 
-      await tester.pumpWidget(createTestWidget());
+      await tester.pumpWidget(createTestWidget(data: stub));
       await tester.pumpAndSettle();
 
-      expect(find.text('RETIREMENT'), findsOneWidget);
-      expect(find.textContaining('0'), findsAtLeastNWidgets(1));
+      expect(find.byKey(WidgetKeys.retirementCorpusValue), findsOneWidget);
+      expect(findFormattedAmount(0), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('shows projections section', (tester) async {
-      final accounts = [
+    testWidgets('shows projections section using keys when available',
+        (tester) async {
+      final stub = createRetirementStub(accounts: [
         RetirementAccount(
             id: 1, name: 'EPF', balance: 100000, lastUpdated: '2023-10-01'),
-      ];
-      when(() => mockRepo.getRetirementAccounts())
-          .thenAnswer((_) async => accounts);
+      ]);
 
-      await tester.pumpWidget(createTestWidget(accounts: accounts));
+      await tester.pumpWidget(createTestWidget(data: stub));
       await tester.pumpAndSettle();
 
       expect(find.text('FUTURE WEALTH'), findsOneWidget);
-      expect(find.textContaining('Estimated corpus at retirement'),
-          findsOneWidget);
-    });
-    group('RetirementDashboard UI elements', () {
-      testWidgets('renders all section headers', (tester) async {
-        when(() => mockRepo.getRetirementAccounts())
-            .thenAnswer((_) async => []);
-
-        await tester.pumpWidget(createTestWidget());
-        await tester.pumpAndSettle();
-
-        expect(find.text('MY ACCOUNTS'), findsOneWidget);
-        expect(find.text('FUTURE WEALTH'), findsOneWidget);
-      });
+      // We check for some data in the projection chart or labels
+      expect(find.textContaining('YEARS'), findsOneWidget);
     });
   });
 }

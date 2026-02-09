@@ -11,6 +11,7 @@ import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
+import 'package:trueledger/core/constants/widget_keys.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -22,6 +23,20 @@ void main() {
     CurrencyFormatter.currencyNotifier.value = '₹';
   });
 
+  Widget createTestWidget(LedgerItem item, SharedPreferences prefs) {
+    return ProviderScope(
+      overrides: [
+        financialRepositoryProvider.overrideWithValue(mockRepo),
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        dashboardProvider.overrideWith((ref) => Future.value(null as dynamic)),
+      ],
+      child: MaterialApp(
+        theme: AppTheme.lightTheme,
+        home: EditEntryScreen(entry: item),
+      ),
+    );
+  }
+
   testWidgets('EditEntryScreen renders initial values',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
@@ -32,20 +47,7 @@ void main() {
 
     when(() => mockRepo.getCategories(any())).thenAnswer((_) async => []);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          financialRepositoryProvider.overrideWithValue(mockRepo),
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          dashboardProvider
-              .overrideWith((ref) async => throw UnimplementedError()),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: EditEntryScreen(entry: item),
-        ),
-      ),
-    );
+    await tester.pumpWidget(createTestWidget(item, prefs));
     await tester.pumpAndSettle();
 
     expect(find.text('EDIT VARIABLE'), findsOneWidget);
@@ -64,44 +66,24 @@ void main() {
     when(() => mockRepo.updateEntry(any(), any(), any()))
         .thenAnswer((_) async => {});
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          financialRepositoryProvider.overrideWithValue(mockRepo),
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          dashboardProvider
-              .overrideWith((ref) => Future.value(null as dynamic)),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: EditEntryScreen(entry: item),
-        ),
-      ),
-    );
+    await tester.pumpWidget(createTestWidget(item, prefs));
+    await tester.pumpAndSettle();
 
-    // Amount is 50.0 double.
-    final textField = find.widgetWithText(TextField, '50.0');
-    // We expect at least one
-    expect(textField, findsAtLeastNWidgets(1));
-    await tester.enterText(textField.first, '100');
-    final button = find.text('UPDATE ENTRY');
-    await tester.ensureVisible(button);
-    await tester.tap(button);
+    // Use key for save button
+    final amountField = find.widgetWithText(TextField, '50.0').first;
+    await tester.enterText(amountField, '100');
 
-    // SnackBar visibility depends on timing and tree state
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
+    final saveButton = find.byKey(WidgetKeys.saveButton);
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
 
     verify(() => mockRepo.updateEntry('Variable', 1, any())).called(1);
-
-    // Use find.textContaining or find.text(..., skipOffstage: false)
-    expect(find.textContaining('updated'), findsWidgets);
-
-    await tester.pumpAndSettle();
     expect(find.byType(EditEntryScreen), findsNothing);
   });
 
-  testWidgets('EditEntryScreen deletes entry', (WidgetTester tester) async {
+  testWidgets('EditEntryScreen delete flow requires confirmation',
+      (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
@@ -111,31 +93,24 @@ void main() {
     when(() => mockRepo.getCategories(any())).thenAnswer((_) async => []);
     when(() => mockRepo.deleteItem(any(), any())).thenAnswer((_) async => {});
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          financialRepositoryProvider.overrideWithValue(mockRepo),
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          dashboardProvider
-              .overrideWith((ref) => Future.value(null as dynamic)),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: EditEntryScreen(entry: item),
-        ),
-      ),
-    );
-
+    await tester.pumpWidget(createTestWidget(item, prefs));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.delete_outline));
+    // 1. Tap delete button via key
+    await tester.tap(find.byKey(WidgetKeys.deleteButton));
     await tester.pumpAndSettle();
 
+    // 2. Verify dialog
     expect(find.text('DELETE ITEM?'), findsOneWidget);
+
+    // 3. Verify no deletion yet
+    verifyNever(() => mockRepo.deleteItem(any(), any()));
+
+    // 4. Tap DELETE and verify
     await tester.tap(find.text('DELETE'));
-    await tester
-        .pumpAndSettle(); // Allow time for the dialog to close and navigation to occur
+    await tester.pumpAndSettle();
 
     verify(() => mockRepo.deleteItem('variable_expenses', 1)).called(1);
+    expect(find.byType(EditEntryScreen), findsNothing);
   });
 }

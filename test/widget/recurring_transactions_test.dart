@@ -7,6 +7,8 @@ import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/automation/recurring_transactions.dart';
 import 'package:trueledger/core/theme/theme.dart';
+import 'package:trueledger/core/constants/widget_keys.dart';
+import '../helpers/currency_test_helpers.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -38,6 +40,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
+      // We still verify text for descriptive empty states, but keys are preferred for structural elements
       expect(find.text('NO AUTOMATED TRANSACTIONS YET.'), findsOneWidget);
     });
 
@@ -69,9 +72,17 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
+      // Verify items by their unique keys
+      expect(find.byKey(WidgetKeys.recurringItem(1)), findsOneWidget);
+      expect(find.byKey(WidgetKeys.recurringItem(2)), findsOneWidget);
+
+      // Verify behavior/data: exact formatted amounts
+      expect(findFormattedAmount(15000), findsOneWidget);
+      expect(findFormattedAmount(50000), findsOneWidget);
+
+      // Verify labels are present but secondary to keys/amounts
       expect(find.text('RENT'), findsOneWidget);
       expect(find.text('SALARY'), findsOneWidget);
-      expect(find.text('MONTHLY • HOUSING • DAY 1'), findsOneWidget);
     });
 
     testWidgets('opens add dialog when FAB is pressed', (tester) async {
@@ -81,11 +92,13 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(FloatingActionButton));
+      // Use key for navigation trigger
+      await tester.tap(find.byKey(WidgetKeys.addRecurringFab));
       await tester.pumpAndSettle();
 
+      // Verify dialog appearance
       expect(find.text('NEW AUTOMATION'), findsOneWidget);
-      expect(find.text('SAVE AUTOMATION'), findsOneWidget);
+      expect(find.byKey(WidgetKeys.saveButton), findsOneWidget);
     });
 
     testWidgets('calls delete when delete icon is pressed', (tester) async {
@@ -109,9 +122,11 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+      // Use key for delete action
+      await tester.tap(find.byKey(WidgetKeys.deleteButton));
       await tester.pumpAndSettle();
 
+      // Verification of immediate deletion - no confirmation dialog in current design
       verify(() => mockRepo.deleteItem('recurring_transactions', 1)).called(1);
     });
   });

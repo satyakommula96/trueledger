@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/domain/logic/loan_engine.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/core/constants/widget_keys.dart';
 
 class EditLoanScreen extends ConsumerStatefulWidget {
   final Loan loan;
@@ -173,6 +174,7 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
         title: const Text("UPDATE LOAN"),
         actions: [
           IconButton(
+            key: WidgetKeys.deleteButton,
             icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
             onPressed: _delete,
           )

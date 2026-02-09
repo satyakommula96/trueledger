@@ -7,6 +7,7 @@ import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/providers/recurring_provider.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/core/constants/widget_keys.dart';
 
 class RecurringTransactionsScreen extends ConsumerWidget {
   const RecurringTransactionsScreen({super.key});
@@ -23,6 +24,7 @@ class RecurringTransactionsScreen extends ConsumerWidget {
         elevation: 0,
       ),
       floatingActionButton: FloatingActionButton(
+        key: WidgetKeys.addRecurringFab,
         backgroundColor: semantic.primary,
         foregroundColor: Colors.white,
         onPressed: () => _showAddDialog(context, ref),
@@ -68,6 +70,7 @@ class RecurringTransactionsScreen extends ConsumerWidget {
     }
 
     return ListView.builder(
+      key: WidgetKeys.recurringList,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -88,6 +91,7 @@ class RecurringTransactionsScreen extends ConsumerWidget {
         onTap: () {},
         borderRadius: 24,
         child: Container(
+          key: WidgetKeys.recurringItem(item.id),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: semantic.surfaceCombined.withValues(alpha: 0.5),
@@ -155,6 +159,7 @@ class RecurringTransactionsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   IconButton(
+                    key: WidgetKeys.deleteButton,
                     icon: Icon(Icons.delete_outline_rounded,
                         size: 18,
                         color: semantic.overspent.withValues(alpha: 0.5)),
@@ -269,6 +274,7 @@ class RecurringTransactionsScreen extends ConsumerWidget {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
+                      key: WidgetKeys.saveButton,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: semantic.primary,
                         foregroundColor: Colors.white,
