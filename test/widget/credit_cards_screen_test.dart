@@ -45,6 +45,7 @@ void main() {
           bank: 'HDFC',
           creditLimit: 100000,
           statementBalance: 5000,
+          currentBalance: 3000,
           minDue: 500,
           dueDate: '20-10-2024',
           statementDate: 'Day 1',
@@ -62,7 +63,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('HDFC'), findsOneWidget);
-      expect(find.text('5.0% UTILIZED'), findsOneWidget);
+      // Current balance utilization
+      expect(find.text('3.0% UTILIZED'), findsOneWidget);
       expect(find.text('RECORD PAYMENT'), findsOneWidget);
     });
 
@@ -82,6 +84,7 @@ void main() {
         bank: 'HDFC',
         creditLimit: 100000,
         statementBalance: 5000,
+        currentBalance: 3000,
         minDue: 500,
         dueDate: '20-10-2024',
       );
@@ -92,7 +95,14 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      await tester.ensureVisible(find.text('RECORD PAYMENT'));
+      // Scroll to make the button visible
+      await tester.dragUntilVisible(
+        find.text('RECORD PAYMENT'),
+        find.byType(ListView),
+        const Offset(0, -50),
+      );
+      await tester.pumpAndSettle();
+
       await tester.tap(find.text('RECORD PAYMENT'));
       await tester.pumpAndSettle();
 
@@ -105,6 +115,35 @@ void main() {
       // Dismiss dialog
       await tester.tap(find.text('CANCEL'));
       await tester.pumpAndSettle();
+    });
+
+    testWidgets('should not show Record Payment for paid cards',
+        (tester) async {
+      final card = CreditCard(
+        id: 1,
+        bank: 'HDFC',
+        creditLimit: 100000,
+        statementBalance: 0, // Paid off
+        currentBalance: 2000, // Still has current balance
+        minDue: 0,
+        dueDate: '20-10-2024',
+      );
+
+      when(() => mockRepository.getCreditCards())
+          .thenAnswer((_) async => [card]);
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpAndSettle();
+
+      // Should show current balance
+      expect(find.text('CURRENT BALANCE'), findsOneWidget);
+      expect(find.text('2.0% UTILIZED'), findsOneWidget);
+
+      // Should NOT show DUE badge
+      expect(find.text('DUE'), findsNothing);
+
+      // Should NOT show Record Payment button
+      expect(find.text('RECORD PAYMENT'), findsNothing);
     });
   });
 }

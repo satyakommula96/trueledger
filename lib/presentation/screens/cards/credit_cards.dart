@@ -340,15 +340,16 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
       CreditCard c, int index, AppColors semantic, bool isPrivate) {
     final limit = c.creditLimit.toDouble();
     final stmt = c.statementBalance.toDouble();
-    final util = limit == 0 ? 0.0 : (stmt / limit) * 100;
+    final current = c.currentBalance.toDouble();
+    final currentUtil = limit == 0 ? 0.0 : (current / limit) * 100;
 
-    final isHighUtil = util > 30;
-    final isOverUtil = util > 80;
+    final isCurrentHighUtil = currentUtil > 30;
+    final isCurrentOverUtil = currentUtil > 80;
     final cardColor = ColorHelper.getColorForName(c.bank);
 
-    final barColor = isOverUtil
+    final currentBarColor = isCurrentOverUtil
         ? semantic.overspent
-        : isHighUtil
+        : isCurrentHighUtil
             ? semantic.warning
             : cardColor;
 
@@ -361,7 +362,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
           load();
         },
         borderRadius: 32,
-        glowColor: barColor.withValues(alpha: 0.3),
+        glowColor: currentBarColor.withValues(alpha: 0.3),
         glowOpacity: 0.05,
         child: Container(
           clipBehavior: Clip.antiAlias,
@@ -378,16 +379,17 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Header Row
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: barColor.withValues(alpha: 0.1),
+                            color: currentBarColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Icon(Icons.credit_card_rounded,
-                              size: 20, color: barColor),
+                              size: 20, color: currentBarColor),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -416,39 +418,39 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                             ],
                           ),
                         ),
-                        if (isHighUtil)
+                        if (isCurrentHighUtil)
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: (isOverUtil
+                              color: (isCurrentOverUtil
                                       ? semantic.overspent
                                       : semantic.warning)
                                   .withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              isOverUtil
+                              isCurrentOverUtil
                                   ? Icons.priority_high_rounded
                                   : Icons.warning_rounded,
                               size: 16,
-                              color: isOverUtil
+                              color: isCurrentOverUtil
                                   ? semantic.overspent
                                   : semantic.warning,
                             ),
                           ),
                       ],
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
+                    // Main Balance Display
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "OUTSTANDING BALANCE",
+                                "CURRENT BALANCE",
                                 style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w900,
@@ -460,7 +462,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  CurrencyFormatter.format(stmt,
+                                  CurrencyFormatter.format(current,
                                       isPrivate: isPrivate),
                                   style: TextStyle(
                                       fontSize: 32,
@@ -472,38 +474,56 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: semantic.divider.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "DUE IN",
-                                style: TextStyle(
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.w900,
-                                    color: semantic.secondaryText,
-                                    letterSpacing: 0.5),
+                        if (stmt > 0) ...[
+                          const SizedBox(width: 16),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: semantic.warning.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: semantic.warning.withValues(alpha: 0.2),
+                                width: 1,
                               ),
-                              Text(
-                                DateHelper.formatDue(c.dueDate).toUpperCase(),
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w900,
-                                    color: semantic.warning),
-                              ),
-                            ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "DUE",
+                                  style: TextStyle(
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w900,
+                                      color: semantic.secondaryText,
+                                      letterSpacing: 0.5),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  CurrencyFormatter.format(stmt,
+                                      isPrivate: isPrivate, compact: true),
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w900,
+                                      color: semantic.warning,
+                                      letterSpacing: -0.5),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  DateHelper.formatDue(c.dueDate).toUpperCase(),
+                                  style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      color: semantic.secondaryText,
+                                      letterSpacing: 0.3),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 20),
+                    // Progress Bar
                     Stack(
                       children: [
                         Container(
@@ -519,18 +539,18 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                           curve: Curves.easeOutCubic,
                           height: 8,
                           width: (MediaQuery.of(context).size.width - 96) *
-                              (util / 100).clamp(0.01, 1.0),
+                              (currentUtil / 100).clamp(0.01, 1.0),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                barColor,
-                                barColor.withValues(alpha: 0.6)
+                                currentBarColor,
+                                currentBarColor.withValues(alpha: 0.6)
                               ],
                             ),
                             borderRadius: BorderRadius.circular(10),
                             boxShadow: [
                               BoxShadow(
-                                  color: barColor.withValues(alpha: 0.3),
+                                  color: currentBarColor.withValues(alpha: 0.3),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4)),
                             ],
@@ -538,20 +558,21 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 12),
+                    // Progress Info
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "${util.toStringAsFixed(1)}% UTILIZED",
+                          "${currentUtil.toStringAsFixed(1)}% UTILIZED",
                           style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
-                              color: barColor,
+                              color: currentBarColor,
                               letterSpacing: 0.5),
                         ),
                         Text(
-                          "LEFT: ${CurrencyFormatter.format(limit - stmt, isPrivate: isPrivate)}",
+                          "AVAILABLE: ${CurrencyFormatter.format(limit - current, isPrivate: isPrivate, compact: true)}",
                           style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
@@ -564,30 +585,31 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                   ],
                 ),
               ),
-              InkWell(
-                onTap: () => _showPayDialog(c, semantic),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  color: semantic.primary.withValues(alpha: 0.08),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.payment_rounded,
-                          size: 18, color: semantic.primary),
-                      const SizedBox(width: 12),
-                      Text(
-                        "RECORD PAYMENT",
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
-                            color: semantic.primary,
-                            letterSpacing: 1.5),
-                      ),
-                    ],
+              if (stmt > 0)
+                InkWell(
+                  onTap: () => _showPayDialog(c, semantic),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    color: semantic.primary.withValues(alpha: 0.08),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.payment_rounded,
+                            size: 18, color: semantic.primary),
+                        const SizedBox(width: 12),
+                        Text(
+                          "RECORD PAYMENT",
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              color: semantic.primary,
+                              letterSpacing: 1.5),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

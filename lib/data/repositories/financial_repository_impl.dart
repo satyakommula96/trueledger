@@ -142,16 +142,18 @@ class FinancialRepositoryImpl implements IFinancialRepository {
           'isPaid': checkPaid(name),
         };
       }),
-      ...ccBills.map((c) => {
-            'id': 'cc_${c['id']}',
-            'name': c['bank'],
-            'title': c['bank'],
-            'amount': c['statement_balance'],
-            'type': 'CREDIT DUE',
-            'due': c['due_date'],
-            'isRecurring': true,
-            'isPaid': (c['statement_balance'] as num? ?? 0) <= 0,
-          }),
+      ...ccBills
+          .where((c) => (c['statement_balance'] as num? ?? 0) > 0)
+          .map((c) => {
+                'id': 'cc_${c['id']}',
+                'name': c['bank'],
+                'title': c['bank'],
+                'amount': c['statement_balance'],
+                'type': 'CREDIT DUE',
+                'due': c['due_date'],
+                'isRecurring': true,
+                'isPaid': false,
+              }),
       ...loanBills.map((l) => {
             'id': 'loan_${l['id']}',
             'name': l['name'],
