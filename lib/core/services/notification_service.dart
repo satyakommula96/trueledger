@@ -4,12 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     as fln;
 import 'package:timezone/data/latest.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/config/app_config.dart';
 import 'package:trueledger/core/utils/hash_utils.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/core/utils/date_helper.dart';
 
 class NotificationService {
   /// Notification IDs must be deterministic and stable to allow:
@@ -20,9 +22,11 @@ class NotificationService {
   /// otherwise they will silently overwrite each other.
   static const int dailyReminderId = 888;
 
-  /// Specifically used for the aggregated daily summary. Overwriting this ID
-  /// ensures the user doesn't get flooded with multiple digest entries in the tray.
+  /// Specifically used for the aggregated daily summary.
   static const int dailyBillDigestId = 999;
+
+  /// Notification ID for Salary Day alerts.
+  static const int salaryDayId = 777;
 
   /// Starting range for credit card specific reminders to avoid collisions.
   static const int creditCardBaseId = 10000;
@@ -221,7 +225,6 @@ class NotificationService {
     );
   }
 
-  /*
   Future<void> scheduleNotification({
     required int id,
     required String title,
@@ -231,48 +234,59 @@ class NotificationService {
   }) async {
     if (!_isInitialized) await init();
     if (_initFailed) return;
-    if (kIsWeb || _isTest || Platform.isLinux || Platform.isWindows) {
+    if (kIsWeb || _isTest) {
+      debugPrint('NotificationService: Skipping scheduling (Web/Test mode).');
+      return;
+    }
+
+    // Windows doesn't support scheduled notifications in flutter_local_notifications
+    if (Platform.isWindows) {
+      debugPrint(
+          'NotificationService: Windows does not support scheduled notifications.');
       return;
     }
 
     try {
-      // Calculate delay efficiently to avoid relying on uninitialized tz.local
-      final now = DateTime.now();
+      // Get local timezone location
+      final location = tz.getLocation(tz.local.name);
 
-      // If the scheduled date is in the past compared to now, add 1 minute to avoid crash
-      // or simply don't schedule. But our logic guarantees future.
-      // We calculate the duration from now to the target local time.
-      final duration = scheduledDate.difference(now);
-
-      // Create a TZDateTime in UTC that corresponds to the same absolute instant
-      final tzDate = tz.TZDateTime.now(tz.UTC).add(duration);
+      // Convert DateTime to TZDateTime in local timezone
+      final tzScheduledDate = tz.TZDateTime.from(scheduledDate, location);
 
       await flutterLocalNotificationsPlugin.zonedSchedule(
         id: id,
         title: title,
         body: body,
-        scheduledDate: tzDate,
+        scheduledDate: tzScheduledDate,
         notificationDetails: const fln.NotificationDetails(
           android: fln.AndroidNotificationDetails(
             'scheduled_channel',
             'Scheduled Notifications',
+            channelDescription:
+                'Channel for time-based scheduled notifications',
             importance: fln.Importance.max,
             priority: fln.Priority.high,
           ),
           iOS: fln.DarwinNotificationDetails(),
           macOS: fln.DarwinNotificationDetails(),
+          linux: fln.LinuxNotificationDetails(),
         ),
         androidScheduleMode: fln.AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            fln.UILocalNotificationDateInterpretation.absoluteTime,
         payload: payload,
       );
-    } catch (e) {
+
+      // Save to local storage for UI tracking
+      await _saveScheduledNotification(id, title, body, payload);
+
       debugPrint(
-          "NotificationService: Failed to schedule zoned notification: $e");
+          'NotificationService: Scheduled notification #$id for $scheduledDate');
+    } catch (e, stack) {
+      debugPrint('NotificationService: Failed to schedule notification: $e');
+      if (kDebugMode) {
+        debugPrint(stack.toString());
+      }
     }
   }
-  */
 
   Future<void> scheduleDailyReminder() async {
     if (!_isInitialized) await init();
@@ -320,17 +334,17 @@ class NotificationService {
     // Use a stable deterministic hash instead of Object.hash
     final int id = generateStableHash('cc_reminder_$bank');
 
+    final String ordinal = DateHelper.getOrdinal(day);
     await showNotification(
       id: id,
       title: 'Reminder Set: $bank',
-      body:
-          'We will remind you on the ${day}th of every month to update your bill.',
+      body: 'Monthly bill reminder active for the $day$ordinal.',
       payload: routeCards,
     );
 
     // Also save as if it were scheduled, for UI demo purposes
-    await _saveScheduledNotification(
-        id, 'Reminder: $bank', 'Bill payment due on day $day', routeCards);
+    await _saveScheduledNotification(id, 'Reminder: $bank',
+        'Bill payment due on the $day$ordinal of every month', routeCards);
   }
 
   Future<void> showDailyBillDigest(List<BillSummary> bills) async {
@@ -344,10 +358,7 @@ class NotificationService {
     final String body =
         "$count ${count == 1 ? 'bill' : 'bills'} due today · ${CurrencyFormatter.format(total)} total";
 
-    // Timing Guard: Morning window functionality currently disabled due to
-    // flutter_local_notifications API/version mismatch.
-    // TODO: Restore scheduling logic once API surface is stable.
-    /*
+    // Timing Guard: Schedule for 8 AM if it's before 8 AM, otherwise show immediately
     final now = DateTime.now();
     if (now.hour < 8) {
       await scheduleNotification(
@@ -358,16 +369,13 @@ class NotificationService {
         payload: routeDashboard,
       );
     } else {
-    */
-    await showNotification(
-      id: dailyBillDigestId,
-      title: title,
-      body: body,
-      payload: routeDashboard,
-    );
-    /*
+      await showNotification(
+        id: dailyBillDigestId,
+        title: title,
+        body: body,
+        payload: routeDashboard,
+      );
     }
-    */
   }
 
   Future<List<fln.PendingNotificationRequest>> getPendingNotifications() async {

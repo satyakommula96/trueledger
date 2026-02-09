@@ -79,6 +79,7 @@ class AddTransactionUseCase
         params.category,
         params.note,
         params.date,
+        paymentMethod: params.paymentMethod,
       );
 
       // 2b. Personalization logic

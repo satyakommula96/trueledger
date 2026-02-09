@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/core/utils/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
@@ -22,25 +23,47 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
   late TextEditingController bankCtrl;
   late TextEditingController limitCtrl;
   late TextEditingController stmtCtrl;
+  late TextEditingController currentCtrl;
   late TextEditingController minDueCtrl;
   late TextEditingController dueDateCtrl;
   late TextEditingController genDateCtrl;
   DateTime? _selectedDueDate;
   DateTime? _selectedGenDate;
+  int? _dueDay;
+  int? _genDay;
 
   Future<void> _pickDueDate() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
+    final picked = await showDialog<int>(
       context: context,
-      initialDate: _selectedDueDate ?? now,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 5),
+      builder: (context) => AlertDialog(
+        title: const Text("SELECT DUE DAY"),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7),
+            itemCount: 31,
+            itemBuilder: (context, index) {
+              final day = index + 1;
+              return InkWell(
+                onTap: () => Navigator.pop(context, day),
+                child: Center(
+                  child: Text(day.toString(),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
     );
 
     if (picked != null) {
       setState(() {
-        _selectedDueDate = picked;
-        dueDateCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
+        _dueDay = picked;
+        final ordinal = DateHelper.getOrdinal(picked);
+        dueDateCtrl.text = '$picked$ordinal of month';
       });
     }
   }
@@ -57,7 +80,9 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     if (picked != null) {
       setState(() {
         _selectedGenDate = picked;
-        genDateCtrl.text = 'Day ${picked.day}';
+        _genDay = picked.day;
+        genDateCtrl.text =
+            '${picked.day}${DateHelper.getOrdinal(picked.day)} of month';
       });
     }
   }
@@ -69,22 +94,54 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     limitCtrl = TextEditingController(text: widget.card.creditLimit.toString());
     stmtCtrl =
         TextEditingController(text: widget.card.statementBalance.toString());
+    currentCtrl =
+        TextEditingController(text: widget.card.currentBalance.toString());
     minDueCtrl = TextEditingController(text: widget.card.minDue.toString());
     dueDateCtrl = TextEditingController(text: widget.card.dueDate);
     genDateCtrl = TextEditingController(text: widget.card.statementDate);
-    try {
-      _selectedDueDate = DateFormat('dd-MM-yyyy').parse(widget.card.dueDate);
-    } catch (_) {
-      try {
-        _selectedDueDate = DateFormat('dd-MM-yy').parse(widget.card.dueDate);
-      } catch (_) {}
+    if (widget.card.dueDate.isNotEmpty) {
+      if (widget.card.dueDate.contains(' ')) {
+        final parts = widget.card.dueDate.split(' ');
+        final dayStr = parts[0].replaceAll(RegExp(r'[^0-9]'), '');
+        final day = int.tryParse(dayStr);
+        if (day != null) {
+          final now = DateTime.now();
+          _selectedDueDate = DateTime(now.year, now.month, day);
+          _dueDay = day;
+        }
+      } else {
+        try {
+          _selectedDueDate =
+              DateFormat('dd-MM-yyyy').parse(widget.card.dueDate);
+          // Auto-convert old full date to new "Xth of month" format in the field
+          final day = _selectedDueDate!.day;
+          _dueDay = day;
+          dueDateCtrl.text = '$day${DateHelper.getOrdinal(day)} of month';
+        } catch (_) {
+          try {
+            _selectedDueDate =
+                DateFormat('dd-MM-yy').parse(widget.card.dueDate);
+            final day = _selectedDueDate!.day;
+            _dueDay = day;
+            dueDateCtrl.text = '$day${DateHelper.getOrdinal(day)} of month';
+          } catch (_) {}
+        }
+      }
     }
     if (widget.card.statementDate.isNotEmpty) {
-      if (widget.card.statementDate.startsWith('Day ')) {
-        final day = int.tryParse(widget.card.statementDate.split(' ')[1]);
+      if (widget.card.statementDate.contains(' ')) {
+        final parts = widget.card.statementDate.split(' ');
+        String rawDay =
+            widget.card.statementDate.startsWith('Day ') ? parts[1] : parts[0];
+        final day = int.tryParse(rawDay.replaceAll(RegExp(r'[^0-9]'), ''));
         if (day != null) {
           final now = DateTime.now();
           _selectedGenDate = DateTime(now.year, now.month, day);
+          _genDay = day;
+          // Set text properly for the field if it was in the old format
+          if (widget.card.statementDate.startsWith('Day ')) {
+            genDateCtrl.text = '$day${DateHelper.getOrdinal(day)} of month';
+          }
         }
       } else {
         // Fallback for old format
@@ -102,7 +159,28 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Edit Credit Card"),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Edit Credit Card", style: TextStyle(fontSize: 16)),
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: stmtCtrl,
+              builder: (context, value, _) {
+                final balance = double.tryParse(value.text) ?? 0;
+                final isPaid = balance <= 0;
+                return Text(
+                  isPaid ? "STATUS: PAID" : "STATUS: PENDING PAYMENT",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1,
+                    color: isPaid ? Colors.green : Colors.orange,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
@@ -119,7 +197,10 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
             _buildField("Credit Limit", limitCtrl, Icons.speed,
                 isNumber: true, prefix: CurrencyFormatter.symbol),
             _buildField(
-                "Statement Balance", stmtCtrl, Icons.account_balance_wallet,
+                "Last Statement Balance (Billed)", stmtCtrl, Icons.receipt_long,
+                isNumber: true, prefix: CurrencyFormatter.symbol),
+            _buildField("Current Outstanding Balance (Total Used)", currentCtrl,
+                Icons.account_balance_wallet,
                 isNumber: true, prefix: CurrencyFormatter.symbol),
             _buildField("Minimum Due", minDueCtrl, Icons.low_priority,
                 isNumber: true, prefix: CurrencyFormatter.symbol),
@@ -129,41 +210,6 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
             _buildField("Payment Due Date", dueDateCtrl, Icons.calendar_today,
                 readOnly: true, onTap: _pickDueDate),
             const SizedBox(height: 20),
-
-            // New Bill Section
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                    color: colorScheme.primary.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.receipt_long,
-                          color: colorScheme.primary, size: 20),
-                      const SizedBox(width: 8),
-                      Text("NEW BILL GENERATED?",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: colorScheme.primary,
-                              letterSpacing: 1)),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                      "Update the statement details below for the new billing cycle.",
-                      style: TextStyle(fontSize: 12)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 40),
-
             SizedBox(
               width: double.infinity,
               height: 60,
@@ -218,11 +264,12 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
     if (bankCtrl.text.isEmpty || limitCtrl.text.isEmpty) return;
     final repo = ref.read(financialRepositoryProvider);
     final limit = double.tryParse(limitCtrl.text) ?? 0.0;
-    final balance = double.tryParse(stmtCtrl.text) ?? 0.0;
+    final stmtBalance = double.tryParse(stmtCtrl.text) ?? 0.0;
+    final currentBalance = double.tryParse(currentCtrl.text) ?? stmtBalance;
 
-    if (balance > limit) {
+    if (currentBalance > limit) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Statement balance cannot exceed credit limit")));
+          content: Text("Current balance cannot exceed credit limit")));
       return;
     }
 
@@ -230,17 +277,18 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
         widget.card.id,
         bankCtrl.text,
         limit,
-        balance,
+        stmtBalance,
         double.tryParse(minDueCtrl.text) ?? 0.0,
         dueDateCtrl.text,
-        genDateCtrl.text);
+        genDateCtrl.text,
+        currentBalance);
 
     // Trigger notification
-    final reminderDate = _selectedGenDate ?? _selectedDueDate;
-    if (reminderDate != null) {
+    final reminderDay = _dueDay ?? _genDay;
+    if (reminderDay != null) {
       await ref
           .read(notificationServiceProvider)
-          .scheduleCreditCardReminder(bankCtrl.text, reminderDate.day);
+          .scheduleCreditCardReminder(bankCtrl.text, reminderDay);
       ref.invalidate(pendingNotificationsProvider);
       ref.invalidate(pendingNotificationCountProvider);
     }

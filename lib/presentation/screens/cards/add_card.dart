@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/core/utils/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
@@ -19,26 +19,47 @@ class AddCreditCardScreen extends ConsumerStatefulWidget {
 class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
   final bankCtrl = TextEditingController();
   final limitCtrl = TextEditingController();
-  final stmtCtrl = TextEditingController();
+  final stmtCtrl = TextEditingController(); // Billed balance
+  final currentCtrl = TextEditingController(); // Total outstanding balance
   final minDueCtrl = TextEditingController();
   final dueDateCtrl = TextEditingController();
   final genDateCtrl = TextEditingController();
-  DateTime? _selectedDueDate;
   DateTime? _selectedGenDate;
+  int? _dueDay;
+  int? _genDay;
 
   Future<void> _pickDueDate() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
+    final picked = await showDialog<int>(
       context: context,
-      initialDate: _selectedDueDate ?? now,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 5),
+      builder: (context) => AlertDialog(
+        title: const Text("SELECT DUE DAY"),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7),
+            itemCount: 31,
+            itemBuilder: (context, index) {
+              final day = index + 1;
+              return InkWell(
+                onTap: () => Navigator.pop(context, day),
+                child: Center(
+                  child: Text(day.toString(),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
     );
 
     if (picked != null) {
       setState(() {
-        _selectedDueDate = picked;
-        dueDateCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
+        _dueDay = picked;
+        final ordinal = DateHelper.getOrdinal(picked);
+        dueDateCtrl.text = '$picked$ordinal of month';
       });
     }
   }
@@ -55,7 +76,9 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
     if (picked != null) {
       setState(() {
         _selectedGenDate = picked;
-        genDateCtrl.text = 'Day ${picked.day}';
+        _genDay = picked.day;
+        genDateCtrl.text =
+            '${picked.day}${DateHelper.getOrdinal(picked.day)} of month';
       });
     }
   }
@@ -75,7 +98,10 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
             _buildField("Credit Limit", limitCtrl, Icons.speed,
                 isNumber: true, prefix: CurrencyFormatter.symbol),
             _buildField(
-                "Statement Balance", stmtCtrl, Icons.account_balance_wallet,
+                "Last Statement Balance (Billed)", stmtCtrl, Icons.receipt_long,
+                isNumber: true, prefix: CurrencyFormatter.symbol),
+            _buildField("Current Outstanding Balance (Total Used)", currentCtrl,
+                Icons.account_balance_wallet,
                 isNumber: true, prefix: CurrencyFormatter.symbol),
             _buildField("Minimum Due", minDueCtrl, Icons.low_priority,
                 isNumber: true, prefix: CurrencyFormatter.symbol),
@@ -139,27 +165,32 @@ class _AddCreditCardScreenState extends ConsumerState<AddCreditCardScreen> {
     if (bankCtrl.text.isEmpty || limitCtrl.text.isEmpty) return;
     final repo = ref.read(financialRepositoryProvider);
     final limit = double.tryParse(limitCtrl.text) ?? 0.0;
-    final balance = double.tryParse(stmtCtrl.text) ?? 0.0;
+    final stmtBalance = double.tryParse(stmtCtrl.text) ?? 0.0;
+    final currentBalance = double.tryParse(currentCtrl.text) ??
+        stmtBalance; // Default to stmt if empty? Or 0? Let's default to stmtBalance because usually Current >= Stmt
 
-    if (balance > limit) {
+    if (currentBalance > limit) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Statement balance cannot exceed credit limit")));
+          content: Text("Current balance cannot exceed credit limit")));
       return;
     }
 
     await repo.addCreditCard(
         bankCtrl.text,
         limit,
-        balance,
+        stmtBalance,
         double.tryParse(minDueCtrl.text) ?? 0.0,
         dueDateCtrl.text,
-        genDateCtrl.text);
+        genDateCtrl.text,
+        currentBalance); // New param
 
     // Trigger notification
-    if (_selectedGenDate != null) {
+    // Trigger notification based on Due Date if available, else Gen Date
+    final reminderDay = _dueDay ?? _genDay;
+    if (reminderDay != null) {
       await ref
           .read(notificationServiceProvider)
-          .scheduleCreditCardReminder(bankCtrl.text, _selectedGenDate!.day);
+          .scheduleCreditCardReminder(bankCtrl.text, reminderDay);
     }
     if (mounted) {
       ref.invalidate(dashboardProvider);

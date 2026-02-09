@@ -34,11 +34,21 @@ class DateHelper {
     }
 
     if (day != null && day > 0 && day <= 31) {
+      final today = DateTime(now.year, now.month, now.day);
       var next = DateTime(now.year, now.month, day);
-      if (next.isBefore(DateTime(now.year, now.month, now.day))) {
+      if (next.isBefore(today)) {
         next = DateTime(now.year, now.month + 1, day);
       }
-      return "$prefix: ${DateFormat('dd-MM-yyyy').format(next)}";
+
+      if (isSameDay(next, today)) {
+        return "DUE TODAY";
+      }
+      final tomorrow = today.add(const Duration(days: 1));
+      if (isSameDay(next, tomorrow)) {
+        return "DUE TOMORROW";
+      }
+
+      return "$prefix: ${DateFormat('dd MMM yyyy').format(next).toUpperCase()}";
     }
 
     return "$due $prefix".toUpperCase();
@@ -116,5 +126,41 @@ class DateHelper {
 
   static bool isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  static String getOrdinal(int day) {
+    if (day >= 11 && day <= 13) {
+      return 'th';
+    }
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
+  }
+
+  static DateTime? parseSafe(String? input) {
+    if (input == null || input.isEmpty) return null;
+    try {
+      return DateTime.parse(input);
+    } catch (_) {}
+    try {
+      return DateFormat('dd-MM-yyyy').parse(input);
+    } catch (_) {}
+    try {
+      return DateFormat('dd/MM/yyyy').parse(input);
+    } catch (_) {}
+    try {
+      return DateFormat('d/M/yyyy').parse(input);
+    } catch (_) {}
+    try {
+      return DateFormat('dd MMM yyyy').parse(input);
+    } catch (_) {}
+    return null;
   }
 }

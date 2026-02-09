@@ -127,16 +127,21 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     }
 
     return [
-      ...subBills.map((s) => {
-            'id': 'sub_${s['id']}',
-            'name': s['name'],
-            'title': s['name'],
-            'amount': s['amount'],
-            'type': 'SUBSCRIPTION',
-            'due': s['billing_date'], // Use day number instead of 'RECURRING'
-            'isRecurring': true,
-            'isPaid': checkPaid(s['name'] as String? ?? ''),
-          }),
+      ...subBills.map((s) {
+        final name = s['name'] as String;
+        final isSIP = name.toUpperCase().contains('SIP') ||
+            name.toUpperCase().contains('FUND');
+        return {
+          'id': 'sub_${s['id']}',
+          'name': name,
+          'title': name,
+          'amount': s['amount'],
+          'type': isSIP ? 'INVESTMENT DUE' : 'SUBSCRIPTION',
+          'due': s['billing_date'],
+          'isRecurring': true,
+          'isPaid': checkPaid(name),
+        };
+      }),
       ...ccBills.map((c) => {
             'id': 'cc_${c['id']}',
             'name': c['bank'],
@@ -144,7 +149,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
             'amount': c['statement_balance'],
             'type': 'CREDIT DUE',
             'due': c['due_date'],
-            'isRecurring': false,
+            'isRecurring': true,
             'isPaid': (c['statement_balance'] as num? ?? 0) <= 0,
           }),
       ...loanBills.map((l) => {
@@ -234,20 +239,41 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<void> addEntry(String type, double amount, String category,
-      String note, String date) async {
+  Future<void> addEntry(
+      String type, double amount, String category, String note, String date,
+      {String? paymentMethod, Set<TransactionTag>? tags}) async {
     final db = await AppDatabase.db;
+    final tagStr = tags?.map((t) => t.name).join(',');
+
+    // Handle credit card balance update if payment method matches a card name
+    if (paymentMethod != null && type != 'Income') {
+      final cardList = await db
+          .query('credit_cards', where: 'bank = ?', whereArgs: [paymentMethod]);
+      if (cardList.isNotEmpty) {
+        final card = cardList.first;
+        final currentBal = (card['current_balance'] as num?)?.toDouble() ?? 0.0;
+        await db.update(
+            'credit_cards', {'current_balance': currentBal + amount},
+            where: 'id = ?', whereArgs: [card['id']]);
+      }
+    }
+
     switch (type) {
       case 'Income':
-        await db.insert('income_sources',
-            {'source': category, 'amount': amount, 'date': date});
+        await db.insert('income_sources', {
+          'source': category,
+          'amount': amount,
+          'date': date,
+          'tags': tagStr ?? 'income'
+        });
         break;
       case 'Fixed':
         await db.insert('fixed_expenses', {
           'name': category,
           'amount': amount,
           'category': type,
-          'date': date
+          'date': date,
+          'tags': tagStr ?? 'transfer'
         });
         break;
       case 'Subscription':
@@ -265,7 +291,8 @@ class FinancialRepositoryImpl implements IFinancialRepository {
           'amount': amount,
           'active': 1,
           'type': category,
-          'date': date
+          'date': date,
+          'tags': tagStr ?? 'transfer'
         });
         break;
       default:
@@ -273,14 +300,33 @@ class FinancialRepositoryImpl implements IFinancialRepository {
           'date': date,
           'amount': amount,
           'category': category,
-          'note': note
+          'note': note,
+          'tags': tagStr ?? 'transfer'
         });
     }
   }
 
   @override
   Future<void> checkAndProcessRecurring() async {
-    // Reverted to empty for V1 start
+    final db = await AppDatabase.db;
+    final now = DateTime.now();
+    final todayDay = now.day;
+
+    // Check Credit Card Statement Generation
+    final cards = await db.query('credit_cards');
+    for (final c in cards) {
+      final stmtStr = c['statement_date'] as String? ?? '';
+      // Format matches "12th of month" or just "12"
+      final match = RegExp(r'^(\d+)').firstMatch(stmtStr);
+      if (match != null) {
+        final stmtDay = int.tryParse(match.group(1)!);
+        if (stmtDay == todayDay) {
+          final currentBal = (c['current_balance'] as num?)?.toDouble() ?? 0.0;
+          await db.update('credit_cards', {'statement_balance': currentBal},
+              where: 'id = ?', whereArgs: [c['id']]);
+        }
+      }
+    }
   }
 
   @override
@@ -448,12 +494,14 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       double statementBalance,
       double minDue,
       String dueDate,
-      String statementDate) async {
+      String statementDate,
+      [double currentBalance = 0.0]) async {
     final db = await AppDatabase.db;
     await db.insert('credit_cards', {
       'bank': bank,
       'credit_limit': creditLimit,
       'statement_balance': statementBalance,
+      'current_balance': currentBalance,
       'min_due': minDue,
       'due_date': dueDate,
       'statement_date': statementDate,
@@ -468,18 +516,25 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       double statementBalance,
       double minDue,
       String dueDate,
-      String statementDate) async {
+      String statementDate,
+      [double? currentBalance]) async {
     final db = await AppDatabase.db;
+    final Map<String, dynamic> values = {
+      'bank': bank,
+      'credit_limit': creditLimit,
+      'statement_balance': statementBalance,
+      'min_due': minDue,
+      'due_date': dueDate,
+      'statement_date': statementDate,
+    };
+
+    if (currentBalance != null) {
+      values['current_balance'] = currentBalance;
+    }
+
     await db.update(
       'credit_cards',
-      {
-        'bank': bank,
-        'credit_limit': creditLimit,
-        'statement_balance': statementBalance,
-        'min_due': minDue,
-        'due_date': dueDate,
-        'statement_date': statementDate,
-      },
+      values,
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -492,18 +547,30 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         await db.query('credit_cards', where: 'id = ?', whereArgs: [id]);
     if (cardList.isNotEmpty) {
       final card = cardList.first;
-      double currentBal = (card['statement_balance'] as num).toDouble();
+      double stmtBal = (card['statement_balance'] as num).toDouble();
+      double currentBal =
+          (card['current_balance'] as num?)?.toDouble() ?? stmtBal;
       double currentMin = (card['min_due'] as num).toDouble();
 
-      double newBal = currentBal - amount;
-      if (newBal < 0) newBal = 0;
+      double newStmtBal = stmtBal - amount;
+      if (newStmtBal < 0) newStmtBal = 0;
+
+      double newCurrentBal = currentBal - amount;
+      // Current balance can technically go negative (if overpaid/refunded), but let's keep it 0 for now unless user wants overpayment tracking
+      if (newCurrentBal < 0) newCurrentBal = 0;
 
       double newMin = currentMin - amount;
       if (newMin < 0) newMin = 0;
 
       await db.update(
-          'credit_cards', {'statement_balance': newBal, 'min_due': newMin},
-          where: 'id = ?', whereArgs: [id]);
+          'credit_cards',
+          {
+            'statement_balance': newStmtBal,
+            'current_balance': newCurrentBal,
+            'min_due': newMin
+          },
+          where: 'id = ?',
+          whereArgs: [id]);
     }
   }
 
@@ -996,5 +1063,30 @@ class FinancialRepositoryImpl implements IFinancialRepository {
     final db = await AppDatabase.db;
     return await db.query('loan_audit_log',
         where: 'loan_id = ?', whereArgs: [loanId], orderBy: 'date DESC');
+  }
+
+  @override
+  Future<void> updateEntryTags(
+      String type, int id, Set<TransactionTag> tags) async {
+    final db = await AppDatabase.db;
+    String table;
+    switch (type) {
+      case 'Variable':
+        table = 'variable_expenses';
+        break;
+      case 'Fixed':
+        table = 'fixed_expenses';
+        break;
+      case 'Income':
+        table = 'income_sources';
+        break;
+      case 'Investment':
+        table = 'investments';
+        break;
+      default:
+        return;
+    }
+    await db.update(table, {'tags': tags.map((t) => t.name).join(',')},
+        where: 'id = ?', whereArgs: [id]);
   }
 }

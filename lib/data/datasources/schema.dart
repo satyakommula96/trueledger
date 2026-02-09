@@ -23,6 +23,7 @@ class Schema {
   static const String colType = 'type';
   static const String colVersion = 'version';
   static const String colAppliedAt = 'applied_at';
+  static const String colTags = 'tags';
 
   // Specific columns
   static const String colSource = 'source'; // income_sources
@@ -36,6 +37,7 @@ class Schema {
   static const String colMinDue = 'min_due';
   static const String colDueDate = 'due_date';
   static const String colStatementDate = 'statement_date';
+  static const String colCurrentBalance = 'current_balance';
 
   // Loans
   static const String colLoanType = 'loan_type';

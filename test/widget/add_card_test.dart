@@ -39,7 +39,7 @@ void main() {
   group('AddCreditCardScreen', () {
     testWidgets('should add credit card successfully', (tester) async {
       when(() => mockRepository.addCreditCard(
-              any(), any(), any(), any(), any(), any()))
+              any(), any(), any(), any(), any(), any(), any()))
           .thenAnswer((_) async => {});
 
       await tester.pumpWidget(createWidgetUnderTest());
@@ -55,7 +55,15 @@ void main() {
           '100000');
       await tester.enterText(
           find.byWidgetPredicate((w) =>
-              w is TextField && w.decoration?.labelText == 'Statement Balance'),
+              w is TextField &&
+              (w.decoration?.labelText?.contains('Statement Balance') ??
+                  false)),
+          '5000');
+      await tester.enterText(
+          find.byWidgetPredicate((w) =>
+              w is TextField &&
+              (w.decoration?.labelText?.contains('Current Outstanding') ??
+                  false)),
           '5000');
       await tester.enterText(
           find.byWidgetPredicate((w) =>
@@ -63,17 +71,6 @@ void main() {
           '500');
 
       await tester.pumpAndSettle();
-
-      // Debugging: Verify text was entered
-      final bankField = find.byWidgetPredicate(
-          (w) => w is TextField && w.decoration?.labelText == 'Bank Name');
-      expect((tester.widget(bankField) as TextField).controller?.text,
-          'Test Bank');
-
-      final limitField = find.byWidgetPredicate(
-          (w) => w is TextField && w.decoration?.labelText == 'Credit Limit');
-      expect(
-          (tester.widget(limitField) as TextField).controller?.text, '100000');
 
       await tester.ensureVisible(find.text('ADD CARD'));
       await tester.tap(find.text('ADD CARD'));
@@ -87,10 +84,12 @@ void main() {
             500,
             any(),
             any(),
+            5000,
           )).called(1);
     });
 
-    testWidgets('should show error if balance exceeds limit', (tester) async {
+    testWidgets('should show error if current balance exceeds limit',
+        (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       await tester.enterText(
@@ -103,7 +102,9 @@ void main() {
           '5000');
       await tester.enterText(
           find.byWidgetPredicate((w) =>
-              w is TextField && w.decoration?.labelText == 'Statement Balance'),
+              w is TextField &&
+              (w.decoration?.labelText?.contains('Current Outstanding') ??
+                  false)),
           '10000');
 
       await tester.pumpAndSettle();
@@ -111,17 +112,17 @@ void main() {
       await tester.tap(find.text('ADD CARD'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Statement balance cannot exceed credit limit'),
+      expect(find.text('Current balance cannot exceed credit limit'),
           findsOneWidget);
       verifyNever(() => mockRepository.addCreditCard(
-          any(), any(), any(), any(), any(), any()));
+          any(), any(), any(), any(), any(), any(), any()));
     });
 
     testWidgets('should show date pickers', (tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Tap on Statement Date
-      await tester.tap(find.byType(TextField).at(4));
+      await tester.tap(find.byType(TextField).at(5));
       await tester.pumpAndSettle();
       expect(find.byType(DatePickerDialog), findsOneWidget);
 
@@ -135,10 +136,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap on Payment Due Date
-      await tester.ensureVisible(find.byType(TextField).at(5));
-      await tester.tap(find.byType(TextField).at(5));
+      await tester.ensureVisible(find.byType(TextField).at(6));
+      await tester.tap(find.byType(TextField).at(6));
       await tester.pumpAndSettle();
-      expect(find.byType(DatePickerDialog), findsOneWidget);
+      expect(find.text('SELECT DUE DAY'), findsOneWidget);
+      expect(find.byType(AlertDialog), findsOneWidget);
     });
   });
 }

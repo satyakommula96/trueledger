@@ -4,7 +4,7 @@ A privacy-first personal finance tracker with AI-powered insights.
 
 [![CI](https://github.com/satyakommula96/trueledger/actions/workflows/ci.yml/badge.svg)](https://github.com/satyakommula96/trueledger/actions/workflows/ci.yml)
 [![Documentation](https://github.com/satyakommula96/trueledger/actions/workflows/deploy-docs.yml/badge.svg)](https://github.com/satyakommula96/trueledger/actions/workflows/deploy-docs.yml)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
 ### 🚀 **[Live Web Demo](https://trueledger.satyakommula.com)**
 
@@ -160,7 +160,7 @@ We welcome contributions! Please see our [Contributing Guidelines](docs/contribu
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 

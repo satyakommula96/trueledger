@@ -1,17 +1,15 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:trueledger/domain/models/models.dart';
 
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/core/utils/date_helper.dart';
 import 'package:trueledger/core/theme/theme.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/domain/logic/loan_engine.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:csv/csv.dart';
 
 class EditLoanScreen extends ConsumerStatefulWidget {
   final Loan loan;
@@ -46,27 +44,117 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
     selectedType = widget.loan.loanType;
 
     // Try to parse existing date if it looks like a full date (e.g. 15 Feb 2026)
-    try {
-      _selectedDate = DateFormat('dd-MM-yyyy').parse(widget.loan.dueDate);
-    } catch (_) {
-      // Ignore if parsing fails (e.g. just Day number)
-    }
+    _selectedDate = DateHelper.parseSafe(widget.loan.dueDate);
     _fetchHistory();
+  }
+
+  Future<void> _updateTag(LedgerItem item, TransactionTag tag) async {
+    final repo = ref.read(financialRepositoryProvider);
+    final newTags = Set<TransactionTag>.from(item.tags);
+
+    if (tag == TransactionTag.transfer) {
+      // "Not a payment" - remove all loan related tags
+      newTags.remove(TransactionTag.loanEmi);
+      newTags.remove(TransactionTag.loanPrepayment);
+      newTags.remove(TransactionTag.loanFee);
+      // Ensure it has at least one tag to signify it's been classified
+      if (newTags.isEmpty) newTags.add(TransactionTag.transfer);
+    } else {
+      // Toggle specific tag
+      if (newTags.contains(tag)) {
+        newTags.remove(tag);
+      } else {
+        // Exclusive loan tags (usually a txn is either EMI or Prepayment)
+        if (tag == TransactionTag.loanEmi) {
+          newTags.remove(TransactionTag.loanPrepayment);
+        } else if (tag == TransactionTag.loanPrepayment) {
+          newTags.remove(TransactionTag.loanEmi);
+        }
+        newTags.add(tag);
+        newTags.remove(TransactionTag.transfer);
+      }
+    }
+
+    await repo.updateEntryTags(item.type, item.id, newTags);
+    _fetchHistory(); // Refresh list
   }
 
   Future<void> _fetchHistory() async {
     setState(() => _isLoadingHistory = true);
     final repo = ref.read(financialRepositoryProvider);
-    // Find matching transactions in Fixed and Variable expenses
-    // Heuristic: Search for loan name in the note/label
+
+    // Fetch last 1 year of transactions
     final all = await repo.getTransactionsForRange(
         DateTime.now().subtract(const Duration(days: 365)), DateTime.now());
 
+    // Parse Loan Start Date (if available) to filter out older transactions
+    // Parse Loan Start Date (if available) to filter out older transactions
+    DateTime? loanStart = DateHelper.parseSafe(widget.loan.date);
+    if (loanStart != null) {
+      // Reset to start of day to be inclusive of same-day payments
+      loanStart = DateTime(loanStart.year, loanStart.month, loanStart.day);
+    }
+
     final filtered = all.where((item) {
+      if (item.tags.contains(TransactionTag.income)) return false;
+
       final text = "${item.label} ${item.note ?? ''}".toLowerCase();
-      return text.contains(widget.loan.name.toLowerCase()) ||
-          (item.label == 'EMI' &&
-              text.contains(widget.loan.name.toLowerCase()));
+      final name = widget.loan.name.toLowerCase();
+
+      // Tag-based identification (Primary)
+      final hasLoanTag = item.tags.contains(TransactionTag.loanEmi) ||
+          item.tags.contains(TransactionTag.loanPrepayment);
+
+      // If tagged, it must still match the loan name to belong to this loan
+      if (hasLoanTag) {
+        return text.contains(name);
+      }
+
+      // Legacy/Fallback Logic: Only if no specific loan tags are present
+      // -----------------------------------------------------------
+
+      // Date Filter: strict exclusion if transaction is before loan start date (by day)
+      try {
+        final txDate = DateTime.parse(item.date);
+        if (loanStart != null) {
+          final txDay = DateTime(txDate.year, txDate.month, txDate.day);
+          if (txDay.isBefore(loanStart)) return false;
+        }
+      } catch (_) {
+        return false;
+      }
+
+      // Must match the loan name to even be considered
+      if (!text.contains(name)) return false;
+
+      // 1. Explicit Payment Keywords
+      bool containsAny(List<String> keywords) => keywords.any(text.contains);
+
+      final isExplicitPayment = containsAny([
+            'repayment',
+            'payment',
+            'return',
+            'settle',
+            'emi',
+            'inst' // "Installment"
+          ]) ||
+          (text.contains('loan') && containsAny(['pmt', 'payment', 'emi']));
+
+      if (isExplicitPayment) return true;
+
+      // 2. Amount Matches EMI
+      if (widget.loan.emi > 0) {
+        final tolerance = widget.loan.emi * 0.01;
+        final matchesEMI = (item.amount - widget.loan.emi).abs() <= tolerance;
+        if (matchesEMI) return true;
+      }
+
+      // 3. Fallback: If it's a Bank loan and has "EMI" label specifically
+      if (widget.loan.loanType != 'Individual' && item.label == 'EMI') {
+        return true;
+      }
+
+      return false;
     }).toList();
 
     setState(() {
@@ -271,24 +359,12 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("RECONCILIATION / PAYMENT HISTORY",
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2,
-                        color: Colors.grey)),
-                TextButton.icon(
-                  onPressed: _exportStatement,
-                  icon: const Icon(Icons.file_download_outlined, size: 16),
-                  label: const Text("EXPORT STATEMENT",
-                      style:
-                          TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
+            const Text("PAYMENT HISTORY",
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                    color: Colors.grey)),
             const SizedBox(height: 16),
             if (_isLoadingHistory)
               const Center(child: CircularProgressIndicator())
@@ -309,31 +385,117 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                     Divider(color: semantic.divider, height: 1),
                 itemBuilder: (context, index) {
                   final item = _history[index];
+                  final isEmi = item.tags.contains(TransactionTag.loanEmi);
+                  final isPrepayment =
+                      item.tags.contains(TransactionTag.loanPrepayment);
+
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Row(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item.date.substring(0, 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(item.date.substring(0, 10),
+                                      style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey)),
+                                  const SizedBox(height: 4),
+                                  Text(item.note ?? item.label,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  if (item.tags.isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Wrap(
+                                      spacing: 4,
+                                      children: item.tags.map((t) {
+                                        final isLoan = t.name
+                                            .toLowerCase()
+                                            .contains('loan');
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: isLoan
+                                                ? Colors.blue
+                                                    .withValues(alpha: 0.1)
+                                                : Colors.grey
+                                                    .withValues(alpha: 0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            border: Border.all(
+                                              color: isLoan
+                                                  ? Colors.blue
+                                                  : Colors.grey,
+                                              width: 0.5,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            t.name.toUpperCase(),
+                                            style: TextStyle(
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.w900,
+                                                color: isLoan
+                                                    ? Colors.blue
+                                                    : Colors.grey),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  CurrencyFormatter.format(item.amount),
                                   style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.grey)),
-                              const SizedBox(height: 4),
-                              Text(item.note ?? item.label,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          CurrencyFormatter.format(item.amount),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              color: Colors.redAccent),
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.redAccent),
+                                ),
+                                const SizedBox(height: 8),
+                                if (!isEmi && !isPrepayment)
+                                  TextButton.icon(
+                                    style: TextButton.styleFrom(
+                                      visualDensity: VisualDensity.compact,
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    onPressed: () => _updateTag(
+                                        item, TransactionTag.loanEmi),
+                                    icon: const Icon(Icons.add_circle_outline,
+                                        size: 14, color: Colors.blue),
+                                    label: const Text("MARK AS EMI",
+                                        style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900)),
+                                  )
+                                else
+                                  TextButton.icon(
+                                    style: TextButton.styleFrom(
+                                      visualDensity: VisualDensity.compact,
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    onPressed: () => _updateTag(
+                                        item, TransactionTag.transfer),
+                                    icon: const Icon(
+                                        Icons.remove_circle_outline,
+                                        size: 14,
+                                        color: Colors.grey),
+                                    label: const Text("NOT A PAYMENT",
+                                        style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.grey)),
+                                  ),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -351,16 +513,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
     final remaining = double.tryParse(remainingCtrl.text) ?? 0.0;
     final rate = double.tryParse(rateCtrl.text) ?? 0.0;
 
-    final lastDateStr = widget.loan.lastPaymentDate ??
-        widget.loan.date ??
-        DateTime.now().toIso8601String();
-
-    DateTime lastDate;
-    try {
-      lastDate = DateTime.parse(lastDateStr);
-    } catch (_) {
-      lastDate = DateTime.now().subtract(const Duration(days: 30));
-    }
+    final lastDate = DateHelper.parseSafe(widget.loan.lastPaymentDate) ??
+        DateHelper.parseSafe(widget.loan.date) ??
+        DateTime.now().subtract(const Duration(days: 30));
 
     final now = DateTime.now();
     int days = now.difference(lastDate).inDays;
@@ -402,12 +557,16 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("FORECLOSURE / PAYOFF QUOTE",
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1,
-                      color: Colors.grey)),
+              const Expanded(
+                child: Text("PAYOFF QUOTE",
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                        color: Colors.grey),
+                    overflow: TextOverflow.ellipsis),
+              ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
@@ -426,15 +585,23 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Valid until today",
-                      style: TextStyle(fontSize: 10, color: Colors.grey)),
-                  Text(CurrencyFormatter.format(payoffAmount, compact: false),
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.w900)),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Valid until today",
+                        style: TextStyle(fontSize: 10, color: Colors.grey)),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        CurrencyFormatter.format(payoffAmount, compact: false),
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Row(
                 children: [
@@ -532,15 +699,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
     final emi = double.tryParse(emiCtrl.text) ?? 0.0;
 
     // Daily Interest Calculation (Tier 1 Model)
-    final lastDateStr = widget.loan.lastPaymentDate ??
-        widget.loan.date ??
-        DateTime.now().toIso8601String();
-    DateTime lastDate;
-    try {
-      lastDate = DateTime.parse(lastDateStr);
-    } catch (_) {
-      lastDate = DateTime.now().subtract(const Duration(days: 30));
-    }
+    final lastDate = DateHelper.parseSafe(widget.loan.lastPaymentDate) ??
+        DateHelper.parseSafe(widget.loan.date) ??
+        DateTime.now().subtract(const Duration(days: 30));
 
     final now = DateTime.now();
     int days = now.difference(lastDate).inDays;
@@ -713,9 +874,14 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
       final repo = ref.read(financialRepositoryProvider);
       final nowIso = DateTime.now().toIso8601String();
 
-      // Record as Variable Expense (Lump sum or partial)
-      await repo.addEntry('Fixed', actualPayment, 'EMI / Loan Payment',
-          'Loan payment for ${nameCtrl.text}', nowIso);
+      // Record as Fixed Expense with explicit Tag
+      await repo.addEntry(
+          'Fixed',
+          actualPayment,
+          'EMI / Payment: ${nameCtrl.text}',
+          'Loan payment for ${nameCtrl.text}',
+          nowIso,
+          tags: {TransactionTag.loanEmi});
 
       // Forensic Audit Log
       await repo.recordLoanAudit(
@@ -814,9 +980,14 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
       final repo = ref.read(financialRepositoryProvider);
       final nowIso = DateTime.now().toIso8601String();
 
-      // Record as Variable Expense (Lump sum)
-      await repo.addEntry('Variable', result, 'EMI / Debt Repayment',
-          'Prepayment for ${nameCtrl.text}', nowIso);
+      // Record as Variable Expense with explicit Tag
+      await repo.addEntry(
+          'Variable',
+          result,
+          'Prepayment / Loan: ${nameCtrl.text}',
+          'Prepayment for ${nameCtrl.text}',
+          nowIso,
+          tags: {TransactionTag.loanPrepayment});
 
       // Prepayment Forensic Audit Log
       await repo.recordLoanAudit(
@@ -961,66 +1132,6 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
     );
   }
 
-  Future<void> _exportStatement() async {
-    final repo = ref.read(financialRepositoryProvider);
-    final logs = await repo.getLoanAuditLog(widget.loan.id);
-
-    if (!mounted) return;
-
-    if (logs.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("No audit logs found to export.")));
-      return;
-    }
-
-    List<List<dynamic>> rows = [];
-    // Header
-    rows.add([
-      "Date",
-      "Type",
-      "Opening Balance",
-      "Interest Rate (%)",
-      "Payment Amount",
-      "Days Accrued",
-      "Interest Accrued",
-      "Principal Applied",
-      "Closing Balance",
-      "Engine Version"
-    ]);
-
-    for (var log in logs) {
-      rows.add([
-        log['date'],
-        log['type'],
-        log['opening_balance'],
-        log['interest_rate'],
-        log['payment_amount'],
-        log['days_accrued'],
-        log['interest_accrued'],
-        log['principal_applied'],
-        log['closing_balance'],
-        log['engine_version'],
-      ]);
-    }
-
-    String csv = const ListToCsvConverter().convert(rows);
-    final String fileName =
-        "TrueLedger_${widget.loan.name.replaceAll(' ', '_')}_Statement.csv";
-
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [
-          XFile.fromData(
-            Uint8List.fromList(csv.codeUnits),
-            name: fileName,
-            mimeType: 'text/csv',
-          )
-        ],
-        subject: "Amortization Statement for ${widget.loan.name}",
-      ),
-    );
-  }
-
   Future<void> _save() async {
     final emi = double.tryParse(emiCtrl.text) ?? 0.0;
     final rate = double.tryParse(rateCtrl.text) ?? 0.0;
@@ -1100,7 +1211,12 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
-        dueCtrl.text = DateFormat('dd-MM-yyyy').format(picked);
+        if (selectedType == 'Individual') {
+          dueCtrl.text = DateFormat('dd MMM yyyy').format(picked);
+        } else {
+          dueCtrl.text =
+              "${picked.day}${DateHelper.getOrdinal(picked.day)} of month";
+        }
       });
     }
   }

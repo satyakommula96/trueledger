@@ -1274,6 +1274,19 @@ class SettingsScreen extends ConsumerWidget {
                 launchUrl(Uri.parse(
                     "https://satyakommula96.github.io/trueledger/privacy/"));
               }, semantic),
+              const SizedBox(width: 24),
+              _buildFooterLink("LICENSES", () {
+                showLicensePage(
+                  context: context,
+                  applicationName: "TrueLedger",
+                  applicationVersion: ref.read(appVersionProvider).value ?? "",
+                  applicationIcon: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Image.asset('assets/icon/trueledger_icon.png',
+                        width: 48, height: 48),
+                  ),
+                );
+              }, semantic),
             ],
           ),
         ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/core/utils/date_helper.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:intl/intl.dart';
 
@@ -279,13 +280,7 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
 
       if (picked != null) {
         setState(() {
-          dueCtrl.text = picked == 1
-              ? "1st"
-              : picked == 2
-                  ? "2nd"
-                  : picked == 3
-                      ? "3rd"
-                      : "${picked}th";
+          dueCtrl.text = "$picked${DateHelper.getOrdinal(picked)}";
         });
       }
     }

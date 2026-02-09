@@ -9,6 +9,9 @@ import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/usecases/startup_usecase.dart';
 import 'package:trueledger/core/config/app_config.dart';
 import 'package:trueledger/core/providers/secure_storage_provider.dart';
+import 'dart:math' as math;
+import 'package:trueledger/domain/services/personalization_service.dart';
+import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
 final bootProvider = FutureProvider<String?>((ref) async {
   final startupUseCase = ref.watch(startupUseCaseProvider);
@@ -38,6 +41,37 @@ final bootProvider = FutureProvider<String?>((ref) async {
 
   // 2. The Daily Bill Digest logic is now handled reactively by
   // dailyDigestOrchestratorProvider to support resume and real-time updates.
+
+  // 3. Pay Day Logic (Personalization)
+  try {
+    final settings = ref.read(personalizationServiceProvider).getSettings();
+    if (settings.payDay != null) {
+      final now = DateTime.now();
+      // Handle end of month (e.g. payDay is 31, but Feb has 28)
+      final lastDayOfMonth = DateTime(now.year, now.month + 1, 0).day;
+      final targetDay = math.min(settings.payDay!, lastDayOfMonth);
+
+      if (now.day == targetDay) {
+        final prefs = ref.read(sharedPreferencesProvider);
+        final key =
+            'salary_notification_shown_${now.year}_${now.month}_${now.day}';
+
+        // Ensure we only show once per day
+        if (prefs.getString(key) == null) {
+          await notificationService.showNotification(
+            id: NotificationService.salaryDayId,
+            title: "Salary Day!",
+            body:
+                "It's your usual pay day. Time to review your budget and investments?",
+            payload: NotificationService.routeDashboard,
+          );
+          await prefs.setString(key, 'true');
+        }
+      }
+    }
+  } catch (e) {
+    debugPrint("Pay Day check failed: $e");
+  }
 
   // Bypass Secure Storage during tests to avoid UI blocking hangs
   if (AppConfig.isIntegrationTest) {

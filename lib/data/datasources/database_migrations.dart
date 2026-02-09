@@ -175,6 +175,67 @@ class MigrationV9 extends Migration {
   Future<void> down(common.DatabaseExecutor db) async {}
 }
 
+class MigrationV10 extends Migration {
+  MigrationV10() : super(10);
+
+  @override
+  Future<void> up(common.DatabaseExecutor db) async {
+    // 1. Add tags column to all transaction tables
+    await addColumnSafe(db, Schema.incomeSourcesTable, Schema.colTags, "TEXT");
+    await addColumnSafe(db, Schema.fixedExpensesTable, Schema.colTags, "TEXT");
+    await addColumnSafe(
+        db, Schema.variableExpensesTable, Schema.colTags, "TEXT");
+    await addColumnSafe(db, Schema.investmentsTable, Schema.colTags, "TEXT");
+
+    // 2. Legacy Migration: Auto-tag existing records (BEST EFFORT)
+    // We mark everything as 'transfer' or 'income' by default if we can't be sure,
+    // but we'll try to catch EMI/Payments based on previous heuristic keywords.
+    // NOTE: Overwriting tags is safe here because legacy data had no 'tags' column.
+
+    // Tag Income Sources
+    await db.execute(
+        "UPDATE ${Schema.incomeSourcesTable} SET ${Schema.colTags} = 'income' WHERE ${Schema.colTags} IS NULL");
+
+    // Tag Fixed Expenses (Common for EMI)
+    await db.execute('''
+      UPDATE ${Schema.fixedExpensesTable} 
+      SET ${Schema.colTags} = 'loanEmi' 
+      WHERE ${Schema.colTags} IS NULL 
+      AND (LOWER(${Schema.colName}) LIKE '%emi%' 
+           OR LOWER(${Schema.colName}) LIKE '%payment%' 
+           OR LOWER(${Schema.colName}) LIKE '%repayment%')
+    ''');
+
+    // Tag Variable Expenses (Prepayments / Fees)
+    await db.execute('''
+      UPDATE ${Schema.variableExpensesTable} 
+      SET ${Schema.colTags} = 'loanPrepayment' 
+      WHERE ${Schema.colTags} IS NULL 
+      AND (LOWER(${Schema.colNote}) LIKE '%prepayment%' 
+           OR LOWER(${Schema.colNote}) LIKE '%principal%')
+    ''');
+
+    await db.execute('''
+      UPDATE ${Schema.variableExpensesTable} 
+      SET ${Schema.colTags} = 'loanFee' 
+      WHERE ${Schema.colTags} IS NULL 
+      AND (LOWER(${Schema.colNote}) LIKE '%fee%' 
+           OR LOWER(${Schema.colNote}) LIKE '%charge%')
+    ''');
+
+    // Default others to transfer to signify generic expense/movement
+    await db.execute(
+        "UPDATE ${Schema.fixedExpensesTable} SET ${Schema.colTags} = 'transfer' WHERE ${Schema.colTags} IS NULL");
+    await db.execute(
+        "UPDATE ${Schema.variableExpensesTable} SET ${Schema.colTags} = 'transfer' WHERE ${Schema.colTags} IS NULL");
+    await db.execute(
+        "UPDATE ${Schema.investmentsTable} SET ${Schema.colTags} = 'transfer' WHERE ${Schema.colTags} IS NULL");
+  }
+
+  @override
+  Future<void> down(common.DatabaseExecutor db) async {}
+}
+
 final List<Migration> appMigrations = [
   MigrationV2(),
   MigrationV3(),
@@ -184,4 +245,22 @@ final List<Migration> appMigrations = [
   MigrationV7(),
   MigrationV8(),
   MigrationV9(),
+  MigrationV10(),
+  MigrationV11(),
 ];
+
+class MigrationV11 extends Migration {
+  MigrationV11() : super(11);
+
+  @override
+  Future<void> up(common.DatabaseExecutor db) async {
+    await addColumnSafe(db, Schema.creditCardsTable, Schema.colCurrentBalance,
+        "REAL DEFAULT 0");
+    // Initialize current_balance with statement_balance for existing records
+    await db.execute(
+        "UPDATE ${Schema.creditCardsTable} SET ${Schema.colCurrentBalance} = ${Schema.colStatementBalance}");
+  }
+
+  @override
+  Future<void> down(common.DatabaseExecutor db) async {}
+}

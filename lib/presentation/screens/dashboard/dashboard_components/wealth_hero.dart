@@ -197,24 +197,28 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildHeaderPill(
-                            context,
-                            "NET WORTH",
-                            Icons.account_balance_wallet_rounded,
-                            onTap: widget.onTapNetWorth,
-                            semantic: semantic,
+                          Flexible(
+                            child: _buildHeaderPill(
+                              context,
+                              "NET WORTH",
+                              Icons.account_balance_wallet_rounded,
+                              onTap: widget.onTapNetWorth,
+                              semantic: semantic,
+                            ),
                           ),
-                          _buildHeaderPill(
-                            context,
-                            "${widget.activeStreak} DAY STREAK",
-                            Icons.whatshot_rounded,
-                            onTap: widget.onTapStreak,
-                            isAlt: true,
-                            semantic: semantic,
-                            color: widget.hasLoggedToday
-                                ? Colors.orange
-                                : Colors.white.withValues(alpha: 0.5),
-                            showPulse: !widget.hasLoggedToday,
+                          Flexible(
+                            child: _buildHeaderPill(
+                              context,
+                              "${widget.activeStreak} DAY STREAK",
+                              Icons.whatshot_rounded,
+                              onTap: widget.onTapStreak,
+                              isAlt: true,
+                              semantic: semantic,
+                              color: widget.hasLoggedToday
+                                  ? Colors.orange
+                                  : Colors.white.withValues(alpha: 0.5),
+                              showPulse: !widget.hasLoggedToday,
+                            ),
                           ),
                         ],
                       ),
@@ -329,13 +333,16 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
             color: color ?? Colors.white.withValues(alpha: 0.9),
           ),
           const SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(
-              color: color ?? Colors.white.withValues(alpha: 0.9),
-              fontWeight: FontWeight.w900,
-              fontSize: 10,
-              letterSpacing: 1.2,
+          Flexible(
+            child: Text(
+              text,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color ?? Colors.white.withValues(alpha: 0.9),
+                fontWeight: FontWeight.w900,
+                fontSize: 10,
+                letterSpacing: 1.2,
+              ),
             ),
           ),
         ],

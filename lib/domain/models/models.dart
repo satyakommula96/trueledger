@@ -10,3 +10,4 @@ export 'asset_model.dart';
 export 'category_model.dart';
 export 'insight_model.dart';
 export 'bill_summary_model.dart';
+export 'transaction_tag.dart';
