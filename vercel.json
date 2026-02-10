@@ -1,5 +1,5 @@
 {
-  "ignoreCommand": "exit 1",
+  "ignoreCommand": "git diff --quiet $VERCEL_GIT_PREVIOUS_SHA $VERCEL_GIT_COMMIT_SHA -- lib/ web/ pubspec.yaml pubspec.lock vercel.json",
   "buildCommand": "if cd flutter; then git pull && cd .. ; else git clone https://github.com/flutter/flutter.git; fi && flutter/bin/flutter config --enable-web && flutter/bin/flutter pub get && flutter/bin/flutter build web --debug --verbose",
   "outputDirectory": "build/web",
   "devCommand": "flutter/bin/flutter run -d web-server --web-port 3000",
