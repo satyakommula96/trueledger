@@ -267,6 +267,39 @@ void main() {
       expect(captured.date.substring(0, 10),
           yesterday.toIso8601String().substring(0, 10));
     });
+
+    testWidgets('should allow selecting custom dates via DatePicker',
+        (tester) async {
+      when(() => mockUseCase.call(any())).thenAnswer((_) async => Success(
+            AddTransactionResult(cancelDailyReminder: false),
+          ));
+
+      await tester.pumpWidget(createWidgetUnderTest());
+
+      // Tap OTHER to open date picker
+      await tester.tap(find.text('OTHER'));
+      await tester.pumpAndSettle();
+
+      // Tap '1' in calendars to select first day of current month
+      // Note: This relies on standard Material DatePicker structure
+      await tester.tap(find.text('1'));
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      // Enter details and save
+      await tester.enterText(find.byType(TextField).first, '100');
+      await tester.ensureVisible(find.text('SAVE EXPENSE'));
+      await tester.tap(find.text('SAVE EXPENSE'));
+      await tester.pumpAndSettle();
+
+      final firstOfMonth =
+          DateTime(DateTime.now().year, DateTime.now().month, 1);
+      final captured = verify(() => mockUseCase.call(captureAny()))
+          .captured
+          .single as AddTransactionParams;
+      expect(captured.date.substring(0, 10),
+          firstOfMonth.toIso8601String().substring(0, 10));
+    });
   });
 }
 
