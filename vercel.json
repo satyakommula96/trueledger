@@ -1,6 +1,6 @@
 {
   "ignoreCommand": "git diff --quiet $VERCEL_GIT_PREVIOUS_SHA $VERCEL_GIT_COMMIT_SHA -- lib/ web/ pubspec.yaml pubspec.lock vercel.json",
-  "buildCommand": "if cd flutter; then git pull && cd .. ; else git clone https://github.com/flutter/flutter.git; fi && flutter/bin/flutter config --enable-web && flutter/bin/flutter pub get && flutter/bin/flutter build web --debug --verbose",
+  "buildCommand": "if [ ! -d \"flutter\" ]; then git clone --depth 1 https://github.com/flutter/flutter.git -b stable; fi && ./flutter/bin/flutter doctor && ./flutter/bin/flutter config --enable-web && ./flutter/bin/flutter pub get && ./flutter/bin/flutter build web --release --no-pub",
   "outputDirectory": "build/web",
   "devCommand": "flutter/bin/flutter run -d web-server --web-port 3000",
   "installCommand": "echo 'Flutter will be installed in buildCommand'",
