@@ -35,7 +35,7 @@ void main() {
   }
 
   group('WealthHero', () {
-    testWidgets('renders NET WORTH label', (tester) async {
+    testWidgets('renders CURRENT BALANCE label', (tester) async {
       final summary = MonthlySummary(
         totalIncome: 100000,
         totalFixed: 20000,
@@ -54,7 +54,7 @@ void main() {
 
       await tester.pump(const Duration(seconds: 2));
 
-      expect(find.text('NET WORTH'), findsOneWidget);
+      expect(find.text('CURRENT BALANCE'), findsOneWidget);
     });
 
     testWidgets('renders net worth amount', (tester) async {
@@ -78,72 +78,6 @@ void main() {
 
       // 500,000 should be formatted. Let's just check if 500,000 is there.
       expect(find.textContaining('500,000'), findsOneWidget);
-    });
-
-    testWidgets('renders account balance icon', (tester) async {
-      final summary = MonthlySummary(
-        totalIncome: 100000,
-        totalFixed: 20000,
-        totalVariable: 30000,
-        totalSubscriptions: 5000,
-        totalInvestments: 10000,
-        netWorth: 500000,
-        creditCardDebt: 25000,
-        loansTotal: 200000,
-        totalMonthlyEMI: 15000,
-      );
-
-      await tester.pumpWidget(createTestWidget(
-        WealthHero(summary: summary, activeStreak: 0, hasLoggedToday: false),
-      ));
-
-      await tester.pump(const Duration(seconds: 2));
-
-      expect(find.byIcon(Icons.account_balance_wallet_rounded), findsOneWidget);
-    });
-
-    testWidgets('renders active streak when logged today', (tester) async {
-      final summary = MonthlySummary(
-        totalIncome: 100,
-        totalFixed: 0,
-        totalVariable: 0,
-        totalSubscriptions: 0,
-        totalInvestments: 0,
-        netWorth: 0,
-        creditCardDebt: 0,
-        loansTotal: 0,
-        totalMonthlyEMI: 0,
-      );
-
-      await tester.pumpWidget(createTestWidget(
-        WealthHero(summary: summary, activeStreak: 5, hasLoggedToday: true),
-      ));
-
-      await tester.pump(const Duration(seconds: 2));
-
-      expect(find.textContaining('5 DAY STREAK'), findsOneWidget);
-    });
-
-    testWidgets('renders streak when not logged today', (tester) async {
-      final summary = MonthlySummary(
-        totalIncome: 100,
-        totalFixed: 0,
-        totalVariable: 0,
-        totalSubscriptions: 0,
-        totalInvestments: 0,
-        netWorth: 0,
-        creditCardDebt: 0,
-        loansTotal: 0,
-        totalMonthlyEMI: 0,
-      );
-
-      await tester.pumpWidget(createTestWidget(
-        WealthHero(summary: summary, activeStreak: 5, hasLoggedToday: false),
-      ));
-
-      await tester.pump(const Duration(seconds: 2));
-
-      expect(find.textContaining('5 DAY STREAK'), findsOneWidget);
     });
   });
 }

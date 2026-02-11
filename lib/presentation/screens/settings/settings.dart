@@ -950,126 +950,192 @@ class SettingsScreen extends ConsumerWidget {
           builder: (ctx) {
             bool obscure = true;
             return BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-              child: StatefulBuilder(builder: (context, setState) {
-                return AlertDialog(
-                  backgroundColor:
-                      semantic.surfaceCombined.withValues(alpha: 0.9),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(32),
-                      side: BorderSide(color: semantic.divider, width: 1.5)),
-                  title: Text("SET $targetLength-DIGIT PIN",
-                      style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 14,
-                          letterSpacing: 1.5,
-                          color: semantic.text)),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        autofocus: true,
-                        keyboardType: TextInputType.number,
-                        maxLength: targetLength,
-                        obscureText: obscure,
-                        style: TextStyle(
-                            color: semantic.text, fontWeight: FontWeight.w900),
-                        onChanged: (val) => newPin = val,
-                        decoration: InputDecoration(
-                          hintText: "Enter PIN",
-                          hintStyle: TextStyle(
-                              color: semantic.secondaryText
-                                  .withValues(alpha: 0.5)),
-                          filled: true,
-                          fillColor:
-                              semantic.surfaceCombined.withValues(alpha: 0.3),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: semantic.divider)),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                                obscure
-                                    ? Icons.visibility_rounded
-                                    : Icons.visibility_off_rounded,
-                                color: semantic.secondaryText),
-                            onPressed: () => setState(() => obscure = !obscure),
+                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                child: StatefulBuilder(builder: (context, setState) {
+                  return AlertDialog(
+                      backgroundColor:
+                          semantic.surfaceCombined.withValues(alpha: 0.9),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(32),
+                          side:
+                              BorderSide(color: semantic.divider, width: 1.5)),
+                      title: Text("SET $targetLength-DIGIT PIN",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                              letterSpacing: 1.5,
+                              color: semantic.text)),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            autofocus: true,
+                            keyboardType: TextInputType.number,
+                            maxLength: targetLength,
+                            obscureText: obscure,
+                            style: TextStyle(
+                                color: semantic.text,
+                                fontWeight: FontWeight.w900),
+                            onChanged: (val) => newPin = val,
+                            decoration: InputDecoration(
+                              hintText: "Enter PIN",
+                              hintStyle: TextStyle(
+                                  color: semantic.secondaryText
+                                      .withValues(alpha: 0.5)),
+                              filled: true,
+                              fillColor: semantic.surfaceCombined
+                                  .withValues(alpha: 0.3),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide:
+                                      BorderSide(color: semantic.divider)),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                    obscure
+                                        ? Icons.visibility_rounded
+                                        : Icons.visibility_off_rounded,
+                                    color: semantic.secondaryText),
+                                onPressed: () =>
+                                    setState(() => obscure = !obscure),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildPillAction(
-                          targetLength == 4
-                              ? "USE 6-DIGIT PIN"
-                              : "USE 4-DIGIT PIN", () {
-                        setState(() {
-                          targetLength = targetLength == 4 ? 6 : 4;
-                          newPin = "";
-                        });
-                      }, semantic),
-                    ],
-                  ),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: Text("CANCEL",
-                            style: TextStyle(
-                                color: semantic.secondaryText,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 12))),
-                    ElevatedButton(
-                        onPressed: () async {
-                          if (newPin.length == targetLength) {
-                            final key = _generateRecoveryKey();
-                            await storage.write(key: 'app_pin', value: newPin);
-                            await storage.write(
-                                key: 'recovery_key', value: key);
-                            if (ctx.mounted) Navigator.pop(ctx);
-                            if (context.mounted) {
-                              await _showRecoveryKeyDialog(
-                                  context, key, semantic);
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(SnackBar(
-                                  content: const Text("PIN ENABLED SECURELY"),
-                                  backgroundColor: semantic.primary,
-                                ));
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: () async {
+                              final selected = await showDialog<int>(
+                                context: context,
+                                builder: (context) => BackdropFilter(
+                                  filter:
+                                      ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                                  child: SimpleDialog(
+                                    backgroundColor: semantic.surfaceCombined
+                                        .withValues(alpha: 0.95),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(24),
+                                        side: BorderSide(
+                                            color: semantic.divider,
+                                            width: 1.5)),
+                                    title: Text("Passcode Options",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w900,
+                                            color: semantic.text)),
+                                    children: [
+                                      SimpleDialogOption(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 16, horizontal: 24),
+                                        onPressed: () =>
+                                            Navigator.pop(context, 4),
+                                        child: Text(
+                                          "4-Digit Numeric Code",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                              color: semantic.primary),
+                                        ),
+                                      ),
+                                      Divider(
+                                          height: 1,
+                                          thickness: 1,
+                                          color: semantic.divider),
+                                      SimpleDialogOption(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 16, horizontal: 24),
+                                        onPressed: () =>
+                                            Navigator.pop(context, 6),
+                                        child: Text(
+                                          "6-Digit Numeric Code",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                              color: semantic.primary),
+                                        ),
+                                      ),
+                                      Divider(
+                                          height: 1,
+                                          thickness: 1,
+                                          color: semantic.divider),
+                                      SimpleDialogOption(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 16, horizontal: 24),
+                                        onPressed: () => Navigator.pop(context),
+                                        child: Text(
+                                          "Cancel",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w900,
+                                              color: semantic.overspent),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+
+                              if (selected != null) {
+                                setState(() {
+                                  targetLength = selected;
+                                  newPin = "";
+                                });
                               }
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: semantic.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12))),
-                        child: const Text("SAVE",
-                            style: TextStyle(
-                                fontWeight: FontWeight.w900, fontSize: 12))),
-                  ],
-                );
-              }),
-            );
+                            },
+                            child: Text("Passcode Options",
+                                style: TextStyle(
+                                    color: semantic.primary,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12)),
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: Text("CANCEL",
+                                style: TextStyle(
+                                    color: semantic.secondaryText,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12))),
+                        ElevatedButton(
+                            onPressed: () async {
+                              if (newPin.length == targetLength) {
+                                final key = _generateRecoveryKey();
+                                await storage.write(
+                                    key: 'app_pin', value: newPin);
+                                await storage.write(
+                                    key: 'recovery_key', value: key);
+                                if (ctx.mounted) Navigator.pop(ctx);
+                                if (context.mounted) {
+                                  await _showRecoveryKeyDialog(
+                                      context, key, semantic);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(SnackBar(
+                                      content:
+                                          const Text("PIN ENABLED SECURELY"),
+                                      backgroundColor: semantic.primary,
+                                    ));
+                                  }
+                                }
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: semantic.primary,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12))),
+                            child: const Text("SAVE",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12))),
+                      ]);
+                }));
           });
     }
-  }
-
-  Widget _buildPillAction(String text, VoidCallback onTap, AppColors semantic) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: semantic.divider.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(text,
-            style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                color: semantic.text)),
-      ),
-    );
   }
 
   @override

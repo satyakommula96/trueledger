@@ -197,37 +197,6 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            flex: 5,
-                            child: _buildHeaderPill(
-                              context,
-                              "NET WORTH",
-                              Icons.account_balance_wallet_rounded,
-                              onTap: widget.onTapNetWorth,
-                              semantic: semantic,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            flex: 6,
-                            child: _buildHeaderPill(
-                              context,
-                              "${widget.activeStreak} DAY STREAK",
-                              Icons.whatshot_rounded,
-                              onTap: widget.onTapStreak,
-                              isAlt: true,
-                              semantic: semantic,
-                              color: widget.hasLoggedToday
-                                  ? Colors.orange
-                                  : Colors.white.withValues(alpha: 0.5),
-                              showPulse: !widget.hasLoggedToday,
-                            ),
-                          ),
-                        ],
-                      ),
                       const Spacer(),
                       Text(
                         "CURRENT BALANCE",
@@ -309,67 +278,6 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
       child: clickableContent.animate().fadeIn(duration: 600.ms),
-    );
-  }
-
-  Widget _buildHeaderPill(
-    BuildContext context,
-    String text,
-    IconData icon, {
-    VoidCallback? onTap,
-    bool isAlt = false,
-    Color? color,
-    required AppColors semantic,
-    bool showPulse = false,
-  }) {
-    final pill = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: color != null
-            ? color.withValues(alpha: 0.15)
-            : Colors.black.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: color?.withValues(alpha: 0.3) ??
-              Colors.white.withValues(alpha: 0.15),
-          width: 1.5,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14,
-            color: color ?? Colors.white.withValues(alpha: 0.9),
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              text,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: color ?? Colors.white.withValues(alpha: 0.9),
-                fontWeight: FontWeight.w900,
-                fontSize: 10,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    return GestureDetector(
-      onTap: onTap,
-      child: showPulse
-          ? pill.animate(onPlay: (controller) {
-              if (!AppConfig.isTest) controller.repeat(reverse: true);
-            }).scale(
-              duration: 800.ms,
-              begin: const Offset(1, 1),
-              end: const Offset(1.05, 1.05))
-          : pill.animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,14 +13,26 @@ import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
 
 import 'package:trueledger/presentation/providers/boot_provider.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
+import 'package:trueledger/core/services/notification_service.dart';
 
 class MockStartupUseCase extends Mock implements StartupUseCase {}
 
+class MockNotificationService extends Mock implements NotificationService {}
+
 void main() {
+  late MockNotificationService mockNotifications;
+
   setUpAll(() {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
     registerFallbackValue(NoParams());
+  });
+
+  setUp(() {
+    mockNotifications = MockNotificationService();
+    when(() => mockNotifications.requestPermissions())
+        .thenAnswer((_) async => true);
   });
 
   testWidgets('Fresh install flow: Intro -> Dashboard',
@@ -37,6 +50,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           startupUseCaseProvider.overrideWithValue(mockStartup),
+          notificationServiceProvider.overrideWithValue(mockNotifications),
           bootProvider.overrideWith((ref) => Future.value(null)),
         ],
         child: const TrueLedgerApp(),
@@ -52,15 +66,19 @@ void main() {
     // Should now show IntroScreen
     expect(find.byType(IntroScreen), findsOneWidget);
 
-    // 2. Click SKIP
-    final skipButton = find.text('SKIP');
-    await tester.tap(skipButton);
+    // 2. Enter name and click GET STARTED
+    await tester.enterText(find.byType(TextField), 'Test User');
+    await tester.pump();
 
-    // Wait for navigation
+    final getStartedButton = find.text('GET STARTED');
+    await tester.ensureVisible(getStartedButton);
+    await tester.tap(getStartedButton);
+
+    // Wait for navigation and animations
+    await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(seconds: 1));
 
-    // Should be on Dashboard (It might show loading if dashboardProvider is real)
-    // We haven't mocked dashboardProvider, so it will try to call the real repository.
-    // To make this stable, we should ideally mock the data layer here too if we want a pure UI integration test.
+    // Check if we reached the Dashboard area (or at least moved away from Intro)
+    expect(find.byType(IntroScreen), findsNothing);
   });
 }

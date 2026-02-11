@@ -52,6 +52,8 @@ void main() {
               DashboardHeader(
                 isDark: isDark,
                 onLoad: onLoad ?? () {},
+                activeStreak: 0,
+                hasLoggedToday: false,
               ),
             ],
           ),

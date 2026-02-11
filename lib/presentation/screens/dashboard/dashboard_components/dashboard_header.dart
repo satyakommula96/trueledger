@@ -14,11 +14,15 @@ import 'package:trueledger/presentation/screens/settings/notifications_screen.da
 class DashboardHeader extends ConsumerWidget {
   final bool isDark;
   final VoidCallback onLoad;
+  final int activeStreak;
+  final bool hasLoggedToday;
 
   const DashboardHeader({
     super.key,
     required this.isDark,
     required this.onLoad,
+    required this.activeStreak,
+    required this.hasLoggedToday,
   });
 
   @override
@@ -57,15 +61,17 @@ class DashboardHeader extends ConsumerWidget {
                           letterSpacing: 2,
                         ),
                       ),
-                      Text(
-                        userName.toUpperCase(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                          color: semantic.text,
-                          letterSpacing: 0.5,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          userName.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                            color: semantic.text,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
                     ],
@@ -118,6 +124,77 @@ class DashboardHeader extends ConsumerWidget {
             ),
             Row(
               children: [
+                if (activeStreak > 0) ...[
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            backgroundColor: semantic.surfaceCombined,
+                            title: Row(
+                              children: [
+                                Icon(Icons.whatshot_rounded,
+                                    color: Colors.orange, size: 24),
+                                const SizedBox(width: 8),
+                                Text("Daily Streak",
+                                    style: TextStyle(color: semantic.text)),
+                              ],
+                            ),
+                            content: Text(
+                              "You're on a roll! You've logged transactions for $activeStreak consecutive days.\n\nKeep tracking your expenses daily to build a healthy financial habit!",
+                              style: TextStyle(color: semantic.secondaryText),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text("Got it",
+                                    style: TextStyle(color: semantic.primary)),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: hasLoggedToday
+                              ? Colors.orange.withValues(alpha: 0.1)
+                              : semantic.surfaceCombined,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: hasLoggedToday
+                                  ? Colors.orange.withValues(alpha: 0.5)
+                                  : semantic.divider),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.whatshot_rounded,
+                                size: 16,
+                                color: hasLoggedToday
+                                    ? Colors.orange
+                                    : semantic.secondaryText),
+                            const SizedBox(width: 4),
+                            Text(
+                              "$activeStreak",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: hasLoggedToday
+                                    ? Colors.orange
+                                    : semantic.secondaryText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ).animate().fadeIn().slideX(begin: 0.1, end: 0),
+                  const SizedBox(width: 12),
+                ],
                 _buildHeaderAction(
                   context,
                   icon: isPrivacy

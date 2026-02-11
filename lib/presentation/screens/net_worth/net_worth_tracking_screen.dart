@@ -340,11 +340,12 @@ class _NetWorthTrackingScreenState
               ),
             ),
             borderRadius: 20,
+            glowColor: semantic.income,
             child: Container(
               key: WidgetKeys.dashboardAssetsButton,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: semantic.income.withValues(alpha: 0.08),
+                color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: semantic.income.withValues(alpha: 0.2),
@@ -383,9 +384,6 @@ class _NetWorthTrackingScreenState
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Icon(Icons.chevron_right_rounded,
-                      color: semantic.secondaryText, size: 16),
                 ],
               ),
             ),
@@ -402,10 +400,11 @@ class _NetWorthTrackingScreenState
               ),
             ),
             borderRadius: 20,
+            glowColor: semantic.overspent,
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: semantic.overspent.withValues(alpha: 0.08),
+                color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: semantic.overspent.withValues(alpha: 0.2),
@@ -444,9 +443,6 @@ class _NetWorthTrackingScreenState
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Icon(Icons.chevron_right_rounded,
-                      color: semantic.secondaryText, size: 16),
                 ],
               ),
             ),
@@ -714,11 +710,12 @@ class _NetWorthTrackingScreenState
         MaterialPageRoute(builder: (_) => const InvestmentsScreen()),
       ),
       borderRadius: 24,
+      glowColor: semantic.success,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: semantic.success.withValues(alpha: 0.05),
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
               color: semantic.success.withValues(alpha: 0.2), width: 1.5),

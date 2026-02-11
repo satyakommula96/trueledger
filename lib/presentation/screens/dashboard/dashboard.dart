@@ -13,7 +13,7 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/core/providers/lifecycle_provider.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/theme/theme.dart';
-import 'package:trueledger/presentation/screens/dashboard/dashboard_components/asset_liability_card.dart';
+
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/dashboard_bottom_bar.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/dashboard_header.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/section_header.dart';
@@ -168,7 +168,11 @@ class Dashboard extends ConsumerWidget {
                           child: CustomScrollView(
                             physics: const BouncingScrollPhysics(),
                             slivers: [
-                              DashboardHeader(isDark: isDark, onLoad: reload),
+                              DashboardHeader(
+                                  isDark: isDark,
+                                  onLoad: reload,
+                                  activeStreak: data.activeStreak,
+                                  hasLoggedToday: data.todaySpend > 0),
                               SliverLayoutBuilder(
                                   builder: (context, constraints) {
                                 final isWide =
@@ -207,12 +211,6 @@ class Dashboard extends ConsumerWidget {
                                                             summary,
                                                             ref,
                                                             currentMonth),
-                                                        const SizedBox(
-                                                            height: 32),
-                                                        _buildAssetsSection(
-                                                            semantic,
-                                                            summary,
-                                                            reload),
                                                       ],
                                                     ),
                                                   ),
@@ -252,9 +250,6 @@ class Dashboard extends ConsumerWidget {
                                                 summary,
                                                 ref,
                                                 currentMonth),
-                                            const SizedBox(height: 32),
-                                            _buildAssetsSection(
-                                                semantic, summary, reload),
                                             const SizedBox(height: 32),
                                             _buildInsightsSection(semantic, ref,
                                                 summary, budgets),
@@ -477,25 +472,6 @@ class Dashboard extends ConsumerWidget {
           .fade(duration: 800.ms)
           .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
     ];
-  }
-
-  Widget _buildAssetsSection(
-      AppColors semantic, dynamic summary, VoidCallback reload) {
-    return Column(
-      children: [
-        SectionHeader(
-                title: "Financial Overview",
-                sub: "Assets vs Liabilities",
-                semantic: semantic)
-            .animate(delay: 500.ms)
-            .fade(duration: 800.ms),
-        const SizedBox(height: 16),
-        AssetLiabilityCard(summary: summary, semantic: semantic, onLoad: reload)
-            .animate(delay: 600.ms)
-            .fade(duration: 800.ms)
-            .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
-      ],
-    );
   }
 
   Widget _buildInsightsSection(

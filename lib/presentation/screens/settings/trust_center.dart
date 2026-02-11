@@ -55,13 +55,15 @@ class TrustCenterScreen extends ConsumerWidget {
             _buildSectionHeader("DATA HEALTH", semantic),
             const SizedBox(height: 16),
             statsAsync.when(
-              data: (stats) => GridView.count(
+              data: (stats) => GridView(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 1.6,
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 250,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 1.6,
+                ),
                 children: [
                   _StatCard(
                       label: "TOTAL RECORDS",
@@ -230,9 +232,7 @@ class TrustCenterScreen extends ConsumerWidget {
                           CircularProgressIndicator(color: semantic.primary)),
                   error: (e, _) => Text("Error: $e"),
                 ),
-            const SizedBox(height: 48),
-            _buildChangePolicy(semantic),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -319,58 +319,66 @@ class TrustCenterScreen extends ConsumerWidget {
       ),
     ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-        childAspectRatio: 1.0,
-      ),
-      itemCount: guarantees.length,
-      itemBuilder: (context, index) {
-        final g = guarantees[index];
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: semantic.surfaceCombined.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: semantic.divider, width: 1.5),
+    return Column(
+      children: [
+        for (int i = 0; i < guarantees.length; i += 2) ...[
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: _buildGuaranteeCard(guarantees[i], semantic)),
+                const SizedBox(width: 16),
+                if (i + 1 < guarantees.length)
+                  Expanded(
+                      child: _buildGuaranteeCard(guarantees[i + 1], semantic))
+                else
+                  const Expanded(child: SizedBox()),
+              ],
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: semantic.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(g.$3, color: semantic.primary, size: 20),
-              ),
-              const SizedBox(height: 16),
-              Text(g.$1,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 13,
-                      color: semantic.text)),
-              const SizedBox(height: 8),
-              Expanded(
-                child: Text(
-                  g.$2,
-                  style: TextStyle(
-                      fontSize: 11,
-                      color: semantic.secondaryText,
-                      fontWeight: FontWeight.w700,
-                      height: 1.4),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+          if (i + 2 < guarantees.length) const SizedBox(height: 16),
+        ],
+      ],
     ).animate().fadeIn(delay: 200.ms, duration: 600.ms);
+  }
+
+  Widget _buildGuaranteeCard((String, String, IconData) g, AppColors semantic) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: semantic.surfaceCombined.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: semantic.divider, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: semantic.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(g.$3, color: semantic.primary, size: 20),
+          ),
+          const SizedBox(height: 16),
+          Text(g.$1,
+              style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 13,
+                  color: semantic.text)),
+          const SizedBox(height: 8),
+          Text(
+            g.$2,
+            style: TextStyle(
+                fontSize: 11,
+                color: semantic.secondaryText,
+                fontWeight: FontWeight.w700,
+                height: 1.4),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildNeverList(AppColors semantic) {
@@ -419,28 +427,6 @@ class TrustCenterScreen extends ConsumerWidget {
                   ),
                 ))
             .toList(),
-      ),
-    );
-  }
-
-  Widget _buildChangePolicy(AppColors semantic) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-      decoration: BoxDecoration(
-        color: semantic.surfaceCombined.withValues(alpha: 0.3),
-        border: Border.all(color: semantic.divider, width: 1.5),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Text(
-        "ANY MODIFICATION TO THESE GUARANTEES MUST BE DOCUMENTED IN PUBLIC RELEASE NOTES.",
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w900,
-          color: semantic.secondaryText,
-          letterSpacing: 0.5,
-        ),
       ),
     );
   }
