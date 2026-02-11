@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1] - 2026-02-11
+
+### Added
+- **Payment History Enhancements**
+  - **Credit Card History**: Full payment history tracking for all credit cards.
+  - **Auto-Recording**: Automatic ledger entries when credit card bills are recorded as paid.
+  - **Show-All Limit**: Optimized history lists that show only the 10 most recent payments by default with a "Show All" expansion toggle (for both Loans and Credit Cards).
+  - **Demo Seeding**: Enhanced sample data seeding for better roadmap and history testing.
+
 ## [1.4.0] - 2026-02-09
 
 ### Added

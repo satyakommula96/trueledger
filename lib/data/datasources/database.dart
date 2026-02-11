@@ -933,6 +933,20 @@ class AppDatabase {
     });
 
     await batch.commit(noResult: true);
+
+    // Add 12 credit card payments for HDFC Infinia to test "Show All" limit
+    final historyBatch = database.batch();
+    for (int i = 0; i < 12; i++) {
+      historyBatch.insert(Schema.fixedExpensesTable, {
+        Schema.colDate: now.subtract(Duration(days: i * 30)).toIso8601String(),
+        Schema.colAmount: 5000 + (i * 100),
+        Schema.colName: 'Card Payment: HDFC Infinia',
+        Schema.colCategory: 'Financial', // Usually Fixed/Financial
+        Schema.colTags: 'creditCardPayment',
+      });
+    }
+    await historyBatch.commit(noResult: true);
+
     debugPrint("Roadmap sample data seeded successfully.");
   }
 }
