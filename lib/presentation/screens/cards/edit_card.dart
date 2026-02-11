@@ -32,6 +32,125 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
   DateTime? _selectedGenDate;
   int? _dueDay;
   int? _genDay;
+  List<LedgerItem> _history = [];
+  bool _isLoadingHistory = true;
+  bool _showAllHistory = false;
+
+  Future<void> _updateTag(LedgerItem item, TransactionTag tag) async {
+    final repo = ref.read(financialRepositoryProvider);
+    final newTags = Set<TransactionTag>.from(item.tags);
+
+    if (tag == TransactionTag.transfer) {
+      newTags.remove(TransactionTag.creditCardPayment);
+      if (newTags.isEmpty) newTags.add(TransactionTag.transfer);
+    } else {
+      if (newTags.contains(tag)) {
+        newTags.remove(tag);
+      } else {
+        newTags.add(tag);
+        newTags.remove(TransactionTag.transfer);
+      }
+    }
+
+    await repo.updateEntryTags(item.type, item.id, newTags);
+    _fetchHistory();
+  }
+
+  Future<void> _fetchHistory() async {
+    if (!mounted) return;
+    setState(() => _isLoadingHistory = true);
+    final repo = ref.read(financialRepositoryProvider);
+
+    final all = await repo.getTransactionsForRange(
+        DateTime.now().subtract(const Duration(days: 365)), DateTime.now());
+
+    final filtered = all.where((item) {
+      if (item.tags.contains(TransactionTag.income)) return false;
+
+      final text = "${item.label} ${item.note ?? ''}".toLowerCase();
+      final bank = widget.card.bank.toLowerCase();
+
+      final hasTag = item.tags.contains(TransactionTag.creditCardPayment);
+
+      if (hasTag) {
+        return text.contains(bank);
+      }
+
+      if (!text.contains(bank)) return false;
+
+      bool containsAny(List<String> keywords) => keywords.any(text.contains);
+
+      final isExplicitPayment = containsAny([
+        'payment',
+        'cc bill',
+        'card payment',
+        'settle',
+      ]);
+
+      return isExplicitPayment;
+    }).toList();
+
+    if (mounted) {
+      setState(() {
+        _history = filtered;
+        _isLoadingHistory = false;
+      });
+    }
+  }
+
+  Future<void> _recordPayment() async {
+    final controller = TextEditingController(
+        text: widget.card.statementBalance > 0
+            ? widget.card.statementBalance.toString()
+            : "");
+
+    final amount = await showDialog<double>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("RECORD PAYMENT"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: "Amount",
+                prefixText: "${CurrencyFormatter.symbol} ",
+                border: const OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text("CANCEL")),
+          TextButton(
+            onPressed: () {
+              final val = double.tryParse(controller.text);
+              if (val != null && val > 0) {
+                Navigator.pop(ctx, val);
+              }
+            },
+            child: const Text("RECORD"),
+          ),
+        ],
+      ),
+    );
+
+    if (amount != null) {
+      final repo = ref.read(financialRepositoryProvider);
+      await repo.payCreditCardBill(widget.card.id, amount);
+      _fetchHistory();
+      ref.invalidate(dashboardProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Payment recorded successfully.")));
+      }
+    }
+  }
 
   Future<void> _pickDueDate() async {
     final picked = await showDialog<int>(
@@ -152,11 +271,13 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
         } catch (_) {}
       }
     }
+    _fetchHistory();
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<AppColors>()!;
 
     return Scaffold(
       appBar: AppBar(
@@ -231,6 +352,181 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
                         style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 60,
+                  child: OutlinedButton.icon(
+                    onPressed: _recordPayment,
+                    icon: const Icon(Icons.payment_rounded),
+                    label: const Text("RECORD CARD PAYMENT",
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colorScheme.primary,
+                      side: BorderSide(color: colorScheme.primary, width: 1.5),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 48),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text("PAYMENT HISTORY",
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                          color: Colors.grey)),
+                ),
+                const SizedBox(height: 16),
+                if (_isLoadingHistory)
+                  const Center(child: CircularProgressIndicator())
+                else if (_history.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Text("No recorded payment history found.",
+                          style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    ),
+                  )
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _showAllHistory
+                        ? _history.length
+                        : (_history.length > 10 ? 10 : _history.length),
+                    separatorBuilder: (context, index) =>
+                        Divider(color: semantic.divider, height: 1),
+                    itemBuilder: (context, index) {
+                      final item = _history[index];
+                      final isCardPayment =
+                          item.tags.contains(TransactionTag.creditCardPayment);
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(item.date.substring(0, 10),
+                                      style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.grey)),
+                                  const SizedBox(height: 4),
+                                  Text(item.note ?? item.label,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  if (item.tags.isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Wrap(
+                                      spacing: 4,
+                                      children: item.tags.map((t) {
+                                        final isCc = t ==
+                                            TransactionTag.creditCardPayment;
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: isCc
+                                                ? Colors.blue
+                                                    .withValues(alpha: 0.1)
+                                                : Colors.grey
+                                                    .withValues(alpha: 0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            border: Border.all(
+                                              color: isCc
+                                                  ? Colors.blue
+                                                  : Colors.grey,
+                                              width: 0.5,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            t.name.toUpperCase(),
+                                            style: TextStyle(
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.w900,
+                                                color: isCc
+                                                    ? Colors.blue
+                                                    : Colors.grey),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  CurrencyFormatter.format(item.amount),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.redAccent),
+                                ),
+                                const SizedBox(height: 8),
+                                if (!isCardPayment)
+                                  TextButton.icon(
+                                    style: TextButton.styleFrom(
+                                      visualDensity: VisualDensity.compact,
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    onPressed: () => _updateTag(
+                                        item, TransactionTag.creditCardPayment),
+                                    icon: const Icon(Icons.add_circle_outline,
+                                        size: 14, color: Colors.blue),
+                                    label: const Text("MARK AS PAYMENT",
+                                        style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900)),
+                                  )
+                                else
+                                  TextButton.icon(
+                                    style: TextButton.styleFrom(
+                                      visualDensity: VisualDensity.compact,
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    onPressed: () => _updateTag(
+                                        item, TransactionTag.transfer),
+                                    icon: const Icon(
+                                        Icons.remove_circle_outline,
+                                        size: 14,
+                                        color: Colors.grey),
+                                    label: const Text("NOT A PAYMENT",
+                                        style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.grey)),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                if (_history.length > 10 && !_showAllHistory)
+                  Center(
+                    child: TextButton(
+                      onPressed: () => setState(() => _showAllHistory = true),
+                      child: Text("SHOW ALL (${_history.length} PAYMENTS)",
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: colorScheme.primary)),
+                    ),
+                  ),
+                const SizedBox(height: 40),
               ],
             ),
           ),

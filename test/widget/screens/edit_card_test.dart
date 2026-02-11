@@ -22,7 +22,10 @@ void main() {
     mockRepo = MockFinancialRepository();
     mockNotification = MockNotificationService();
 
+    registerFallbackValue(TransactionTag.transfer);
     when(() => mockNotification.init()).thenAnswer((_) async => {});
+    when(() => mockRepo.getTransactionsForRange(any(), any()))
+        .thenAnswer((_) async => []);
   });
 
   final tCard = CreditCard(

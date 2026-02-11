@@ -31,6 +31,7 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
   DateTime? _selectedDate;
   List<LedgerItem> _history = [];
   bool _isLoadingHistory = true;
+  bool _showAllHistory = false;
 
   @override
   void initState() {
@@ -433,7 +434,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _history.length,
+                    itemCount: _showAllHistory
+                        ? _history.length
+                        : (_history.length > 10 ? 10 : _history.length),
                     separatorBuilder: (context, index) =>
                         Divider(color: semantic.divider, height: 1),
                     itemBuilder: (context, index) {
@@ -559,6 +562,17 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                         ),
                       );
                     },
+                  ),
+                if (_history.length > 10 && !_showAllHistory)
+                  Center(
+                    child: TextButton(
+                      onPressed: () => setState(() => _showAllHistory = true),
+                      child: Text("SHOW ALL (${_history.length} PAYMENTS)",
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: colorScheme.primary)),
+                    ),
                   ),
                 const SizedBox(height: 40),
               ],

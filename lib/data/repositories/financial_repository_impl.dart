@@ -629,6 +629,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         await db.query('credit_cards', where: 'id = ?', whereArgs: [id]);
     if (cardList.isNotEmpty) {
       final card = cardList.first;
+      final bank = card['bank'] as String;
       double stmtBal = (card['statement_balance'] as num).toDouble();
       double currentBal =
           (card['current_balance'] as num?)?.toDouble() ?? stmtBal;
@@ -638,7 +639,6 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       if (newStmtBal < 0) newStmtBal = 0;
 
       double newCurrentBal = currentBal - amount;
-      // Current balance can technically go negative (if overpaid/refunded), but let's keep it 0 for now unless user wants overpayment tracking
       if (newCurrentBal < 0) newCurrentBal = 0;
 
       double newMin = currentMin - amount;
@@ -653,6 +653,16 @@ class FinancialRepositoryImpl implements IFinancialRepository {
           },
           where: 'id = ?',
           whereArgs: [id]);
+
+      // Record transaction
+      await addEntry(
+        'Fixed',
+        amount,
+        'Card Payment: $bank',
+        'Payment for $bank credit card',
+        DateTime.now().toIso8601String(),
+        tags: {TransactionTag.creditCardPayment},
+      );
     }
   }
 

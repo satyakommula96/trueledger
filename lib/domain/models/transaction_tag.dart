@@ -7,6 +7,7 @@ enum TransactionTag {
   interest,
   income,
   transfer,
+  creditCardPayment,
 }
 
 extension TransactionTagHelper on TransactionTag {
