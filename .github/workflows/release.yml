@@ -124,7 +124,12 @@ jobs:
 
       - id: version
         shell: bash
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+        run: |
+          RAW_VERSION=${GITHUB_REF_NAME#v}
+          echo "VERSION=$RAW_VERSION" >> $GITHUB_OUTPUT
+          # Extract semantic version part (before +)
+          CLEAN_VERSION=$(echo "$RAW_VERSION" | cut -d'+' -f1)
+          echo "CLEAN_VERSION=$CLEAN_VERSION" >> $GITHUB_OUTPUT
 
       - run: flutter build windows --release --build-name=${{ steps.version.outputs.VERSION }}
 
@@ -135,7 +140,7 @@ jobs:
 
       # ---------------- MSIX ----------------
       - name: Build MSIX
-        run: flutter pub run msix:create --version ${{ steps.version.outputs.VERSION }}.0
+        run: flutter pub run msix:create --version ${{ steps.version.outputs.CLEAN_VERSION }}.0
 
       # ---------------- MSI (WiX) ----------------
       - name: Build MSI
@@ -143,7 +148,7 @@ jobs:
         run: |
           set -e
           test -f windows/installer/TrueLedger.wxs
-          candle -arch x64 -dAppVersion=${{ steps.version.outputs.VERSION }} windows/installer/TrueLedger.wxs
+          candle -arch x64 -dAppVersion=${{ steps.version.outputs.CLEAN_VERSION }} windows/installer/TrueLedger.wxs
           light TrueLedger.wixobj -o TrueLedger.msi
 
       - uses: actions/upload-artifact@v4
