@@ -19,7 +19,7 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.41  # For desktop platforms (Windows/Linux/macOS)
   sqflite_common: ^2.5.4+2
   sqflite_common_ffi: ^2.4.0+2
-  sqlite3: ^3.1.4
+  sqlite3: ^3.1.5
   flutter_secure_storage: ^10.0.0
   shared_preferences: ^2.5.4
   path_provider: ^2.1.5
