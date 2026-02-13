@@ -249,5 +249,35 @@ void main() {
       expect(names, contains('Groceries'));
       expect(names, contains('Medical'));
     });
+    test('recurring transaction CRUD', () async {
+      await repo.addRecurringTransaction(
+        name: 'Netflix',
+        amount: 15.0,
+        category: 'Entertainment',
+        type: 'SUBSCRIPTION',
+        frequency: 'MONTHLY',
+        dayOfMonth: 15,
+      );
+
+      var recurring = await repo.getRecurringTransactions();
+      expect(recurring, hasLength(1));
+      expect(recurring.first.name, 'Netflix');
+      expect(recurring.first.amount, 15.0);
+
+      await repo.updateRecurringTransaction(
+        id: recurring.first.id,
+        name: 'Netflix Premium',
+        amount: 20.0,
+        category: 'Entertainment',
+        type: 'SUBSCRIPTION',
+        frequency: 'MONTHLY',
+        dayOfMonth: 15,
+      );
+
+      recurring = await repo.getRecurringTransactions();
+      expect(recurring, hasLength(1));
+      expect(recurring.first.name, 'Netflix Premium');
+      expect(recurring.first.amount, 20.0);
+    });
   });
 }
