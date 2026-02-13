@@ -72,7 +72,6 @@ void main() {
   }
 
   testWidgets('IntroScreen displays features and navigates to Dashboard',
-      skip: true, // Flaky due to Dashboard infinite animation
       (tester) async {
     // 1. Pump the widget
     await tester.pumpWidget(createTestWidget());
@@ -99,36 +98,19 @@ void main() {
     final button = find.text('GET STARTED');
     await tester.ensureVisible(button);
     await tester.tap(button);
-    await tester.pumpAndSettle();
+
+    // Use pumps instead of pumpAndSettle to avoid infinite animation timeout in Dashboard
+    // Intro screen might have an async gap or animation
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
 
     // 7. Verify logic
-    // We expect user_name to NOT be saved to 'user_name' key directly if the provider handles it?
-    // In IntroScreen: ref.read(userProvider.notifier).setName(name);
-    // UserProvider saves to SharedPrefs?
-    // IntroScreen also calls: await prefs.setBool('intro_seen', true);
-
     verify(() => mockPrefs.setBool('intro_seen', true)).called(1);
+    verify(() => mockNotifications.requestPermissions()).called(1);
 
-    // 8. Verify Navigation to Dashboard
-    // Since we mocked DashboardData, we can assert Dashboard widget presence
-    // However, Dashboard widget creates its own providers.
-    // We pushed MaterialPageRoute(builder: (_) => const Dashboard()).
-    // The test environment doesn't strictly push a new route on top of the 'home' in a way that `find.byType(Dashboard)` works easily unless we pump it.
-    // But we did pumpAndSettle.
-    // Dashboard might fail to build if it needs providers not overridden in the 'child' of ProviderScope?
-    // Actually IntroScreen pushes a NEW Route. That route will use the container of the App?
-    // No, standard Navigator push uses the same ProviderScope if it is above MaterialApp.
-    // Here ProviderScope is above MaterialApp. So Dashboard will use the same overrides.
-
-    // Dashboard is complex. Let's just check if we tried to navigate or if IntroScreen is no longer top?
-    // But find.byType(Dashboard) is better.
-    // Note: Dashboard constructor is const Dashboard().
-
-    // Make sure Dashboard builds without crashing.
-    // Dashboard uses `dashboardProvider`, `userProvider`, etc.
-    // We updated `createTestWidget` to override `dashboardProvider` and `sharedPreferencesProvider`.
-    // DashboardHeader uses `userProvider`.
-
-    // Let's rely on `verify` mostly, and `find.byType(Dashboard)` if it renders.
+    // 8. Verify Navigation to Dashboard (implicit via state change or navigation stack)
+    // Since we can't easily check Navigator stack in this setup without observer,
+    // we assume setBool call and no crash means success given correct widget pumps.
   });
 }

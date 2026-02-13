@@ -126,8 +126,7 @@ void main() {
     expect(find.text('Incorrect PIN'), findsNothing);
   });
 
-  testWidgets('Should navigate to Dashboard on correct PIN', skip: true,
-      (tester) async {
+  testWidgets('Should navigate to Dashboard on correct PIN', (tester) async {
     final mockObserver = MockNavigatorObserver();
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1.0;
@@ -182,8 +181,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     await tester.tap(find.text('4'));
 
-    // Wait for the navigation to happen
-    await tester.pump(const Duration(seconds: 1));
+    // Wait for the navigation to happen using explicit pumps to avoid infinite animation timeouts
+    // Wait for the navigation to happen using explicit pumps to avoid infinite animation timeouts
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
 
     // Verify navigation without waiting for infinite animations in the new route
     verify(() => mockObserver.didReplace(
