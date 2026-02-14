@@ -60,6 +60,11 @@ void main() {
       }
 
       expect(found, isTrue);
+
+      // Ensure all pending timers/animations are settled before test ends
+      await tester.pumpAndSettle();
+      // Brief pause to allow any platform channel cleanup to occur
+      await Future.delayed(const Duration(milliseconds: 500));
     } catch (e, stack) {
       debugPrint('CRITICAL: Test failed during app launch: $e');
       debugPrint(stack.toString());
