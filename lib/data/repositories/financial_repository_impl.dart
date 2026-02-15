@@ -770,32 +770,38 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   @override
   Future<List<LedgerItem>> getMonthDetails(String month) async {
     final db = await AppDatabase.db;
-    List<Map<String, dynamic>> allItems = [];
-    final vars = await db.rawQuery(
-        "SELECT *, 'Variable' as entryType FROM variable_expenses WHERE substr(date, 1, 7) = ?",
-        [month]);
-    allItems.addAll(vars);
-    final income = await db.rawQuery(
-        "SELECT *, 'Income' as entryType FROM income_sources WHERE substr(date, 1, 7) = ?",
-        [month]);
-    allItems.addAll(income);
-    final fixed = await db.rawQuery(
-        "SELECT *, 'Fixed' as entryType FROM fixed_expenses WHERE substr(date, 1, 7) = ?",
-        [month]);
-    allItems.addAll(fixed);
-    final invs = await db.rawQuery(
-        "SELECT *, 'Investment' as entryType FROM investments WHERE substr(date, 1, 7) = ?",
-        [month]);
-    allItems.addAll(invs);
 
-    // Sort desc by Date, then ID
-    // Note: ISO8601 strings sort correctly via string comparison and is significantly faster for large lists.
-    allItems.sort((a, b) {
-      final dateCmp = (b['date'] as String).compareTo(a['date'] as String);
-      if (dateCmp != 0) return dateCmp;
-      return (b['id'] as int).compareTo(a['id'] as int);
-    });
-    return allItems.map((e) => LedgerItem.fromMap(e)).toList();
+    // We use a UNION query to fetch all transaction types in a single round-trip.
+    // This is significantly faster than 4 separate queries + Dart-side merging/sorting,
+    // especially for large datasets.
+    // We alias columns to 'name' so LedgerItem.fromMap picks them up correctly.
+    final results = await db.rawQuery('''
+      SELECT id, date, amount, category as name, note, tags, 'Variable' as entryType 
+      FROM variable_expenses 
+      WHERE substr(date, 1, 7) = ?
+      
+      UNION ALL
+      
+      SELECT id, date, amount, source as name, NULL as note, tags, 'Income' as entryType 
+      FROM income_sources 
+      WHERE substr(date, 1, 7) = ?
+      
+      UNION ALL
+      
+      SELECT id, date, amount, name, NULL as note, tags, 'Fixed' as entryType 
+      FROM fixed_expenses 
+      WHERE substr(date, 1, 7) = ?
+      
+      UNION ALL
+      
+      SELECT id, date, amount, name, NULL as note, tags, 'Investment' as entryType 
+      FROM investments 
+      WHERE substr(date, 1, 7) = ?
+      
+      ORDER BY date DESC, id DESC
+    ''', [month, month, month, month]);
+
+    return results.map((e) => LedgerItem.fromMap(e)).toList();
   }
 
   @override
