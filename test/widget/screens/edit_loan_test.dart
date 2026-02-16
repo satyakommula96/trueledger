@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
@@ -7,7 +6,7 @@ import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/loans/edit_loan.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
-import 'package:trueledger/core/theme/theme.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -34,14 +33,11 @@ void main() {
   );
 
   Widget createEditLoanScreen() {
-    return ProviderScope(
+    return wrapWidget(
+      EditLoanScreen(loan: tLoan),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: EditLoanScreen(loan: tLoan),
-      ),
     );
   }
 

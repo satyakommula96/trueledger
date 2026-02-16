@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
@@ -8,7 +7,7 @@ import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/presentation/screens/cards/edit_card.dart';
-import 'package:trueledger/core/theme/theme.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -39,15 +38,12 @@ void main() {
   );
 
   Widget createEditCardScreen() {
-    return ProviderScope(
+    return wrapWidget(
+      EditCreditCardScreen(card: tCard),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
         notificationServiceProvider.overrideWithValue(mockNotification),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: EditCreditCardScreen(card: tCard),
-      ),
     );
   }
 

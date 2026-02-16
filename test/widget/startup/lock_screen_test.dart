@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/secure_storage_provider.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/domain/services/intelligence_service.dart';
@@ -16,6 +14,7 @@ import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/presentation/screens/startup/lock_screen.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockSecureStorage extends Mock implements FlutterSecureStorage {}
 
@@ -71,8 +70,10 @@ void main() {
     when(() => mockNotification.init()).thenAnswer((_) async => {});
   });
 
-  Widget createLockScreen() {
-    return ProviderScope(
+  Widget createLockScreen({List<NavigatorObserver> observers = const []}) {
+    return wrapWidget(
+      const LockScreen(expectedPinLength: 4),
+      navigatorObservers: observers,
       overrides: [
         secureStorageProvider.overrideWithValue(mockStorage),
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
@@ -103,10 +104,6 @@ void main() {
               todayTransactionCount: 0,
             )),
       ],
-      child: MaterialApp(
-        theme: AppTheme.lightTheme,
-        home: const LockScreen(expectedPinLength: 4),
-      ),
     );
   }
 
@@ -132,45 +129,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          secureStorageProvider.overrideWithValue(mockStorage),
-          sharedPreferencesProvider.overrideWithValue(mockPrefs),
-          financialRepositoryProvider.overrideWithValue(mockRepo),
-          intelligenceServiceProvider.overrideWithValue(mockIntelligence),
-          notificationServiceProvider.overrideWithValue(mockNotification),
-          dashboardProvider.overrideWith((ref) => DashboardData(
-                summary: MonthlySummary(
-                    totalIncome: 0,
-                    totalFixed: 0,
-                    totalVariable: 0,
-                    totalSubscriptions: 0,
-                    totalInvestments: 0,
-                    netWorth: 0,
-                    creditCardDebt: 0,
-                    loansTotal: 0,
-                    totalMonthlyEMI: 0),
-                categorySpending: [],
-                budgets: [],
-                savingGoals: [],
-                trendData: [],
-                upcomingBills: [],
-                billsDueToday: [],
-                todaySpend: 0,
-                thisWeekSpend: 0,
-                lastWeekSpend: 0,
-                activeStreak: 0,
-                todayTransactionCount: 0,
-              )),
-        ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const LockScreen(expectedPinLength: 4),
-          navigatorObservers: [mockObserver],
-        ),
-      ),
-    );
+    await tester.pumpWidget(createLockScreen(observers: [mockObserver]));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('1'));

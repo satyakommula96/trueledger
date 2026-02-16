@@ -9,6 +9,7 @@ import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/screens/net_worth/net_worth_details.dart';
 import 'package:trueledger/presentation/screens/investments/investments_screen.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 import 'package:trueledger/core/constants/widget_keys.dart';
 
 class NetWorthTrackingScreen extends ConsumerStatefulWidget {
@@ -100,12 +101,13 @@ class _NetWorthTrackingScreenState
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     final isPrivate = ref.watch(privacyProvider);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("NET WORTH TRACKING"),
+        title: Text(l10n.netWorthTrackingTitle),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         flexibleSpace: ClipRRect(
@@ -143,7 +145,8 @@ class _NetWorthTrackingScreenState
                       .animate()
                       .fadeIn(delay: 300.ms, duration: 600.ms),
                   const SizedBox(height: 48),
-                  _buildSectionHeader(semantic, "TREND", "12-MONTH OVERVIEW"),
+                  _buildSectionHeader(
+                      semantic, l10n.trend, l10n.twelveMonthOverview),
                   const SizedBox(height: 20),
                   _buildTrendChart(semantic, isPrivate)
                       .animate()
@@ -187,122 +190,142 @@ class _NetWorthTrackingScreenState
   }
 
   Widget _buildCurrentNetWorthCard(AppColors semantic, bool isPrivate) {
+    final l10n = AppLocalizations.of(context)!;
     final isNegative = _currentNetWorth < 0;
-    final displayColor = isNegative ? semantic.overspent : semantic.primary;
+
+    // Choose dynamic colors based on status
+    final primaryColor = isNegative ? semantic.overspent : semantic.primary;
+    final secondaryColor =
+        isNegative ? Colors.orange.shade700 : semantic.income;
+
+    // Calculate 1-month change for the "badge"
+    double monthlyChange = 0;
+    if (_monthlyData.length >= 2) {
+      final prevMonthNetWorth =
+          _monthlyData[_monthlyData.length - 2]['netWorth'] as double;
+      if (prevMonthNetWorth != 0) {
+        monthlyChange =
+            ((_currentNetWorth - prevMonthNetWorth) / prevMonthNetWorth.abs()) *
+                100;
+      }
+    }
 
     return Container(
       width: double.infinity,
-      height: 200,
+      height: 220,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            displayColor.withValues(alpha: 0.9),
-            displayColor.withValues(alpha: 0.7),
-            displayColor.withValues(alpha: 0.6),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
-          width: 1.5,
-        ),
+        borderRadius: BorderRadius.circular(36),
         boxShadow: [
           BoxShadow(
-            color: displayColor.withValues(alpha: 0.20),
-            blurRadius: 30,
-            offset: const Offset(0, 15),
+            color: primaryColor.withValues(alpha: 0.3),
+            blurRadius: 40,
+            offset: const Offset(0, 20),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(36),
         child: Stack(
           children: [
-            // Organic background shapes
-            Positioned(
-              right: -40,
-              top: -40,
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      Colors.white.withValues(alpha: 0.12),
-                      Colors.white.withValues(alpha: 0),
-                    ],
-                  ),
+            // Base Gradient
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [primaryColor, primaryColor.withValues(alpha: 0.8)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
             ),
-            Positioned(
-              left: -30,
-              bottom: -30,
-              child: Container(
-                width: 140,
-                height: 140,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      Colors.white.withValues(alpha: 0.06),
-                      Colors.white.withValues(alpha: 0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+
+            // Mesh Circles (Animated/Dynamic feel)
+            _buildMeshCircle(
+                -50, -50, 250, secondaryColor.withValues(alpha: 0.4)),
+            _buildMeshCircle(150, 40, 200, Colors.white.withValues(alpha: 0.1)),
+            _buildMeshCircle(-20, 100, 150, Colors.blue.withValues(alpha: 0.2)),
+
+            // Content
             Padding(
-              padding: const EdgeInsets.all(28),
+              padding: const EdgeInsets.all(30),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        width: 1.0,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.account_balance_wallet_rounded,
-                          size: 12,
-                          color: Colors.white.withValues(alpha: 0.9),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Net Worth Pill
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2)),
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          "NET WORTH",
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontWeight: FontWeight.w900,
-                            fontSize: 9,
-                            letterSpacing: 1.2,
+                        child: Row(
+                          children: [
+                            const Icon(Icons.account_balance_wallet_rounded,
+                                size: 14, color: Colors.white),
+                            const SizedBox(width: 8),
+                            Text(
+                              l10n.netWorth.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 10,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Trend pill
+                      if (monthlyChange != 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color:
+                                (monthlyChange > 0 ? Colors.green : Colors.red)
+                                    .withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                monthlyChange > 0
+                                    ? Icons.trending_up
+                                    : Icons.trending_down,
+                                size: 14,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                "${monthlyChange > 0 ? '+' : ''}${monthlyChange.toStringAsFixed(1)}%",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                    ],
                   ),
                   const Spacer(),
                   Text(
-                    "TOTAL BALANCE",
+                    l10n.currentBalance.toUpperCase(),
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2.0,
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 2.5,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
@@ -311,14 +334,43 @@ class _NetWorthTrackingScreenState
                       key: WidgetKeys.dashboardNetWorthValue,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 42,
+                        fontSize: 54, // Bigger font
                         fontWeight: FontWeight.w900,
-                        letterSpacing: -1.5,
+                        letterSpacing: -2,
                         height: 1.0,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black26,
+                            offset: Offset(0, 4),
+                            blurRadius: 10,
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ],
+              ),
+            ),
+
+            // Gloss Reflection
+            Positioned(
+              top: -100,
+              left: -100,
+              child: Transform.rotate(
+                angle: 45 * 3.1415927 / 180,
+                child: Container(
+                  width: 300,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0),
+                        Colors.white.withValues(alpha: 0.05),
+                        Colors.white.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -327,7 +379,25 @@ class _NetWorthTrackingScreenState
     );
   }
 
+  Widget _buildMeshCircle(double top, double left, double size, Color color) {
+    return Positioned(
+      top: top,
+      left: left,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [color, color.withValues(alpha: 0)],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildAssetsLiabilitiesRow(AppColors semantic, bool isPrivate) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
@@ -364,7 +434,7 @@ class _NetWorthTrackingScreenState
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            "ASSETS",
+                            l10n.assets.toUpperCase(),
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
@@ -428,7 +498,7 @@ class _NetWorthTrackingScreenState
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            "LIABILITIES",
+                            l10n.liabilities.toUpperCase(),
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
@@ -463,6 +533,7 @@ class _NetWorthTrackingScreenState
   }
 
   Widget _buildTrendChart(AppColors semantic, bool isPrivate) {
+    final l10n = AppLocalizations.of(context)!;
     if (_monthlyData.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(40),
@@ -472,7 +543,7 @@ class _NetWorthTrackingScreenState
         ),
         child: Center(
           child: Text(
-            "Not enough data to show trend",
+            l10n.noResultsMatched,
             style: TextStyle(
               color: semantic.secondaryText,
               fontSize: 13,
@@ -485,14 +556,14 @@ class _NetWorthTrackingScreenState
 
     final maxValue = _monthlyData.fold<double>(
       0,
-      (max, data) => (data['netWorth'] as double) > max
-          ? (data['netWorth'] as double)
+      (max, data) => ((data['netWorth'] as num?)?.toDouble() ?? 0.0) > max
+          ? ((data['netWorth'] as num?)?.toDouble() ?? 0.0)
           : max,
     );
     final minValue = _monthlyData.fold<double>(
       double.infinity,
-      (min, data) => (data['netWorth'] as double) < min
-          ? (data['netWorth'] as double)
+      (min, data) => ((data['netWorth'] as num?)?.toDouble() ?? 0.0) < min
+          ? ((data['netWorth'] as num?)?.toDouble() ?? 0.0)
           : min,
     );
 
@@ -613,10 +684,11 @@ class _NetWorthTrackingScreenState
   }
 
   Widget _buildInsightCard(AppColors semantic, bool isPrivate) {
+    final l10n = AppLocalizations.of(context)!;
     if (_monthlyData.length < 2) return const SizedBox();
 
-    final firstNetWorth = _monthlyData.first['netWorth'] as double;
-    final lastNetWorth = _monthlyData.last['netWorth'] as double;
+    final firstNetWorth = (_monthlyData.first['netWorth'] as num).toDouble();
+    final lastNetWorth = (_monthlyData.last['netWorth'] as num).toDouble();
     final change = lastNetWorth - firstNetWorth;
     final percentChange =
         firstNetWorth != 0 ? (change / firstNetWorth.abs()) * 100 : 0;
@@ -659,7 +731,7 @@ class _NetWorthTrackingScreenState
                 ),
                 const SizedBox(width: 16),
                 Text(
-                  "INSIGHT",
+                  l10n.insight,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -714,6 +786,7 @@ class _NetWorthTrackingScreenState
   }
 
   Widget _buildInvestmentsBanner(AppColors semantic) {
+    final l10n = AppLocalizations.of(context)!;
     return HoverWrapper(
       onTap: () => Navigator.push(
         context,
@@ -747,7 +820,7 @@ class _NetWorthTrackingScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "ASSET ALLOCATION",
+                    l10n.assetAllocation,
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
@@ -756,7 +829,7 @@ class _NetWorthTrackingScreenState
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "Investment Portfolio",
+                    l10n.investmentPortfolio,
                     style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
@@ -826,7 +899,7 @@ class _NetWorthChartPainter extends CustomPainter {
     final points = <Offset>[];
 
     for (int i = 0; i < data.length; i++) {
-      final netWorth = data[i]['netWorth'] as double;
+      final netWorth = (data[i]['netWorth'] as num).toDouble();
       final x = data.length > 1
           ? (size.width / (data.length - 1)) * i
           : size.width / 2;

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
@@ -8,7 +7,7 @@ import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
-import 'package:trueledger/core/theme/theme.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -28,15 +27,12 @@ void main() {
   });
 
   Widget createWidgetUnderTest() {
-    return ProviderScope(
+    return wrapWidget(
+      const ManageCategoriesScreen(),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepository),
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const ManageCategoriesScreen(),
-      ),
     );
   }
 
@@ -109,31 +105,28 @@ void main() {
     });
     testWidgets('should return the last added category name', (tester) async {
       String? returnedValue;
-      await tester.pumpWidget(ProviderScope(
+      await tester.pumpWidget(wrapWidget(
+        Builder(builder: (context) {
+          return Scaffold(
+            body: Center(
+              child: ElevatedButton(
+                onPressed: () async {
+                  returnedValue = await Navigator.push<String>(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ManageCategoriesScreen(
+                            initialType: 'Variable')),
+                  );
+                },
+                child: const Text('Go'),
+              ),
+            ),
+          );
+        }),
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepository),
           sharedPreferencesProvider.overrideWithValue(mockPrefs),
         ],
-        child: MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: Builder(builder: (context) {
-            return Scaffold(
-              body: Center(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    returnedValue = await Navigator.push<String>(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const ManageCategoriesScreen(
-                              initialType: 'Variable')),
-                    );
-                  },
-                  child: const Text('Go'),
-                ),
-              ),
-            );
-          }),
-        ),
       ));
 
       await tester.tap(find.text('Go'));
@@ -170,31 +163,28 @@ void main() {
       when(() => mockRepository.getCategories('Variable'))
           .thenAnswer((_) async => categories);
 
-      await tester.pumpWidget(ProviderScope(
+      await tester.pumpWidget(wrapWidget(
+        Builder(builder: (context) {
+          return Scaffold(
+            body: Center(
+              child: ElevatedButton(
+                onPressed: () async {
+                  returnedValue = await Navigator.push<String>(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ManageCategoriesScreen(
+                            initialType: 'Variable')),
+                  );
+                },
+                child: const Text('Go'),
+              ),
+            ),
+          );
+        }),
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepository),
           sharedPreferencesProvider.overrideWithValue(mockPrefs),
         ],
-        child: MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: Builder(builder: (context) {
-            return Scaffold(
-              body: Center(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    returnedValue = await Navigator.push<String>(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const ManageCategoriesScreen(
-                              initialType: 'Variable')),
-                    );
-                  },
-                  child: const Text('Go'),
-                ),
-              ),
-            );
-          }),
-        ),
       ));
 
       await tester.tap(find.text('Go'));

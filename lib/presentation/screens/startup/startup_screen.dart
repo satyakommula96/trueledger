@@ -5,6 +5,7 @@ import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard.dart';
 import 'package:trueledger/presentation/screens/startup/intro_screen.dart';
 import 'package:trueledger/presentation/screens/startup/lock_screen.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class StartupScreen extends ConsumerWidget {
   const StartupScreen({super.key});
@@ -12,6 +13,7 @@ class StartupScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bootState = ref.watch(bootProvider);
+    final l10n = AppLocalizations.of(context);
 
     return bootState.when(
       data: (pin) {
@@ -27,15 +29,16 @@ class StartupScreen extends ConsumerWidget {
           return const Dashboard();
         }
       },
-      loading: () => const Scaffold(
+      loading: () => Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 24),
-              Text("Initializing...",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const CircularProgressIndicator(),
+              const SizedBox(height: 24),
+              Text(l10n?.initializing ?? "Initializing...",
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16)),
             ],
           ),
         ),
@@ -49,18 +52,19 @@ class StartupScreen extends ConsumerWidget {
               children: [
                 const Icon(Icons.error_outline, size: 64, color: Colors.red),
                 const SizedBox(height: 24),
-                const FittedBox(
+                FittedBox(
                   fit: BoxFit.scaleDown,
-                  child: Text("Initialization Failed",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                  child: Text(
+                      l10n?.initializationFailed ?? "Initialization Failed",
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 20)),
                 ),
                 const SizedBox(height: 8),
                 Text(err.toString(), textAlign: TextAlign.center),
                 const SizedBox(height: 32),
                 FilledButton(
                   onPressed: () => ref.refresh(bootProvider),
-                  child: const Text("RETRY"),
+                  child: Text(l10n?.retry.toUpperCase() ?? "RETRY"),
                 ),
               ],
             ),

@@ -3,10 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 import 'package:trueledger/core/config/app_config.dart';
 
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/insights_provider.dart';
+import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
@@ -203,6 +205,7 @@ class Dashboard extends ConsumerWidget {
                                                             data,
                                                             summary,
                                                             ref,
+                                                            context,
                                                             reload),
                                                         const SizedBox(
                                                             height: 24),
@@ -231,7 +234,8 @@ class Dashboard extends ConsumerWidget {
                                                             height: 32),
                                                         _buildCalendarSection(
                                                             semantic,
-                                                            upcomingBills),
+                                                            upcomingBills,
+                                                            ref),
                                                       ],
                                                     ),
                                                   ),
@@ -243,7 +247,7 @@ class Dashboard extends ConsumerWidget {
                                       : SliverList(
                                           delegate: SliverChildListDelegate([
                                             ..._buildTopSection(semantic, data,
-                                                summary, ref, reload),
+                                                summary, ref, context, reload),
                                             const SizedBox(height: 24),
                                             ..._buildSummariesSection(
                                                 semantic,
@@ -256,7 +260,7 @@ class Dashboard extends ConsumerWidget {
                                                 summary, budgets),
                                             const SizedBox(height: 32),
                                             _buildCalendarSection(
-                                                semantic, upcomingBills),
+                                                semantic, upcomingBills, ref),
                                           ]),
                                         ),
                                 );
@@ -282,10 +286,15 @@ class Dashboard extends ConsumerWidget {
     );
   }
 
-  List<Widget> _buildTopSection(AppColors semantic, dynamic data,
-      dynamic summary, WidgetRef ref, VoidCallback reload) {
-    final billsToday = data.billsDueToday as List;
-    final total = billsToday.fold(0.0, (sum, dynamic b) => sum + b.amount);
+  List<Widget> _buildTopSection(
+      AppColors semantic,
+      DashboardData data,
+      MonthlySummary summary,
+      WidgetRef ref,
+      BuildContext context,
+      VoidCallback reload) {
+    final billsToday = data.billsDueToday;
+    final total = billsToday.fold(0.0, (sum, b) => sum + b.amount);
 
     return [
       if (billsToday.isNotEmpty) ...[
@@ -305,7 +314,9 @@ class Dashboard extends ConsumerWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  "${billsToday.length} ${billsToday.length == 1 ? 'BILL' : 'BILLS'} DUE TODAY · ${CurrencyFormatter.format(total)}",
+                  billsToday.length == 1
+                      ? "${AppLocalizations.of(context)!.billsDueToday(billsToday.length)} · ${CurrencyFormatter.format(total)}"
+                      : "${AppLocalizations.of(context)!.billsDueTodayPlural(billsToday.length)} · ${CurrencyFormatter.format(total)}",
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
@@ -371,16 +382,14 @@ class Dashboard extends ConsumerWidget {
         todaySpend: data.todaySpend,
         dailyBudget: data.budgets.isEmpty
             ? 0
-            : (data.budgets
-                    .fold(0.0, (sum, dynamic b) => sum + b.monthlyLimit) /
-                30),
+            : (data.budgets.fold(0.0, (sum, b) => sum + b.monthlyLimit) / 30),
         semantic: semantic,
       ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.1, end: 0),
     ];
   }
 
-  List<Widget> _buildSummariesSection(AppColors semantic, dynamic data,
-      dynamic summary, WidgetRef ref, String currentMonth) {
+  List<Widget> _buildSummariesSection(AppColors semantic, DashboardData data,
+      MonthlySummary summary, WidgetRef ref, String currentMonth) {
     return [
       Row(
         children: [
@@ -389,10 +398,8 @@ class Dashboard extends ConsumerWidget {
                 todaySpend: data.todaySpend,
                 totalBudgetRemaining: data.budgets.isEmpty
                     ? null
-                    : data.budgets.fold(
-                            0.0, (sum, dynamic b) => sum + b.monthlyLimit) -
-                        data.budgets
-                            .fold(0.0, (sum, dynamic b) => sum + b.spent),
+                    : data.budgets.fold(0.0, (sum, b) => sum + b.monthlyLimit) -
+                        data.budgets.fold(0.0, (sum, b) => sum + b.spent),
                 semantic: semantic,
                 onTap: () {
                   final now = DateTime.now();
@@ -400,7 +407,8 @@ class Dashboard extends ConsumerWidget {
                       ref.context,
                       MaterialPageRoute(
                           builder: (_) => TransactionsDetailScreen(
-                                title: "Today's Ledger",
+                                title: AppLocalizations.of(ref.context)!
+                                    .todayLedger,
                                 startDate: now,
                                 endDate: now,
                               )));
@@ -429,7 +437,7 @@ class Dashboard extends ConsumerWidget {
         children: [
           Expanded(
               child: SummaryCard(
-                  label: "Income",
+                  label: AppLocalizations.of(ref.context)!.income,
                   value: CurrencyFormatter.format(summary.totalIncome,
                       isPrivate: ref.watch(privacyProvider)),
                   valueColor: semantic.income,
@@ -448,7 +456,7 @@ class Dashboard extends ConsumerWidget {
           const SizedBox(width: 12),
           Expanded(
               child: SummaryCard(
-                  label: "Expenses",
+                  label: AppLocalizations.of(ref.context)!.expenses,
                   value: CurrencyFormatter.format(
                       summary.totalFixed +
                           summary.totalVariable +
@@ -475,8 +483,8 @@ class Dashboard extends ConsumerWidget {
     ];
   }
 
-  Widget _buildInsightsSection(
-      AppColors semantic, WidgetRef ref, dynamic summary, dynamic budgets) {
+  Widget _buildInsightsSection(AppColors semantic, WidgetRef ref,
+      MonthlySummary summary, List<Budget> budgets) {
     return SmartInsightsCard(
       insights: ref.watch(insightsProvider),
       score: IntelligenceService.calculateHealthScore(
@@ -490,12 +498,13 @@ class Dashboard extends ConsumerWidget {
         .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart);
   }
 
-  Widget _buildCalendarSection(AppColors semantic, dynamic upcomingBills) {
+  Widget _buildCalendarSection(
+      AppColors semantic, List<BillSummary> upcomingBills, WidgetRef ref) {
     return Column(
       children: [
         SectionHeader(
-                title: "Payment Calendar",
-                sub: "Month view",
+                title: AppLocalizations.of(ref.context)!.paymentCalendar,
+                sub: AppLocalizations.of(ref.context)!.monthView,
                 semantic: semantic)
             .animate(delay: 800.ms)
             .fade(duration: 800.ms),

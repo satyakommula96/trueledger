@@ -24,6 +24,7 @@ dependencies:
   shared_preferences: ^2.5.4
   path_provider: ^2.1.5
   file_picker: 10.3.10
+  local_auth: ^2.3.0
 
   # UI & Charts
   fl_chart: ^1.1.1
@@ -50,6 +51,9 @@ dependencies:
     sdk: flutter
   pdf: ^3.11.3
   printing: ^5.14.2
+  flutter_localizations:
+    sdk: flutter
+  json_annotation: ^4.9.0
 
 dev_dependencies:
   flutter_test:
@@ -62,6 +66,8 @@ dev_dependencies:
   msix: ^3.16.13
   plugin_platform_interface: ^2.1.8
   path_provider_platform_interface: ^2.1.2
+  json_serializable: ^6.9.0
+  build_runner: ^2.4.15
 
 flutter_launcher_icons:
   android: true
@@ -106,6 +112,7 @@ msix_config:
   store: true
 
 flutter:
+  generate: true
   uses-material-design: true
   assets:
     - assets/icon/

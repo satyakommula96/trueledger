@@ -415,7 +415,9 @@ class _EditCreditCardScreenState extends ConsumerState<EditCreditCardScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(item.date.substring(0, 10),
+                                  Text(
+                                      DateFormat('yyyy-MM-dd')
+                                          .format(item.date),
                                       style: const TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.bold,

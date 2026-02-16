@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/domain/models/models.dart';
+import 'package:trueledger/data/dtos/insight_dto.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 export 'package:trueledger/domain/models/models.dart'
     show AIInsight, InsightType, InsightPriority, InsightGroup, InsightSurface;
@@ -101,9 +102,9 @@ class IntelligenceService {
 
   List<AIInsight> generateInsights({
     required MonthlySummary summary,
-    required List<Map<String, dynamic>> trendData,
+    required List<FinancialTrend> trendData,
     required List<Budget> budgets,
-    required List<Map<String, dynamic>> categorySpending,
+    required List<CategorySpending> categorySpending,
     InsightSurface requestedSurface = InsightSurface.main,
     bool forceRefresh = false,
     bool ignoreCooldown = false,
@@ -145,7 +146,8 @@ class IntelligenceService {
             final cachedJson = _prefs.getString(_dailyCacheKey);
             if (cachedJson != null) {
               final List<dynamic> list = jsonDecode(cachedJson);
-              _memCache = list.map((j) => AIInsight.fromJson(j)).toList();
+              _memCache =
+                  list.map((j) => AIInsightDto.fromJson(j).toDomain()).toList();
               _memCacheDate = now;
               return _filterBySurface(_memCache!, requestedSurface);
             }
@@ -165,8 +167,7 @@ class IntelligenceService {
 
     double avgOutflow = 0;
     if (trendData.isNotEmpty) {
-      final monthlyExpenses =
-          trendData.map((d) => ((d['total'] as num?) ?? 0).toDouble()).toList();
+      final monthlyExpenses = trendData.map((d) => d.total).toList();
       avgOutflow =
           monthlyExpenses.reduce((a, b) => a + b) / monthlyExpenses.length;
     }
@@ -223,8 +224,7 @@ class IntelligenceService {
 
     // 3. Spending Forecast - Medium Priority
     if (trendData.length >= 2 && avgOutflow > 0) {
-      final monthlyExpenses =
-          trendData.map((d) => ((d['total'] as num?) ?? 0).toDouble()).toList();
+      final monthlyExpenses = trendData.map((d) => d.total).toList();
       double forecast = _forecastNext(monthlyExpenses);
 
       if (forecast > avgOutflow * _forecastSurgeThreshold) {
@@ -335,7 +335,9 @@ class IntelligenceService {
     _memCacheDate = now;
     _prefs.setString(_dailyCacheTimestampKey, now.toIso8601String());
     _prefs.setString(
-        _dailyCacheKey, jsonEncode(results.map((e) => e.toJson()).toList()));
+        _dailyCacheKey,
+        jsonEncode(
+            results.map((e) => AIInsightDto.fromDomain(e).toJson()).toList()));
 
     return _filterBySurface(results, requestedSurface);
   }

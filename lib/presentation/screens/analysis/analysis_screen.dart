@@ -11,6 +11,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/presentation/screens/analysis/annual_reflection_screen.dart';
 import 'package:trueledger/presentation/screens/retirement/retirement_dashboard.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
+import 'package:trueledger/domain/models/models.dart';
 
 class AnalysisScreen extends ConsumerWidget {
   const AnalysisScreen({super.key});
@@ -26,15 +28,19 @@ class AnalysisScreen extends ConsumerWidget {
         backgroundColor: semantic.surfaceCombined,
         body: Center(child: CircularProgressIndicator(color: semantic.primary)),
       ),
-      error: (err, stack) => Scaffold(body: Center(child: Text("Error: $err"))),
+      error: (err, stack) => Scaffold(
+          body: Center(
+              child:
+                  Text(AppLocalizations.of(context)?.reset ?? "Error: $err"))),
       data: (data) {
+        final l10n = AppLocalizations.of(context)!;
         final trendData = data.trendData;
         final categoryData = data.categoryData;
 
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
-            title: const Text("ANALYSIS"),
+            title: Text(AppLocalizations.of(context)!.analysis.toUpperCase()),
             centerTitle: true,
             backgroundColor: Colors.transparent,
             flexibleSpace: ClipRRect(
@@ -71,13 +77,14 @@ class AnalysisScreen extends ConsumerWidget {
                               const SizedBox(width: 20),
                             Expanded(
                               child: _buildAnnualReflectionBanner(
-                                      context, semantic)
+                                      context, semantic, l10n)
                                   .animate()
                                   .fadeIn(delay: 200.ms),
                             ),
                             const SizedBox(width: 20),
                             Expanded(
-                              child: _buildRetirementBanner(context, semantic)
+                              child: _buildRetirementBanner(
+                                      context, semantic, l10n)
                                   .animate()
                                   .fadeIn(delay: 300.ms),
                             ),
@@ -92,8 +99,12 @@ class AnalysisScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildSectionHeader(semantic, "MONTHLY TREND",
-                                      "SPENDING & INCOME"),
+                                  _buildSectionHeader(
+                                      semantic,
+                                      AppLocalizations.of(context)!
+                                          .monthlyTrend,
+                                      AppLocalizations.of(context)!
+                                          .spendingAndIncome),
                                   const SizedBox(height: 20),
                                   TrendChart(
                                           trendData: trendData,
@@ -115,10 +126,13 @@ class AnalysisScreen extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   _buildSectionHeader(
-                                      semantic, "DISTRIBUTION", "BY CATEGORY"),
+                                      semantic,
+                                      AppLocalizations.of(context)!
+                                          .distribution,
+                                      AppLocalizations.of(context)!.byCategory),
                                   const SizedBox(height: 24),
                                   _buildCategoryBreakdown(context, categoryData,
-                                      semantic, isPrivate),
+                                      semantic, isPrivate, l10n),
                                 ],
                               ),
                             ),
@@ -140,16 +154,18 @@ class AnalysisScreen extends ConsumerWidget {
                                   curve: Curves.easeOutQuint),
                           const SizedBox(height: 32),
                         ],
-                        _buildAnnualReflectionBanner(context, semantic)
+                        _buildAnnualReflectionBanner(context, semantic, l10n)
                             .animate()
                             .fadeIn(delay: 200.ms),
                         const SizedBox(height: 16),
-                        _buildRetirementBanner(context, semantic)
+                        _buildRetirementBanner(context, semantic, l10n)
                             .animate()
                             .fadeIn(delay: 300.ms),
                         const SizedBox(height: 48),
                         _buildSectionHeader(
-                            semantic, "MONTHLY TREND", "SPENDING & INCOME"),
+                            semantic,
+                            AppLocalizations.of(context)!.monthlyTrend,
+                            AppLocalizations.of(context)!.spendingAndIncome),
                         const SizedBox(height: 20),
                         TrendChart(
                                 trendData: trendData,
@@ -163,10 +179,12 @@ class AnalysisScreen extends ConsumerWidget {
                                 curve: Curves.easeOutQuint),
                         const SizedBox(height: 48),
                         _buildSectionHeader(
-                            semantic, "DISTRIBUTION", "BY CATEGORY"),
+                            semantic,
+                            AppLocalizations.of(context)!.distribution,
+                            AppLocalizations.of(context)!.byCategory),
                         const SizedBox(height: 24),
                         _buildCategoryBreakdown(
-                            context, categoryData, semantic, isPrivate),
+                            context, categoryData, semantic, isPrivate, l10n),
                       ],
                     ),
             );
@@ -202,13 +220,17 @@ class AnalysisScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCategoryBreakdown(BuildContext context,
-      List<Map<String, dynamic>> data, AppColors semantic, bool isPrivate) {
+  Widget _buildCategoryBreakdown(
+      BuildContext context,
+      List<CategorySpending> data,
+      AppColors semantic,
+      bool isPrivate,
+      AppLocalizations l10n) {
     if (data.isEmpty) {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 60),
         alignment: Alignment.center,
-        child: Text("NO DATA AVAILABLE",
+        child: Text(l10n.noDataAvailable,
             style: TextStyle(
                 color: semantic.secondaryText.withValues(alpha: 0.5),
                 fontSize: 11,
@@ -217,17 +239,14 @@ class AnalysisScreen extends ConsumerWidget {
       );
     }
 
-    final maxVal = data.fold<double>(
-        0.0,
-        (prev, e) => (e['total'] as num).toDouble() > prev
-            ? (e['total'] as num).toDouble()
-            : prev);
+    final maxVal =
+        data.fold<double>(0.0, (prev, e) => e.total > prev ? e.total : prev);
 
     return Column(
       children: data.asMap().entries.map((entry) {
         final index = entry.key;
         final item = entry.value;
-        final total = (item['total'] as num).toDouble();
+        final total = item.total;
         final progress = maxVal == 0 ? 0.0 : total / maxVal;
 
         return Container(
@@ -246,7 +265,7 @@ class AnalysisScreen extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      item['category'].toString().toUpperCase(),
+                      item.category.toUpperCase(),
                       style: TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: 12,
@@ -315,11 +334,11 @@ class AnalysisScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInsightCard(BuildContext context,
-      List<Map<String, dynamic>> data, AppColors semantic, bool isPrivate) {
+  Widget _buildInsightCard(BuildContext context, List<FinancialTrend> data,
+      AppColors semantic, bool isPrivate) {
     if (data.length < 2) return const SizedBox();
-    final current = (data.last['total'] as num).toDouble();
-    final last = (data[data.length - 2]['total'] as num).toDouble();
+    final current = data.last.total;
+    final last = data[data.length - 2].total;
     final diff = current - last;
     final isIncrease = diff > 0;
     final color = isIncrease ? semantic.overspent : semantic.income;
@@ -353,7 +372,7 @@ class AnalysisScreen extends ConsumerWidget {
               ),
               const SizedBox(width: 16),
               Text(
-                "MOMENTUM".toUpperCase(),
+                AppLocalizations.of(context)!.momentum.toUpperCase(),
                 style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w900,
@@ -374,14 +393,15 @@ class AnalysisScreen extends ConsumerWidget {
               children: [
                 TextSpan(
                     text: isIncrease
-                        ? "Velocity increased by "
-                        : "Excellent. Spending decreased by "),
+                        ? AppLocalizations.of(context)!.velocityIncreased
+                        : AppLocalizations.of(context)!.spendingDecreased),
                 TextSpan(
                   text: CurrencyFormatter.format(diff.abs(),
                       isPrivate: isPrivate),
                   style: TextStyle(fontWeight: FontWeight.w900, color: color),
                 ),
-                const TextSpan(text: " relative to last period."),
+                TextSpan(
+                    text: AppLocalizations.of(context)!.relativeToLastPeriod),
               ],
             ),
           ),
@@ -391,7 +411,7 @@ class AnalysisScreen extends ConsumerWidget {
   }
 
   Widget _buildAnnualReflectionBanner(
-      BuildContext context, AppColors semantic) {
+      BuildContext context, AppColors semantic, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -428,7 +448,7 @@ class AnalysisScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "ARCHIVE",
+                        l10n.archiveLabel,
                         style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
@@ -437,7 +457,7 @@ class AnalysisScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        "${DateTime.now().year} Reflection",
+                        l10n.reflectionLabel(DateTime.now().year),
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
@@ -460,7 +480,8 @@ class AnalysisScreen extends ConsumerWidget {
         color: semantic.primary.withValues(alpha: 0.1));
   }
 
-  Widget _buildRetirementBanner(BuildContext context, AppColors semantic) {
+  Widget _buildRetirementBanner(
+      BuildContext context, AppColors semantic, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -496,7 +517,7 @@ class AnalysisScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "GOAL TRACKING",
+                        l10n.goalTracking,
                         style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
@@ -505,7 +526,7 @@ class AnalysisScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        "Retirement Health",
+                        l10n.retirementHealth,
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,

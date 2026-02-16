@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
@@ -9,6 +8,7 @@ import 'package:trueledger/presentation/screens/dashboard/dashboard_components/p
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:intl/intl.dart';
+import '../../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -35,28 +35,29 @@ void main() {
     when(() => mockRepo.getPaidBillLabels(any())).thenAnswer((_) async => []);
   });
 
-  Widget createWidgetUnderTest(List<Map<String, dynamic>> bills) {
-    return ProviderScope(
+  Widget createWidgetUnderTest(List<BillSummary> bills) {
+    return wrapWidget(
+      Scaffold(
+        body: SingleChildScrollView(
+          child: PaymentCalendar(
+            bills: bills,
+            semantic: AppTheme.darkColors,
+          ),
+        ),
+      ),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
         privacyProvider.overrideWith(() => _MockPrivacyNotifier()),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: Scaffold(
-          body: SingleChildScrollView(
-            child: PaymentCalendar(
-              bills: bills,
-              semantic: AppTheme.darkColors,
-            ),
-          ),
-        ),
-      ),
     );
   }
 
   testWidgets('PaymentCalendar renders and handles empty bills',
       (tester) async {
+    tester.view.physicalSize = const Size(1080, 1920);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
     await tester.pumpWidget(createWidgetUnderTest([]));
     await tester.pumpAndSettle();
 
@@ -69,18 +70,20 @@ void main() {
 
   testWidgets('PaymentCalendar shows bill events and opens details',
       (tester) async {
+    tester.view.physicalSize = const Size(1080, 1920);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
     final now = DateTime.now();
-    final today = DateFormat('dd-MM-yyyy').format(now);
 
     final bills = [
-      {
-        'id': '1',
-        'title': 'Rent',
-        'amount': 5000.0,
-        'due': today,
-        'type': 'LOAN EMI',
-        'isRecurring': false,
-      }
+      BillSummary(
+        id: '1',
+        name: 'Rent',
+        amount: 5000.0,
+        dueDate: now,
+        type: 'LOAN EMI',
+      )
     ];
 
     await tester.pumpWidget(createWidgetUnderTest(bills));
@@ -90,6 +93,7 @@ void main() {
     expect(find.text('${now.day}'), findsOneWidget);
 
     // Tap on the day to open details
+    await tester.ensureVisible(find.text('${now.day}'));
     await tester.tap(find.text('${now.day}'));
     await tester.pumpAndSettle();
 
@@ -99,18 +103,20 @@ void main() {
   });
 
   testWidgets('PaymentCalendar handles marking as paid', (tester) async {
+    tester.view.physicalSize = const Size(1080, 1920);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
     final now = DateTime.now();
-    final today = DateFormat('dd-MM-yyyy').format(now);
 
     final bills = [
-      {
-        'id': '1',
-        'title': 'Gym',
-        'amount': 1000.0,
-        'due': today,
-        'type': 'SUBSCRIPTION',
-        'isRecurring': false,
-      }
+      BillSummary(
+        id: '1',
+        name: 'Gym',
+        amount: 1000.0,
+        dueDate: now,
+        type: 'SUBSCRIPTION',
+      )
     ];
 
     when(() => mockRepo.addEntry(any(), any(), any(), any(), any(),
@@ -119,6 +125,7 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest(bills));
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('${now.day}'));
     await tester.tap(find.text('${now.day}'));
     await tester.pumpAndSettle();
 

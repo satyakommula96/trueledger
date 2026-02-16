@@ -14,24 +14,6 @@ class QuickAddPreset {
     this.note,
     this.paymentMethod,
   });
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'amount': amount,
-        'category': category,
-        'note': note,
-        'paymentMethod': paymentMethod,
-      };
-
-  factory QuickAddPreset.fromJson(Map<String, dynamic> json) => QuickAddPreset(
-        id: json['id'],
-        title: json['title'],
-        amount: (json['amount'] as num).toDouble(),
-        category: json['category'],
-        note: json['note'],
-        paymentMethod: json['paymentMethod'],
-      );
 }
 
 class PersonalizationSettings {
@@ -52,27 +34,6 @@ class PersonalizationSettings {
     this.preferredReminderTime,
     this.payDay,
   });
-
-  Map<String, dynamic> toJson() => {
-        'personalizationEnabled': personalizationEnabled,
-        'rememberLastUsed': rememberLastUsed,
-        'timeOfDaySuggestions': timeOfDaySuggestions,
-        'shortcutSuggestions': shortcutSuggestions,
-        'baselineReflections': baselineReflections,
-        'preferredReminderTime': preferredReminderTime,
-        'payDay': payDay,
-      };
-
-  factory PersonalizationSettings.fromJson(Map<String, dynamic> json) =>
-      PersonalizationSettings(
-        personalizationEnabled: json['personalizationEnabled'] ?? true,
-        rememberLastUsed: json['rememberLastUsed'] ?? true,
-        timeOfDaySuggestions: json['timeOfDaySuggestions'] ?? true,
-        shortcutSuggestions: json['shortcutSuggestions'] ?? true,
-        baselineReflections: json['baselineReflections'] ?? true,
-        preferredReminderTime: json['preferredReminderTime'],
-        payDay: json['payDay'],
-      );
 
   PersonalizationSettings copyWith({
     bool? personalizationEnabled,
@@ -109,19 +70,4 @@ class PersonalizationSignal {
     required this.timestamp,
     this.meta = const {},
   });
-
-  Map<String, dynamic> toJson() => {
-        'key': key,
-        'reason': reason,
-        'timestamp': timestamp.toIso8601String(),
-        'meta': meta,
-      };
-
-  factory PersonalizationSignal.fromJson(Map<String, dynamic> json) =>
-      PersonalizationSignal(
-        key: json['key'],
-        reason: json['reason'],
-        timestamp: DateTime.parse(json['timestamp']),
-        meta: json['meta'] ?? {},
-      );
 }

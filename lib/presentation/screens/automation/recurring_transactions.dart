@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/domain/models/models.dart';
@@ -137,7 +138,7 @@ class RecurringTransactionsScreen extends ConsumerWidget {
                     if (item.lastProcessed != null) ...[
                       const SizedBox(height: 4),
                       Text(
-                        "LAST: ${item.lastProcessed!.substring(0, 10)}",
+                        "LAST: ${DateFormat('yyyy-MM-dd').format(item.lastProcessed!)}",
                         style: TextStyle(
                             color: semantic.income.withValues(alpha: 0.7),
                             fontSize: 9,

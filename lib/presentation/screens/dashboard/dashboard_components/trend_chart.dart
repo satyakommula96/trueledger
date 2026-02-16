@@ -3,9 +3,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/domain/models/models.dart';
 
 class TrendChart extends StatelessWidget {
-  final List<Map<String, dynamic>> trendData;
+  final List<FinancialTrend> trendData;
   final AppColors semantic;
   final bool isPrivate;
 
@@ -20,12 +21,10 @@ class TrendChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (trendData.isEmpty) return const SizedBox.shrink();
 
-    final maxValSpend = (trendData
-        .map((e) => (e['spending'] ?? e['total']) as num)
-        .reduce((a, b) => a > b ? a : b)).toDouble();
-    final maxValIncome = (trendData
-        .map((e) => (e['income'] ?? 0) as num)
-        .reduce((a, b) => a > b ? a : b)).toDouble();
+    final maxValSpend =
+        (trendData.map((e) => e.spending).reduce((a, b) => a > b ? a : b));
+    final maxValIncome =
+        (trendData.map((e) => e.income).reduce((a, b) => a > b ? a : b));
     final maxVal =
         (maxValSpend > maxValIncome ? maxValSpend : maxValIncome) * 1.2;
 
@@ -117,8 +116,7 @@ class TrendChart extends StatelessWidget {
                         if (index < 0 || index >= trendData.length) {
                           return const SizedBox();
                         }
-                        String monthStr =
-                            trendData[index]['month'].toString().split('-')[1];
+                        String monthStr = trendData[index].month.split('-')[1];
                         const months = [
                           'JAN',
                           'FEB',
@@ -158,8 +156,7 @@ class TrendChart extends StatelessWidget {
                 lineBarsData: [
                   LineChartBarData(
                     spots: trendData.asMap().entries.map((e) {
-                      return FlSpot(e.key.toDouble(),
-                          (e.value['income'] as num? ?? 0).toDouble());
+                      return FlSpot(e.key.toDouble(), e.value.income);
                     }).toList(),
                     isCurved: true,
                     curveSmoothness: 0.35,
@@ -180,10 +177,7 @@ class TrendChart extends StatelessWidget {
                   ),
                   LineChartBarData(
                     spots: trendData.asMap().entries.map((e) {
-                      return FlSpot(
-                          e.key.toDouble(),
-                          (e.value['spending'] ?? e.value['total'] as num)
-                              .toDouble());
+                      return FlSpot(e.key.toDouble(), e.value.spending);
                     }).toList(),
                     isCurved: true,
                     curveSmoothness: 0.35,

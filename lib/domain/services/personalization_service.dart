@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/domain/models/models.dart';
+import 'package:trueledger/data/dtos/personalization_dto.dart';
 import 'package:intl/intl.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
@@ -26,14 +27,16 @@ class PersonalizationService {
     final jsonStr = _prefs.getString(_settingsKey);
     if (jsonStr == null) return PersonalizationSettings();
     try {
-      return PersonalizationSettings.fromJson(jsonDecode(jsonStr));
+      return PersonalizationSettingsDto.fromJson(jsonDecode(jsonStr))
+          .toDomain();
     } catch (_) {
       return PersonalizationSettings();
     }
   }
 
   Future<void> updateSettings(PersonalizationSettings settings) async {
-    await _prefs.setString(_settingsKey, jsonEncode(settings.toJson()));
+    await _prefs.setString(_settingsKey,
+        jsonEncode(PersonalizationSettingsDto.fromDomain(settings).toJson()));
   }
 
   // --- Last Used Memory ---
@@ -92,7 +95,9 @@ class PersonalizationService {
   List<QuickAddPreset> getPresets() {
     final List<String>? jsonList = _prefs.getStringList(_presetsKey);
     if (jsonList == null) return [];
-    return jsonList.map((s) => QuickAddPreset.fromJson(jsonDecode(s))).toList();
+    return jsonList
+        .map((s) => QuickAddPresetDto.fromJson(jsonDecode(s)).toDomain())
+        .toList();
   }
 
   Future<void> addPreset(QuickAddPreset preset) async {
@@ -108,8 +113,9 @@ class PersonalizationService {
   }
 
   Future<void> _savePresets(List<QuickAddPreset> presets) async {
-    final List<String> jsonList =
-        presets.map((p) => jsonEncode(p.toJson())).toList();
+    final List<String> jsonList = presets
+        .map((p) => jsonEncode(QuickAddPresetDto.fromDomain(p).toJson()))
+        .toList();
     await _prefs.setStringList(_presetsKey, jsonList);
   }
 
@@ -146,14 +152,18 @@ class PersonalizationService {
     }
 
     await _prefs.setStringList(
-        _signalsKey, signals.map((s) => jsonEncode(s.toJson())).toList());
+        _signalsKey,
+        signals
+            .map((s) =>
+                jsonEncode(PersonalizationSignalDto.fromDomain(s).toJson()))
+            .toList());
   }
 
   List<PersonalizationSignal> _getSignals() {
     final List<String>? jsonList = _prefs.getStringList(_signalsKey);
     if (jsonList == null) return [];
     return jsonList
-        .map((s) => PersonalizationSignal.fromJson(jsonDecode(s)))
+        .map((s) => PersonalizationSignalDto.fromJson(jsonDecode(s)).toDomain())
         .toList();
   }
 

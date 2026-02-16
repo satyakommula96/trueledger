@@ -25,11 +25,9 @@ void main() {
         Budget(id: 1, category: 'Food', monthlyLimit: 100, spent: 50)
       ];
       final trendData = [
-        {'month': '2026-01', 'total': 100}
+        FinancialTrend(month: '2026-01', spending: 100, income: 0, total: 100)
       ];
-      final categoryData = [
-        {'category': 'Food', 'total': 50}
-      ];
+      final categoryData = [CategorySpending(category: 'Food', total: 50)];
 
       when(() => mockRepository.getBudgets()).thenAnswer((_) async => budgets);
       when(() => mockRepository.getSpendingTrend())

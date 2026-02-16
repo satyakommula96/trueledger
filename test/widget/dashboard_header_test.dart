@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
@@ -10,6 +9,7 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/core/services/file_service.dart';
 import 'package:trueledger/core/providers/version_provider.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
@@ -37,28 +37,26 @@ void main() {
     bool isDark = true,
     VoidCallback? onLoad,
   }) {
-    return ProviderScope(
+    return wrapWidget(
+      Scaffold(
+        body: CustomScrollView(
+          slivers: [
+            DashboardHeader(
+              isDark: isDark,
+              onLoad: onLoad ?? () {},
+              activeStreak: 0,
+              hasLoggedToday: false,
+            ),
+          ],
+        ),
+      ),
+      theme: isDark ? AppTheme.darkTheme : AppTheme.lightTheme,
       overrides: [
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
         financialRepositoryProvider.overrideWithValue(mockRepo),
         fileServiceProvider.overrideWithValue(MockFileService()),
         appVersionProvider.overrideWith((ref) => '1.0.0'),
       ],
-      child: MaterialApp(
-        theme: isDark ? AppTheme.darkTheme : AppTheme.lightTheme,
-        home: Scaffold(
-          body: CustomScrollView(
-            slivers: [
-              DashboardHeader(
-                isDark: isDark,
-                onLoad: onLoad ?? () {},
-                activeStreak: 0,
-                hasLoggedToday: false,
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 

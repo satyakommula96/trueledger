@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
@@ -9,11 +8,11 @@ import 'package:trueledger/presentation/screens/dashboard/dashboard_components/q
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/core/services/notification_service.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/services/personalization_service.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockAddTransactionUseCase extends Mock implements AddTransactionUseCase {}
 
@@ -68,7 +67,10 @@ void main() {
   });
 
   Widget createWidgetUnderTest() {
-    return ProviderScope(
+    return wrapWidget(
+      const Scaffold(
+        body: QuickAddBottomSheet(),
+      ),
       overrides: [
         addTransactionUseCaseProvider.overrideWithValue(mockUseCase),
         notificationServiceProvider.overrideWithValue(mockNotificationService),
@@ -76,12 +78,6 @@ void main() {
         personalizationServiceProvider
             .overrideWithValue(mockPersonalizationService),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const Scaffold(
-          body: QuickAddBottomSheet(),
-        ),
-      ),
     );
   }
 

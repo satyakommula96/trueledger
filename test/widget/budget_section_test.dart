@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
@@ -12,6 +11,7 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/usecases/budget_usecases.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
@@ -42,25 +42,22 @@ void main() {
     required List<Budget> budgets,
     required VoidCallback onLoad,
   }) {
-    return ProviderScope(
+    return wrapWidget(
+      Scaffold(
+        body: SingleChildScrollView(
+          child: BudgetSection(
+            budgets: budgets,
+            semantic: AppTheme.darkColors,
+            onLoad: onLoad,
+          ),
+        ),
+      ),
       overrides: [
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
         financialRepositoryProvider.overrideWithValue(mockRepo),
         updateBudgetUseCaseProvider.overrideWithValue(mockUpdateBudget),
         deleteBudgetUseCaseProvider.overrideWithValue(mockDeleteBudget),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: Scaffold(
-          body: SingleChildScrollView(
-            child: BudgetSection(
-              budgets: budgets,
-              semantic: AppTheme.darkColors,
-              onLoad: onLoad,
-            ),
-          ),
-        ),
-      ),
     );
   }
 

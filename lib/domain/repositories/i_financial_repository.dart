@@ -2,16 +2,16 @@ import 'package:trueledger/domain/models/models.dart';
 
 abstract class IFinancialRepository {
   Future<MonthlySummary> getMonthlySummary();
-  Future<List<Map<String, dynamic>>> getSpendingTrend();
-  Future<List<Map<String, dynamic>>> getUpcomingBills();
-  Future<List<Map<String, dynamic>>> getCategorySpending();
+  Future<List<FinancialTrend>> getSpendingTrend();
+  Future<List<BillSummary>> getUpcomingBills();
+  Future<List<CategorySpending>> getCategorySpending();
   Future<List<SavingGoal>> getSavingGoals();
   Future<List<Budget>> getBudgets();
   Future<void> addEntry(
-      String type, double amount, String category, String note, String date,
+      String type, double amount, String category, String note, DateTime date,
       {String? paymentMethod, Set<TransactionTag>? tags});
   Future<void> checkAndProcessRecurring();
-  Future<List<Map<String, dynamic>>> getMonthlyHistory([int? year]);
+  Future<List<FinancialTrend>> getMonthlyHistory([int? year]);
   Future<List<int>> getAvailableYears();
   Future<List<Loan>> getLoans();
   Future<List<Subscription>> getSubscriptions();
@@ -67,7 +67,7 @@ abstract class IFinancialRepository {
   Future<void> addCategory(String name, String type);
   Future<void> deleteCategory(int id);
   Future<void> reorderCategories(List<TransactionCategory> categories);
-  Future<List<Map<String, dynamic>>> getCategorySpendingForRange(
+  Future<List<CategorySpending>> getCategorySpendingForRange(
       DateTime start, DateTime end);
   Future<String?> getRecommendedCategory(String note);
   Future<Map<String, int>> getDatabaseStats();
@@ -91,7 +91,7 @@ abstract class IFinancialRepository {
   Future<void> updateRetirementAccount(int id, double amount, String date);
   Future<List<Asset>> getInvestments();
   Future<void> addInvestment(
-      String name, double amount, String type, String date);
+      String name, double amount, String type, DateTime date);
   Future<List<RecurringTransaction>> getRecurringTransactions();
   Future<void> addRecurringTransaction({
     required String name,

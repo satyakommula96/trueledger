@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/daily_closure_card.dart';
@@ -7,6 +6,7 @@ import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/day_closure_provider.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -33,23 +33,20 @@ void main() {
 
     // 2. Build Widget
     await tester.pumpWidget(
-      ProviderScope(
+      wrapWidget(
+        Scaffold(
+          body: DailyClosureCard(
+            transactionCount: 5,
+            todaySpend: 1000,
+            dailyBudget: 2000,
+            semantic: AppTheme.lightColors,
+            forceShow: true,
+          ),
+        ),
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepo),
           dayClosureProvider.overrideWith(() => MockDayClosureNotifier(false)),
         ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: Scaffold(
-            body: DailyClosureCard(
-              transactionCount: 5,
-              todaySpend: 1000,
-              dailyBudget: 2000,
-              semantic: AppTheme.lightColors,
-              forceShow: true,
-            ),
-          ),
-        ),
       ),
     );
 
@@ -65,23 +62,20 @@ void main() {
       (WidgetTester tester) async {
     // We need to override dayClosureProvider to true
     await tester.pumpWidget(
-      ProviderScope(
+      wrapWidget(
+        Scaffold(
+          body: DailyClosureCard(
+            transactionCount: 5,
+            todaySpend: 1000,
+            dailyBudget: 2000,
+            semantic: AppTheme.lightColors,
+            forceShow: true,
+          ),
+        ),
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepo),
           dayClosureProvider.overrideWith(() => MockDayClosureNotifier(true)),
         ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: Scaffold(
-            body: DailyClosureCard(
-              transactionCount: 5,
-              todaySpend: 1000,
-              dailyBudget: 2000,
-              semantic: AppTheme.lightColors,
-              forceShow: true,
-            ),
-          ),
-        ),
       ),
     );
 

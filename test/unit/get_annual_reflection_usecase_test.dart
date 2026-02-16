@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/usecases/get_annual_reflection_usecase.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
+import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/error/failure.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
@@ -24,19 +25,25 @@ void main() {
     test('should return AnnualReflectionData with correct calculations',
         () async {
       // Arrange
-      final List<Map<String, dynamic>> currentYearCats = [
-        {'category': 'Food', 'total': 12000},
-        {'category': 'Rent', 'total': 24000},
+      final currentYearCats = [
+        CategorySpending(category: 'Food', total: 12000),
+        CategorySpending(category: 'Rent', total: 24000),
       ];
-      final List<Map<String, dynamic>> previousYearCats = [
-        {'category': 'Food', 'total': 10000},
-        {'category': 'Rent', 'total': 24000},
-        {'category': 'Travel', 'total': 5000},
+      final previousYearCats = [
+        CategorySpending(category: 'Food', total: 10000),
+        CategorySpending(category: 'Rent', total: 24000),
+        CategorySpending(category: 'Travel', total: 5000),
       ];
       final monthlyHistory = [
-        {'month': '2026-01', 'expenses': 3000},
-        {'month': '2026-02', 'expenses': 4000}, // Max month
-        {'month': '2026-03', 'expenses': 3000},
+        FinancialTrend(
+            month: '2026-01', spending: 3000, income: 0, total: 3000),
+        FinancialTrend(
+            month: '2026-02',
+            spending: 4000,
+            income: 0,
+            total: 4000), // Max month
+        FinancialTrend(
+            month: '2026-03', spending: 3000, income: 0, total: 3000),
       ];
 
       when(() => mockRepository.getCategorySpendingForRange(any(), any()))
@@ -119,9 +126,9 @@ void main() {
         'should return null for mostExpensiveMonth if all months have zero spending',
         () async {
       // Arrange
-      final List<Map<String, dynamic>> monthlyHistory = [
-        {'month': '2026-01', 'expenses': 0},
-        {'month': '2026-02', 'expenses': 0},
+      final monthlyHistory = [
+        FinancialTrend(month: '2026-01', spending: 0, income: 0, total: 0),
+        FinancialTrend(month: '2026-02', spending: 0, income: 0, total: 0),
       ];
 
       when(() => mockRepository.getCategorySpendingForRange(any(), any()))
@@ -139,16 +146,19 @@ void main() {
     });
     test('should handle null or non-int values from repository', () async {
       // Arrange
-      final List<Map<String, dynamic>> currentYearCats = [
-        {'category': 'Food', 'total': 12000.50}, // double
-        {'category': 'Rent', 'total': null}, // null
+      final currentYearCats = [
+        CategorySpending(category: 'Food', total: 12000.50), // double
+        CategorySpending(
+            category: 'Rent', total: 0), // effectively null represented as 0
       ];
-      final List<Map<String, dynamic>> previousYearCats = [
-        {'category': 'Food', 'total': 10000},
+      final previousYearCats = [
+        CategorySpending(category: 'Food', total: 10000),
       ];
       final monthlyHistory = [
-        {'month': '2026-01', 'expenses': 3000},
-        {'month': '2026-02', 'expenses': null}, // null expenses
+        FinancialTrend(
+            month: '2026-01', spending: 3000, income: 0, total: 3000),
+        FinancialTrend(
+            month: '2026-02', spending: 0, income: 0, total: 0), // 0 expenses
       ];
 
       when(() => mockRepository.getCategorySpendingForRange(any(), any()))

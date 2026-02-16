@@ -12,6 +12,7 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/core/theme/color_helper.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class CreditCardsScreen extends ConsumerStatefulWidget {
   const CreditCardsScreen({super.key});
@@ -55,6 +56,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
   void _showPayDialog(CreditCard card, AppColors semantic) {
     final controller = TextEditingController();
     final isPrivate = ref.read(privacyProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     showDialog(
       context: context,
@@ -66,7 +68,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
               borderRadius: BorderRadius.circular(32),
               side: BorderSide(color: semantic.divider, width: 1.5)),
           title: Text(
-            "RECORD PAYMENT",
+            l10n.recordPayment,
             style: TextStyle(
                 fontWeight: FontWeight.w900,
                 color: semantic.text,
@@ -109,7 +111,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("DUE BALANCE",
+                          Text(l10n.dueBalance,
                               style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w900,
@@ -141,7 +143,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                     fontWeight: FontWeight.w900,
                     fontSize: 18),
                 decoration: InputDecoration(
-                  labelText: "AMOUNT TO RECORD",
+                  labelText: l10n.amountToRecord,
                   labelStyle: TextStyle(
                       color: semantic.secondaryText,
                       fontSize: 10,
@@ -172,7 +174,8 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                   if (card.minDue > 0)
                     Expanded(
                       child: _buildPillAction(
-                        "MIN: ${CurrencyFormatter.format(card.minDue, isPrivate: isPrivate)}",
+                        l10n.minDueAmount(CurrencyFormatter.format(card.minDue,
+                            isPrivate: isPrivate)),
                         () => controller.text = card.minDue.toString(),
                         semantic,
                       ),
@@ -180,7 +183,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                   if (card.minDue > 0) const SizedBox(width: 8),
                   Expanded(
                     child: _buildPillAction(
-                      "FULL BALANCE",
+                      l10n.fullBalance,
                       () => controller.text = card.statementBalance.toString(),
                       semantic,
                     ),
@@ -283,10 +286,11 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
     final isPrivate = ref.watch(privacyProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("CARDS"),
+        title: Text(l10n.cards.toUpperCase()),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -303,15 +307,15 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: semantic.primary))
-          : _buildBody(semantic, isPrivate),
+          : _buildBody(semantic, isPrivate, l10n),
     );
   }
 
-  Widget _buildBody(AppColors semantic, bool isPrivate) {
+  Widget _buildBody(AppColors semantic, bool isPrivate, AppLocalizations l10n) {
     if (cards.isEmpty) {
       return Center(
         child: Text(
-          "NO CARDS REGISTERED",
+          l10n.noCardsRegistered,
           style: TextStyle(
               color: semantic.secondaryText,
               fontSize: 10,
@@ -325,19 +329,19 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
       padding: EdgeInsets.fromLTRB(
           20, 16, 20, 100 + MediaQuery.of(context).padding.bottom),
       children: [
-        _buildTotalSummaryCard(semantic, isPrivate),
+        _buildTotalSummaryCard(semantic, isPrivate, l10n),
         const SizedBox(height: 32),
         ...cards.asMap().entries.map((entry) {
           final i = entry.key;
           final c = entry.value;
-          return _buildCardItem(c, i, semantic, isPrivate);
+          return _buildCardItem(c, i, semantic, isPrivate, l10n);
         }),
       ],
     );
   }
 
-  Widget _buildCardItem(
-      CreditCard c, int index, AppColors semantic, bool isPrivate) {
+  Widget _buildCardItem(CreditCard c, int index, AppColors semantic,
+      bool isPrivate, AppLocalizations l10n) {
     final limit = c.creditLimit.toDouble();
     final stmt = c.statementBalance.toDouble();
     final current = c.currentBalance.toDouble();
@@ -408,7 +412,8 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                "LIMIT: ${CurrencyFormatter.format(limit, isPrivate: isPrivate)}",
+                                l10n.limitLabel(CurrencyFormatter.format(limit,
+                                    isPrivate: isPrivate)),
                                 style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w900,
@@ -450,7 +455,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "CURRENT BALANCE",
+                                l10n.currentBalance.toUpperCase(),
                                 style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w900,
@@ -490,7 +495,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  "DUE",
+                                  l10n.dueLabel,
                                   style: TextStyle(
                                       fontSize: 8,
                                       fontWeight: FontWeight.w900,
@@ -509,7 +514,12 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  DateHelper.formatDue(c.dueDate).toUpperCase(),
+                                  DateHelper.formatDue(c.dueDate,
+                                          todayLabel: l10n.dueTodayLabel,
+                                          tomorrowLabel: l10n.dueTomorrowLabel,
+                                          flexibleLabel: l10n.flexible,
+                                          recurringLabel: l10n.recurring)
+                                      .toUpperCase(),
                                   style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w800,
@@ -572,7 +582,8 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
-                              "${currentUtil.toStringAsFixed(1)}% UTILIZED",
+                              l10n.percentUtilized(
+                                  currentUtil.toStringAsFixed(1)),
                               style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w900,
@@ -586,7 +597,10 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
-                              "AVAILABLE: ${CurrencyFormatter.format(limit - current, isPrivate: isPrivate, compact: true)}",
+                              l10n.availableAmount(CurrencyFormatter.format(
+                                  limit - current,
+                                  isPrivate: isPrivate,
+                                  compact: true)),
                               style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w900,
@@ -615,7 +629,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
                             size: 18, color: semantic.primary),
                         const SizedBox(width: 12),
                         Text(
-                          "RECORD PAYMENT",
+                          l10n.recordPayment.toUpperCase(),
                           style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
@@ -636,7 +650,8 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
         .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart);
   }
 
-  Widget _buildTotalSummaryCard(AppColors semantic, bool isPrivate) {
+  Widget _buildTotalSummaryCard(
+      AppColors semantic, bool isPrivate, AppLocalizations l10n) {
     double totalBalance = 0;
     for (var card in cards) {
       totalBalance += card.statementBalance;
@@ -653,7 +668,7 @@ class _CreditCardsScreenState extends ConsumerState<CreditCardsScreen> {
       child: Column(
         children: [
           Text(
-            "TOTAL CARDS DEBT",
+            l10n.totalCardsDebt.toUpperCase(),
             style: TextStyle(
               color: semantic.secondaryText,
               fontSize: 10,

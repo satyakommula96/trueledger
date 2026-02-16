@@ -45,7 +45,7 @@ void main() {
     });
 
     test('addEntry saves explicit tags correctly', () async {
-      await repo.addEntry('Fixed', 500.0, 'EMI', 'Note', '2024-02-01',
+      await repo.addEntry('Fixed', 500.0, 'EMI', 'Note', DateTime(2024, 2, 1),
           tags: {TransactionTag.loanEmi});
 
       final items = await repo.getTransactionsForRange(
@@ -55,9 +55,9 @@ void main() {
 
     test('addEntry applies default tags when none provided', () async {
       // Income should default to 'income'
-      await repo.addEntry('Income', 5000.0, 'Salary', '', '2024-02-01');
+      await repo.addEntry('Income', 5000.0, 'Salary', '', DateTime(2024, 2, 1));
       // Fixed should default to 'transfer'
-      await repo.addEntry('Fixed', 1000.0, 'Rent', '', '2024-02-01');
+      await repo.addEntry('Fixed', 1000.0, 'Rent', '', DateTime(2024, 2, 1));
 
       final items = await repo.getTransactionsForRange(
           DateTime(2024, 02, 01), DateTime(2024, 02, 01));
@@ -70,7 +70,8 @@ void main() {
     });
 
     test('updateEntryTags modifies tags of existing transaction', () async {
-      await repo.addEntry('Variable', 100.0, 'Food', 'Dinner', '2024-02-01');
+      await repo.addEntry(
+          'Variable', 100.0, 'Food', 'Dinner', DateTime(2024, 2, 1));
       var items = await repo.getTransactionsForRange(
           DateTime(2024, 02, 01), DateTime(2024, 02, 01));
       final originalId = items.first.id;
@@ -89,8 +90,8 @@ void main() {
 
     test('updateEntryTags handles different tables correctly', () async {
       // Test the switch logic in repo.updateEntryTags
-      await repo.addEntry('Fixed', 1000.0, 'Rent', '', '2024-02-01');
-      await repo.addEntry('Income', 5000.0, 'Salary', '', '2024-02-01');
+      await repo.addEntry('Fixed', 1000.0, 'Rent', '', DateTime(2024, 2, 1));
+      await repo.addEntry('Income', 5000.0, 'Salary', '', DateTime(2024, 2, 1));
 
       final items = await repo.getTransactionsForRange(
           DateTime(2024, 02, 01), DateTime(2024, 02, 01));

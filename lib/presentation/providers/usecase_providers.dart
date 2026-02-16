@@ -12,6 +12,9 @@ import 'package:trueledger/domain/usecases/get_local_backups_usecase.dart';
 import 'package:trueledger/domain/usecases/get_annual_reflection_usecase.dart';
 import 'package:trueledger/domain/usecases/restore_from_local_file_usecase.dart';
 import 'package:trueledger/domain/usecases/manage_daily_digest_usecase.dart';
+import 'package:trueledger/domain/usecases/get_cash_runway_usecase.dart';
+import 'forecasting_providers.dart';
+
 import 'notification_provider.dart';
 import 'repository_providers.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
@@ -97,4 +100,12 @@ final getAnnualReflectionUseCaseProvider =
 final manageDailyDigestUseCaseProvider =
     Provider<ManageDailyDigestUseCase>((ref) {
   return ManageDailyDigestUseCase(ref.watch(dailyDigestStoreProvider));
+});
+
+final getCashRunwayUseCaseProvider = Provider<GetCashRunwayUseCase>((ref) {
+  return GetCashRunwayUseCase(
+    ref.watch(financialRepositoryProvider),
+    ref.watch(forecastingEngineProvider),
+    ref.watch(cashRunwayEngineProvider),
+  );
 });

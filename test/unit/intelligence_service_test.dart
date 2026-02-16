@@ -42,8 +42,10 @@ void main() {
 
     test('should generate spending surge detected when forecast is high', () {
       final trendData = [
-        {'month': '2025-11', 'total': 100.0},
-        {'month': '2025-12', 'total': 200.0},
+        FinancialTrend(
+            month: '2025-11', spending: 100.0, income: 0, total: 100.0),
+        FinancialTrend(
+            month: '2025-12', spending: 200.0, income: 0, total: 200.0),
       ];
       final summary = MonthlySummary(
         totalIncome: 150, // Matches current expenses to avoid wealth projection

@@ -8,6 +8,7 @@ import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/domain/models/models.dart';
 
 class MonthlyHistoryScreen extends ConsumerStatefulWidget {
   const MonthlyHistoryScreen({super.key});
@@ -18,7 +19,7 @@ class MonthlyHistoryScreen extends ConsumerStatefulWidget {
 }
 
 class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
-  List<Map<String, dynamic>> monthSummaries = [];
+  List<FinancialTrend> monthSummaries = [];
   List<int> availableYears = [];
   int selectedYear = DateTime.now().year;
   bool _isLoading = true;
@@ -160,10 +161,10 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
       itemCount: monthSummaries.length,
       itemBuilder: (_, i) {
         final s = monthSummaries[i];
-        final netValue = (s['net'] as num? ?? 0).toInt();
-        final income = (s['income'] as num? ?? 0).toInt();
-        final expenses = (s['expenses'] as num? ?? 0).toInt();
-        final invested = (s['invested'] as num? ?? 0).toInt();
+        final netValue = s.net.toInt();
+        final income = s.income.toInt();
+        final expenses = s.spending.toInt();
+        final invested = s.invested.toInt();
         final positive = netValue >= 0;
 
         return Padding(
@@ -173,7 +174,7 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => MonthDetailScreen(month: s['month']),
+                  builder: (_) => MonthDetailScreen(month: s.month),
                 ),
               );
               load();
@@ -215,7 +216,7 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _formatMonth(s['month']),
+                              _formatMonth(s.month),
                               style: TextStyle(
                                 fontWeight: FontWeight.w900,
                                 fontSize: 18,

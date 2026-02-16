@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/screens/dashboard/scenario_mode.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/domain/models/models.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -30,7 +29,7 @@ void main() {
         netWorth: 0,
       ),
       categorySpending: [
-        {'category': 'Eating Out', 'total': 1000},
+        CategorySpending(category: 'Eating Out', total: 1000),
       ],
       budgets: [],
       savingGoals: [],
@@ -45,15 +44,12 @@ void main() {
     );
 
     await tester.pumpWidget(
-      ProviderScope(
+      wrapWidget(
+        const ScenarioScreen(),
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepo),
           dashboardProvider.overrideWith((ref) async => dashboardData),
         ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const ScenarioScreen(),
-        ),
       ),
     );
 

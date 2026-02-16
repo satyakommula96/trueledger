@@ -6,8 +6,8 @@ import 'usecase_base.dart';
 
 class AnalysisData {
   final List<Budget> budgets;
-  final List<Map<String, dynamic>> trendData;
-  final List<Map<String, dynamic>> categoryData;
+  final List<FinancialTrend> trendData;
+  final List<CategorySpending> categoryData;
 
   AnalysisData({
     required this.budgets,
@@ -32,8 +32,8 @@ class GetAnalysisDataUseCase extends UseCase<AnalysisData, NoParams> {
 
       return Success(AnalysisData(
         budgets: (results[0] as List).cast<Budget>(),
-        trendData: (results[1] as List).cast<Map<String, dynamic>>(),
-        categoryData: (results[2] as List).cast<Map<String, dynamic>>(),
+        trendData: (results[1] as List).cast<FinancialTrend>(),
+        categoryData: (results[2] as List).cast<CategorySpending>(),
       ));
     } catch (e) {
       return Failure(

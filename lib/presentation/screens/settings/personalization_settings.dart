@@ -2,12 +2,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:trueledger/domain/models/models.dart';
-import 'package:trueledger/domain/services/personalization_service.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 import 'package:trueledger/core/theme/theme.dart';
-import 'package:trueledger/presentation/providers/category_provider.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/domain/services/personalization_service.dart';
+import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/presentation/providers/category_provider.dart';
 
 class PersonalizationSettingsScreen extends ConsumerStatefulWidget {
   const PersonalizationSettingsScreen({super.key});
@@ -35,26 +36,26 @@ class _PersonalizationSettingsScreenState
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("PERSONALIZATION"),
+        title: Text(l10n.personalization.toUpperCase()),
         centerTitle: true,
       ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(
             20, 16, 20, 48 + MediaQuery.of(context).padding.bottom),
         children: [
-          _buildInfoCard(semantic),
+          _buildInfoCard(semantic, l10n),
           const SizedBox(height: 32),
-          _buildMainToggle(semantic),
+          _buildMainToggle(semantic, l10n),
           const SizedBox(height: 32),
-          _buildSectionHeader("ADAPTIVE BEHAVIOR", semantic),
+          _buildSectionHeader(l10n.adaptiveBehavior, semantic),
           const SizedBox(height: 12),
           _buildGlassToggle(
-            title: "REMEMBER LAST-USED",
-            subtitle:
-                "Pre-fill category and payment method based on your last entry.",
+            title: l10n.rememberLastUsed,
+            subtitle: l10n.rememberLastUsedDesc,
             value: _settings.rememberLastUsed,
             onChanged: (v) =>
                 _updateSettings(_settings.copyWith(rememberLastUsed: v)),
@@ -62,9 +63,8 @@ class _PersonalizationSettingsScreenState
           ),
           const SizedBox(height: 16),
           _buildGlassToggle(
-            title: "TIME-OF-DAY SUGGESTIONS",
-            subtitle:
-                "Suggest categories based on the time and your repetitions.",
+            title: l10n.timeOfDaySuggestions,
+            subtitle: l10n.timeOfDaySuggestionsDesc,
             value: _settings.timeOfDaySuggestions,
             onChanged: (v) =>
                 _updateSettings(_settings.copyWith(timeOfDaySuggestions: v)),
@@ -72,9 +72,8 @@ class _PersonalizationSettingsScreenState
           ),
           const SizedBox(height: 16),
           _buildGlassToggle(
-            title: "SHORTCUT SUGGESTIONS",
-            subtitle:
-                "Prompt to create quick-add shortcuts for frequent transactions.",
+            title: l10n.shortcutSuggestions,
+            subtitle: l10n.shortcutSuggestionsDesc,
             value: _settings.shortcutSuggestions,
             onChanged: (v) =>
                 _updateSettings(_settings.copyWith(shortcutSuggestions: v)),
@@ -82,56 +81,55 @@ class _PersonalizationSettingsScreenState
           ),
           const SizedBox(height: 16),
           _buildGlassToggle(
-            title: "BASELINE REFLECTIONS",
-            subtitle:
-                "Show comparisons locally (e.g. 'Higher than your usual Friday').",
+            title: l10n.baselineReflections,
+            subtitle: l10n.baselineReflectionsDesc,
             value: _settings.baselineReflections,
             onChanged: (v) =>
                 _updateSettings(_settings.copyWith(baselineReflections: v)),
             semantic: semantic,
           ),
           const SizedBox(height: 32),
-          _buildSectionHeader("SALARY CYCLE", semantic),
+          _buildSectionHeader(l10n.salaryCycle, semantic),
           const SizedBox(height: 12),
           _buildGlassAction(
-            title: "USUAL PAY DAY",
+            title: l10n.usualPayDay,
             subtitle: _settings.payDay != null
-                ? "Day ${_settings.payDay}"
-                : "NOT SET",
+                ? l10n.dayNum(_settings.payDay!)
+                : l10n.notSet,
             icon: Icons.calendar_today_rounded,
-            onTap: () => _showPayDayDialog(context, semantic),
+            onTap: () => _showPayDayDialog(context, semantic, l10n),
             semantic: semantic,
           ),
           const SizedBox(height: 32),
-          _buildSectionHeader("QUICK PRESETS", semantic),
+          _buildSectionHeader(l10n.quickPresets, semantic),
           const SizedBox(height: 12),
-          _buildPresetsList(context, semantic),
+          _buildPresetsList(context, semantic, l10n),
           const SizedBox(height: 32),
-          _buildSectionHeader("REMINDERS", semantic),
+          _buildSectionHeader(l10n.reminders, semantic),
           const SizedBox(height: 12),
           _buildGlassAction(
-            title: "REMINDER TIME",
-            subtitle: _settings.preferredReminderTime ?? "OFF",
+            title: l10n.reminderTime,
+            subtitle: _settings.preferredReminderTime ?? l10n.off,
             icon: Icons.access_time_rounded,
             onTap: () => _showReminderTimePicker(context, semantic),
             onLongPress: () {
               _updateSettings(_settings.copyWith(preferredReminderTime: null));
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                    content: const Text("REMINDER TIME CLEARED"),
+                    content: Text(l10n.reminderTimeCleared),
                     backgroundColor: semantic.primary),
               );
             },
             semantic: semantic,
           ),
           const SizedBox(height: 48),
-          _buildDangerZone(context, semantic),
+          _buildDangerZone(context, semantic, l10n),
         ],
       ),
     );
   }
 
-  Widget _buildInfoCard(AppColors semantic) {
+  Widget _buildInfoCard(AppColors semantic, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
@@ -157,7 +155,7 @@ class _PersonalizationSettingsScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("PRIVATE & LOCAL",
+                Text(l10n.privateAndLocal,
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 14,
@@ -165,7 +163,7 @@ class _PersonalizationSettingsScreenState
                         letterSpacing: 1)),
                 const SizedBox(height: 8),
                 Text(
-                  "All personalization data is stored only on your device. We never sync or upload your behavior patterns or sensitive financial identifiers.",
+                  l10n.privateAndLocalDesc,
                   style: TextStyle(
                       fontSize: 13,
                       color: semantic.secondaryText,
@@ -184,7 +182,7 @@ class _PersonalizationSettingsScreenState
         );
   }
 
-  Widget _buildMainToggle(AppColors semantic) {
+  Widget _buildMainToggle(AppColors semantic, AppLocalizations l10n) {
     final enabled = _settings.personalizationEnabled;
     return Container(
       padding: const EdgeInsets.all(24),
@@ -211,7 +209,7 @@ class _PersonalizationSettingsScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("DYNAMIC ADAPTATION",
+                    Text(l10n.dynamicAdaptation,
                         style: TextStyle(
                             color: enabled ? semantic.primary : semantic.text,
                             fontWeight: FontWeight.w900,
@@ -219,7 +217,7 @@ class _PersonalizationSettingsScreenState
                             letterSpacing: 1.5)),
                     const SizedBox(height: 6),
                     Text(
-                      "Allow experience to adapt to your patterns.",
+                      l10n.dynamicAdaptationDesc,
                       style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
@@ -368,7 +366,8 @@ class _PersonalizationSettingsScreenState
     );
   }
 
-  Widget _buildPresetsList(BuildContext context, AppColors semantic) {
+  Widget _buildPresetsList(
+      BuildContext context, AppColors semantic, AppLocalizations l10n) {
     final presets = ref.watch(personalizationServiceProvider).getPresets();
 
     return Column(
@@ -376,7 +375,7 @@ class _PersonalizationSettingsScreenState
         if (presets.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Text("NO PRESETS CREATED YET.",
+            child: Text(l10n.noPresetsYet,
                 style: TextStyle(
                     color: semantic.secondaryText.withValues(alpha: 0.5),
                     fontSize: 10,
@@ -440,7 +439,7 @@ class _PersonalizationSettingsScreenState
             )),
         const SizedBox(height: 8),
         InkWell(
-          onTap: () => _showAddPresetDialog(context, semantic),
+          onTap: () => _showAddPresetDialog(context, semantic, l10n),
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -455,7 +454,7 @@ class _PersonalizationSettingsScreenState
               children: [
                 Icon(Icons.add_rounded, color: semantic.primary, size: 20),
                 const SizedBox(width: 8),
-                Text("CREATE NEW PRESET",
+                Text(l10n.createNewPreset,
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 12,
@@ -486,7 +485,7 @@ class _PersonalizationSettingsScreenState
   }
 
   Future<void> _showPayDayDialog(
-      BuildContext context, AppColors semantic) async {
+      BuildContext context, AppColors semantic, AppLocalizations l10n) async {
     final val = await showDialog<int>(
       context: context,
       builder: (context) => BackdropFilter(
@@ -496,7 +495,7 @@ class _PersonalizationSettingsScreenState
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(32),
               side: BorderSide(color: semantic.divider, width: 1.5)),
-          title: Text("SELECT PAY DAY",
+          title: Text(l10n.selectPayDay,
               style: TextStyle(
                   fontWeight: FontWeight.w900,
                   fontSize: 14,
@@ -566,7 +565,7 @@ class _PersonalizationSettingsScreenState
   }
 
   Future<void> _showAddPresetDialog(
-      BuildContext context, AppColors semantic) async {
+      BuildContext context, AppColors semantic, AppLocalizations l10n) async {
     final titleController = TextEditingController();
     final amountController = TextEditingController();
     String? category;
@@ -580,7 +579,7 @@ class _PersonalizationSettingsScreenState
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(32),
               side: BorderSide(color: semantic.divider, width: 1.5)),
-          title: Text("CREATE PRESET",
+          title: Text(l10n.createPreset,
               style: TextStyle(
                   fontWeight: FontWeight.w900,
                   fontSize: 14,
@@ -594,7 +593,7 @@ class _PersonalizationSettingsScreenState
                 style: TextStyle(
                     color: semantic.text, fontWeight: FontWeight.w900),
                 decoration: InputDecoration(
-                  labelText: "LABEL (e.g. Coffee)",
+                  labelText: l10n.presetLabel,
                   labelStyle: TextStyle(
                       color: semantic.secondaryText,
                       fontSize: 10,
@@ -620,7 +619,7 @@ class _PersonalizationSettingsScreenState
                 style: TextStyle(
                     color: semantic.text, fontWeight: FontWeight.w900),
                 decoration: InputDecoration(
-                  labelText: "AMOUNT",
+                  labelText: l10n.amount,
                   labelStyle: TextStyle(
                       color: semantic.secondaryText,
                       fontSize: 10,
@@ -651,7 +650,7 @@ class _PersonalizationSettingsScreenState
                     style: TextStyle(
                         color: semantic.text, fontWeight: FontWeight.w900),
                     decoration: InputDecoration(
-                      labelText: "CATEGORY",
+                      labelText: l10n.category,
                       labelStyle: TextStyle(
                           color: semantic.secondaryText,
                           fontSize: 10,
@@ -721,11 +720,12 @@ class _PersonalizationSettingsScreenState
     );
   }
 
-  Widget _buildDangerZone(BuildContext context, AppColors semantic) {
+  Widget _buildDangerZone(
+      BuildContext context, AppColors semantic, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader("TRUST & CONTROL", semantic),
+        _buildSectionHeader(l10n.trustAndControl, semantic),
         const SizedBox(height: 12),
         HoverWrapper(
           onTap: () async {
@@ -739,19 +739,20 @@ class _PersonalizationSettingsScreenState
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(32),
                       side: BorderSide(color: semantic.divider, width: 1.5)),
-                  title: Text("RESET PERSONALIZATION?",
+                  title: Text(l10n.resetPersonalization,
                       style: TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: 14,
                           color: semantic.overspent)),
-                  content: const Text(
-                    "This will wipe all local learned behaviors. Your expense history will remain safe.",
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  content: Text(
+                    l10n.resetPersonalizationDesc,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 13),
                   ),
                   actions: [
                     TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: Text("CANCEL",
+                        child: Text(l10n.cancel.toUpperCase(),
                             style: TextStyle(
                                 color: semantic.secondaryText,
                                 fontWeight: FontWeight.w900))),
@@ -759,8 +760,8 @@ class _PersonalizationSettingsScreenState
                       onPressed: () => Navigator.pop(context, true),
                       style: ElevatedButton.styleFrom(
                           backgroundColor: semantic.overspent),
-                      child: const Text("RESET",
-                          style: TextStyle(fontWeight: FontWeight.w900)),
+                      child: Text(l10n.reset,
+                          style: const TextStyle(fontWeight: FontWeight.w900)),
                     ),
                   ],
                 ),
@@ -774,7 +775,7 @@ class _PersonalizationSettingsScreenState
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text("PERSONALIZATION RESET COMPLETED"),
+                  content: Text(l10n.personalizationResetCompleted),
                   backgroundColor: semantic.overspent,
                 ),
               );

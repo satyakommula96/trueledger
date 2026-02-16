@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/dashboard_bottom_bar.dart';
-import 'package:trueledger/core/theme/theme.dart';
+import '../helpers/test_wrapper.dart';
 
 void main() {
   Widget createTestWidget(Widget child) {
-    return ProviderScope(
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: child,
-      ),
-    );
+    return wrapWidget(child);
   }
 
   group('DashboardBottomBar', () {

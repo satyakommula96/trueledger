@@ -11,21 +11,17 @@ class SavingGoal {
     required this.currentAmount,
   });
 
-  factory SavingGoal.fromMap(Map<String, dynamic> map) {
+  SavingGoal copyWith({
+    int? id,
+    String? name,
+    double? targetAmount,
+    double? currentAmount,
+  }) {
     return SavingGoal(
-      id: map['id'] as int,
-      name: map['name'] as String,
-      targetAmount: (map['target_amount'] as num).toDouble(),
-      currentAmount: (map['current_amount'] as num).toDouble(),
+      id: id ?? this.id,
+      name: name ?? this.name,
+      targetAmount: targetAmount ?? this.targetAmount,
+      currentAmount: currentAmount ?? this.currentAmount,
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'target_amount': targetAmount,
-      'current_amount': currentAmount,
-    };
   }
 }

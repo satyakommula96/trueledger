@@ -20,11 +20,9 @@ void main() {
     Budget(id: 1, category: 'Food', monthlyLimit: 1000, isStable: true),
   ];
   final tTrendData = [
-    {'month': '2024-01', 'total': 500}
+    FinancialTrend(month: '2024-01', spending: 500, income: 0, total: 500)
   ];
-  final tCategoryData = [
-    {'category': 'Food', 'total': 300}
-  ];
+  final tCategoryData = [CategorySpending(category: 'Food', total: 300)];
 
   test('should get analysis data from repository', () async {
     // arrange

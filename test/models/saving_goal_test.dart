@@ -1,17 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trueledger/domain/models/saving_goal_model.dart';
+import 'package:trueledger/data/dtos/saving_goal_dto.dart';
 
 void main() {
   group('SavingGoal', () {
-    test('fromMap should parse correctly', () {
+    test('SavingGoalDto should parse correctly', () {
       final map = {
         'id': 1,
         'name': 'Vacation',
-        'target_amount': 10000,
-        'current_amount': 5000,
+        'target_amount': 10000.0,
+        'current_amount': 5000.0,
       };
 
-      final goal = SavingGoal.fromMap(map);
+      final goal = SavingGoalDto.fromJson(map).toDomain();
 
       expect(goal.id, 1);
       expect(goal.name, 'Vacation');
@@ -19,7 +20,7 @@ void main() {
       expect(goal.currentAmount, 5000);
     });
 
-    test('toMap should work correctly', () {
+    test('SavingGoalDto should work correctly to json', () {
       final goal = SavingGoal(
         id: 1,
         name: 'Vacation',
@@ -27,7 +28,7 @@ void main() {
         currentAmount: 5000,
       );
 
-      final map = goal.toMap();
+      final map = SavingGoalDto.fromDomain(goal).toJson();
 
       expect(map['id'], 1);
       expect(map['name'], 'Vacation');

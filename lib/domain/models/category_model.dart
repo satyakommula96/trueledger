@@ -4,24 +4,24 @@ class TransactionCategory {
   final String type; // Variable, Fixed, Income, Investment, Subscription
   final int orderIndex;
 
-  TransactionCategory(
-      {this.id, required this.name, required this.type, this.orderIndex = 0});
+  TransactionCategory({
+    this.id,
+    required this.name,
+    required this.type,
+    this.orderIndex = 0,
+  });
 
-  Map<String, dynamic> toMap() {
-    return {
-      if (id != null) 'id': id,
-      'name': name,
-      'type': type,
-      'order_index': orderIndex,
-    };
-  }
-
-  factory TransactionCategory.fromMap(Map<String, dynamic> map) {
+  TransactionCategory copyWith({
+    int? id,
+    String? name,
+    String? type,
+    int? orderIndex,
+  }) {
     return TransactionCategory(
-      id: map['id'] as int?,
-      name: map['name'] as String,
-      type: map['type'] as String,
-      orderIndex: map['order_index'] as int? ?? 0,
+      id: id ?? this.id,
+      name: name ?? this.name,
+      type: type ?? this.type,
+      orderIndex: orderIndex ?? this.orderIndex,
     );
   }
 

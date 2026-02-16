@@ -11,6 +11,7 @@ import 'package:trueledger/presentation/screens/goals/add_goal.dart';
 import 'package:trueledger/presentation/screens/goals/edit_goal.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:confetti/confetti.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class GoalsScreen extends ConsumerStatefulWidget {
   const GoalsScreen({super.key});
@@ -63,11 +64,12 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     final isPrivate = ref.watch(privacyProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("SAVING GOALS"),
+        title: Text(l10n.savingGoals.toUpperCase()),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -89,7 +91,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
           _isLoading
               ? Center(
                   child: CircularProgressIndicator(color: semantic.primary))
-              : _buildBody(semantic, isPrivate),
+              : _buildBody(semantic, isPrivate, l10n),
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
@@ -135,9 +137,9 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     return path;
   }
 
-  Widget _buildBody(AppColors semantic, bool isPrivate) {
+  Widget _buildBody(AppColors semantic, bool isPrivate, AppLocalizations l10n) {
     if (goals.isEmpty) {
-      return _buildEmptyState(semantic);
+      return _buildEmptyState(semantic, l10n);
     }
 
     final totalTarget = goals.fold(0.0, (sum, g) => sum + g.targetAmount);
@@ -148,11 +150,11 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
       padding: EdgeInsets.fromLTRB(
           20, 16, 20, 100 + MediaQuery.of(context).padding.bottom),
       children: [
-        _buildOverallSummaryCard(
-            semantic, isPrivate, totalTarget, totalSaved, overallProgress),
+        _buildOverallSummaryCard(semantic, isPrivate, totalTarget, totalSaved,
+            overallProgress, l10n),
         const SizedBox(height: 32),
         Text(
-          "YOUR GOALS",
+          l10n.yourGoals.toUpperCase(),
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w900,
@@ -164,13 +166,13 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
         ...goals.asMap().entries.map((entry) {
           final i = entry.key;
           final goal = entry.value;
-          return _buildGoalCard(goal, i, semantic, isPrivate);
+          return _buildGoalCard(goal, i, semantic, isPrivate, l10n);
         }),
       ],
     );
   }
 
-  Widget _buildEmptyState(AppColors semantic) {
+  Widget _buildEmptyState(AppColors semantic, AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -189,7 +191,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            "NO GOALS YET",
+            l10n.noGoalsYet.toUpperCase(),
             style: TextStyle(
               color: semantic.text,
               fontSize: 18,
@@ -201,7 +203,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
             child: Text(
-              "Set your first saving goal and start building your future!",
+              l10n.setFirstGoal,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: semantic.secondaryText,
@@ -218,8 +220,13 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     );
   }
 
-  Widget _buildOverallSummaryCard(AppColors semantic, bool isPrivate,
-      double totalTarget, double totalSaved, double overallProgress) {
+  Widget _buildOverallSummaryCard(
+      AppColors semantic,
+      bool isPrivate,
+      double totalTarget,
+      double totalSaved,
+      double overallProgress,
+      AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -257,7 +264,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "TOTAL PROGRESS",
+                      l10n.totalProgress.toUpperCase(),
                       style: TextStyle(
                         color: semantic.secondaryText,
                         fontSize: 10,
@@ -285,7 +292,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
             children: [
               Expanded(
                 child: _buildSummaryMetric(
-                  "SAVED",
+                  l10n.savedLabel.toUpperCase(),
                   CurrencyFormatter.format(totalSaved, isPrivate: isPrivate),
                   semantic.income,
                   semantic,
@@ -294,7 +301,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
               const SizedBox(width: 16),
               Expanded(
                 child: _buildSummaryMetric(
-                  "TARGET",
+                  l10n.targetLabel.toUpperCase(),
                   CurrencyFormatter.format(totalTarget, isPrivate: isPrivate),
                   semantic.text,
                   semantic,
@@ -386,8 +393,8 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     );
   }
 
-  Widget _buildGoalCard(
-      SavingGoal goal, int index, AppColors semantic, bool isPrivate) {
+  Widget _buildGoalCard(SavingGoal goal, int index, AppColors semantic,
+      bool isPrivate, AppLocalizations l10n) {
     final progress = goal.targetAmount > 0
         ? (goal.currentAmount / goal.targetAmount).clamp(0.0, 1.0)
         : 0.0;
@@ -409,7 +416,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => EditGoalScreen(goal: goal.toMap()),
+              builder: (_) => EditGoalScreen(goal: goal),
             ),
           );
           final oldProgress = progress;
@@ -479,8 +486,11 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                         const SizedBox(height: 2),
                         Text(
                           isCompleted
-                              ? "GOAL ACHIEVED! 🎉"
-                              : "${CurrencyFormatter.format(remaining, isPrivate: isPrivate, compact: true)} TO GO",
+                              ? l10n.goalAchieved.toUpperCase()
+                              : l10n.toGoLabel(CurrencyFormatter.format(
+                                  remaining,
+                                  isPrivate: isPrivate,
+                                  compact: true)),
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
@@ -557,7 +567,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "SAVED",
+                          l10n.savedLabel.toUpperCase(),
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w900,
@@ -588,7 +598,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          "TARGET",
+                          l10n.targetLabel.toUpperCase(),
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w900,

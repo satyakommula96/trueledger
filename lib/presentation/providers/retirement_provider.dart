@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/domain/models/models.dart';
+import 'package:trueledger/data/dtos/retirement_dto.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
@@ -17,7 +18,8 @@ class RetirementSettingsNotifier extends Notifier<RetirementSettings> {
     final jsonString = prefs.getString(_key);
     if (jsonString != null) {
       try {
-        return RetirementSettings.fromMap(jsonDecode(jsonString));
+        return RetirementSettingsDto.fromJson(jsonDecode(jsonString))
+            .toDomain();
       } catch (_) {}
     }
     return RetirementSettings();
@@ -26,7 +28,8 @@ class RetirementSettingsNotifier extends Notifier<RetirementSettings> {
   Future<void> updateSettings(RetirementSettings settings) async {
     state = settings;
     final prefs = ref.read(sharedPreferencesProvider);
-    await prefs.setString(_key, jsonEncode(settings.toMap()));
+    await prefs.setString(
+        _key, jsonEncode(RetirementSettingsDto.fromDomain(settings).toJson()));
   }
 }
 

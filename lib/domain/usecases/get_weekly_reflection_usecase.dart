@@ -1,6 +1,7 @@
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
+import 'package:trueledger/domain/models/models.dart';
 import 'usecase_base.dart';
 
 class WeeklyReflectionData {
@@ -54,7 +55,7 @@ class GetWeeklyReflectionUseCase
         if (tx.type != 'Variable') {
           continue; // Only count variable spend against budget
         }
-        final day = tx.date.substring(0, 10);
+        final day = tx.date.toIso8601String().substring(0, 10);
         dailySpend[day] = (dailySpend[day] ?? 0.0) + tx.amount;
       }
 
@@ -101,14 +102,13 @@ class GetWeeklyReflectionUseCase
       Map<String, dynamic>? significantIncrease;
 
       for (var cat in thisWeekCats) {
-        final name = cat['category'];
-        final currentAmount = (cat['total'] as num).toDouble();
+        final name = cat.category;
+        final currentAmount = cat.total;
 
         // Find in last week
-        final lastWeekEntry = lastWeekCats.firstWhere(
-            (e) => e['category'] == name,
-            orElse: () => <String, Object>{'total': 0});
-        final lastAmount = (lastWeekEntry['total'] as num).toDouble();
+        final lastWeekEntry = lastWeekCats.firstWhere((e) => e.category == name,
+            orElse: () => CategorySpending(category: name, total: 0));
+        final lastAmount = lastWeekEntry.total;
 
         if (currentAmount > lastAmount) {
           final diff = currentAmount - lastAmount;
@@ -124,13 +124,10 @@ class GetWeeklyReflectionUseCase
       }
 
       // 3. Totals and Top Category
-      final totalThisWeek = thisWeekCats.fold(
-          0.0, (sum, c) => sum + (c['total'] as num).toDouble());
-      final totalLastWeek = lastWeekCats.fold(
-          0.0, (sum, c) => sum + (c['total'] as num).toDouble());
-      final topCategory = thisWeekCats.isNotEmpty
-          ? thisWeekCats.first['category'] as String
-          : null;
+      final totalThisWeek = thisWeekCats.fold(0.0, (sum, c) => sum + c.total);
+      final totalLastWeek = lastWeekCats.fold(0.0, (sum, c) => sum + c.total);
+      final topCategory =
+          thisWeekCats.isNotEmpty ? thisWeekCats.first.category : null;
 
       return Success(WeeklyReflectionData(
         daysUnderBudget: daysUnder,

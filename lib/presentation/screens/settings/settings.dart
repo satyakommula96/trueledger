@@ -27,6 +27,9 @@ import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/insights_provider.dart';
 import 'package:trueledger/presentation/providers/analysis_provider.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/domain/services/biometric_service.dart';
+import 'package:trueledger/core/providers/locale_provider.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -35,6 +38,7 @@ class SettingsScreen extends ConsumerWidget {
       BuildContext context, WidgetRef ref, AppColors semantic) async {
     final currentName = ref.read(userProvider);
     final controller = TextEditingController(text: currentName);
+    final l10n = AppLocalizations.of(context)!;
 
     await showDialog(
       context: context,
@@ -45,7 +49,7 @@ class SettingsScreen extends ConsumerWidget {
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(32),
               side: BorderSide(color: semantic.divider, width: 1.5)),
-          title: Text("SET USER NAME",
+          title: Text(l10n.setUserName,
               style: TextStyle(
                   fontWeight: FontWeight.w900,
                   fontSize: 14,
@@ -55,10 +59,10 @@ class SettingsScreen extends ConsumerWidget {
             controller: controller,
             style: TextStyle(color: semantic.text, fontWeight: FontWeight.w900),
             decoration: InputDecoration(
-              hintText: "Enter your name",
+              hintText: l10n.enterYourName,
               hintStyle: TextStyle(
                   color: semantic.secondaryText.withValues(alpha: 0.5)),
-              labelText: "NAME",
+              labelText: l10n.nameLabel,
               labelStyle: TextStyle(
                   color: semantic.secondaryText,
                   fontSize: 10,
@@ -83,7 +87,7 @@ class SettingsScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("CANCEL",
+              child: Text(l10n.cancel,
                   style: TextStyle(
                       color: semantic.secondaryText,
                       fontWeight: FontWeight.w900,
@@ -103,7 +107,7 @@ class SettingsScreen extends ConsumerWidget {
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12))),
-              child: const Text("SAVE",
+              child: Text(l10n.save,
                   style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
             ),
           ],
@@ -114,6 +118,7 @@ class SettingsScreen extends ConsumerWidget {
 
   Future<void> _showThemePicker(
       BuildContext context, WidgetRef ref, AppColors semantic) async {
+    final l10n = AppLocalizations.of(context)!;
     final prefs = ref.read(sharedPreferencesProvider);
     if (!context.mounted) return;
 
@@ -126,7 +131,7 @@ class SettingsScreen extends ConsumerWidget {
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(32),
               side: BorderSide(color: semantic.divider, width: 1.5)),
-          title: Text("SELECT THEME",
+          title: Text(l10n.selectTheme,
               style: TextStyle(
                   fontWeight: FontWeight.w900,
                   fontSize: 14,
@@ -135,13 +140,19 @@ class SettingsScreen extends ConsumerWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildThemeTile("System Default", Icons.settings_suggest_rounded,
-                  ThemeMode.system, ref, prefs, semantic, context),
+              _buildThemeTile(
+                  l10n.systemDefault,
+                  Icons.settings_suggest_rounded,
+                  ThemeMode.system,
+                  ref,
+                  prefs,
+                  semantic,
+                  context),
               const SizedBox(height: 8),
-              _buildThemeTile("Light Mode", Icons.light_mode_rounded,
+              _buildThemeTile(l10n.lightMode, Icons.light_mode_rounded,
                   ThemeMode.light, ref, prefs, semantic, context),
               const SizedBox(height: 8),
-              _buildThemeTile("Dark Mode", Icons.dark_mode_rounded,
+              _buildThemeTile(l10n.darkMode, Icons.dark_mode_rounded,
                   ThemeMode.dark, ref, prefs, semantic, context),
             ],
           ),
@@ -197,6 +208,7 @@ class SettingsScreen extends ConsumerWidget {
   Future<void> _showCurrencyPicker(
       BuildContext context, AppColors semantic) async {
     String searchQuery = "";
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -227,7 +239,7 @@ class SettingsScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     Text(
-                      "SELECT CURRENCY",
+                      l10n.selectCurrency,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
@@ -255,7 +267,7 @@ class SettingsScreen extends ConsumerWidget {
                                 color: semantic.text,
                                 fontWeight: FontWeight.w900),
                             decoration: InputDecoration(
-                              hintText: "Search currency...",
+                              hintText: l10n.searchCurrency,
                               hintStyle: TextStyle(
                                   color: semantic.secondaryText
                                       .withValues(alpha: 0.5)),
@@ -446,6 +458,7 @@ class SettingsScreen extends ConsumerWidget {
 
   Future<void> _seedData(
       BuildContext context, WidgetRef ref, AppColors semantic) async {
+    final l10n = AppLocalizations.of(context)!;
     final option = await showDialog<String>(
         context: context,
         builder: (context) => BackdropFilter(
@@ -459,7 +472,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("SELECT DATA SCENARIO",
+                    Text(l10n.selectDataScenario,
                         style: TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 14,
@@ -467,7 +480,7 @@ class SettingsScreen extends ConsumerWidget {
                             color: semantic.text)),
                     const SizedBox(height: 8),
                     Text(
-                      "Fictional data for demonstration only.",
+                      l10n.fictionalDataDemoOnly,
                       style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
@@ -504,12 +517,12 @@ class SettingsScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("COMPLETE DEMO",
+                                  Text(l10n.completeDemo,
                                       style: TextStyle(
                                           fontWeight: FontWeight.w900,
                                           fontSize: 13,
                                           color: semantic.text)),
-                                  Text("All features, including Streaks",
+                                  Text(l10n.allFeaturesStreaks,
                                       style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w700,
@@ -536,10 +549,10 @@ class SettingsScreen extends ConsumerWidget {
 
         if (context.mounted) {
           final scenarioName =
-              option == 'roadmap' ? "COMPLETE DEMO" : option.toUpperCase();
+              option == 'roadmap' ? l10n.completeDemo : option.toUpperCase();
 
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("GENERATED $scenarioName DATA SCENARIO"),
+            content: Text(l10n.generatedScenarioData(scenarioName)),
             backgroundColor: semantic.primary,
           ));
           Navigator.pop(context, true);
@@ -552,6 +565,7 @@ class SettingsScreen extends ConsumerWidget {
 
   Future<void> _resetData(
       BuildContext context, WidgetRef ref, AppColors semantic) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => BackdropFilter(
@@ -562,14 +576,14 @@ class SettingsScreen extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(32),
                     side: BorderSide(color: semantic.divider, width: 1.5)),
-                title: Text("DELETE ALL DATA?",
+                title: Text(l10n.deleteAllData,
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 14,
                         letterSpacing: 1.2,
                         color: semantic.overspent)),
                 content: Text(
-                  "This action cannot be undone. All entries, budgets, and cards will be wiped.",
+                  l10n.wipeAllDataWarning,
                   style: TextStyle(
                       color: semantic.text,
                       fontWeight: FontWeight.w700,
@@ -578,7 +592,7 @@ class SettingsScreen extends ConsumerWidget {
                 actions: [
                   TextButton(
                       onPressed: () => Navigator.pop(context, false),
-                      child: Text("CANCEL",
+                      child: Text(l10n.cancel,
                           style: TextStyle(
                               color: semantic.secondaryText,
                               fontWeight: FontWeight.w900,
@@ -590,8 +604,8 @@ class SettingsScreen extends ConsumerWidget {
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12))),
-                      child: const Text("DELETE ALL",
-                          style: TextStyle(
+                      child: Text(l10n.deleteAll,
+                          style: const TextStyle(
                               fontWeight: FontWeight.w900, fontSize: 12))),
                 ],
               ),
@@ -1138,14 +1152,91 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  Future<void> _showLanguagePicker(
+      BuildContext context, WidgetRef ref, AppColors semantic) async {
+    final l10n = AppLocalizations.of(context)!;
+    final currentLocale = ref.read(localeProvider);
+
+    await showDialog(
+      context: context,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: AlertDialog(
+          backgroundColor: semantic.surfaceCombined.withValues(alpha: 0.9),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(32),
+              side: BorderSide(color: semantic.divider, width: 1.5)),
+          title: Text(l10n.language.toUpperCase(),
+              style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                  letterSpacing: 1.5,
+                  color: semantic.text)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildLanguageTile(
+                  "English", "en", currentLocale, ref, semantic, context),
+              const SizedBox(height: 8),
+              _buildLanguageTile("Telugu (తెలుగు)", "te", currentLocale, ref,
+                  semantic, context),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageTile(String label, String code, Locale current,
+      WidgetRef ref, AppColors semantic, BuildContext context) {
+    final isSelected = current.languageCode == code;
+    return InkWell(
+      onTap: () {
+        ref.read(localeProvider.notifier).setLocale(Locale(code, ''));
+        Navigator.pop(context);
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? semantic.primary.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+              color: isSelected
+                  ? semantic.primary.withValues(alpha: 0.3)
+                  : Colors.transparent),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(label.toUpperCase(),
+                  style: TextStyle(
+                      color: isSelected ? semantic.primary : semantic.text,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                      letterSpacing: 0.5)),
+            ),
+            if (isSelected)
+              Icon(Icons.check_circle_rounded,
+                  color: semantic.primary, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<AppColors>()!;
     final userName = ref.watch(userProvider);
+    final l10n = AppLocalizations.of(context)!;
+    final biometricService = ref.watch(biometricServiceProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("SETTINGS"),
+        title: Text(l10n.settings.toUpperCase()),
         centerTitle: true,
       ),
       body: ListView(
@@ -1184,6 +1275,36 @@ class SettingsScreen extends ConsumerWidget {
             () => _setupPin(context, semantic),
             semantic,
           ),
+          const SizedBox(height: 16),
+          FutureBuilder<bool>(
+            future: biometricService.canCheckBiometrics(),
+            builder: (context, snapshot) {
+              if (snapshot.data == true) {
+                return _buildOption(
+                  context,
+                  l10n.biometrics,
+                  l10n.enableBiometrics,
+                  Icons.fingerprint_rounded,
+                  Colors.blueGrey,
+                  () async {
+                    final enabled = biometricService.isBiometricEnabled;
+                    await biometricService.setBiometricEnabled(!enabled);
+                    ref.invalidate(biometricServiceProvider);
+                  },
+                  semantic,
+                  trailing: Switch(
+                    value: biometricService.isBiometricEnabled,
+                    onChanged: (val) async {
+                      await biometricService.setBiometricEnabled(val);
+                      ref.invalidate(biometricServiceProvider);
+                    },
+                    activeThumbColor: semantic.primary,
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
           const SizedBox(height: 20),
           _buildSectionHeader("CUSTOMIZATION", semantic),
           const SizedBox(height: 12),
@@ -1194,6 +1315,16 @@ class SettingsScreen extends ConsumerWidget {
             Icons.dark_mode_outlined,
             semantic.primary,
             () => _showThemePicker(context, ref, semantic),
+            semantic,
+          ),
+          const SizedBox(height: 16),
+          _buildOption(
+            context,
+            l10n.language,
+            l10n.chooseLanguage,
+            Icons.translate_rounded,
+            Colors.deepPurple,
+            () => _showLanguagePicker(context, ref, semantic),
             semantic,
           ),
           const SizedBox(height: 16),
@@ -1377,7 +1508,8 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildOption(BuildContext context, String title, String sub,
-      IconData icon, Color color, VoidCallback onTap, AppColors semantic) {
+      IconData icon, Color color, VoidCallback onTap, AppColors semantic,
+      {Widget? trailing}) {
     return HoverWrapper(
       onTap: onTap,
       borderRadius: 28,
@@ -1423,8 +1555,9 @@ class SettingsScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded,
-                color: semantic.divider, size: 24),
+            trailing ??
+                Icon(Icons.chevron_right_rounded,
+                    color: semantic.divider, size: 24),
           ],
         ),
       ),

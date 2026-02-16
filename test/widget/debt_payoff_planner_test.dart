@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/loans/debt_payoff_planner.dart';
-import 'package:trueledger/core/theme/theme.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -18,14 +17,11 @@ void main() {
   });
 
   Widget createTestWidget() {
-    return ProviderScope(
+    return wrapWidget(
+      const DebtPayoffPlannerScreen(),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
       ],
-      child: MaterialApp(
-        theme: AppTheme.lightTheme,
-        home: const DebtPayoffPlannerScreen(),
-      ),
     );
   }
 

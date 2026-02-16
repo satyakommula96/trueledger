@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:trueledger/core/theme/theme.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:file_picker/file_picker.dart';
@@ -21,6 +19,7 @@ import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -105,7 +104,8 @@ void main() {
   );
 
   Widget createExportScreen() {
-    return ProviderScope(
+    return wrapWidget(
+      const DataExportScreen(),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
         fileServiceProvider.overrideWithValue(mockFileService),
@@ -115,10 +115,6 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
         notificationServiceProvider.overrideWithValue(mockNotificationService),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const DataExportScreen(),
-      ),
     );
   }
 

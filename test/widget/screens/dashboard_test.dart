@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
+import '../../helpers/test_wrapper.dart';
 
 // Mocks
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
@@ -47,32 +46,29 @@ void main() {
     // 2. Stub the repository
     when(() => mockRepo.getMonthlySummary()).thenAnswer((_) async => summary);
     when(() => mockRepo.getCategorySpending())
-        .thenAnswer((_) => Future.value(<Map<String, dynamic>>[]));
+        .thenAnswer((_) => Future.value(<CategorySpending>[]));
     when(() => mockRepo.getBudgets())
         .thenAnswer((_) => Future.value(<Budget>[]));
     when(() => mockRepo.getSavingGoals())
         .thenAnswer((_) => Future.value(<SavingGoal>[]));
     when(() => mockRepo.getSpendingTrend())
-        .thenAnswer((_) => Future.value(<Map<String, dynamic>>[]));
+        .thenAnswer((_) => Future.value(<FinancialTrend>[]));
     when(() => mockRepo.getUpcomingBills())
-        .thenAnswer((_) => Future.value(<Map<String, dynamic>>[]));
+        .thenAnswer((_) => Future.value(<BillSummary>[]));
     when(() => mockRepo.getTodaySpend()).thenAnswer((_) async => 0);
-    when(() => mockRepo.getWeeklySummary())
-        .thenAnswer((_) async => {'thisWeek': 0, 'lastWeek': 0});
+    when(() => mockRepo.getWeeklySummary()).thenAnswer(
+        (_) async => <String, double>{'thisWeek': 0, 'lastWeek': 0});
     when(() => mockRepo.getActiveStreak()).thenAnswer((_) async => 0);
     when(() => mockRepo.getTodayTransactionCount()).thenAnswer((_) async => 0);
 
     // 3. Build Widget with Override
     await tester.pumpWidget(
-      ProviderScope(
+      wrapWidget(
+        const Dashboard(),
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepo),
           sharedPreferencesProvider.overrideWithValue(prefs),
         ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const Dashboard(),
-        ),
       ),
     );
 

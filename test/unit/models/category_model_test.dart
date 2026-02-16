@@ -1,9 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trueledger/domain/models/category_model.dart';
+import 'package:trueledger/data/dtos/category_dto.dart';
 
 void main() {
   group('TransactionCategory Model', () {
-    test('toMap and fromMap should be consistent', () {
+    test('TransactionCategoryDto should be consistent with domain model', () {
       final category = TransactionCategory(
         id: 1,
         name: 'Test',
@@ -11,15 +12,17 @@ void main() {
         orderIndex: 5,
       );
 
-      final map = category.toMap();
-      expect(map['id'], 1);
-      expect(map['name'], 'Test');
-      expect(map['type'], 'Variable');
-      expect(map['order_index'], 5);
+      final dto = TransactionCategoryDto.fromDomain(category);
+      final json = dto.toJson();
 
-      final fromMap = TransactionCategory.fromMap(map);
-      expect(fromMap, category);
-      expect(fromMap.hashCode, category.hashCode);
+      expect(json['id'], 1);
+      expect(json['name'], 'Test');
+      expect(json['type'], 'Variable');
+      expect(json['order_index'], 5);
+
+      final fromDto = TransactionCategoryDto.fromJson(json).toDomain();
+      expect(fromDto, category);
+      expect(fromDto.hashCode, category.hashCode);
     });
 
     test('equality should work correctly', () {

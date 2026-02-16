@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
@@ -8,7 +7,7 @@ import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/budget/budget_screen.dart';
-import 'package:trueledger/core/theme/theme.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -35,23 +34,20 @@ void main() {
     // Default mocks to avoid unhandled calls
     when(() => mockRepo.getBudgets()).thenAnswer((_) async => <Budget>[]);
     when(() => mockRepo.getSpendingTrend())
-        .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        .thenAnswer((_) async => <FinancialTrend>[]);
     when(() => mockRepo.getCategorySpending())
-        .thenAnswer((_) async => <Map<String, dynamic>>[]);
+        .thenAnswer((_) async => <CategorySpending>[]);
     when(() => mockRepo.getCategories(any()))
         .thenAnswer((_) async => <TransactionCategory>[]);
   });
 
   Widget createTestWidget() {
-    return ProviderScope(
+    return wrapWidget(
+      const BudgetScreen(),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
       ],
-      child: MaterialApp(
-        theme: AppTheme.lightTheme,
-        home: const BudgetScreen(),
-      ),
     );
   }
 

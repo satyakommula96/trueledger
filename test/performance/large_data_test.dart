@@ -76,7 +76,7 @@ void main() {
 
       // 5. Month Details (Filtering/Sorting)
       if (history.isNotEmpty) {
-        final month = history.first['month'];
+        final month = history.first.month;
         final detailStopwatch = Stopwatch()..start();
         final details = await repo.getMonthDetails(month);
         detailStopwatch.stop();

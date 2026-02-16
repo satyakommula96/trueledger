@@ -3,7 +3,7 @@ class Subscription {
   final String name;
   final double amount;
   final String billingDate;
-  final int active;
+  final bool isActive;
   final String? date;
 
   Subscription({
@@ -11,29 +11,25 @@ class Subscription {
     required this.name,
     required this.amount,
     required this.billingDate,
-    required this.active,
+    required this.isActive,
     this.date,
   });
 
-  factory Subscription.fromMap(Map<String, dynamic> map) {
+  Subscription copyWith({
+    int? id,
+    String? name,
+    double? amount,
+    String? billingDate,
+    bool? isActive,
+    String? date,
+  }) {
     return Subscription(
-      id: map['id'] as int,
-      name: map['name'] as String,
-      amount: (map['amount'] as num).toDouble(),
-      billingDate: map['billing_date'] as String,
-      active: map['active'] as int,
-      date: map['date'] as String?,
+      id: id ?? this.id,
+      name: name ?? this.name,
+      amount: amount ?? this.amount,
+      billingDate: billingDate ?? this.billingDate,
+      isActive: isActive ?? this.isActive,
+      date: date ?? this.date,
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'amount': amount,
-      'billing_date': billingDate,
-      'active': active,
-      'date': date,
-    };
   }
 }

@@ -4,6 +4,10 @@ class MonthlySummary {
   final double totalVariable;
   final double totalSubscriptions;
   final double totalInvestments;
+  final double netWorth;
+  final double creditCardDebt;
+  final double loansTotal;
+  final double totalMonthlyEMI;
 
   MonthlySummary({
     required this.totalIncome,
@@ -16,11 +20,6 @@ class MonthlySummary {
     this.loansTotal = 0,
     this.totalMonthlyEMI = 0,
   });
-
-  final double netWorth;
-  final double creditCardDebt;
-  final double loansTotal;
-  final double totalMonthlyEMI;
 
   double get net =>
       totalIncome -
@@ -40,5 +39,29 @@ class MonthlySummary {
     if (net > 10000) return "STABLE";
     if (net > 0) return "TIGHT";
     return "OVERSPENT";
+  }
+
+  MonthlySummary copyWith({
+    double? totalIncome,
+    double? totalFixed,
+    double? totalVariable,
+    double? totalSubscriptions,
+    double? totalInvestments,
+    double? netWorth,
+    double? creditCardDebt,
+    double? loansTotal,
+    double? totalMonthlyEMI,
+  }) {
+    return MonthlySummary(
+      totalIncome: totalIncome ?? this.totalIncome,
+      totalFixed: totalFixed ?? this.totalFixed,
+      totalVariable: totalVariable ?? this.totalVariable,
+      totalSubscriptions: totalSubscriptions ?? this.totalSubscriptions,
+      totalInvestments: totalInvestments ?? this.totalInvestments,
+      netWorth: netWorth ?? this.netWorth,
+      creditCardDebt: creditCardDebt ?? this.creditCardDebt,
+      loansTotal: loansTotal ?? this.loansTotal,
+      totalMonthlyEMI: totalMonthlyEMI ?? this.totalMonthlyEMI,
+    );
   }
 }
