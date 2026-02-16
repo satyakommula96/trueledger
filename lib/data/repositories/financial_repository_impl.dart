@@ -831,7 +831,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       ORDER BY date DESC, id DESC
     ''', [month, month, month, month]);
 
-    return results.map((e) => LedgerItem.fromMap(e)).toList();
+    return results.map((e) => LedgerItemDto.fromJson(e).toDomain()).toList();
   }
 
   @override
