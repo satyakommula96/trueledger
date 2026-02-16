@@ -13,12 +13,13 @@ void main() {
 
     test('formats ISO date string', () {
       final now = DateTime.now();
-      // Use a day that is definitely reachable this month or next
-      final targetDate = DateTime(now.year, now.month, 15);
+      // Use a day that is definitely reachable and not today/tomorrow
+      final targetDate = now.add(const Duration(days: 10));
       final isoStr = targetDate.toIso8601String();
 
       final result = DateHelper.formatDue(isoStr);
-      expect(result, contains('15'));
+      final dayStr = targetDate.day.toString().padLeft(2, '0');
+      expect(result, contains(dayStr));
     });
 
     test('formats day numbers like "5th"', () {

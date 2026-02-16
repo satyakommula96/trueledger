@@ -374,7 +374,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         return;
       }
 
-      String csv = const ListToCsvConverter().convert(rows);
+      String csv = const CsvEncoder().convert(rows);
       if (kIsWeb) {
         await saveFileWeb(utf8.encode(csv), fileName);
       } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
