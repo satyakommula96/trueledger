@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
@@ -8,10 +7,10 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/retirement_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/screens/retirement/retirement_dashboard.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/constants/widget_keys.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import '../helpers/currency_test_helpers.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -26,8 +25,8 @@ void main() {
   late MockFinancialRepository mockRepo;
 
   setUpAll(() {
-    registerFallbackValue(
-        RetirementAccount(id: 0, name: '', balance: 0, lastUpdated: ''));
+    registerFallbackValue(RetirementAccount(
+        id: 0, name: '', balance: 0, lastUpdated: DateTime.now()));
   });
 
   setUp(() {
@@ -54,16 +53,13 @@ void main() {
   }) {
     final retirementData = data ?? createRetirementStub();
 
-    return ProviderScope(
+    return wrapWidget(
+      const RetirementDashboard(),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
         retirementProvider.overrideWith((ref) => retirementData),
         privacyProvider.overrideWith(() => MockPrivacyNotifier(isPrivate)),
       ],
-      child: MaterialApp(
-        theme: ThemeData(extensions: [AppTheme.darkColors]),
-        home: const RetirementDashboard(),
-      ),
     );
   }
 
@@ -72,9 +68,15 @@ void main() {
         (tester) async {
       final accounts = [
         RetirementAccount(
-            id: 1, name: 'EPF', balance: 500000, lastUpdated: '2023-10-01'),
+            id: 1,
+            name: 'EPF',
+            balance: 500000,
+            lastUpdated: DateTime(2023, 10, 1)),
         RetirementAccount(
-            id: 2, name: 'NPS', balance: 200000, lastUpdated: '2023-10-01'),
+            id: 2,
+            name: 'NPS',
+            balance: 200000,
+            lastUpdated: DateTime(2023, 10, 1)),
       ];
 
       final stub = createRetirementStub(accounts: accounts);
@@ -108,7 +110,10 @@ void main() {
         (tester) async {
       final stub = createRetirementStub(accounts: [
         RetirementAccount(
-            id: 1, name: 'EPF', balance: 100000, lastUpdated: '2023-10-01'),
+            id: 1,
+            name: 'EPF',
+            balance: 100000,
+            lastUpdated: DateTime(2023, 10, 1)),
       ]);
 
       await tester.pumpWidget(createTestWidget(data: stub));

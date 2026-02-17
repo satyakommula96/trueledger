@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/dashboard/weekly_reflection.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/domain/usecases/get_weekly_reflection_usecase.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
+import '../../helpers/test_wrapper.dart';
 
 // Mocks
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
@@ -47,15 +46,12 @@ void main() {
 
     // 2. Build Widget with Override
     await tester.pumpWidget(
-      ProviderScope(
+      wrapWidget(
+        const WeeklyReflectionScreen(),
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepo),
           weeklyReflectionProvider.overrideWith((ref) async => reflectionData),
         ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const WeeklyReflectionScreen(),
-        ),
       ),
     );
 

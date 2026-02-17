@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
+import '../helpers/test_wrapper.dart';
 
 void main() {
   group('AppErrorView', () {
@@ -9,8 +10,8 @@ void main() {
       const customTitle = 'Custom Error Title';
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        wrapWidget(
+          Scaffold(
             body: AppErrorView(
               error: errorMessage,
               title: customTitle,
@@ -29,8 +30,8 @@ void main() {
     testWidgets('should display default title if none provided',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        wrapWidget(
+          Scaffold(
             body: AppErrorView(
               error: 'Error',
               onRetry: () {},
@@ -46,8 +47,8 @@ void main() {
       bool retryCalled = false;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        wrapWidget(
+          Scaffold(
             body: AppErrorView(
               error: 'Error',
               onRetry: () {

@@ -5,7 +5,9 @@ import 'package:trueledger/core/theme/theme.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
+
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 
 class AddLoanScreen extends ConsumerStatefulWidget {
@@ -51,7 +53,7 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("NEW BORROWING"),
+        title: Text(AppLocalizations.of(context)!.newBorrowing),
         centerTitle: true,
       ),
       body: Align(
@@ -64,8 +66,8 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("LOAN CLASSIFICATION",
-                    style: TextStyle(
+                Text(AppLocalizations.of(context)!.loanClassification,
+                    style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 2,
@@ -109,20 +111,24 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
                   }).toList(),
                 ),
                 const SizedBox(height: 32),
-                _buildField("CREDITOR / LOAN NAME", nameCtrl,
+                _buildField(
+                    AppLocalizations.of(context)!.creditorLoanName, nameCtrl,
                     hint: "e.g. HDFC Gold Loan", type: TextInputType.text),
                 const SizedBox(height: 24),
                 Row(
                   children: [
                     Expanded(
-                        child: _buildField("REMAINING BALANCE", remainingCtrl,
+                        child: _buildField(
+                            AppLocalizations.of(context)!.remainingBalance,
+                            remainingCtrl,
                             hint: "0",
                             type: const TextInputType.numberWithOptions(
                                 decimal: true),
                             prefix: CurrencyFormatter.symbol)),
                     const SizedBox(width: 16),
                     Expanded(
-                        child: _buildField("TOTAL LOAN", totalCtrl,
+                        child: _buildField(
+                            AppLocalizations.of(context)!.totalLoan, totalCtrl,
                             hint: "0",
                             type: const TextInputType.numberWithOptions(
                                 decimal: true),
@@ -134,14 +140,17 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
                   Row(
                     children: [
                       Expanded(
-                          child: _buildField("MONTHLY EMI", emiCtrl,
+                          child: _buildField(
+                              AppLocalizations.of(context)!.monthlyEmi, emiCtrl,
                               hint: "0",
                               type: const TextInputType.numberWithOptions(
                                   decimal: true),
                               prefix: CurrencyFormatter.symbol)),
                       const SizedBox(width: 16),
                       Expanded(
-                          child: _buildField("INTEREST RATE", rateCtrl,
+                          child: _buildField(
+                              AppLocalizations.of(context)!.interestRate,
+                              rateCtrl,
                               hint: "0.0",
                               type: const TextInputType.numberWithOptions(
                                   decimal: true),
@@ -155,12 +164,13 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
                     Expanded(
                       child: _buildField(
                           selectedType == 'Individual'
-                              ? "EXPECTED REPAYMENT DATE"
-                              : "DUE DATE (DAY OF MONTH)",
+                              ? AppLocalizations.of(context)!
+                                  .expectedRepaymentDate
+                              : AppLocalizations.of(context)!.dueDateDayOfMonth,
                           dueCtrl,
                           hint: selectedType == 'Individual'
-                              ? "Select Date"
-                              : "Select Day",
+                              ? AppLocalizations.of(context)!.selectDate
+                              : AppLocalizations.of(context)!.selectDay,
                           type: TextInputType.text,
                           readOnly: true,
                           onTap: _pickDate),
@@ -180,8 +190,8 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text("FLEXIBLE",
-                              style: TextStyle(
+                          child: Text(AppLocalizations.of(context)!.flexible,
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w900, fontSize: 11)),
                         ),
                       ),
@@ -233,8 +243,8 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
                       elevation: 0,
                       shadowColor: colorScheme.primary.withValues(alpha: 0.4),
                     ),
-                    child: const Text("COMMIT BORROWING",
-                        style: TextStyle(
+                    child: Text(AppLocalizations.of(context)!.commitBorrowing,
+                        style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 2)),
@@ -320,7 +330,7 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
       final picked = await showDialog<int>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text("SELECT DUE DAY"),
+          title: Text(AppLocalizations.of(context)!.selectDueDay),
           content: SizedBox(
             width: double.maxFinite,
             child: GridView.builder(
@@ -355,8 +365,10 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
     if (nameCtrl.text.isEmpty ||
         totalCtrl.text.isEmpty ||
         remainingCtrl.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please fill required fields")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content:
+              Text(AppLocalizations.of(context)!.pleaseFillRequiredFields)));
+
       return;
     }
 
@@ -365,8 +377,10 @@ class _AddLoanScreenState extends ConsumerState<AddLoanScreen> {
     final remaining = double.tryParse(remainingCtrl.text) ?? 0.0;
 
     if (remaining > total) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Remaining balance cannot exceed total loan")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content:
+              Text(AppLocalizations.of(context)!.remainingCannotExceedTotal)));
+
       return;
     }
 

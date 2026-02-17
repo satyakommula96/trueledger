@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 
 import 'package:trueledger/domain/models/models.dart';
+import 'package:trueledger/data/dtos/asset_dto.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/utils/date_helper.dart';
@@ -102,7 +103,7 @@ class _NetWorthDetailsScreenState extends ConsumerState<NetWorthDetailsScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => EditAssetScreen(asset: Asset.fromMap(i)),
+        builder: (_) => EditAssetScreen(asset: AssetDto.fromJson(i).toDomain()),
       ),
     );
     _loadData();

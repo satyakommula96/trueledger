@@ -29,14 +29,14 @@ void main() {
     final tTransactions = [
       LedgerItem(
           id: 1,
-          date: now.toIso8601String(),
+          date: now,
           amount: 100,
           label: 'Food',
           type: 'Variable',
           note: ''),
       LedgerItem(
           id: 2,
-          date: now.toIso8601String(),
+          date: now,
           amount: 3000,
           label: 'Shopping',
           type: 'Variable',
@@ -48,13 +48,13 @@ void main() {
     ];
 
     final tThisWeekCats = [
-      {'category': 'Food', 'total': 100},
-      {'category': 'Shopping', 'total': 3000},
+      CategorySpending(category: 'Food', total: 100),
+      CategorySpending(category: 'Shopping', total: 3000),
     ];
 
     final tLastWeekCats = [
-      {'category': 'Food', 'total': 200},
-      {'category': 'Shopping', 'total': 1000},
+      CategorySpending(category: 'Food', total: 200),
+      CategorySpending(category: 'Shopping', total: 1000),
     ];
 
     when(() => mockRepository.getTransactionsForRange(any(), any()))
@@ -103,16 +103,16 @@ void main() {
 
     // This week: NewCat (500), BigSpender (2000)
     final tThisWeekCats = [
-      {'category': 'SmallIncrease', 'total': 110}, // +10 over last week
-      {'category': 'NewCategory', 'total': 500}, // New, +500 increase
-      {'category': 'BigSpender', 'total': 2000}, // +1000 over last week
+      CategorySpending(category: 'SmallIncrease', total: 110),
+      CategorySpending(category: 'NewCategory', total: 500),
+      CategorySpending(category: 'BigSpender', total: 2000),
     ];
 
     // Last week: SmallIncrease (100), BigSpender (1000)
     // NewCategory is MISSING from last week -> triggers orElse
     final tLastWeekCats = [
-      {'category': 'SmallIncrease', 'total': 100},
-      {'category': 'BigSpender', 'total': 1000},
+      CategorySpending(category: 'SmallIncrease', total: 100),
+      CategorySpending(category: 'BigSpender', total: 1000),
     ];
 
     when(() => mockRepository.getTransactionsForRange(any(), any()))

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:trueledger/core/theme/theme.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,6 +17,7 @@ import 'package:trueledger/domain/usecases/auto_backup_usecase.dart';
 import 'package:trueledger/domain/usecases/restore_backup_usecase.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/usecases/usecase_base.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -107,7 +106,8 @@ void main() {
   });
 
   Widget createSettingsScreen() {
-    return ProviderScope(
+    return wrapWidget(
+      const SettingsScreen(),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
         appVersionProvider.overrideWith((ref) => '1.2.2'),
@@ -116,10 +116,6 @@ void main() {
         restoreBackupUseCaseProvider.overrideWithValue(mockRestoreUseCase),
         autoBackupUseCaseProvider.overrideWithValue(mockAutoBackupUseCase),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const SettingsScreen(),
-      ),
     );
   }
 
@@ -150,7 +146,7 @@ void main() {
 
       expect(find.text('SET USER NAME'), findsOneWidget);
       await tester.enterText(find.byType(TextField), 'New Name');
-      await tester.tap(find.text('SAVE'));
+      await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
     });
 

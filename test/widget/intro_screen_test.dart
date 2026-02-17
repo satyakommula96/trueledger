@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/presentation/screens/startup/intro_screen.dart';
 
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/core/services/notification_service.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
@@ -58,16 +57,13 @@ void main() {
   });
 
   Widget createTestWidget() {
-    return ProviderScope(
+    return wrapWidget(
+      const IntroScreen(),
       overrides: [
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
         dashboardProvider.overrideWith((ref) => mockDashboardData),
         notificationServiceProvider.overrideWithValue(mockNotifications),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const IntroScreen(),
-      ),
     );
   }
 

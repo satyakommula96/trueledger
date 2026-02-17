@@ -15,6 +15,7 @@ import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/services/personalization_service.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class QuickAddBottomSheet extends ConsumerStatefulWidget {
   const QuickAddBottomSheet({super.key});
@@ -45,18 +46,28 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _categoryKey = GlobalKey();
   final GlobalKey _paymentKey = GlobalKey();
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _loadDefaults();
     _loadCreditCards();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isInitialized) {
+      _loadDefaults();
+      _isInitialized = true;
+    }
+  }
+
   void _loadDefaults() {
+    final l10n = AppLocalizations.of(context)!;
     final service = ref.read(personalizationServiceProvider);
     final lastUsed = service.getLastUsed();
     final settings = service.getSettings();
@@ -66,7 +77,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
         setState(() {
           _selectedCategory = lastUsed['category']!;
           _suggestedCategory = lastUsed['category'];
-          _suggestedReason = "Based on your last entry";
+          _suggestedReason = l10n.basedOnLastEntry;
         });
       }
       if (lastUsed['paymentMethod'] != null) {
@@ -89,7 +100,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
         setState(() {
           _selectedCategory = todSuggestion;
           _suggestedCategory = todSuggestion;
-          _suggestedReason = "Based on your daily routine";
+          _suggestedReason = l10n.basedOnDailyRoutine;
         });
       }
     }
@@ -136,11 +147,12 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.validAmountError)),
       );
       return;
     }
 
+    final l10n = AppLocalizations.of(context)!;
     final result = await ref.read(addTransactionUseCaseProvider).call(
           AddTransactionParams(
             type: 'Variable',
@@ -158,27 +170,33 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
       final transactionResult = (result as Success<AddTransactionResult>).value;
       final notificationService = ref.read(notificationServiceProvider);
 
+      final warning = transactionResult.budgetWarning;
+      String? alertTitle;
+      String? alertBody;
+
+      if (warning != null) {
+        alertTitle = warning.type == NotificationType.budgetExceeded
+            ? l10n.budgetExceededTitle(warning.category)
+            : l10n.budgetWarningTitle(warning.category);
+        alertBody = warning.type == NotificationType.budgetExceeded
+            ? l10n.budgetExceededBody(warning.category)
+            : l10n.budgetWarningBody(
+                warning.category, warning.percentage.round());
+      }
+
       if (transactionResult.cancelDailyReminder) {
         await notificationService
             .cancelNotification(NotificationService.dailyReminderId);
       }
 
-      final warning = transactionResult.budgetWarning;
-      if (warning != null) {
-        final title = warning.type == NotificationType.budgetExceeded
-            ? 'Budget Exceeded: ${warning.category}'
-            : 'Budget Warning: ${warning.category}';
-        final body = warning.type == NotificationType.budgetExceeded
-            ? 'You have spent 100% of your ${warning.category} budget.'
-            : 'You have reached ${warning.percentage.round()}% of your ${warning.category} budget.';
-
+      if (warning != null && alertTitle != null && alertBody != null) {
         // Generate a stable ID locally
         final id = generateStableHash('${warning.category}_budget_alert');
 
         await notificationService.showNotification(
           id: id,
-          title: title,
-          body: body,
+          title: alertTitle,
+          body: alertBody,
         );
       }
 
@@ -187,7 +205,8 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
         if (_creditCardNames.contains(_paymentMethod)) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("Recorded! $_paymentMethod balance updated."),
+              content: Text(AppLocalizations.of(context)!
+                  .recordedBalanceUpdated(_paymentMethod!)),
               behavior: SnackBarBehavior.floating,
               backgroundColor: Colors.green.shade800,
             ),
@@ -206,6 +225,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<AppColors>()!;
 
@@ -229,7 +249,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "QUICK ADD",
+                    l10n.quickAdd,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
@@ -269,7 +289,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
-                              _buildSuggestionText(),
+                              _buildSuggestionText(l10n),
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
@@ -284,7 +304,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                           GestureDetector(
                             onTap: _jumpToOverride,
                             child: Text(
-                              "CHANGE",
+                              l10n.change,
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w900,
@@ -330,8 +350,8 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                   fontWeight: FontWeight.w600,
                   color: semantic.secondaryText,
                 ),
-                decoration: const InputDecoration(
-                  hintText: "What was this for?",
+                decoration: InputDecoration(
+                  hintText: l10n.whatWasThisFor,
                   border: InputBorder.none,
                 ),
                 onChanged: _onNoteChanged,
@@ -362,7 +382,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                             }
                           },
                           icon: const Icon(Icons.add),
-                          label: const Text("MANAGE CATEGORIES"),
+                          label: Text(l10n.manageCategories),
                         );
                       }
 
@@ -540,9 +560,9 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                     child: Container(
                       height: 56,
                       alignment: Alignment.center,
-                      child: const Text(
-                        "SAVE EXPENSE",
-                        style: TextStyle(
+                      child: Text(
+                        l10n.saveExpense,
+                        style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           letterSpacing: 2.0,
                           fontSize: 16,
@@ -561,6 +581,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
   }
 
   Widget _buildShortcutSuggestion(BuildContext context, AppColors semantic) {
+    final l10n = AppLocalizations.of(context)!;
     if (_shortcutSuggestion == null) return const SizedBox.shrink();
 
     return Container(
@@ -582,7 +603,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Save as shortcut?",
+                  l10n.saveAsShortcut,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
@@ -590,7 +611,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                   ),
                 ),
                 Text(
-                  "You log '${_shortcutSuggestion!.title}' often.",
+                  l10n.youLogOften(_shortcutSuggestion!.title),
                   style: TextStyle(
                     fontSize: 11,
                     color: semantic.secondaryText,
@@ -605,7 +626,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                   'shortcut_${_shortcutSuggestion!.title}|${_shortcutSuggestion!.category}|${_shortcutSuggestion!.amount}');
               setState(() => _shortcutSuggestion = null);
             },
-            child: const Text("NOT NOW", style: TextStyle(fontSize: 11)),
+            child: Text(l10n.notNow, style: const TextStyle(fontSize: 11)),
           ),
           const SizedBox(width: 4),
           ElevatedButton(
@@ -615,15 +636,16 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                   .addPreset(_shortcutSuggestion!);
               setState(() => _shortcutSuggestion = null);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Shortcut saved!")),
+                SnackBar(content: Text(l10n.shortcutSaved)),
               );
             },
             style: ElevatedButton.styleFrom(
               visualDensity: VisualDensity.compact,
               padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
-            child: const Text("SAVE",
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
+            child: Text(l10n.save,
+                style:
+                    const TextStyle(fontSize: 11, fontWeight: FontWeight.w900)),
           ),
         ],
       ),
@@ -631,6 +653,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
   }
 
   Widget _buildPresetsSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final service = ref.read(personalizationServiceProvider);
     final presets = service.getPresets();
     final semantic = Theme.of(context).extension<AppColors>()!;
@@ -641,7 +664,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "PRESETS",
+          l10n.presetsLabel,
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w900,
@@ -687,6 +710,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
   }
 
   Widget _buildPaymentMethodSection(BuildContext context, AppColors semantic) {
+    final l10n = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
@@ -694,7 +718,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "PAYMENT METHOD",
+          l10n.paymentMethodLabel,
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w900,
@@ -751,7 +775,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
                             const SizedBox(width: 6),
                           ],
                           Text(
-                            method,
+                            _getPaymentMethodDisplay(method, l10n),
                             style: TextStyle(
                               color: isSelected
                                   ? colorScheme.primary
@@ -775,7 +799,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
     );
   }
 
-  String _buildSuggestionText() {
+  String _buildSuggestionText(AppLocalizations l10n) {
     final catSuggested =
         _suggestedCategory != null && _selectedCategory == _suggestedCategory;
     final paySuggested = _suggestedPaymentMethod != null &&
@@ -784,14 +808,29 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
     if (!catSuggested && !paySuggested) return "";
 
     if (catSuggested && paySuggested) {
-      return "Suggested: $_selectedCategory & $_paymentMethod · ${_suggestedReason ?? 'Daily Pattern'}";
+      return "${l10n.suggestedLabel}: $_selectedCategory & ${_getPaymentMethodDisplay(_paymentMethod!, l10n)} · ${_suggestedReason ?? l10n.dailyPattern}";
     }
 
     if (catSuggested) {
-      return "Suggested: $_selectedCategory · $_suggestedReason";
+      return "${l10n.suggestedLabel}: $_selectedCategory · $_suggestedReason";
     }
 
-    return "Suggested: $_paymentMethod · Based on last record";
+    return "${l10n.suggestedLabel}: ${_getPaymentMethodDisplay(_paymentMethod!, l10n)} · ${l10n.basedOnLastRecord}";
+  }
+
+  String _getPaymentMethodDisplay(String method, AppLocalizations l10n) {
+    switch (method) {
+      case 'Cash':
+        return l10n.cash;
+      case 'UPI':
+        return l10n.upi;
+      case 'Net Banking':
+        return l10n.netBanking;
+      case 'Generic Card':
+        return l10n.genericCard;
+      default:
+        return method;
+    }
   }
 
   void _jumpToOverride() {
@@ -813,34 +852,38 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Transparency Check"),
+        title: Text(AppLocalizations.of(context)!.transparencyCheck),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-                "We pre-filled some values locally to save you typing effort.",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(AppLocalizations.of(context)!.prefilledNotice,
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
             const SizedBox(height: 16),
             if (_suggestedCategory != null &&
                 _selectedCategory == _suggestedCategory)
               _buildInfoRow(
-                  Icons.category_rounded, "Category", _suggestedReason!),
+                  Icons.category_rounded,
+                  AppLocalizations.of(context)!.categoryLabel,
+                  _suggestedReason!),
             if (_suggestedPaymentMethod != null &&
                 _paymentMethod == _suggestedPaymentMethod)
-              _buildInfoRow(Icons.payment_rounded, "Payment",
-                  "Based on your last record"),
+              _buildInfoRow(
+                  Icons.payment_rounded,
+                  AppLocalizations.of(context)!.paymentLabel,
+                  AppLocalizations.of(context)!.basedOnLastRecord),
             const SizedBox(height: 12),
-            const Text(
-              "This data never leaves your device.",
-              style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
+            Text(
+              AppLocalizations.of(context)!.localDataNotice,
+              style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
             ),
           ],
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("GOT IT")),
+              child: Text(AppLocalizations.of(context)!.gotIt)),
         ],
       ),
     );
@@ -871,6 +914,8 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
   }
 
   Widget _buildDateSection(BuildContext context, AppColors semantic) {
+    // l10n is defined but if unused, I'll keep it for future use or remove if strict
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
@@ -885,7 +930,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "DATE",
+          l10n.dateLabel,
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w900,
@@ -899,19 +944,20 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
           runSpacing: 10,
           children: [
             _buildDateChip(
-              label: "TODAY",
+              label: l10n.today,
               isSelected: isToday,
               onTap: () => setState(() => _selectedDate = DateTime.now()),
             ),
             _buildDateChip(
-              label: "YESTERDAY",
+              label: l10n.yesterdayLabel,
               isSelected: isYesterday,
               onTap: () => setState(() => _selectedDate =
                   DateTime.now().subtract(const Duration(days: 1))),
             ),
             _buildDateChip(
-              label:
-                  isOther ? DateFormat('MMM d').format(_selectedDate) : "OTHER",
+              label: isOther
+                  ? DateFormat('MMM d').format(_selectedDate)
+                  : l10n.otherLabel,
               isSelected: isOther,
               onTap: () async {
                 final picked = await showDatePicker(

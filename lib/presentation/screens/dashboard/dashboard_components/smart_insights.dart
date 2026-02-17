@@ -9,6 +9,7 @@ import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/presentation/screens/dashboard/scenario_mode.dart';
 import 'package:trueledger/presentation/providers/insights_provider.dart';
 import 'package:trueledger/domain/services/personalization_service.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class SmartInsightsCard extends ConsumerWidget {
   final List<AIInsight> insights;
@@ -37,7 +38,7 @@ class SmartInsightsCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "INTELLIGENT INSIGHTS",
+                    AppLocalizations.of(context)!.intelligentInsights,
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w900,
@@ -47,7 +48,7 @@ class SmartInsightsCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "AI Powered Analysis",
+                    AppLocalizations.of(context)!.aiPoweredAnalysis,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
@@ -142,9 +143,9 @@ class SmartInsightsCard extends ConsumerWidget {
                   color: Colors.white, size: 24),
             ),
             const SizedBox(height: 20),
-            const Text(
-              "SCENARIO MODE",
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.scenarioModeLabel,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
@@ -153,7 +154,7 @@ class SmartInsightsCard extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              "Simulate your financial future.",
+              AppLocalizations.of(context)!.simulateFuture,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 13,
@@ -195,7 +196,7 @@ class SmartInsightsCard extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                "MINDSET",
+                AppLocalizations.of(context)!.mindset,
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -219,7 +220,7 @@ class SmartInsightsCard extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "Based on local history.",
+            AppLocalizations.of(context)!.basedOnLocalHistory,
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
@@ -250,23 +251,23 @@ class ScoreCard extends StatelessWidget {
 
     if (score >= 80) {
       scoreColor = semantic.success;
-      label = "EXCELLENT";
+      label = AppLocalizations.of(context)!.excellentLabel;
       icon = Icons.verified_rounded;
     } else if (score >= 60) {
       scoreColor = semantic.primary;
-      label = "GOOD";
+      label = AppLocalizations.of(context)!.goodLabel;
       icon = Icons.trending_up_rounded;
     } else if (score >= 40) {
       scoreColor = semantic.warning;
-      label = "AVERAGE";
+      label = AppLocalizations.of(context)!.averageLabel;
       icon = Icons.info_rounded;
     } else if (score == 0) {
       scoreColor = semantic.secondaryText;
-      label = "CALIBRATING...";
+      label = AppLocalizations.of(context)!.calibrating;
       icon = Icons.hourglass_empty_rounded;
     } else {
       scoreColor = semantic.overspent;
-      label = "AT RISK";
+      label = AppLocalizations.of(context)!.atRisk;
       icon = Icons.warning_rounded;
     }
 
@@ -339,7 +340,7 @@ class ScoreCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "Health Score",
+                    AppLocalizations.of(context)!.healthScore,
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
@@ -348,7 +349,7 @@ class ScoreCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    "AI Analysis",
+                    AppLocalizations.of(context)!.aiPoweredAnalysis,
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
@@ -429,7 +430,7 @@ class InsightItem extends ConsumerWidget {
                   children: [
                     _buildActionButton(
                       icon: Icons.access_time_rounded,
-                      tooltip: "Snooze 7 days",
+                      tooltip: AppLocalizations.of(context)!.snooze7Days,
                       onTap: () async {
                         await ref
                             .read(intelligenceServiceProvider)
@@ -440,7 +441,7 @@ class InsightItem extends ConsumerWidget {
                     const SizedBox(width: 8),
                     _buildActionButton(
                       icon: Icons.close_rounded,
-                      tooltip: "Dismiss",
+                      tooltip: AppLocalizations.of(context)!.dismiss,
                       onTap: () async {
                         await ref
                             .read(intelligenceServiceProvider)

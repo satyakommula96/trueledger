@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/net_worth/edit_asset.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -21,18 +21,16 @@ void main() {
     name: 'Stock Portfolio',
     amount: 50000,
     type: 'Investment',
-    date: '2024-01-01',
-    active: 1,
+    date: DateTime(2024, 1, 1),
+    isActive: true,
   );
 
   Widget createEditAssetScreen() {
-    return ProviderScope(
+    return wrapWidget(
+      EditAssetScreen(asset: tAsset),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
       ],
-      child: MaterialApp(
-        home: EditAssetScreen(asset: tAsset),
-      ),
     );
   }
 

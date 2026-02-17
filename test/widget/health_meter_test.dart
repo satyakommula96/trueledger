@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/health_meter.dart';
+import '../helpers/test_wrapper.dart';
 
 void main() {
   late AppColors semantic;
@@ -13,9 +14,8 @@ void main() {
   Widget createWidgetUnderTest({
     required int score,
   }) {
-    return MaterialApp(
-      theme: ThemeData.dark(),
-      home: Scaffold(
+    return wrapWidget(
+      Scaffold(
         body: HealthMeter(
           score: score,
           semantic: semantic,

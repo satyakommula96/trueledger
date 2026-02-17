@@ -6,6 +6,9 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:confetti/confetti.dart';
+import 'package:trueledger/presentation/providers/runway_provider.dart';
+
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class WealthHero extends ConsumerStatefulWidget {
   final MonthlySummary summary;
@@ -57,6 +60,7 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
   Widget build(BuildContext context) {
     final isPrivate = ref.watch(privacyProvider);
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     final isNegative = widget.summary.netWorth < 0;
 
     // Premium Mesh Gradient logic
@@ -194,7 +198,7 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                     children: [
                       const Spacer(),
                       Text(
-                        "CURRENT BALANCE",
+                        l10n.currentBalance,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.5),
                           fontSize: 10,
@@ -235,6 +239,39 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                                 ),
                               ),
                             ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final runwayAsync = ref.watch(runwayProvider);
+                          return runwayAsync.when(
+                            data: (result) {
+                              final text = result.isSustainable
+                                  ? l10n.sustainableRunway
+                                  : l10n.runwayMonths(
+                                      result.monthsUntilDepletion ?? 0);
+                              return Text(
+                                text.toUpperCase(),
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.5,
+                                ),
+                              ).animate().fadeIn(duration: 400.ms);
+                            },
+                            loading: () => Text(
+                              l10n.calculatingRunway.toUpperCase(),
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                            error: (_, __) => const SizedBox.shrink(),
                           );
                         },
                       ),

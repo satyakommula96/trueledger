@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:ui';
@@ -8,6 +9,7 @@ import 'package:trueledger/presentation/providers/retirement_provider.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/core/constants/widget_keys.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class RetirementDashboard extends ConsumerWidget {
   const RetirementDashboard({super.key});
@@ -25,10 +27,11 @@ class RetirementDashboard extends ConsumerWidget {
       ),
       error: (err, stack) => Scaffold(body: Center(child: Text("Error: $err"))),
       data: (data) {
+        final l10n = AppLocalizations.of(context)!;
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
-            title: const Text("RETIREMENT"),
+            title: Text(AppLocalizations.of(context)!.retirement),
             centerTitle: true,
             backgroundColor: Colors.transparent,
             actions: [
@@ -51,22 +54,22 @@ class RetirementDashboard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildCorpusHero(data.totalCorpus, semantic, isPrivate)
+                _buildCorpusHero(context, data.totalCorpus, semantic, isPrivate)
                     .animate()
                     .fadeIn(duration: 600.ms)
                     .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint),
                 const SizedBox(height: 48),
-                _buildSectionHeader(semantic, "MY ACCOUNTS", "BREAKDOWN"),
+                _buildSectionHeader(semantic, l10n.myAccounts, l10n.breakdown),
                 const SizedBox(height: 24),
-                ...data.accounts
-                    .map((acc) => _buildAccountCard(acc, semantic, isPrivate)),
+                ...data.accounts.map((acc) =>
+                    _buildAccountCard(context, acc, semantic, isPrivate)),
                 const SizedBox(height: 48),
                 _buildSectionHeader(
                   semantic,
-                  "FUTURE WEALTH",
-                  "PROJECTION",
+                  l10n.futureWealth,
+                  l10n.projection,
                   trailing: Text(
-                    "${data.projections.length - 1} YEARS",
+                    "${data.projections.length - 1} ${l10n.yearsLabel}",
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w900,
@@ -76,9 +79,10 @@ class RetirementDashboard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                _buildProjectionChart(data.projections, semantic, isPrivate),
+                _buildProjectionChart(
+                    context, data.projections, semantic, isPrivate),
                 const SizedBox(height: 48),
-                _buildInsightCard(data.totalCorpus, semantic),
+                _buildInsightCard(context, data.totalCorpus, semantic),
               ],
             ),
           ),
@@ -127,23 +131,17 @@ class RetirementDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildCorpusHero(double total, AppColors semantic, bool isPrivate) {
+  Widget _buildCorpusHero(
+      BuildContext context, double total, AppColors semantic, bool isPrivate) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       height: 220,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            semantic.primary,
-            semantic.primary.withValues(alpha: 0.8),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
         borderRadius: BorderRadius.circular(36),
         boxShadow: [
           BoxShadow(
-            color: semantic.primary.withValues(alpha: 0.25),
+            color: semantic.primary.withValues(alpha: 0.3),
             blurRadius: 40,
             offset: const Offset(0, 20),
           ),
@@ -153,18 +151,27 @@ class RetirementDashboard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(36),
         child: Stack(
           children: [
-            Positioned(
-              right: -50,
-              bottom: -50,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.05),
+            // Base Gradient
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    semantic.primary,
+                    semantic.primary.withValues(alpha: 0.8)
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
             ),
+
+            // Mesh Circles
+            _buildMeshCircle(
+                -50, -50, 250, Colors.white.withValues(alpha: 0.1)),
+            _buildMeshCircle(
+                120, 100, 200, Colors.blue.withValues(alpha: 0.15)),
+
+            // Content
             Padding(
               padding: const EdgeInsets.all(32),
               child: Column(
@@ -181,16 +188,16 @@ class RetirementDashboard extends ConsumerWidget {
                         width: 1.0,
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.auto_awesome_rounded,
+                        const Icon(Icons.auto_awesome_rounded,
                             size: 14, color: Colors.white),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Flexible(
                           child: Text(
-                            "RETIREMENT READY",
-                            style: TextStyle(
+                            l10n.retirementReady,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
                               fontSize: 10,
@@ -204,7 +211,7 @@ class RetirementDashboard extends ConsumerWidget {
                   ),
                   const Spacer(),
                   Text(
-                    "TOTAL RETIREMENT CORPUS",
+                    l10n.totalRetirementCorpus.toUpperCase(),
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 11,
@@ -220,10 +227,17 @@ class RetirementDashboard extends ConsumerWidget {
                       key: WidgetKeys.retirementCorpusValue,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 52,
+                        fontSize: 54,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -2,
                         height: 1.0,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black26,
+                            offset: Offset(0, 4),
+                            blurRadius: 10,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -236,7 +250,25 @@ class RetirementDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildAccountCard(dynamic acc, AppColors semantic, bool isPrivate) {
+  Widget _buildMeshCircle(double top, double left, double size, Color color) {
+    return Positioned(
+      top: top,
+      left: left,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [color, color.withValues(alpha: 0)],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountCard(
+      BuildContext context, dynamic acc, AppColors semantic, bool isPrivate) {
     return Container(
       key: WidgetKeys.retirementAccountItem(acc.id),
       margin: const EdgeInsets.only(bottom: 16),
@@ -273,7 +305,8 @@ class RetirementDashboard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  "LATENCY: ${acc.lastUpdated}",
+                  AppLocalizations.of(context)!.latency(
+                      DateFormat('dd MMM yyyy').format(acc.lastUpdated)),
                   style: TextStyle(
                     fontSize: 9,
                     color: semantic.secondaryText,
@@ -298,7 +331,7 @@ class RetirementDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildProjectionChart(
+  Widget _buildProjectionChart(BuildContext context,
       List<Map<String, dynamic>> data, AppColors semantic, bool isPrivate) {
     if (data.isEmpty) return const SizedBox();
 
@@ -377,7 +410,8 @@ class RetirementDashboard extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            "Estimated corpus at retirement: ${CurrencyFormatter.format(maxVal, isPrivate: isPrivate)}",
+            AppLocalizations.of(context)!.estimatedCorpus(
+                CurrencyFormatter.format(maxVal, isPrivate: isPrivate)),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -403,88 +437,91 @@ class RetirementDashboard extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: EdgeInsets.fromLTRB(
-            24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 48),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Expanded(
-                  child: Text(
-                    "PROJECTION SETTINGS",
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.5),
-                    overflow: TextOverflow.ellipsis,
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        return Container(
+          padding: EdgeInsets.fromLTRB(
+              24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 48),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context)!.projectionSettings,
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.5),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildSimpleField(
-                      context, "Current Age", ageController, "Years"),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildSimpleField(
-                      context, "Retirement Age", retAgeController, "Years"),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _buildSimpleField(
-                context, "Expected Return Rate", rateController, "% p.a."),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 64,
-              child: ElevatedButton(
-                onPressed: () {
-                  final newSettings = settings.copyWith(
-                    currentAge: int.tryParse(ageController.text),
-                    retirementAge: int.tryParse(retAgeController.text),
-                    annualReturnRate: double.tryParse(rateController.text),
-                  );
-                  ref
-                      .read(retirementSettingsProvider.notifier)
-                      .updateSettings(newSettings);
-                  ref.invalidate(dashboardProvider);
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      Theme.of(context).extension<AppColors>()!.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  elevation: 0,
-                ),
-                child: const Text("UPDATE TARGETS",
-                    style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                        letterSpacing: 2)),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSimpleField(context, l10n.currentAgeLabel,
+                        ageController, l10n.yearsLabel),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildSimpleField(context, l10n.retirementAgeLabel,
+                        retAgeController, l10n.yearsLabel),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _buildSimpleField(
+                  context, l10n.expectedReturn, rateController, l10n.percentPa),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                height: 64,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final newSettings = settings.copyWith(
+                      currentAge: int.tryParse(ageController.text),
+                      retirementAge: int.tryParse(retAgeController.text),
+                      annualReturnRate: double.tryParse(rateController.text),
+                    );
+                    ref
+                        .read(retirementSettingsProvider.notifier)
+                        .updateSettings(newSettings);
+                    ref.invalidate(dashboardProvider);
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Theme.of(context).extension<AppColors>()!.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    elevation: 0,
+                  ),
+                  child: Text(l10n.updateTargets,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                          letterSpacing: 2)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -527,7 +564,8 @@ class RetirementDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildInsightCard(double corpus, AppColors semantic) {
+  Widget _buildInsightCard(
+      BuildContext context, double corpus, AppColors semantic) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(28),
@@ -555,7 +593,7 @@ class RetirementDashboard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "WEALTH ADVISORY",
+                  AppLocalizations.of(context)!.wealthAdvisory,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -566,8 +604,8 @@ class RetirementDashboard extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Text(
                   corpus > 10000000
-                      ? "Your trajectory is optimal. Maintain current velocity to ensure capital preservation against inflation."
-                      : "Velocity adjustment recommended. Increasing monthly contributions by 10% will accelerate your goal timeline.",
+                      ? AppLocalizations.of(context)!.optimalTrajectory
+                      : AppLocalizations.of(context)!.velocityAdjustment,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,

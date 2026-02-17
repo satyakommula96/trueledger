@@ -9,6 +9,7 @@ import 'package:trueledger/presentation/screens/goals/goals_screen.dart';
 import 'package:trueledger/presentation/screens/investments/investments_screen.dart';
 import 'package:trueledger/presentation/screens/automation/recurring_transactions.dart';
 import 'package:trueledger/presentation/screens/budget/budget_screen.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class DashboardBottomBar extends StatelessWidget {
   final VoidCallback onLoad;
@@ -22,6 +23,7 @@ class DashboardBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
     final padding = MediaQuery.of(context).padding;
+    final l10n = AppLocalizations.of(context)!;
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -53,7 +55,7 @@ class DashboardBottomBar extends StatelessWidget {
                     _buildActionIcon(
                       context,
                       Icons.account_balance_rounded,
-                      "Accounts",
+                      l10n.accounts,
                       semantic.income,
                       () => Navigator.push(
                           context,
@@ -64,7 +66,7 @@ class DashboardBottomBar extends StatelessWidget {
                     _buildActionIcon(
                       context,
                       Icons.credit_card_rounded,
-                      "Cards",
+                      l10n.cards,
                       semantic.primary,
                       () => Navigator.push(
                           context,
@@ -75,7 +77,7 @@ class DashboardBottomBar extends StatelessWidget {
                     _buildActionIcon(
                       context,
                       Icons.auto_graph_rounded,
-                      "Analysis",
+                      l10n.analysis,
                       const Color(0xFFA855F7),
                       () => Navigator.push(
                           context,
@@ -86,9 +88,9 @@ class DashboardBottomBar extends StatelessWidget {
                     _buildActionIcon(
                       context,
                       Icons.grid_view_rounded,
-                      "More",
+                      l10n.more,
                       semantic.warning,
-                      () => _showMoreMenu(context, semantic),
+                      () => _showMoreMenu(context, semantic, l10n),
                       semantic,
                     ),
                   ],
@@ -101,7 +103,8 @@ class DashboardBottomBar extends StatelessWidget {
     );
   }
 
-  void _showMoreMenu(BuildContext context, AppColors semantic) {
+  void _showMoreMenu(
+      BuildContext context, AppColors semantic, AppLocalizations l10n) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -119,8 +122,8 @@ class DashboardBottomBar extends StatelessWidget {
               _buildMenuItem(
                 context,
                 Icons.savings_rounded,
-                "Saving Goals",
-                "Track your milestones",
+                l10n.savingGoals,
+                l10n.trackYourMilestones,
                 const Color(0xFF10B981),
                 () {
                   Navigator.pop(context);
@@ -132,8 +135,8 @@ class DashboardBottomBar extends StatelessWidget {
               _buildMenuItem(
                 context,
                 Icons.pie_chart_rounded,
-                "Portfolio",
-                "Manage asset allocation",
+                l10n.portfolio,
+                l10n.assetAllocation,
                 const Color(0xFF10B981),
                 () {
                   Navigator.pop(context);
@@ -147,8 +150,8 @@ class DashboardBottomBar extends StatelessWidget {
               _buildMenuItem(
                 context,
                 Icons.history_toggle_off_rounded,
-                "Monthly History",
-                "View past performance",
+                l10n.monthlyHistory,
+                l10n.viewPastPerformance,
                 semantic.warning,
                 () {
                   Navigator.pop(context);
@@ -162,8 +165,8 @@ class DashboardBottomBar extends StatelessWidget {
               _buildMenuItem(
                 context,
                 Icons.auto_awesome_rounded,
-                "Automation",
-                "Recurring transactions",
+                l10n.automation,
+                l10n.recurringTransactions,
                 const Color(0xFF10B981),
                 () {
                   Navigator.pop(context);
@@ -177,8 +180,8 @@ class DashboardBottomBar extends StatelessWidget {
               _buildMenuItem(
                 context,
                 Icons.account_balance_wallet_rounded,
-                "Budgets",
-                "Manage spending limits",
+                l10n.budgets,
+                l10n.manageSpendingLimits,
                 semantic.primary,
                 () {
                   Navigator.pop(context);

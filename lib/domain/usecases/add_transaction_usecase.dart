@@ -73,12 +73,13 @@ class AddTransactionUseCase
 
     try {
       // 2. Repository Delegation
+      final entryDate = DateTime.parse(params.date);
       await repository.addEntry(
         params.type,
         params.amount,
         params.category,
         params.note,
-        params.date,
+        entryDate,
         paymentMethod: params.paymentMethod,
       );
 

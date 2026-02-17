@@ -73,7 +73,12 @@ class StartupUseCase extends UseCase<StartupResult, NoParams> {
       final upcomingBills = await repository.getUpcomingBills();
       final now = DateTime.now();
 
-      billsDueToday = BillSummary.filterDueEntries(upcomingBills, now);
+      billsDueToday = upcomingBills.where((b) {
+        if (b.dueDate == null || b.isPaid) return false;
+        return b.dueDate!.year == now.year &&
+            b.dueDate!.month == now.month &&
+            b.dueDate!.day == now.day;
+      }).toList();
 
       return Success(StartupResult(
         shouldScheduleReminder: shouldScheduleReminder,

@@ -9,6 +9,7 @@ import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/data/datasources/database.dart';
 import 'package:flutter/services.dart';
+import 'package:trueledger/domain/models/models.dart';
 import 'dart:io';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
@@ -103,20 +104,20 @@ void main() {
       // Arrange
       final now = DateTime.now();
       final bills = [
-        {
-          'id': 1,
-          'name': 'Rent',
-          'amount': 20000,
-          'due': now.toIso8601String(),
-          'type': 'BILL'
-        },
-        {
-          'id': 2,
-          'name': 'Netflix',
-          'amount': 199,
-          'due': now.toIso8601String(),
-          'type': 'SUBSCRIPTION'
-        },
+        BillSummary(
+          id: '1',
+          name: 'Rent',
+          amount: 20000,
+          dueDate: now,
+          type: 'BILL',
+        ),
+        BillSummary(
+          id: '2',
+          name: 'Netflix',
+          amount: 199,
+          dueDate: now,
+          type: 'SUBSCRIPTION',
+        ),
       ];
       when(() => mockRepository.getUpcomingBills())
           .thenAnswer((_) async => bills);
@@ -135,22 +136,22 @@ void main() {
       // Arrange
       final now = DateTime.now();
       final bills = [
-        {
-          'id': 1,
-          'name': 'Paid Bill',
-          'amount': 500,
-          'due': now.toIso8601String(),
-          'type': 'BILL',
-          'isPaid': true
-        },
-        {
-          'id': 2,
-          'name': 'Unpaid Bill',
-          'amount': 1000,
-          'due': now.toIso8601String(),
-          'type': 'BILL',
-          'isPaid': false
-        },
+        BillSummary(
+          id: '1',
+          name: 'Paid Bill',
+          amount: 500,
+          dueDate: now,
+          type: 'BILL',
+          isPaid: true,
+        ),
+        BillSummary(
+          id: '2',
+          name: 'Unpaid Bill',
+          amount: 1000,
+          dueDate: now,
+          type: 'BILL',
+          isPaid: false,
+        ),
       ];
       when(() => mockRepository.getUpcomingBills())
           .thenAnswer((_) async => bills);

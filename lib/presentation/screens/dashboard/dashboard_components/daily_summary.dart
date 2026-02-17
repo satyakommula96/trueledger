@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 
@@ -23,6 +24,7 @@ class DailySummary extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPrivacy = ref.watch(privacyProvider);
+    final l10n = AppLocalizations.of(context)!;
     final spendStr = CurrencyFormatter.format(todaySpend, isPrivate: isPrivacy);
 
     return HoverWrapper(
@@ -57,7 +59,7 @@ class DailySummary extends ConsumerWidget {
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      "TODAY",
+                      l10n.today.toUpperCase(),
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
@@ -89,7 +91,9 @@ class DailySummary extends ConsumerWidget {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "${CurrencyFormatter.format(totalBudgetRemaining!, isPrivate: isPrivacy)} left",
+                  l10n.remainingAmountLeft(CurrencyFormatter.format(
+                      totalBudgetRemaining!,
+                      isPrivate: isPrivacy)),
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,

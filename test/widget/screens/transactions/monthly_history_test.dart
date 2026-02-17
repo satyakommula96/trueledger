@@ -8,6 +8,7 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/transactions/monthly_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
+import 'package:trueledger/domain/models/models.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -53,21 +54,21 @@ void main() {
   });
 
   testWidgets('MonthlyHistoryScreen renders history list', (tester) async {
-    final List<Map<String, dynamic>> summaries = [
-      {
-        'month': '2023-01',
-        'income': 5000,
-        'expenses': 3000,
-        'invested': 1000,
-        'net': 2000,
-      },
-      {
-        'month': '2023-02',
-        'income': 4000,
-        'expenses': 4500,
-        'invested': 500,
-        'net': -500,
-      }
+    final summaries = [
+      FinancialTrend(
+        month: '2023-01',
+        income: 5000,
+        spending: 3000,
+        invested: 1000,
+        total: 3000,
+      ),
+      FinancialTrend(
+        month: '2023-02',
+        income: 4000,
+        spending: 4500,
+        invested: 500,
+        total: 4500,
+      )
     ];
 
     when(() => mockRepo.getMonthlyHistory(2023))
@@ -85,13 +86,13 @@ void main() {
   testWidgets('MonthlyHistoryScreen selects year and reloads', (tester) async {
     when(() => mockRepo.getMonthlyHistory(2023)).thenAnswer((_) async => []);
     when(() => mockRepo.getMonthlyHistory(2024)).thenAnswer((_) async => [
-          {
-            'month': '2024-01',
-            'income': 6000,
-            'expenses': 3000,
-            'invested': 1000,
-            'net': 3000,
-          }
+          FinancialTrend(
+            month: '2024-01',
+            income: 6000,
+            spending: 3000,
+            invested: 1000,
+            total: 3000,
+          )
         ]);
 
     await tester.pumpWidget(createSubject());

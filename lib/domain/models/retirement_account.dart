@@ -2,7 +2,7 @@ class RetirementAccount {
   final int id;
   final String name; // e.g., "EPF", "NPS", "PPF"
   final double balance;
-  final String lastUpdated;
+  final DateTime lastUpdated;
 
   RetirementAccount({
     required this.id,
@@ -11,22 +11,18 @@ class RetirementAccount {
     required this.lastUpdated,
   });
 
-  factory RetirementAccount.fromMap(Map<String, dynamic> map) {
+  RetirementAccount copyWith({
+    int? id,
+    String? name,
+    double? balance,
+    DateTime? lastUpdated,
+  }) {
     return RetirementAccount(
-      id: map['id'] as int,
-      name: map['type'] as String,
-      balance: (map['amount'] as num).toDouble(),
-      lastUpdated: map['date'] as String,
+      id: id ?? this.id,
+      name: name ?? this.name,
+      balance: balance ?? this.balance,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'type': name,
-      'amount': balance,
-      'date': lastUpdated,
-    };
   }
 }
 
@@ -40,22 +36,6 @@ class RetirementSettings {
     this.retirementAge = 60,
     this.annualReturnRate = 8.0,
   });
-
-  Map<String, dynamic> toMap() {
-    return {
-      'currentAge': currentAge,
-      'retirementAge': retirementAge,
-      'annualReturnRate': annualReturnRate,
-    };
-  }
-
-  factory RetirementSettings.fromMap(Map<String, dynamic> map) {
-    return RetirementSettings(
-      currentAge: map['currentAge'] ?? 30,
-      retirementAge: map['retirementAge'] ?? 60,
-      annualReturnRate: (map['annualReturnRate'] ?? 8.0).toDouble(),
-    );
-  }
 
   RetirementSettings copyWith({
     int? currentAge,

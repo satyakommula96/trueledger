@@ -2,9 +2,9 @@ class Budget {
   final int id;
   final String category;
   final double monthlyLimit;
-  final double spent; // Not in DB table, calculated field
+  final double spent;
   final DateTime? lastReviewedAt;
-  final bool isStable; // Calculated field based on history
+  final bool isStable;
 
   Budget({
     required this.id,
@@ -15,26 +15,21 @@ class Budget {
     this.isStable = false,
   });
 
-  factory Budget.fromMap(Map<String, dynamic> map) {
+  Budget copyWith({
+    int? id,
+    String? category,
+    double? monthlyLimit,
+    double? spent,
+    DateTime? lastReviewedAt,
+    bool? isStable,
+  }) {
     return Budget(
-      id: map['id'] as int,
-      category: map['category'] as String,
-      monthlyLimit: (map['monthly_limit'] as num).toDouble(),
-      spent: (map['spent'] as num? ?? 0).toDouble(),
-      lastReviewedAt: map['last_reviewed_at'] != null
-          ? DateTime.tryParse(map['last_reviewed_at'] as String)
-          : null,
-      isStable: map['is_stable'] == 1,
+      id: id ?? this.id,
+      category: category ?? this.category,
+      monthlyLimit: monthlyLimit ?? this.monthlyLimit,
+      spent: spent ?? this.spent,
+      lastReviewedAt: lastReviewedAt ?? this.lastReviewedAt,
+      isStable: isStable ?? this.isStable,
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'category': category,
-      'monthly_limit': monthlyLimit,
-      'last_reviewed_at': lastReviewedAt?.toIso8601String(),
-      // spent is usually excluded from DB writes
-    };
   }
 }

@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-
-import 'package:trueledger/core/utils/currency_formatter.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:trueledger/core/theme/theme.dart';
+import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/presentation/providers/category_provider.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
+import 'package:trueledger/presentation/providers/notification_provider.dart';
+import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
+import 'package:trueledger/core/utils/hash_utils.dart';
+import 'package:trueledger/core/utils/result.dart';
+import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
+import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
-import 'package:trueledger/presentation/providers/notification_provider.dart';
-import 'package:trueledger/core/utils/result.dart';
-import 'package:trueledger/core/services/notification_service.dart';
-import 'package:trueledger/core/utils/hash_utils.dart';
-import 'package:trueledger/presentation/providers/category_provider.dart';
-import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
 
 class AddExpense extends ConsumerStatefulWidget {
   final String? initialType;
@@ -77,9 +77,27 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
     super.dispose();
   }
 
+  String _getTypeLabel(String t, AppLocalizations l10n) {
+    switch (t) {
+      case 'Variable':
+        return l10n.variable;
+      case 'Fixed':
+        return l10n.fixed;
+      case 'Income':
+        return l10n.income;
+      case 'Investment':
+        return l10n.investment;
+      case 'Subscription':
+        return l10n.subscription;
+      default:
+        return t;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     final displayedTypes = widget.allowedTypes ??
         ['Variable', 'Fixed', 'Income', 'Investment', 'Subscription'];
     final bool isLocked = displayedTypes.length <= 1;
@@ -91,7 +109,9 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(
-          isLocked ? "NEW ${type.toUpperCase()}" : "NEW LEDGER ENTRY",
+          isLocked
+              ? l10n.newTypeEntry(_getTypeLabel(type, l10n).toUpperCase())
+              : l10n.newEntry,
           style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
         ),
       ),
@@ -107,8 +127,8 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (!isLocked) ...[
-                  const Text("ENTRY TYPE",
-                      style: TextStyle(
+                  Text(l10n.entryTypeLabel,
+                      style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 2,
@@ -127,7 +147,7 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                             data: Theme.of(context)
                                 .copyWith(canvasColor: Colors.transparent),
                             child: ChoiceChip(
-                              label: Text(t.toUpperCase()),
+                              label: Text(_getTypeLabel(t, l10n).toUpperCase()),
                               selected: active,
                               onSelected: (_) => setState(() {
                                 type = t;
@@ -170,8 +190,8 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                   ),
                   const SizedBox(height: 48),
                 ],
-                const Text("TRANSACTION AMOUNT",
-                    style: TextStyle(
+                Text(l10n.transactionAmountLabel,
+                    style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 2,
@@ -242,7 +262,7 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text("BUDGET IMPACT",
+                                    Text(l10n.budgetImpact,
                                         style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w900,
@@ -270,8 +290,12 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                                 const SizedBox(height: 12),
                                 Text(
                                   isExceeded
-                                      ? "EXCEEDS BUDGET BY ${CurrencyFormatter.format(totalAfter - limit)}"
-                                      : "REMAINING: ${CurrencyFormatter.format(limit - totalAfter)}",
+                                      ? l10n.exceedsBudgetBy(
+                                          CurrencyFormatter.format(
+                                              totalAfter - limit))
+                                      : l10n.remainingLabel(
+                                          CurrencyFormatter.format(
+                                              limit - totalAfter)),
                                   style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w900,
@@ -309,7 +333,7 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                           _selectedDate.day == DateTime.now().day &&
                                   _selectedDate.month == DateTime.now().month &&
                                   _selectedDate.year == DateTime.now().year
-                              ? "TODAY"
+                              ? l10n.today
                               : "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
                           style: TextStyle(
                               color: semantic.secondaryText,
@@ -322,8 +346,8 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                   ),
                 ).animate(delay: 200.ms).fadeIn(),
                 const SizedBox(height: 48),
-                const Text("CATEGORY CLASSIFICATION",
-                    style: TextStyle(
+                Text(l10n.categoryClassification,
+                    style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 2,
@@ -340,7 +364,7 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                                     builder: (context) =>
                                         const ManageCategoriesScreen())),
                             icon: const Icon(Icons.add),
-                            label: const Text("MANAGE CATEGORIES"),
+                            label: Text(l10n.manageCategories),
                           );
                         }
 
@@ -434,8 +458,8 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                     .animate(delay: 300.ms)
                     .fadeIn(),
                 const SizedBox(height: 48),
-                const Text("AUDIT NOTES",
-                    style: TextStyle(
+                Text(l10n.auditNotes,
+                    style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 2,
@@ -446,7 +470,7 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                   style: TextStyle(
                       fontWeight: FontWeight.w700, color: semantic.text),
                   decoration: InputDecoration(
-                    hintText: "Optional details...",
+                    hintText: l10n.optionalDetailsHint,
                     filled: true,
                     fillColor: semantic.surfaceCombined.withValues(alpha: 0.5),
                     border: OutlineInputBorder(
@@ -477,8 +501,8 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
                           borderRadius: BorderRadius.circular(20)),
                       elevation: 0,
                     ),
-                    child: const Text("COMMIT TO LEDGER",
-                        style: TextStyle(
+                    child: Text(l10n.commitToLedger,
+                        style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 2)),
@@ -496,17 +520,18 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
     final amountText = amountCtrl.text;
     if (amountText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please enter an amount")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.enterAmountError)));
       return;
     }
 
     final amount = double.tryParse(amountText);
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Please enter a valid positive amount")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.validPositiveAmountError)));
       return;
     }
 
@@ -533,11 +558,12 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
       final warning = transactionResult.budgetWarning;
       if (warning != null) {
         final title = warning.type == NotificationType.budgetExceeded
-            ? 'Budget Exceeded: ${warning.category}'
-            : 'Budget Warning: ${warning.category}';
+            ? l10n.budgetExceededTitle(warning.category)
+            : l10n.budgetWarningTitle(warning.category);
         final body = warning.type == NotificationType.budgetExceeded
-            ? 'You have spent 100% of your ${warning.category} budget.'
-            : 'You have reached ${warning.percentage.round()}% of your ${warning.category} budget.';
+            ? l10n.budgetExceededBody(warning.category)
+            : l10n.budgetWarningBody(
+                warning.category, warning.percentage.round());
 
         // Generate a stable ID locally
         final id = generateStableHash('${warning.category}_budget_alert');

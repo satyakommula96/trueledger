@@ -19,29 +19,25 @@ class CreditCard {
     this.currentBalance = 0.0,
   });
 
-  factory CreditCard.fromMap(Map<String, dynamic> map) {
+  CreditCard copyWith({
+    int? id,
+    String? bank,
+    double? creditLimit,
+    double? statementBalance,
+    double? currentBalance,
+    double? minDue,
+    String? dueDate,
+    String? statementDate,
+  }) {
     return CreditCard(
-      id: map['id'] as int,
-      bank: map['bank'] as String,
-      creditLimit: (map['credit_limit'] as num).toDouble(),
-      statementBalance: (map['statement_balance'] as num).toDouble(),
-      currentBalance: (map['current_balance'] as num?)?.toDouble() ?? 0.0,
-      minDue: (map['min_due'] as num).toDouble(),
-      dueDate: map['due_date'] as String,
-      statementDate: map['statement_date'] as String? ?? '',
+      id: id ?? this.id,
+      bank: bank ?? this.bank,
+      creditLimit: creditLimit ?? this.creditLimit,
+      statementBalance: statementBalance ?? this.statementBalance,
+      currentBalance: currentBalance ?? this.currentBalance,
+      minDue: minDue ?? this.minDue,
+      dueDate: dueDate ?? this.dueDate,
+      statementDate: statementDate ?? this.statementDate,
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'bank': bank,
-      'credit_limit': creditLimit,
-      'statement_balance': statementBalance,
-      'current_balance': currentBalance,
-      'min_due': minDue,
-      'due_date': dueDate,
-      'statement_date': statementDate,
-    };
   }
 }

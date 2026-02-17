@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/asset_liability_card.dart';
 import 'package:trueledger/domain/models/monthly_summary.dart';
 import 'package:trueledger/core/theme/theme.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
@@ -19,14 +19,11 @@ void main() {
   });
 
   Widget createTestWidget(Widget child) {
-    return ProviderScope(
+    return wrapWidget(
+      Scaffold(body: Center(child: child)),
       overrides: [
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: Scaffold(body: Center(child: child)),
-      ),
     );
   }
 

@@ -10,6 +10,8 @@ import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/settings/settings.dart';
 import 'package:trueledger/presentation/screens/settings/notifications_screen.dart';
 
+import 'package:trueledger/l10n/app_localizations.dart';
+
 class DashboardHeader extends ConsumerWidget {
   final bool isDark;
   final VoidCallback onLoad;
@@ -30,12 +32,13 @@ class DashboardHeader extends ConsumerWidget {
     final userName = ref.watch(userProvider);
     final isPrivacy = ref.watch(privacyProvider);
     final notificationCount = ref.watch(pendingNotificationCountProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     String getGreeting() {
       final hour = DateTime.now().hour;
-      if (hour < 12) return "Good Morning";
-      if (hour < 17) return "Good Afternoon";
-      return "Good Evening";
+      if (hour < 12) return l10n.goodMorning;
+      if (hour < 17) return l10n.goodAfternoon;
+      return l10n.goodEvening;
     }
 
     return SliverToBoxAdapter(
@@ -85,7 +88,7 @@ class DashboardHeader extends ConsumerWidget {
                     child: Row(
                       children: [
                         Text(
-                          "TrueLedger",
+                          l10n.appTitle,
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
@@ -154,19 +157,19 @@ class DashboardHeader extends ConsumerWidget {
                                       color: Colors.orange, size: 24),
                                   const SizedBox(width: 8),
                                   Flexible(
-                                    child: Text("Daily Streak",
+                                    child: Text(l10n.dailyStreak,
                                         style: TextStyle(color: semantic.text)),
                                   ),
                                 ],
                               ),
                               content: Text(
-                                "You're on a roll! You've logged transactions for $activeStreak consecutive days.\n\nKeep tracking your expenses daily to build a healthy financial habit!",
+                                l10n.streakMessage(activeStreak),
                                 style: TextStyle(color: semantic.secondaryText),
                               ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(context),
-                                  child: Text("Got it",
+                                  child: Text(l10n.gotIt,
                                       style:
                                           TextStyle(color: semantic.primary)),
                                 ),

@@ -1,6 +1,7 @@
 import 'package:trueledger/core/error/failure.dart';
 import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
+import 'package:trueledger/domain/models/models.dart';
 import 'usecase_base.dart';
 
 class CategoryStability {
@@ -59,28 +60,28 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
           previousYearStart, previousYearEnd);
 
       // 2. Calculate totals
-      final totalCurrent = currentYearCats.fold<double>(
-          0, (sum, c) => sum + (c['total'] as num? ?? 0).toDouble());
-      final totalPrevious = previousYearCats.fold<double>(
-          0, (sum, c) => sum + (c['total'] as num? ?? 0).toDouble());
+      final totalCurrent =
+          currentYearCats.fold<double>(0, (sum, c) => sum + c.total);
+      final totalPrevious =
+          previousYearCats.fold<double>(0, (sum, c) => sum + c.total);
 
       // 3. Category stability analysis
       final stabilityMetrics = <CategoryStability>[];
       final allCategories = {
-        ...currentYearCats.map((e) => e['category'] as String),
-        ...previousYearCats.map((e) => e['category'] as String),
+        ...currentYearCats.map((e) => e.category),
+        ...previousYearCats.map((e) => e.category),
       };
 
       for (var cat in allCategories) {
         final currentEntry = currentYearCats.firstWhere(
-            (e) => e['category'] == cat,
-            orElse: () => <String, dynamic>{'total': 0});
+            (e) => e.category == cat,
+            orElse: () => CategorySpending(category: cat, total: 0));
         final previousEntry = previousYearCats.firstWhere(
-            (e) => e['category'] == cat,
-            orElse: () => <String, dynamic>{'total': 0});
+            (e) => e.category == cat,
+            orElse: () => CategorySpending(category: cat, total: 0));
 
-        final currentAmount = (currentEntry['total'] as num? ?? 0).toDouble();
-        final previousAmount = (previousEntry['total'] as num? ?? 0).toDouble();
+        final currentAmount = currentEntry.total;
+        final previousAmount = previousEntry.total;
 
         if (currentAmount == 0 && previousAmount == 0) continue;
 
@@ -111,8 +112,8 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
       int monthsWithData = 0;
 
       for (var entry in history) {
-        final total = (entry['expenses'] as num? ?? 0).toDouble();
-        final monthStr = entry['month'] as String? ?? '';
+        final total = entry.spending;
+        final monthStr = entry.month;
         if (monthStr.length < 7) continue;
 
         final month = int.tryParse(monthStr.split('-')[1]);
@@ -137,9 +138,8 @@ class GetAnnualReflectionUseCase extends UseCase<AnnualReflectionData, int> {
       // Actually, if the user complained about "showing highest spending month even it is 0",
       // then we should probably only show it if maxAmount > 0.
 
-      final topCategory = currentYearCats.isNotEmpty
-          ? (currentYearCats.first['category'] as String?) ?? 'None'
-          : 'None';
+      final topCategory =
+          currentYearCats.isNotEmpty ? currentYearCats.first.category : 'None';
 
       return Success(AnnualReflectionData(
         year: year,

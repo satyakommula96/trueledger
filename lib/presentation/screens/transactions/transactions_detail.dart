@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
-
-import 'package:trueledger/domain/models/models.dart';
-import 'package:trueledger/core/theme/theme.dart';
-import 'package:trueledger/core/utils/currency_formatter.dart';
-import 'package:trueledger/presentation/screens/transactions/edit_entry.dart';
-import 'package:trueledger/presentation/components/error_view.dart';
-import 'package:trueledger/presentation/screens/dashboard/dashboard_components/quick_add_bottom_sheet.dart';
-import 'month_detail_components/category_icon.dart';
-import 'month_detail_components/month_detail_header.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/presentation/providers/privacy_provider.dart';
+import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/core/theme/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/presentation/screens/transactions/month_detail_components/category_icon.dart';
 import 'package:trueledger/presentation/components/empty_state.dart';
-import 'package:trueledger/presentation/providers/privacy_provider.dart';
+import 'package:trueledger/presentation/screens/transactions/month_detail_components/month_detail_header.dart';
+import 'package:trueledger/presentation/screens/transactions/edit_entry.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/quick_add_bottom_sheet.dart';
+import 'package:trueledger/presentation/components/error_view.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class TransactionsDetailScreen extends ConsumerStatefulWidget {
   final String title;
@@ -109,6 +109,7 @@ class _TransactionsDetailScreenState
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
     final isPrivate = ref.watch(privacyProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: semantic.surfaceCombined,
@@ -135,7 +136,7 @@ class _TransactionsDetailScreenState
       ),
       body: Column(
         children: [
-          _buildSummaryHeader(semantic, isPrivate),
+          _buildSummaryHeader(semantic, isPrivate, l10n),
           MonthDetailHeader(
             searchQuery: searchQuery,
             typeFilter: typeFilter,
@@ -153,20 +154,38 @@ class _TransactionsDetailScreenState
                         error: _error!,
                         onRetry: _loadData,
                       )
-                    : _buildLedgerList(semantic, isPrivate),
+                    : _buildLedgerList(semantic, isPrivate, l10n),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryHeader(AppColors semantic, bool isPrivate) {
+  Widget _buildSummaryHeader(
+      AppColors semantic, bool isPrivate, AppLocalizations l10n) {
     final items = _getFilteredItems();
     final total = items.fold<double>(0, (sum, item) => sum + item.amount);
     final isIncome = typeFilter == "Income";
     final displayColor = isIncome
         ? semantic.income
         : (typeFilter == "All" ? semantic.primary : semantic.overspent);
+
+    String getFilterLabel() {
+      switch (typeFilter) {
+        case 'All':
+          return l10n.all;
+        case 'Expenses':
+          return l10n.expenses;
+        case 'Income':
+          return l10n.income;
+        case 'Fixed':
+          return l10n.fixed;
+        case 'Variable':
+          return l10n.variable;
+        default:
+          return typeFilter;
+      }
+    }
 
     return Container(
       width: double.infinity,
@@ -192,7 +211,7 @@ class _TransactionsDetailScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${typeFilter.toUpperCase()} TOTAL",
+                  l10n.typeTotal(getFilterLabel().toUpperCase()),
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -244,12 +263,14 @@ class _TransactionsDetailScreenState
         .slideY(begin: 0.05, end: 0, curve: Curves.easeOutQuart);
   }
 
-  Widget _buildLedgerList(AppColors semantic, bool isPrivate) {
+  Widget _buildLedgerList(
+      AppColors semantic, bool isPrivate, AppLocalizations l10n) {
     final items = _getFilteredItems();
     if (items.isEmpty) {
-      return const EmptyState(
-        message: "NO ENTRIES YET",
-        subMessage: "NO TRANSACTIONS FOUND FOR THIS PERIOD.",
+      return EmptyState(
+        message:
+            searchQuery.isEmpty ? l10n.noEntriesYet : l10n.noResultsMatched,
+        subMessage: l10n.noTransactionsFoundPeriod,
         icon: Icons.receipt_long_rounded,
       );
     }
@@ -375,7 +396,7 @@ class _TransactionsDetailScreenState
                           const SizedBox(height: 6),
                           Text(
                             DateFormat('dd MMM')
-                                .format(DateTime.parse(item.date))
+                                .format(item.date)
                                 .toUpperCase(),
                             style: TextStyle(
                               fontSize: 9,

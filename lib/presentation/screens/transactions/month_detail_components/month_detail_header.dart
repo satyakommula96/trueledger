@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:trueledger/core/theme/theme.dart';
 
+import 'package:trueledger/l10n/app_localizations.dart';
+
 class MonthDetailHeader extends StatelessWidget {
   final String searchQuery;
   final String typeFilter;
@@ -21,6 +23,8 @@ class MonthDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       children: [
         Padding(
@@ -34,7 +38,7 @@ class MonthDetailHeader extends StatelessWidget {
               letterSpacing: 0,
             ),
             decoration: InputDecoration(
-              hintText: "SEARCH LEDGER...",
+              hintText: l10n.searchLedger,
               hintStyle: TextStyle(
                 color: semantic.secondaryText.withValues(alpha: 0.4),
                 fontSize: 10,
@@ -72,19 +76,19 @@ class MonthDetailHeader extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: Row(
               children: [
-                _buildFilterChip(
-                    context, "All", Icons.apps_rounded, semantic.primary),
+                _buildFilterChip(context, "All", l10n.all, Icons.apps_rounded,
+                    semantic.primary),
                 const SizedBox(width: 10),
-                _buildFilterChip(context, "Expenses",
+                _buildFilterChip(context, "Expenses", l10n.expenses,
                     Icons.trending_down_rounded, semantic.overspent),
                 const SizedBox(width: 10),
-                _buildFilterChip(context, "Income", Icons.trending_up_rounded,
-                    semantic.income),
+                _buildFilterChip(context, "Income", l10n.income,
+                    Icons.trending_up_rounded, semantic.income),
                 const SizedBox(width: 10),
-                _buildFilterChip(
-                    context, "Fixed", Icons.lock_clock_rounded, Colors.orange),
+                _buildFilterChip(context, "Fixed", l10n.fixed,
+                    Icons.lock_clock_rounded, Colors.orange),
                 const SizedBox(width: 10),
-                _buildFilterChip(context, "Variable",
+                _buildFilterChip(context, "Variable", l10n.variable,
                     Icons.shopping_bag_rounded, Colors.purple),
               ],
             ),
@@ -93,14 +97,14 @@ class MonthDetailHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterChip(
-      BuildContext context, String label, IconData icon, Color color) {
-    final isSelected = typeFilter == label;
+  Widget _buildFilterChip(BuildContext context, String value, String label,
+      IconData icon, Color color) {
+    final isSelected = typeFilter == value;
     final isTouch = Theme.of(context).platform == TargetPlatform.iOS ||
         Theme.of(context).platform == TargetPlatform.android;
 
     final child = GestureDetector(
-      onTap: () => onFilterChanged(label),
+      onTap: () => onFilterChanged(value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOutQuart,

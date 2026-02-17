@@ -3,18 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/quick_add_actions.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../helpers/test_wrapper.dart';
 
 void main() {
   final semantic = AppTheme.darkColors;
 
   Widget createWidget(QuickAddActions widget) {
-    return ProviderScope(
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: Scaffold(body: widget),
-      ),
-    );
+    return wrapWidget(Scaffold(body: widget));
   }
 
   group('QuickAddActions Widget Tests', () {

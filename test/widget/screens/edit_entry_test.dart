@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
@@ -7,11 +6,11 @@ import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/screens/transactions/edit_entry.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/core/constants/widget_keys.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -24,16 +23,13 @@ void main() {
   });
 
   Widget createTestWidget(LedgerItem item, SharedPreferences prefs) {
-    return ProviderScope(
+    return wrapWidget(
+      EditEntryScreen(entry: item),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
         sharedPreferencesProvider.overrideWithValue(prefs),
         dashboardProvider.overrideWith((ref) => Future.value(null as dynamic)),
       ],
-      child: MaterialApp(
-        theme: AppTheme.lightTheme,
-        home: EditEntryScreen(entry: item),
-      ),
     );
   }
 
@@ -43,7 +39,11 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     final item = LedgerItem(
-        id: 1, type: 'Variable', label: 'Food', amount: 50, date: '2026-02-01');
+        id: 1,
+        type: 'Variable',
+        label: 'Food',
+        amount: 50,
+        date: DateTime(2026, 2, 1));
 
     when(() => mockRepo.getCategories(any())).thenAnswer((_) async => []);
 
@@ -60,7 +60,11 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     final item = LedgerItem(
-        id: 1, type: 'Variable', label: 'Food', amount: 50, date: '2026-02-01');
+        id: 1,
+        type: 'Variable',
+        label: 'Food',
+        amount: 50,
+        date: DateTime(2026, 2, 1));
 
     when(() => mockRepo.getCategories(any())).thenAnswer((_) async => []);
     when(() => mockRepo.updateEntry(any(), any(), any()))
@@ -88,7 +92,11 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
 
     final item = LedgerItem(
-        id: 1, type: 'Variable', label: 'Food', amount: 50, date: '2026-02-01');
+        id: 1,
+        type: 'Variable',
+        label: 'Food',
+        amount: 50,
+        date: DateTime(2026, 2, 1));
 
     when(() => mockRepo.getCategories(any())).thenAnswer((_) async => []);
     when(() => mockRepo.deleteItem(any(), any())).thenAnswer((_) async => {});

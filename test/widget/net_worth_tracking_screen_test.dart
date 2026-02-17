@@ -12,6 +12,8 @@ import 'package:trueledger/presentation/screens/net_worth/net_worth_tracking_scr
 import 'package:trueledger/presentation/screens/net_worth/net_worth_details.dart';
 import 'package:trueledger/core/constants/widget_keys.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 import '../helpers/currency_test_helpers.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
@@ -41,6 +43,16 @@ void main() {
       ],
       child: MaterialApp(
         theme: AppTheme.darkTheme,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', ''),
+          Locale('te', ''),
+        ],
         home: const NetWorthTrackingScreen(),
       ),
     );
