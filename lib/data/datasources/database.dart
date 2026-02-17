@@ -35,8 +35,10 @@ class AppDatabase {
 
   static Future<common.Database> get db async {
     if (_db != null) return _db!;
+    debugPrint('AppDatabase: Requesting database instance...');
     _initializationInstance ??= _initDb();
     _db = await _initializationInstance;
+    debugPrint('AppDatabase: Database instance acquired.');
     return _db!;
   }
 
@@ -58,6 +60,7 @@ class AppDatabase {
     }
 
     try {
+      debugPrint('AppDatabase: Reading key from Secure Storage...');
       String? key = await _storage.read(key: _keyParams);
       if (key == null) {
         final random = Random.secure();
@@ -76,6 +79,7 @@ class AppDatabase {
   }
 
   static Future<common.Database> _initDb() async {
+    debugPrint('AppDatabase: _initDb() started. _isTest=$_isTest');
     String path;
     if (kIsWeb) {
       path = _dbName;
