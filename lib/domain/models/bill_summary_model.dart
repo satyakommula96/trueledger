@@ -1,5 +1,3 @@
-import 'package:trueledger/core/utils/date_helper.dart';
-
 class BillSummary {
   final String id;
   final String name;
@@ -17,45 +15,21 @@ class BillSummary {
     this.isPaid = false,
   });
 
-  factory BillSummary.fromMap(Map<String, dynamic> map) {
+  BillSummary copyWith({
+    String? id,
+    String? name,
+    double? amount,
+    DateTime? dueDate,
+    String? type,
+    bool? isPaid,
+  }) {
     return BillSummary(
-      id: (map['id'] ?? '').toString(),
-      name: (map['name'] ?? map['title'] ?? 'Bill').toString(),
-      amount: _parseAmount(map['amount']),
-      dueDate: DateHelper.parseDue(map['due']?.toString() ?? ''),
-      type: map['type']?.toString() ?? 'BILL',
-      isPaid: map['isPaid'] == true || map['isPaid'] == 1,
+      id: id ?? this.id,
+      name: name ?? this.name,
+      amount: amount ?? this.amount,
+      dueDate: dueDate ?? this.dueDate,
+      type: type ?? this.type,
+      isPaid: isPaid ?? this.isPaid,
     );
-  }
-
-  static double _parseAmount(dynamic value) {
-    if (value == null) return 0;
-    if (value is num) return value.toDouble();
-    if (value is String) {
-      if (value.trim().isEmpty) return 0.0;
-      return double.tryParse(value) ?? 0.0;
-    }
-    return 0;
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'amount': amount,
-        'due': dueDate?.toIso8601String(),
-        'type': type,
-        'isPaid': isPaid,
-      };
-
-  /// Shared logic to identify unpaid bills due on a specific day from raw database maps.
-  static List<BillSummary> filterDueEntries(
-      List<dynamic> entries, DateTime date) {
-    return entries
-        .map((e) => BillSummary.fromMap(Map<String, dynamic>.from(e)))
-        .where((b) =>
-            b.dueDate != null &&
-            DateHelper.isSameDay(b.dueDate!, date) &&
-            !b.isPaid)
-        .toList();
   }
 }

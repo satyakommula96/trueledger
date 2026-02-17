@@ -54,12 +54,16 @@ void main() {
       final now = DateTime.now();
       final monthStr = now.toIso8601String().substring(0, 7);
 
-      await repo.addEntry('Income', 5000, 'Salary', 'Monthly', '$monthStr-01');
-      await repo.addEntry('Variable', 1000, 'Food', 'Dinner', '$monthStr-02');
-      await repo.addEntry('Fixed', 2000, 'Rent', 'Monthly', '$monthStr-03');
       await repo.addEntry(
-          'Subscription', 500, 'Netflix', 'Monthly', '$monthStr-04');
-      await repo.addEntry('Investment', 1500, 'Stocks', 'HDFC', '$monthStr-05');
+          'Income', 5000, 'Salary', 'Monthly', DateTime.parse('$monthStr-01'));
+      await repo.addEntry(
+          'Variable', 1000, 'Food', 'Dinner', DateTime.parse('$monthStr-02'));
+      await repo.addEntry(
+          'Fixed', 2000, 'Rent', 'Monthly', DateTime.parse('$monthStr-03'));
+      await repo.addEntry('Subscription', 500, 'Netflix', 'Monthly',
+          DateTime.parse('$monthStr-04'));
+      await repo.addEntry(
+          'Investment', 1500, 'Stocks', 'HDFC', DateTime.parse('$monthStr-05'));
 
       await repo.addLoan(
           'Home Loan', 'Bank', 100000, 80000, 5000, 8.5, '5th', '$monthStr-01');
@@ -83,10 +87,11 @@ void main() {
       final lastMonthStr = lastMonth.toIso8601String().substring(0, 7);
 
       await repo.addEntry('Income', 5000, 'Salary', '',
-          '${now.toIso8601String().substring(0, 7)}-01');
+          DateTime.parse('${now.toIso8601String().substring(0, 7)}-01'));
       await repo.addEntry('Variable', 1000, 'Food', '',
-          '${now.toIso8601String().substring(0, 7)}-02');
-      await repo.addEntry('Variable', 2000, 'Shopping', '', '$lastMonthStr-01');
+          DateTime.parse('${now.toIso8601String().substring(0, 7)}-02'));
+      await repo.addEntry(
+          'Variable', 2000, 'Shopping', '', DateTime.parse('$lastMonthStr-01'));
 
       final trend = await repo.getSpendingTrend();
       expect(trend.length, greaterThanOrEqualTo(1));
@@ -104,12 +109,12 @@ void main() {
           'Amit', 'Individual', 10000, 7000, 500, 0, '1st', '2024-01-01');
 
       final bills = await repo.getUpcomingBills();
-      expect(bills.any((b) => b['type'] == 'SUBSCRIPTION'), isTrue);
-      expect(bills.any((b) => b['type'] == 'CREDIT DUE'), isTrue);
-      expect(bills.any((b) => b['type'] == 'LOAN EMI'), isTrue);
+      expect(bills.any((b) => b.type == 'SUBSCRIPTION'), isTrue);
+      expect(bills.any((b) => b.type == 'CREDIT DUE'), isTrue);
+      expect(bills.any((b) => b.type == 'LOAN EMI'), isTrue);
 
-      final borrowing = bills.firstWhere((b) => b['type'] == 'BORROWING DUE');
-      expect(borrowing['amount'],
+      final borrowing = bills.firstWhere((b) => b.type == 'BORROWING DUE');
+      expect(borrowing.amount,
           7000); // Should use remaining_amount (7000) not emi (500)
     });
 
@@ -147,15 +152,17 @@ void main() {
       final now = DateTime.now();
       final monthStr = now.toIso8601String().substring(0, 7);
 
-      await repo.addEntry('Variable', 100, 'Food', 'Test', '$monthStr-01');
-      await repo.addEntry('Income', 500, 'Salary', '', '$monthStr-02');
+      await repo.addEntry(
+          'Variable', 100, 'Food', 'Test', DateTime.parse('$monthStr-01'));
+      await repo.addEntry(
+          'Income', 500, 'Salary', '', DateTime.parse('$monthStr-02'));
 
       final details = await repo.getMonthDetails(monthStr);
       expect(details.length, 2);
 
       final history = await repo.getMonthlyHistory(now.year);
       expect(history, isNotEmpty);
-      expect(history.first['month'], monthStr);
+      expect(history.first.month, monthStr);
     });
 
     test('Budget CRUD and review', () async {
@@ -197,18 +204,22 @@ void main() {
           .substring(0, 10);
 
       // Today: Variable Expense
-      await repo.addEntry('Variable', 10, 'Test Var', '', today);
+      await repo.addEntry(
+          'Variable', 10, 'Test Var', '', DateTime.parse(today));
       // Yesterday: Fixed Expense (e.g. Loan Payment)
-      await repo.addEntry('Fixed', 100, 'Loan EMI', '', yesterday);
+      await repo.addEntry(
+          'Fixed', 100, 'Loan EMI', '', DateTime.parse(yesterday));
       // Day Before: Income
-      await repo.addEntry('Income', 5000, 'Salary', '', dayBefore);
+      await repo.addEntry(
+          'Income', 5000, 'Salary', '', DateTime.parse(dayBefore));
 
       final streak = await repo.getActiveStreak();
       expect(streak, 3);
     });
 
     test('backup and restore', () async {
-      await repo.addEntry('Variable', 123, 'BackupTest', '', '2024-01-01');
+      await repo.addEntry(
+          'Variable', 123, 'BackupTest', '', DateTime.parse('2024-01-01'));
       final backup = await repo.generateBackup();
 
       await repo.clearData();

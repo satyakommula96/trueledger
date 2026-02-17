@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/screens/budget/edit_budget.dart';
@@ -8,7 +7,7 @@ import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/usecases/budget_usecases.dart';
 import 'package:trueledger/core/utils/result.dart';
 
-import 'package:trueledger/core/theme/theme.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockUpdateBudgetUseCase extends Mock implements UpdateBudgetUseCase {}
 
@@ -29,16 +28,13 @@ void main() {
   });
 
   Widget createWidgetUnderTest(Budget budget) {
-    return ProviderScope(
+    return wrapWidget(
+      EditBudgetScreen(budget: budget),
       overrides: [
         updateBudgetUseCaseProvider.overrideWithValue(mockUpdate),
         deleteBudgetUseCaseProvider.overrideWithValue(mockDelete),
         markBudgetAsReviewedUseCaseProvider.overrideWithValue(mockMarkReviewed),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: EditBudgetScreen(budget: budget),
-      ),
     );
   }
 

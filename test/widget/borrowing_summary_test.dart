@@ -3,13 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/borrowing_summary.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
@@ -35,21 +35,18 @@ void main() {
     required MonthlySummary summary,
     required VoidCallback onLoad,
   }) {
-    return ProviderScope(
+    return wrapWidget(
+      Scaffold(
+        body: BorrowingSummary(
+          summary: summary,
+          semantic: semantic,
+          onLoad: onLoad,
+        ),
+      ),
       overrides: [
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
         financialRepositoryProvider.overrideWithValue(mockRepo),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: Scaffold(
-          body: BorrowingSummary(
-            summary: summary,
-            semantic: semantic,
-            onLoad: onLoad,
-          ),
-        ),
-      ),
     );
   }
 

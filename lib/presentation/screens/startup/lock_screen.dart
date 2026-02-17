@@ -8,6 +8,7 @@ import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/analysis_provider.dart';
 import 'package:trueledger/core/providers/secure_storage_provider.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
+import 'package:trueledger/domain/services/biometric_service.dart';
 
 class LockScreen extends ConsumerStatefulWidget {
   final int? expectedPinLength;
@@ -29,6 +30,26 @@ class _LockScreenState extends ConsumerState<LockScreen> {
     _pinLength = widget.expectedPinLength ?? 4;
     if (widget.expectedPinLength == null) {
       _loadPinLength();
+    }
+    _attemptBiometricAuth();
+  }
+
+  Future<void> _attemptBiometricAuth() async {
+    final bioService = ref.read(biometricServiceProvider);
+    if (bioService.isBiometricEnabled) {
+      final success = await bioService.authenticate();
+      if (success && mounted) {
+        _unlock();
+      }
+    }
+  }
+
+  void _unlock() {
+    if (widget.onUnlocked != null) {
+      widget.onUnlocked!();
+    } else {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => const Dashboard()));
     }
   }
 
@@ -54,12 +75,7 @@ class _LockScreenState extends ConsumerState<LockScreen> {
 
       if (storedPin == _pin) {
         if (mounted) {
-          if (widget.onUnlocked != null) {
-            widget.onUnlocked!();
-          } else {
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (_) => const Dashboard()));
-          }
+          _unlock();
         }
       } else {
         setState(() {
@@ -342,7 +358,26 @@ class _LockScreenState extends ConsumerState<LockScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      const SizedBox(width: 80),
+                      ref.watch(biometricServiceProvider).isBiometricEnabled
+                          ? InkWell(
+                              onTap: () async {
+                                final bioService =
+                                    ref.read(biometricServiceProvider);
+                                final success = await bioService.authenticate();
+                                if (success && mounted) {
+                                  _unlock();
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(40),
+                              child: Container(
+                                width: 80,
+                                height: 80,
+                                alignment: Alignment.center,
+                                child: Icon(Icons.fingerprint_rounded,
+                                    size: 32, color: colorScheme.primary),
+                              ),
+                            )
+                          : const SizedBox(width: 80),
                       _buildKey("0"),
                       InkWell(
                         onTap: _onDelete,

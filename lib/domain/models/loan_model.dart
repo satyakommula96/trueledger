@@ -25,35 +25,63 @@ class Loan {
     this.interestEngineVersion = 1,
   });
 
-  factory Loan.fromMap(Map<String, dynamic> map) {
+  Loan copyWith({
+    int? id,
+    String? name,
+    String? loanType,
+    double? totalAmount,
+    double? remainingAmount,
+    double? emi,
+    double? interestRate,
+    String? dueDate,
+    String? date,
+    String? lastPaymentDate,
+    int? interestEngineVersion,
+  }) {
     return Loan(
-      id: map['id'] as int,
-      name: map['name'] as String,
-      loanType: map['loan_type'] as String,
-      totalAmount: (map['total_amount'] as num).toDouble(),
-      remainingAmount: (map['remaining_amount'] as num).toDouble(),
-      emi: (map['emi'] as num).toDouble(),
-      interestRate: (map['interest_rate'] as num).toDouble(),
-      dueDate: map['due_date'] as String,
-      date: map['date'] as String?,
-      lastPaymentDate: map['last_payment_date'] as String?,
-      interestEngineVersion: map['interest_engine_version'] as int? ?? 1,
+      id: id ?? this.id,
+      name: name ?? this.name,
+      loanType: loanType ?? this.loanType,
+      totalAmount: totalAmount ?? this.totalAmount,
+      remainingAmount: remainingAmount ?? this.remainingAmount,
+      emi: emi ?? this.emi,
+      interestRate: interestRate ?? this.interestRate,
+      dueDate: dueDate ?? this.dueDate,
+      date: date ?? this.date,
+      lastPaymentDate: lastPaymentDate ?? this.lastPaymentDate,
+      interestEngineVersion:
+          interestEngineVersion ?? this.interestEngineVersion,
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'loan_type': loanType,
-      'total_amount': totalAmount,
-      'remaining_amount': remainingAmount,
-      'emi': emi,
-      'interest_rate': interestRate,
-      'due_date': dueDate,
-      'date': date,
-      'last_payment_date': lastPaymentDate,
-      'interest_engine_version': interestEngineVersion,
-    };
-  }
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Loan &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          loanType == other.loanType &&
+          totalAmount == other.totalAmount &&
+          remainingAmount == other.remainingAmount &&
+          emi == other.emi &&
+          interestRate == other.interestRate &&
+          dueDate == other.dueDate &&
+          date == other.date &&
+          lastPaymentDate == other.lastPaymentDate &&
+          interestEngineVersion == other.interestEngineVersion;
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      name.hashCode ^
+      loanType.hashCode ^
+      totalAmount.hashCode ^
+      remainingAmount.hashCode ^
+      emi.hashCode ^
+      interestRate.hashCode ^
+      dueDate.hashCode ^
+      date.hashCode ^
+      lastPaymentDate.hashCode ^
+      interestEngineVersion.hashCode;
 }

@@ -22,7 +22,7 @@ class AppTheme {
     overspent: const Color(0xFFE11D48), // Rose 600
     warning: const Color(0xFFD97706), // Amber 600
     divider: const Color(0xFFE2E8F0), // Slate 200
-    secondaryText: const Color(0xFF64748B), // Slate 500
+    secondaryText: const Color(0xFF475569), // Slate 600 (Improved contrast)
     surfaceCombined: const Color(0xFFF1F5F9), // Slate 100
     shimmer: Colors.black12,
     text: const Color(0xFF0F172A), // Slate 900

@@ -1,0 +1,707 @@
+{
+  "appTitle": "TrueLedger",
+  "dashboard": "Dashboard",
+  "netWorth": "Net Worth",
+  "income": "Income",
+  "expenses": "Expenses",
+  "budgets": "Budgets",
+  "investments": "Investments",
+  "loans": "Loans",
+  "fixed": "Fixed",
+  "variable": "Variable",
+  "subscription": "Subscription",
+  "investment": "Investment",
+  "totalBalance": "Total Balance",
+  "monthlySummary": "Monthly Summary",
+  "monthlyHistory": "Monthly History",
+  "addTransaction": "Add Transaction",
+  "recentTransactions": "Recent Transactions",
+  "noTransactions": "No transactions found",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "billsDueToday": "{count} BILL DUE TODAY",
+  "@billsDueToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "billsDueTodayPlural": "{count} BILLS DUE TODAY",
+  "@billsDueTodayPlural": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "todayLedger": "Today's Ledger",
+  "paymentCalendar": "Payment Calendar",
+  "monthView": "Month view",
+  "language": "Language",
+  "chooseLanguage": "Choose your preferred language",
+  "biometrics": "Biometric Authentication",
+  "enableBiometrics": "Use fingerprint or face ID to unlock",
+  "analysis": "Analysis",
+  "monthlyTrend": "Monthly Trend",
+  "spendingAndIncome": "Spending & Income",
+  "distribution": "Distribution",
+  "byCategory": "By Category",
+  "momentum": "Momentum",
+  "velocityIncreased": "Velocity increased by ",
+  "spendingDecreased": "Excellent. Spending decreased by ",
+  "relativeToLastPeriod": " relative to last period.",
+  "portfolio": "Portfolio",
+  "netPortfolioValue": "NET PORTFOLIO VALUE",
+  "allocation": "Allocation",
+  "assetClasses": "Asset Classes",
+  "myAssets": "My Assets",
+  "fullList": "Full List",
+  "noAssetsTracked": "NO ASSETS TRACKED",
+  "addFirstInvestment": "Add your first investment to see analysis.",
+  "goodMorning": "Good Morning",
+  "goodAfternoon": "Good Afternoon",
+  "goodEvening": "Good Evening",
+  "dailyStreak": "Daily Streak",
+  "streakMessage": "You're on a roll! You've logged transactions for {count} consecutive days.\n\nKeep tracking your expenses daily to build a healthy financial habit!",
+  "@streakMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gotIt": "Got it",
+  "currentBalance": "CURRENT BALANCE",
+  "personalization": "Personalization",
+  "personalizationDesc": "Experience adapts to your patterns",
+  "privateAndLocal": "PRIVATE & LOCAL",
+  "privateAndLocalDesc": "All personalization data is stored only on your device. We never sync or upload your behavior patterns or sensitive financial identifiers.",
+  "dynamicAdaptation": "DYNAMIC ADAPTATION",
+  "dynamicAdaptationDesc": "Allow experience to adapt to your patterns.",
+  "adaptiveBehavior": "ADAPTIVE BEHAVIOR",
+  "rememberLastUsed": "REMEMBER LAST-USED",
+  "rememberLastUsedDesc": "Pre-fill category and payment method based on your last entry.",
+  "timeOfDaySuggestions": "TIME-OF-DAY SUGGESTIONS",
+  "timeOfDaySuggestionsDesc": "Suggest categories based on the time and your repetitions.",
+  "shortcutSuggestions": "SHORTCUT SUGGESTIONS",
+  "shortcutSuggestionsDesc": "Prompt to create quick-add shortcuts for frequent transactions.",
+  "baselineReflections": "BASELINE REFLECTIONS",
+  "baselineReflectionsDesc": "Show comparisons locally (e.g. 'Higher than your usual Friday').",
+  "salaryCycle": "SALARY CYCLE",
+  "usualPayDay": "USUAL PAY DAY",
+  "dayNum": "Day {day}",
+  "@dayNum": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "notSet": "NOT SET",
+  "quickPresets": "QUICK PRESETS",
+  "noPresetsYet": "NO PRESETS CREATED YET.",
+  "createNewPreset": "CREATE NEW PRESET",
+  "reminders": "REMINDERS",
+  "reminderTime": "REMINDER TIME",
+  "off": "OFF",
+  "reminderTimeCleared": "REMINDER TIME CLEARED",
+  "trustAndControl": "TRUST & CONTROL",
+  "resetPersonalization": "RESET PERSONALIZATION?",
+  "resetPersonalizationDesc": "This will wipe all local learned behaviors. Your expense history will remain safe.",
+  "reset": "RESET",
+  "personalizationResetCompleted": "PERSONALIZATION RESET COMPLETED",
+  "selectPayDay": "SELECT PAY DAY",
+  "createPreset": "CREATE PRESET",
+  "presetLabel": "LABEL (e.g. Coffee)",
+  "amount": "AMOUNT",
+  "category": "CATEGORY",
+  "deletePreset": "Delete Preset",
+  "all": "All",
+  "searchLedger": "SEARCH LEDGER...",
+  "typeTotal": "{type} TOTAL",
+  "@typeTotal": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "noEntriesYet": "NO ENTRIES YET",
+  "noTransactionsFoundPeriod": "NO TRANSACTIONS FOUND FOR THIS PERIOD.",
+  "weeklySummary": "WEEKLY SUMMARY",
+  "greatWorkWeek": "Great work this week.",
+  "reviewYourWeek": "Review your week.",
+  "underBudgetDays": "You stayed under budget {count} days.",
+  "@underBudgetDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "perfectWeek": "Perfect week! You stayed under budget every day.",
+  "heavyWeek": "It was a heavy week. Try to track closer next week.",
+  "spendingConsistency": "Spending Consistency",
+  "dailyBenchmark": "Daily Benchmark: ~{amount}",
+  "@dailyBenchmark": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "spendingSpike": "Spending Spike",
+  "spikeMessage": "{category} increased by {amount} vs last week.",
+  "@spikeMessage": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "newCategoryExpenditure": "This is a new expenditure category for you.",
+  "eyeOnCategoryTrend": "Keep an eye on this category trend.",
+  "stableSpending": "Stable Spending",
+  "noSpikesDetected": "Zero significant spending spikes detected compared to last week.",
+  "spendingStabilizing": "Your spending habits are stabilizing well.",
+  "volumeComparison": "Volume Comparison",
+  "reducedSpendingSuccess": "Success! You reduced spending by {amount}.",
+  "@reducedSpendingSuccess": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "increasedSpendingMessage": "Spending increased by {amount} vs last week.",
+  "@increasedSpendingMessage": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "lastWeekVsThisWeek": "Last Week: {last} | This Week: {current}",
+  "@lastWeekVsThisWeek": {
+    "placeholders": {
+      "last": { "type": "String" },
+      "current": { "type": "String" }
+    }
+  },
+  "primaryCategory": "Primary Category",
+  "largestExpenditureArea": "{category} was your largest expenditure area.",
+  "@largestExpenditureArea": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "alignWithPriorities": "Evaluate if this aligns with your current priorities.",
+  "weeklyFocus": "WEEKLY FOCUS",
+  "gentleGoal": "Gentle Goal",
+  "reductionTarget": "Target a 10% reduction in {category} spending.",
+  "@reductionTarget": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "stayUnderBudgetGoal": "Attempt to stay under budget for 5 days next week.",
+  "sustainableProgress": "Sustainable progress comes from consistent, small adjustments.",
+  "reflectionFinancialIntuition": "Reflection builds financial intuition.",
+  "newEntry": "NEW LEDGER ENTRY",
+  "newTypeEntry": "NEW {type}",
+  "@newTypeEntry": {
+    "placeholders": {
+      "type": { "type": "String" }
+    }
+  },
+  "entryTypeLabel": "ENTRY TYPE",
+  "transactionAmountLabel": "TRANSACTION AMOUNT",
+  "budgetImpact": "BUDGET IMPACT",
+  "exceedsBudgetBy": "EXCEEDS BUDGET BY {amount}",
+  "@exceedsBudgetBy": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "remainingLabel": "REMAINING: {amount}",
+  "@remainingLabel": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "today": "TODAY",
+  "categoryClassification": "CATEGORY CLASSIFICATION",
+  "manageCategories": "MANAGE CATEGORIES",
+  "auditNotes": "AUDIT NOTES",
+  "optionalDetailsHint": "Optional details...",
+  "commitToLedger": "COMMIT TO LEDGER",
+  "enterAmountError": "Please enter an amount",
+  "validPositiveAmountError": "Please enter a valid positive amount",
+  "budgetExceededTitle": "Budget Exceeded: {category}",
+  "@budgetExceededTitle": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "budgetWarningTitle": "Budget Warning: {category}",
+  "@budgetWarningTitle": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "budgetExceededBody": "You have spent 100% of your {category} budget.",
+  "@budgetExceededBody": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "budgetWarningBody": "You have reached {percentage}% of your {category} budget.",
+  "@budgetWarningBody": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "percentage": { "type": "int" }
+    }
+  },
+  "editTypeEntry": "EDIT {type}",
+  "@editTypeEntry": {
+    "placeholders": {
+      "type": { "type": "String" }
+    }
+  },
+  "sourceLabel": "SOURCE",
+  "labelLabel": "LABEL",
+  "noteLabel": "NOTE",
+  "updateEntry": "UPDATE ENTRY",
+  "amountLabel": "AMOUNT",
+  "entryUpdated": "Entry updated",
+  "deleteItemTitle": "DELETE ITEM?",
+  "deleteItemContent": "This action cannot be undone.",
+  "keep": "KEEP",
+  "delete": "DELETE",
+  "itemDeleted": "Item deleted",
+  "undo": "UNDO",
+  "noResultsMatched": "NO RESULTS MATCHED",
+  "categoriesTitle": "CATEGORIES",
+  "useCategoryTooltip": "Use {category}",
+  "@useCategoryTooltip": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "addNewCategoryHint": "Add new category...",
+  "noCategoriesYet": "NO CATEGORIES YET",
+  "addFirstCategory": "Add your first category for {type}",
+  "@addFirstCategory": {
+    "placeholders": {
+      "type": { "type": "String" }
+    }
+  },
+  "categoryAddedTo": "{category} ADDED TO {type}",
+  "@categoryAddedTo": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "type": { "type": "String" }
+    }
+  },
+  "categoryDeleted": "{category} DELETED",
+  "@categoryDeleted": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "assets": "Assets",
+  "liabilities": "Liabilities",
+  "scenarioModeTitle": "Scenario Mode",
+  "startLoggingToUseScenario": "Start logging to use Scenario Mode",
+  "simulation": "SIMULATION",
+  "whatIfSavedMore": "What if you\nsaved more?",
+  "selectCategory": "SELECT CATEGORY",
+  "reductionPercent": "REDUCTION PERCENT",
+  "projectedYearlySavings": "PROJECTED YEARLY SAVINGS",
+  "scenarioImpactMessage": "Cutting your {category} bills by {percent}% frees up {amount} every single month.",
+  "@scenarioImpactMessage": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "percent": { "type": "int" },
+      "amount": { "type": "String" }
+    }
+  },
+  "wealthImpact": "WEALTH IMPACT",
+  "oneYearProgress": "1 Year Progress",
+  "fiveYearMilestones": "5 Year Milestones",
+  "totalDue": "TOTAL DUE",
+  "paid": "PAID",
+  "netWorthTrackingTitle": "NET WORTH TRACKING",
+  "trend": "TREND",
+  "twelveMonthOverview": "12-MONTH OVERVIEW",
+  "assetAllocation": "ASSET ALLOCATION",
+  "investmentPortfolio": "Investment Portfolio",
+  "insight": "INSIGHT",
+  "simulationFailed": "Simulation failed: {error}",
+  "@simulationFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "accounts": "Accounts",
+  "cards": "Cards",
+  "more": "More",
+  "savingGoals": "Saving Goals",
+  "trackYourMilestones": "Track your milestones",
+  "viewPastPerformance": "View past performance",
+  "automation": "Automation",
+  "recurringTransactions": "Recurring transactions",
+  "manageSpendingLimits": "Manage spending limits",
+  "setUserName": "SET USER NAME",
+  "enterYourName": "Enter your name",
+  "nameLabel": "NAME",
+  "selectCurrency": "SELECT CURRENCY",
+  "searchCurrency": "Search currency...",
+  "selectDataScenario": "SELECT DATA SCENARIO",
+  "fictionalDataDemoOnly": "Fictional data for demonstration only.",
+  "completeDemo": "COMPLETE DEMO",
+  "allFeaturesStreaks": "All features, including Streaks",
+  "generatedScenarioData": "GENERATED {scenario} DATA SCENARIO",
+  "@generatedScenarioData": {
+    "placeholders": {
+      "scenario": { "type": "String" }
+    }
+  },
+  "deleteAllData": "DELETE ALL DATA?",
+  "wipeAllDataWarning": "This action cannot be undone. All entries, budgets, and cards will be wiped.",
+  "deleteAll": "DELETE ALL",
+  "recordPayment": "RECORD PAYMENT",
+  "dueBalance": "DUE BALANCE",
+  "amountToRecord": "AMOUNT TO RECORD",
+  "fullBalance": "FULL BALANCE",
+  "minDueAmount": "MIN: {amount}",
+  "@minDueAmount": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "noCardsRegistered": "NO CARDS REGISTERED",
+  "limitLabel": "LIMIT: {amount}",
+  "@limitLabel": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "dueLabel": "DUE",
+  "percentUtilized": "{percent}% UTILIZED",
+  "@percentUtilized": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "availableAmount": "AVAILABLE: {amount}",
+  "@availableAmount": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "totalCardsDebt": "TOTAL CARDS DEBT",
+  "initializing": "Initializing...",
+  "initializationFailed": "Initialization Failed",
+  "week": "WEEK",
+  "stable": "Stable",
+  "remainingAmountLeft": "{amount} left",
+  "yourGoals": "YOUR GOALS",
+  "totalProgress": "TOTAL PROGRESS",
+  "savedLabel": "SAVED",
+  "targetLabel": "TARGET",
+  "noGoalsYet": "NO GOALS YET",
+  "setFirstGoal": "Set your first saving goal and start building your future!",
+  "goalAchieved": "GOAL ACHIEVED! 🎉",
+  "toGoLabel": "{amount} TO GO",
+  "archiveLabel": "ARCHIVE",
+  "reflectionLabel": "{year} Reflection",
+  "goalTracking": "GOAL TRACKING",
+  "retirementHealth": "Retirement Health",
+  "noDataAvailable": "NO DATA AVAILABLE",
+  "retry": "RETRY",
+  "selectTheme": "SELECT THEME",
+  "systemDefault": "System Default",
+  "lightMode": "Light Mode",
+  "darkMode": "Dark Mode",
+  "quickAdd": "QUICK ADD",
+  "change": "CHANGE",
+  "whatWasThisFor": "What was this for?",
+  "saveExpense": "SAVE EXPENSE",
+  "presetsLabel": "PRESETS",
+  "paymentMethodLabel": "PAYMENT METHOD",
+  "cash": "Cash",
+  "upi": "UPI",
+  "netBanking": "Net Banking",
+  "genericCard": "Generic Card",
+  "saveAsShortcut": "Save as shortcut?",
+  "suggestedLabel": "Suggested",
+  "basedOnLastEntry": "Based on your last entry",
+  "basedOnDailyRoutine": "Based on your daily routine",
+  "dailyPattern": "Daily Pattern",
+  "basedOnLastRecord": "Based on last record",
+  "notNow": "NOT NOW",
+  "shortcutSaved": "Shortcut saved!",
+  "youLogOften": "You log '{title}' often.",
+  "recordedBalanceUpdated": "Recorded! {method} balance updated.",
+  "validAmountError": "Please enter a valid amount",
+  "transparencyCheck": "Transparency Check",
+  "prefilledNotice": "We pre-filled some values locally to save you typing effort.",
+  "localDataNotice": "This data never leaves your device.",
+  "categoryLabel": "Category",
+  "paymentLabel": "Payment",
+  "dateLabel": "DATE",
+  "yesterdayLabel": "YESTERDAY",
+  "otherLabel": "OTHER",
+  "intelligentInsights": "INTELLIGENT INSIGHTS",
+  "aiPoweredAnalysis": "AI Powered Analysis",
+  "scenarioModeLabel": "SCENARIO MODE",
+  "simulateFuture": "Simulate your financial future.",
+  "mindset": "MINDSET",
+  "basedOnLocalHistory": "Based on local history.",
+  "excellentLabel": "EXCELLENT",
+  "goodLabel": "GOOD",
+  "averageLabel": "AVERAGE",
+  "calibrating": "CALIBRATING...",
+  "atRisk": "AT RISK",
+  "healthScore": "Health Score",
+  "snooze7Days": "Snooze 7 days",
+  "dismiss": "Dismiss",
+  "markPaid": "MARK PAID",
+  "markedAsPaid": "{name} marked as paid",
+  "markPaidFailed": "Failed to mark as paid: {error}",
+  "retirement": "RETIREMENT",
+  "myAccounts": "MY ACCOUNTS",
+  "breakdown": "BREAKDOWN",
+  "futureWealth": "FUTURE WEALTH",
+  "projection": "PROJECTION",
+  "yearsLabel": "YEARS",
+  "retirementReady": "RETIREMENT READY",
+  "totalRetirementCorpus": "TOTAL RETIREMENT CORPUS",
+  "latency": "LATENCY: {time}",
+  "estimatedCorpus": "Estimated corpus at retirement: {amount}",
+  "projectionSettings": "PROJECTION SETTINGS",
+  "currentAgeLabel": "Current Age",
+  "retirementAgeLabel": "Retirement Age",
+  "expectedReturn": "Expected Return Rate",
+  "percentPa": "% p.a.",
+  "updateTargets": "UPDATE TARGETS",
+  "wealthAdvisory": "WEALTH ADVISORY",
+  "optimalTrajectory": "Your trajectory is optimal. Maintain current velocity to ensure capital preservation against inflation.",
+  "velocityAdjustment": "Velocity adjustment recommended. Increasing monthly contributions by 10% will accelerate your goal timeline.",
+  "borrowingsAndLoans": "BORROWINGS & LOANS",
+  "noActiveBorrowings": "NO ACTIVE BORROWINGS.",
+  "remaining": "REMAINING",
+  "repaid": "REPAID",
+  "percentRepaid": "{percent}% REPAID",
+  "ofAmount": "OF {amount}",
+  "totalBorrowings": "TOTAL BORROWINGS",
+
+  "strategy": "STRATEGY",
+  "debtPayoffPlanner": "Debt Payoff Planner",
+  "flexible": "FLEXIBLE",
+  "recurring": "RECURRING",
+  "dueTodayLabel": "DUE TODAY",
+  "dueTomorrowLabel": "DUE TOMORROW",
+  "record": "RECORD",
+  "age": "AGE",
+  "emi": "EMI",
+  "due": "DUE",
+  "newBorrowing": "NEW BORROWING",
+  "loanClassification": "LOAN CLASSIFICATION",
+  "creditorLoanName": "CREDITOR / LOAN NAME",
+  "remainingBalance": "REMAINING BALANCE",
+  "totalLoan": "TOTAL LOAN",
+  "monthlyEmi": "MONTHLY EMI",
+  "interestRate": "INTEREST RATE",
+  "expectedRepaymentDate": "EXPECTED REPAYMENT DATE",
+  "dueDateDayOfMonth": "DUE DATE (DAY OF MONTH)",
+  "selectDate": "Select Date",
+  "selectDay": "Select Day",
+  "commitBorrowing": "COMMIT BORROWING",
+  "pleaseFillRequiredFields": "Please fill required fields",
+  "remainingCannotExceedTotal": "Remaining balance cannot exceed total loan",
+  "updateLoan": "UPDATE LOAN",
+  "recordEmiPayment": "RECORD EMI PAYMENT",
+  "recordPrepayment": "RECORD PREPAYMENT",
+  "updateBorrowing": "UPDATE BORROWING",
+  "paymentHistory": "PAYMENT HISTORY",
+  "noRecordedPaymentHistory": "No recorded payment history found.",
+  "markAsEmi": "MARK AS EMI",
+  "notAPayment": "NOT A PAYMENT",
+  "showAllWithCount": "SHOW ALL ({count} PAYMENTS)",
+  "payoffQuote": "PAYOFF QUOTE",
+  "estimate": "ESTIMATE",
+  "validUntilToday": "Valid until today",
+  "reconcileWithBank": "RECONCILE WITH BANK",
+  "payoffBreakdown": "PAYOFF BREAKDOWN",
+  "principalOutstanding": "Principal Outstanding",
+  "interestAccrued": "Interest Accrued",
+  "totalQuote": "Total Quote",
+  "trustCenter": "TRUST CENTER",
+  "ourGuarantees": "OUR GUARANTEES",
+  "strictPolicies": "STRICT POLICIES",
+  "dataHealth": "DATA HEALTH",
+  "backupConfidence": "BACKUP CONFIDENCE",
+  "localBackups": "LOCAL BACKUPS",
+  "viewFolder": "VIEW FOLDER",
+  "totalRecords": "TOTAL RECORDS",
+  "localBackupStatus": "LOCAL BACKUP STATUS",
+  "lastBackupLabel": "Last backup: {time}",
+  "nextAutoBackup": "Next automatic backup: At next application launch",
+  "noLocalBackupsFound": "NO LOCAL BACKUPS FOUND YET.",
+  "sqlCipherEncryption": "TrueLedger uses SQLCipher AES-256 for database encryption on supported platforms.",
+  "productLevelPrivacy": "PRODUCT-LEVEL PRIVACY GUARANTEES.",
+  "privacyPrinciple": "TrueLedger is built on the principle that your financial life is yours alone. We believe in absolute privacy, which is why your data never leaves your device.",
+  "noAds": "NO ADS",
+  "noAdsDesc": "We never clutter your experience with advertisements or sponsored content.",
+  "noTracking": "NO TRACKING",
+  "noTrackingDesc": "We don't track your behavior, location, or usage. You are not a data point.",
+  "noProfiling": "NO PROFILING",
+  "noProfilingDesc": "Your financial habits are private. We don't build profiles for targeting.",
+  "localOnly": "100% LOCAL",
+  "localOnlyDesc": "Your database exists only on your device. We have no access to your logs.",
+  "noAnalyticsSdk": "No analytics or tracking SDKs",
+  "noBehaviorProfiling": "No behavior profiling or scoring",
+  "noBankScraping": "No bank or SMS scraping",
+  "noCloudSync": "No cloud sync or external storage",
+  "noSellingLogs": "No selling or sharing of user logs",
+  "restoreDataTitle": "RESTORE DATA?",
+  "restoreDataWarning": "This will REPLACE all your current data with the data from this backup. This action cannot be undone.",
+  "restoreNow": "RESTORE NOW",
+  "restoreCompleted": "RESTORE COMPLETED SUCCESSFULLY",
+  "restoreFailed": "RESTORE FAILED: {error}",
+  "runwayMonths": "Your savings will last approx. {months} months",
+  "sustainableRunway": "Your financial path is sustainable",
+  "calculatingRunway": "Calculating runway...",
+
+  "failedToLoadLoans": "Failed to load loans: {error}",
+  "loanNameHint": "e.g. HDFC Gold Loan",
+  "engineReducingBalance": "Engine: Reducing balance (daily)",
+  "bankType": "Bank",
+  "individualType": "Individual",
+  "goldType": "Gold",
+  "carType": "Car",
+  "homeType": "Home",
+  "educationType": "Education",
+  "settings": "Settings",
+  "selectDueDay": "Select Due Day",
+
+  "@showAllWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@lastBackupLabel": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@restoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@failedToLoadLoans": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@runwayMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "@latency": {
+
+
+
+
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@estimatedCorpus": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@remainingAmountLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@toGoLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@reflectionLabel": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "@youLogOften": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@recordedBalanceUpdated": {
+    "placeholders": {
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+  "@markedAsPaid": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@markPaidFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "@percentRepaid": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "@ofAmount": {
+
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settings": "Settings",
+  "selectDueDay": "Select Due Day"
+}

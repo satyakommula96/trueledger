@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/result.dart';
 
 import 'package:trueledger/core/services/notification_service.dart';
@@ -13,6 +11,7 @@ import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/domain/models/models.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockAddTransactionUseCase extends Mock implements AddTransactionUseCase {}
 
@@ -69,16 +68,13 @@ void main() {
   });
 
   Widget createWidget(AddExpense widget) {
-    return ProviderScope(
+    return wrapWidget(
+      widget,
       overrides: [
         addTransactionUseCaseProvider.overrideWithValue(mockUseCase),
         notificationServiceProvider.overrideWithValue(mockNotificationService),
         financialRepositoryProvider.overrideWithValue(mockRepository),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: widget,
-      ),
     );
   }
 

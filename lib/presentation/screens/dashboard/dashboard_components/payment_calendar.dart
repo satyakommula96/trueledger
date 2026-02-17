@@ -3,16 +3,16 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
-import 'package:trueledger/core/utils/date_helper.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/domain/models/models.dart';
 
 class PaymentCalendar extends ConsumerStatefulWidget {
-  final List<Map<String, dynamic>> bills;
+  final List<BillSummary> bills;
   final AppColors semantic;
 
   const PaymentCalendar(
@@ -36,56 +36,37 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
     return DateTime(date.year, date.month + 1, 0).day;
   }
 
-  List<Map<String, dynamic>> _getEventsForDay(
-      int day, List<String> paidLabels) {
+  List<BillSummary> _getEventsForDay(int day, List<String> paidLabels) {
     final targetDate = DateTime(_focusedMonth.year, _focusedMonth.month, day);
-    final events = <Map<String, dynamic>>[];
+    final events = <BillSummary>[];
 
     for (var bill in widget.bills) {
-      final dueDateStr = bill['due']?.toString() ?? '';
-
-      if (bill['isRecurring'] == false) {
-        final nextDue = DateHelper.getNextOccurrence(dueDateStr);
-        if (nextDue != null) {
-          if (nextDue.year != targetDate.year ||
-              nextDue.month != targetDate.month ||
-              nextDue.day != targetDate.day) {
-            continue;
-          }
-        }
-      }
-
-      final date = _parseDueDate(dueDateStr);
+      final date = bill.dueDate;
       if (date != null) {
         if (date.year == targetDate.year &&
             date.month == targetDate.month &&
             date.day == targetDate.day) {
-          final billCopy = Map<String, dynamic>.from(bill);
-          final name = (billCopy['name'] ?? billCopy['title'] ?? '')
-              .toString()
-              .toLowerCase();
+          var updatedBill = bill;
+          final name = bill.name.toLowerCase();
 
-          if (billCopy['type'] == 'CREDIT DUE') {
+          if (bill.type == 'CREDIT DUE') {
             final isCurrentMonth = _focusedMonth.year == DateTime.now().year &&
                 _focusedMonth.month == DateTime.now().month;
             if (!isCurrentMonth) {
-              billCopy['isPaid'] = false;
+              updatedBill = bill.copyWith(isPaid: false);
             }
           } else if (name.isNotEmpty) {
-            billCopy['isPaid'] = paidLabels.any((label) {
+            final isPaid = paidLabels.any((label) {
               final l = label.toLowerCase();
               return l.contains(name) || name.contains(l);
             });
+            updatedBill = bill.copyWith(isPaid: isPaid);
           }
-          events.add(billCopy);
+          events.add(updatedBill);
         }
       }
     }
     return events;
-  }
-
-  DateTime? _parseDueDate(String due) {
-    return DateHelper.parseDue(due, relativeTo: _focusedMonth);
   }
 
   @override
@@ -192,7 +173,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
                   _focusedMonth.year == DateTime.now().year;
 
               final allPaid =
-                  events.isNotEmpty && events.every((e) => e['isPaid'] == true);
+                  events.isNotEmpty && events.every((e) => e.isPaid == true);
 
               return InkWell(
                 onTap: events.isNotEmpty
@@ -249,14 +230,14 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: events.take(4).map((e) {
                                 Color dotColor = widget.semantic.secondaryText;
-                                if (e['isPaid'] == true) {
+                                if (e.isPaid == true) {
                                   dotColor = widget.semantic.divider;
                                 } else {
-                                  if (e['type'] == 'CREDIT DUE') {
+                                  if (e.type == 'CREDIT DUE') {
                                     dotColor = Colors.red;
-                                  } else if (e['type'] == 'LOAN EMI') {
+                                  } else if (e.type == 'LOAN EMI') {
                                     dotColor = Colors.orange;
-                                  } else if (e['type'] == 'SUBSCRIPTION') {
+                                  } else if (e.type == 'SUBSCRIPTION') {
                                     dotColor = widget.semantic.overspent;
                                   }
                                 }
@@ -302,6 +283,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
   }
 
   Widget _buildSummaryBar(List<String> paidLabels) {
+    final l10n = AppLocalizations.of(context)!;
     final isPrivate = ref.watch(privacyProvider);
     double totalSum = 0;
     double totalPaid = 0;
@@ -310,9 +292,9 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
     for (int d = 1; d <= daysInMonth; d++) {
       final events = _getEventsForDay(d, paidLabels);
       for (var e in events) {
-        final amount = (e['amount'] as num).toDouble();
+        final amount = e.amount;
         totalSum += amount;
-        if (e['isPaid'] == true) {
+        if (e.isPaid == true) {
           totalPaid += amount;
         }
       }
@@ -331,7 +313,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
         children: [
           Expanded(
             child: _buildSummaryItem(
-                "TOTAL DUE", totalDue, widget.semantic.overspent, isPrivate),
+                l10n.totalDue, totalDue, widget.semantic.overspent, isPrivate),
           ),
           Container(
             width: 1,
@@ -340,8 +322,8 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
             margin: const EdgeInsets.symmetric(horizontal: 12),
           ),
           Expanded(
-            child:
-                _buildSummaryItem("PAID", totalPaid, Colors.green, isPrivate),
+            child: _buildSummaryItem(
+                l10n.paid, totalPaid, Colors.green, isPrivate),
           ),
           const SizedBox(width: 8),
           if (totalSum > 0)
@@ -379,7 +361,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
     );
   }
 
-  void _showDayDetails(int day, List<Map<String, dynamic>> events) {
+  void _showDayDetails(int day, List<BillSummary> events) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -417,13 +399,13 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
     );
   }
 
-  Future<void> _handleMarkAsPaid(Map<String, dynamic> bill, int day) async {
+  Future<void> _handleMarkAsPaid(BillSummary bill, int day) async {
+    final l10n = AppLocalizations.of(context)!;
     final date = DateTime(_focusedMonth.year, _focusedMonth.month, day);
-    final dateStr = date.toIso8601String();
 
-    final name = bill['name'] ?? bill['title'] ?? 'Bill';
-    final amount = (bill['amount'] as num).toDouble();
-    final type = bill['type'];
+    final name = bill.name;
+    final amount = bill.amount;
+    final type = bill.type;
 
     String txType = 'Variable';
     String category = 'Others';
@@ -442,7 +424,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
       category = 'Credit Card Payment: $name';
       tags = {TransactionTag.transfer};
 
-      final idStr = bill['id'] as String;
+      final idStr = bill.id;
       if (idStr.startsWith('cc_')) {
         final id = int.tryParse(idStr.substring(3));
         if (id != null) {
@@ -471,7 +453,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
             amount,
             category,
             "Payment for $name (via Calendar)",
-            dateStr,
+            date,
             tags: tags,
           );
 
@@ -484,7 +466,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
         Navigator.pop(context); // Close bottom sheet
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("$name marked as paid"),
+            content: Text(l10n.markedAsPaid(name)),
             backgroundColor: Colors.green,
           ),
         );
@@ -493,7 +475,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Failed to mark as paid: $e"),
+            content: Text(l10n.markPaidFailed(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -501,25 +483,26 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
     }
   }
 
-  Widget _buildDetailItem(Map<String, dynamic> bill, int day) {
+  Widget _buildDetailItem(BillSummary bill, int day) {
+    final l10n = AppLocalizations.of(context)!;
     IconData icon = Icons.receipt_long;
     Color color = widget.semantic.secondaryText;
 
-    if (bill['type'] == 'SUBSCRIPTION') {
+    if (bill.type == 'SUBSCRIPTION') {
       icon = Icons.subscriptions;
       color = widget.semantic.overspent;
-    } else if (bill['type'] == 'LOAN EMI') {
+    } else if (bill.type == 'LOAN EMI') {
       icon = Icons.account_balance;
       color = Colors.orange;
-    } else if (bill['type'] == 'CREDIT DUE') {
+    } else if (bill.type == 'CREDIT DUE') {
       icon = Icons.credit_card;
       color = Colors.red;
-    } else if (bill['type'] == 'BORROWING DUE') {
+    } else if (bill.type == 'BORROWING DUE') {
       icon = Icons.person;
       color = Colors.purple;
     }
 
-    final isPaid = bill['isPaid'] == true;
+    final isPaid = bill.isPaid == true;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -551,7 +534,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  bill['name'] ?? bill['title'] ?? 'Bill',
+                  bill.name,
                   style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -563,7 +546,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  bill['type'].toString().toUpperCase(),
+                  bill.type.toString().toUpperCase(),
                   style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w900,
@@ -580,7 +563,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                CurrencyFormatter.format(bill['amount']),
+                CurrencyFormatter.format(bill.amount),
                 style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
@@ -591,7 +574,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
               ),
               if (isPaid)
                 Text(
-                  "PAID",
+                  l10n.paid.toUpperCase(),
                   style: TextStyle(
                       fontSize: 8,
                       fontWeight: FontWeight.w900,
@@ -619,7 +602,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
                               size: 10, color: Colors.green.shade700),
                           const SizedBox(width: 4),
                           Text(
-                            "MARK PAID",
+                            AppLocalizations.of(context)!.markPaid,
                             style: TextStyle(
                                 fontSize: 8,
                                 fontWeight: FontWeight.w900,

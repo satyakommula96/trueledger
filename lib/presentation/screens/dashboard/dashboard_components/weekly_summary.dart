@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 
@@ -23,6 +24,7 @@ class WeeklySummary extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPrivacy = ref.watch(privacyProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     final diff = thisWeekSpend - lastWeekSpend;
     final percentChange =
@@ -76,7 +78,7 @@ class WeeklySummary extends ConsumerWidget {
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      "WEEK",
+                      l10n.week.toUpperCase(),
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
@@ -115,7 +117,7 @@ class WeeklySummary extends ConsumerWidget {
                           ? "+$percentChange%"
                           : isDown
                               ? "-$percentChange%"
-                              : "Stable",
+                              : l10n.stable,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,

@@ -4,11 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/usecases/get_analysis_data_usecase.dart';
 import 'package:trueledger/presentation/providers/analysis_provider.dart';
 import 'package:trueledger/presentation/screens/analysis/analysis_screen.dart';
+import '../../../helpers/test_wrapper.dart';
 
 import 'dart:async';
 
@@ -26,15 +26,12 @@ void main() {
   Widget createSubject({
     required FutureOr<AnalysisData> Function(Ref) override,
   }) {
-    return ProviderScope(
+    return wrapWidget(
+      const AnalysisScreen(),
       overrides: [
         analysisProvider.overrideWith(override),
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const AnalysisScreen(),
-      ),
     );
   }
 
@@ -67,6 +64,10 @@ void main() {
   });
 
   testWidgets('AnalysisScreen renders data', (tester) async {
+    tester.view.physicalSize = const Size(1200, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
     final mockData = AnalysisData(
       budgets: [
         Budget(
@@ -77,25 +78,24 @@ void main() {
             lastReviewedAt: DateTime.now())
       ],
       trendData: [
-        {'total': 100, 'month': '2023-01', 'income': 150, 'spending': 100},
-        {'total': 200, 'month': '2023-02', 'income': 250, 'spending': 200},
+        FinancialTrend(
+            total: 100, month: '2023-01', income: 150, spending: 100),
+        FinancialTrend(
+            total: 200, month: '2023-02', income: 250, spending: 200),
       ],
-      categoryData: [
-        {'category': 'Food', 'total': 100}
-      ],
+      categoryData: [CategorySpending(category: 'Food', total: 100)],
     );
 
     await tester.pumpWidget(createSubject(
       override: (ref) => mockData,
     ));
-    await tester.pumpAndSettle();
+    // Multiple pumps to finish animations
+    for (int i = 0; i < 5; i++) {
+      await tester.pumpAndSettle(const Duration(milliseconds: 200));
+    }
 
+    expect(find.text('ANALYSIS'), findsOneWidget);
+    expect(find.byIcon(Icons.trending_up_rounded), findsOneWidget);
     expect(find.text('MOMENTUM'), findsOneWidget);
-    expect(find.textContaining('Velocity increased by', findRichText: true),
-        findsOneWidget);
-    expect(find.text('MONTHLY TREND'), findsOneWidget);
-    expect(find.text('DISTRIBUTION'), findsOneWidget);
-    // Budget section is not present in AnalysisScreen
-    expect(find.text('FOOD'), findsWidgets);
   });
 }

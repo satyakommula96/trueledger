@@ -6,11 +6,11 @@ import 'usecase_base.dart';
 
 class DashboardData {
   final MonthlySummary summary;
-  final List<Map<String, dynamic>> categorySpending;
+  final List<CategorySpending> categorySpending;
   final List<Budget> budgets;
   final List<SavingGoal> savingGoals;
-  final List<Map<String, dynamic>> trendData;
-  final List<Map<String, dynamic>> upcomingBills;
+  final List<FinancialTrend> trendData;
+  final List<BillSummary> upcomingBills;
   final List<BillSummary> billsDueToday;
   final double todaySpend;
   final double thisWeekSpend;
@@ -55,21 +55,31 @@ class GetDashboardDataUseCase extends UseCase<DashboardData, NoParams> {
         repository.getTodayTransactionCount(),
       ]);
 
+      final summary = results[0] as MonthlySummary;
+      final categorySpending = (results[1] as List).cast<CategorySpending>();
+      final budgets = (results[2] as List).cast<Budget>();
+      final savingGoals = (results[3] as List).cast<SavingGoal>();
+      final trendData = (results[4] as List).cast<FinancialTrend>();
+      final upcomingBills = (results[5] as List).cast<BillSummary>();
       final weeklySummary = results[7] as Map<String, double>;
 
-      final summary = results[0] as MonthlySummary;
-      final upcomingBills = (results[5] as List).cast<Map<String, dynamic>>();
+      final now = DateTime.now();
+      final billsDueToday = upcomingBills.where((b) {
+        if (b.dueDate == null || b.isPaid) return false;
+        return b.dueDate!.year == now.year &&
+            b.dueDate!.month == now.month &&
+            b.dueDate!.day == now.day;
+      }).toList();
 
       return Success(DashboardData(
         summary: summary,
-        categorySpending: (results[1] as List).cast<Map<String, dynamic>>(),
-        budgets: (results[2] as List).cast<Budget>(),
-        savingGoals: (results[3] as List).cast<SavingGoal>(),
-        trendData: (results[4] as List).cast<Map<String, dynamic>>(),
+        categorySpending: categorySpending,
+        budgets: budgets,
+        savingGoals: savingGoals,
+        trendData: trendData,
         upcomingBills: upcomingBills,
-        billsDueToday:
-            BillSummary.filterDueEntries(results[5] as List, DateTime.now()),
-        todaySpend: results[6] as double,
+        billsDueToday: billsDueToday,
+        todaySpend: (results[6] as num).toDouble(),
         thisWeekSpend: weeklySummary['thisWeek'] ?? 0.0,
         lastWeekSpend: weeklySummary['lastWeek'] ?? 0.0,
         activeStreak: results[8] as int,

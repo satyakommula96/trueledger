@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/presentation/screens/settings/trust_center.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 
@@ -14,6 +13,7 @@ import 'package:trueledger/domain/usecases/get_local_backups_usecase.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/domain/usecases/restore_from_local_file_usecase.dart';
 import 'package:trueledger/core/utils/result.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockRestoreFromLocalFileUseCase extends Mock
     implements RestoreFromLocalFileUseCase {}
@@ -53,7 +53,8 @@ void main() {
     when(() => mockPrefs.getString(any())).thenReturn(null);
 
     await tester.pumpWidget(
-      ProviderScope(
+      wrapWidget(
+        const TrustCenterScreen(),
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepo),
           sharedPreferencesProvider.overrideWithValue(mockPrefs),
@@ -62,10 +63,6 @@ void main() {
           lastBackupTimeProvider
               .overrideWith(() => MockLastBackupTimeNotifier()),
         ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const TrustCenterScreen(),
-        ),
       ),
     );
 
@@ -106,7 +103,8 @@ void main() {
         .thenAnswer((_) async => const Success(null));
 
     await tester.pumpWidget(
-      ProviderScope(
+      wrapWidget(
+        const TrustCenterScreen(),
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepo),
           databaseStatsProvider.overrideWith((ref) async => stats),
@@ -116,10 +114,6 @@ void main() {
           restoreFromLocalFileUseCaseProvider
               .overrideWithValue(mockRestoreUseCase),
         ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const TrustCenterScreen(),
-        ),
       ),
     );
 

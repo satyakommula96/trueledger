@@ -11,6 +11,7 @@ import 'package:trueledger/presentation/screens/loans/debt_payoff_planner.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/core/theme/color_helper.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class LoansScreen extends ConsumerStatefulWidget {
   const LoansScreen({super.key});
@@ -39,7 +40,9 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to load loans: $e")),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)!
+                  .failedToLoadLoans(e.toString()))),
         );
       }
     }
@@ -57,7 +60,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("BORROWINGS & LOANS"),
+        title: Text(AppLocalizations.of(context)!.borrowingsAndLoans),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -81,7 +84,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
     if (loans.isEmpty) {
       return Center(
         child: Text(
-          "NO ACTIVE BORROWINGS.",
+          AppLocalizations.of(context)!.noActiveBorrowings,
           style: TextStyle(
             color: semantic.secondaryText,
             fontSize: 10,
@@ -110,6 +113,8 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
   }
 
   Widget _buildLoanCard(Loan l, int index, AppColors semantic) {
+    final l10n = AppLocalizations.of(context)!;
+
     final total = l.totalAmount.toDouble();
     final remaining = l.remainingAmount.toDouble();
     final emi = l.emi.toDouble();
@@ -172,7 +177,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          l.loanType.toUpperCase(),
+                          _localizeLoanType(l.loanType, context).toUpperCase(),
                           style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
@@ -194,7 +199,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "REMAINING",
+                          AppLocalizations.of(context)!.remaining,
                           style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w900,
@@ -231,8 +236,12 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                           child: Text(
                             DateHelper.formatDue(l.dueDate,
                                     prefix: l.loanType == 'Individual'
-                                        ? "DUE"
-                                        : "EMI")
+                                        ? l10n.due
+                                        : l10n.emi,
+                                    todayLabel: l10n.dueTodayLabel,
+                                    tomorrowLabel: l10n.dueTomorrowLabel,
+                                    flexibleLabel: l10n.flexible,
+                                    recurringLabel: l10n.recurring)
                                 .toUpperCase(),
                             style: TextStyle(
                                 fontSize: 9,
@@ -243,7 +252,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                         if (l.loanType != 'Individual') ...[
                           const SizedBox(height: 8),
                           Text(
-                            "EMI",
+                            AppLocalizations.of(context)!.emi,
                             style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w900,
@@ -304,7 +313,8 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "${((1 - progress) * 100).toStringAsFixed(0)}% REPAID",
+                    AppLocalizations.of(context)!.percentRepaid(
+                        ((1 - progress) * 100).toStringAsFixed(0)),
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
@@ -312,7 +322,8 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                         letterSpacing: 0.5),
                   ),
                   Text(
-                    "OF ${CurrencyFormatter.format(total)}",
+                    AppLocalizations.of(context)!
+                        .ofAmount(CurrencyFormatter.format(total)),
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
@@ -348,7 +359,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
       child: Column(
         children: [
           Text(
-            "TOTAL BORROWINGS",
+            AppLocalizations.of(context)!.totalBorrowings,
             style: TextStyle(
               color: semantic.overspent,
               fontSize: 10,
@@ -406,14 +417,14 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("STRATEGY",
+                  Text(AppLocalizations.of(context)!.strategy,
                       style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
                           color: semantic.secondaryText,
                           letterSpacing: 1.5)),
                   const SizedBox(height: 4),
-                  Text("Debt Payoff Planner",
+                  Text(AppLocalizations.of(context)!.debtPayoffPlanner,
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
@@ -426,5 +437,25 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
         ),
       ),
     );
+  }
+
+  String _localizeLoanType(String type, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (type) {
+      case 'Bank':
+        return l10n.bankType;
+      case 'Individual':
+        return l10n.individualType;
+      case 'Gold':
+        return l10n.goldType;
+      case 'Car':
+        return l10n.carType;
+      case 'Home':
+        return l10n.homeType;
+      case 'Education':
+        return l10n.educationType;
+      default:
+        return type;
+    }
   }
 }

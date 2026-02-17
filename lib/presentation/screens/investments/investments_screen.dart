@@ -8,6 +8,7 @@ import 'package:trueledger/presentation/providers/investments_provider.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class InvestmentsScreen extends ConsumerWidget {
   const InvestmentsScreen({super.key});
@@ -28,7 +29,7 @@ class InvestmentsScreen extends ConsumerWidget {
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
-            title: const Text("PORTFOLIO"),
+            title: Text(AppLocalizations.of(context)!.portfolio.toUpperCase()),
             centerTitle: true,
             backgroundColor: Colors.transparent,
             flexibleSpace: ClipRRect(
@@ -49,22 +50,29 @@ class InvestmentsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildPortfolioHero(data.totalValue, semantic, isPrivate)
+                _buildPortfolioHero(
+                        data.totalValue, semantic, isPrivate, context)
                     .animate()
                     .fadeIn(duration: 600.ms)
                     .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint),
                 const SizedBox(height: 48),
                 if (data.distribution.isNotEmpty) ...[
-                  _buildSectionHeader(semantic, "ALLOCATION", "ASSET CLASSES"),
+                  _buildSectionHeader(
+                      semantic,
+                      AppLocalizations.of(context)!.allocation,
+                      AppLocalizations.of(context)!.assetClasses),
                   const SizedBox(height: 24),
                   _buildAllocationWidget(
                       data.distribution, data.totalValue, semantic),
                   const SizedBox(height: 48),
                 ],
-                _buildSectionHeader(semantic, "MY ASSETS", "FULL LIST"),
+                _buildSectionHeader(
+                    semantic,
+                    AppLocalizations.of(context)!.myAssets,
+                    AppLocalizations.of(context)!.fullList),
                 const SizedBox(height: 24),
                 if (data.investments.isEmpty)
-                  _buildEmptyState(semantic)
+                  _buildEmptyState(semantic, context)
                 else
                   ...data.investments.map(
                       (inv) => _buildInvestmentCard(inv, semantic, isPrivate)),
@@ -101,7 +109,8 @@ class InvestmentsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPortfolioHero(double total, AppColors semantic, bool isPrivate) {
+  Widget _buildPortfolioHero(
+      double total, AppColors semantic, bool isPrivate, BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -125,7 +134,7 @@ class InvestmentsScreen extends ConsumerWidget {
             children: [
               Flexible(
                 child: Text(
-                  "NET PORTFOLIO VALUE",
+                  AppLocalizations.of(context)!.netPortfolioValue,
                   style: TextStyle(
                     color: semantic.secondaryText,
                     fontSize: 11,
@@ -350,7 +359,7 @@ class InvestmentsScreen extends ConsumerWidget {
     return Icons.account_balance_wallet_rounded;
   }
 
-  Widget _buildEmptyState(AppColors semantic) {
+  Widget _buildEmptyState(AppColors semantic, BuildContext context) {
     return Center(
       child: Column(
         children: [
@@ -358,7 +367,7 @@ class InvestmentsScreen extends ConsumerWidget {
           Icon(Icons.layers_clear_rounded, size: 64, color: semantic.divider),
           const SizedBox(height: 24),
           Text(
-            "NO ASSETS TRACKED",
+            AppLocalizations.of(context)!.noAssetsTracked,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w900,
@@ -368,7 +377,7 @@ class InvestmentsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            "Add your first investment to see analysis.",
+            AppLocalizations.of(context)!.addFirstInvestment,
             style: TextStyle(
               fontSize: 14,
               color: semantic.secondaryText,
@@ -445,7 +454,7 @@ class InvestmentsScreen extends ConsumerWidget {
                       nameController.text,
                       amount,
                       selectedType,
-                      DateTime.now().toIso8601String(),
+                      DateTime.now(),
                     );
                 ref.invalidate(investmentsProvider);
                 ref.invalidate(dashboardProvider);

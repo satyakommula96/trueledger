@@ -5,6 +5,7 @@ import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/providers/category_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class ManageCategoriesScreen extends ConsumerStatefulWidget {
   final String? initialType;
@@ -34,7 +35,25 @@ class _ManageCategoriesScreenState
     super.dispose();
   }
 
+  String _getTypeLabel(String t, AppLocalizations l10n) {
+    switch (t) {
+      case 'Variable':
+        return l10n.variable;
+      case 'Fixed':
+        return l10n.fixed;
+      case 'Income':
+        return l10n.income;
+      case 'Investment':
+        return l10n.investments;
+      case 'Subscription':
+        return 'Subscription';
+      default:
+        return t;
+    }
+  }
+
   void _addCategory() async {
+    final l10n = AppLocalizations.of(context)!;
     final name = categoryCtrl.text.trim();
     if (name.isEmpty) return;
 
@@ -51,7 +70,8 @@ class _ManageCategoriesScreenState
       final semantic = Theme.of(context).extension<AppColors>()!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("$name ADDED TO $selectedType".toUpperCase()),
+          content: Text(l10n.categoryAddedTo(name.toUpperCase(),
+              _getTypeLabel(selectedType, l10n).toUpperCase())),
           backgroundColor: semantic.primary,
         ),
       );
@@ -59,6 +79,7 @@ class _ManageCategoriesScreenState
   }
 
   void _deleteCategory(TransactionCategory category) async {
+    final l10n = AppLocalizations.of(context)!;
     final repo = ref.read(financialRepositoryProvider);
     await repo.deleteCategory(category.id!);
     ref.invalidate(categoriesProvider(category.type));
@@ -67,7 +88,7 @@ class _ManageCategoriesScreenState
       final semantic = Theme.of(context).extension<AppColors>()!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("${category.name} DELETED".toUpperCase()),
+          content: Text(l10n.categoryDeleted(category.name.toUpperCase())),
           backgroundColor: semantic.overspent,
         ),
       );
@@ -77,18 +98,19 @@ class _ManageCategoriesScreenState
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     final categoriesAsync = ref.watch(categoriesProvider(selectedType));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("CATEGORIES"),
+        title: Text(l10n.categoriesTitle.toUpperCase()),
         centerTitle: true,
         actions: [
           if (lastAddedCategory != null)
             IconButton(
               icon: Icon(Icons.check_circle_rounded, color: semantic.income),
               onPressed: () => Navigator.pop(context, lastAddedCategory),
-              tooltip: "Use $lastAddedCategory",
+              tooltip: l10n.useCategoryTooltip(lastAddedCategory!),
             ),
           const SizedBox(width: 8),
         ],
@@ -99,12 +121,14 @@ class _ManageCategoriesScreenState
           constraints: const BoxConstraints(maxWidth: 800),
           child: Column(
             children: [
-              _buildTypeSelector(semantic),
-              _buildAddInput(semantic),
+              _buildTypeSelector(semantic, l10n),
+              _buildAddInput(semantic, l10n),
               Expanded(
                 child: categoriesAsync.when(
                   data: (categories) {
-                    if (categories.isEmpty) return _buildEmptyState(semantic);
+                    if (categories.isEmpty) {
+                      return _buildEmptyState(semantic, l10n);
+                    }
                     return ReorderableListView.builder(
                       buildDefaultDragHandles: false,
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
@@ -151,7 +175,7 @@ class _ManageCategoriesScreenState
     );
   }
 
-  Widget _buildTypeSelector(AppColors semantic) {
+  Widget _buildTypeSelector(AppColors semantic, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: SingleChildScrollView(
@@ -166,7 +190,7 @@ class _ManageCategoriesScreenState
                 data:
                     Theme.of(context).copyWith(canvasColor: Colors.transparent),
                 child: ChoiceChip(
-                  label: Text(t.toUpperCase()),
+                  label: Text(_getTypeLabel(t, l10n).toUpperCase()),
                   selected: active,
                   onSelected: (_) => setState(() => selectedType = t),
                   backgroundColor:
@@ -199,7 +223,7 @@ class _ManageCategoriesScreenState
     );
   }
 
-  Widget _buildAddInput(AppColors semantic) {
+  Widget _buildAddInput(AppColors semantic, AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
       child: IntrinsicHeight(
@@ -214,7 +238,7 @@ class _ManageCategoriesScreenState
                     fontWeight: FontWeight.w900,
                     fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: "Add new category...",
+                  hintText: l10n.addNewCategoryHint,
                   hintStyle: TextStyle(
                       color: semantic.secondaryText.withValues(alpha: 0.3),
                       fontSize: 14,
@@ -352,7 +376,7 @@ class _ManageCategoriesScreenState
     );
   }
 
-  Widget _buildEmptyState(AppColors semantic) {
+  Widget _buildEmptyState(AppColors semantic, AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -371,7 +395,7 @@ class _ManageCategoriesScreenState
           ),
           const SizedBox(height: 20),
           Text(
-            "NO CATEGORIES YET",
+            l10n.noCategoriesYet,
             style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w900,
@@ -380,7 +404,7 @@ class _ManageCategoriesScreenState
           ),
           const SizedBox(height: 4),
           Text(
-            "Add your first category for $selectedType",
+            l10n.addFirstCategory(_getTypeLabel(selectedType, l10n)),
             style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,

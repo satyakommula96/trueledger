@@ -4,6 +4,16 @@ import 'package:trueledger/data/datasources/database.dart';
 import 'package:trueledger/data/datasources/schema.dart';
 import 'package:trueledger/domain/models/models.dart';
 import '../../domain/repositories/i_financial_repository.dart';
+import 'package:trueledger/data/dtos/asset_dto.dart';
+import 'package:trueledger/data/dtos/budget_dto.dart';
+import 'package:trueledger/data/dtos/category_dto.dart';
+import 'package:trueledger/data/dtos/credit_card_dto.dart';
+import 'package:trueledger/data/dtos/ledger_item_dto.dart';
+import 'package:trueledger/data/dtos/loan_dto.dart';
+import 'package:trueledger/data/dtos/recurring_transaction_dto.dart';
+import 'package:trueledger/data/dtos/retirement_dto.dart';
+import 'package:trueledger/data/dtos/saving_goal_dto.dart';
+import 'package:trueledger/data/dtos/subscription_dto.dart';
 import 'package:flutter/foundation.dart';
 
 class FinancialRepositoryImpl implements IFinancialRepository {
@@ -63,7 +73,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getSpendingTrend() async {
+  Future<List<FinancialTrend>> getSpendingTrend() async {
     final db = await AppDatabase.db;
     // Get spending trend (variable expenses)
     final spendRaw = await db.rawQuery(
@@ -92,18 +102,17 @@ class FinancialRepositoryImpl implements IFinancialRepository {
           orElse: () => {'total': 0});
       final i = incomeRaw.firstWhere((e) => e['month'] == m,
           orElse: () => {'total': 0});
-      return {
-        'month': m,
-        'spending': s['total'],
-        'income': i['total'],
-        'total':
-            s['total'], // Keep 'total' for backward compatibility in widgets
-      };
+      return FinancialTrend(
+        month: m,
+        spending: (s['total'] as num? ?? 0).toDouble(),
+        income: (i['total'] as num? ?? 0).toDouble(),
+        total: (s['total'] as num? ?? 0).toDouble(),
+      );
     }).toList();
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getUpcomingBills() async {
+  Future<List<BillSummary>> getUpcomingBills() async {
     final db = await AppDatabase.db;
     final subBills = await db.query('subscriptions', where: 'active = 1');
     final ccBills = await db.query('credit_cards');
@@ -129,80 +138,90 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       });
     }
 
-    return [
-      ...subBills.map((s) {
-        final name = s['name'] as String;
-        final isSIP = name.toUpperCase().contains('SIP') ||
-            name.toUpperCase().contains('FUND');
-        return {
-          'id': 'sub_${s['id']}',
-          'name': name,
-          'title': name,
-          'amount': s['amount'],
-          'type': isSIP ? 'INVESTMENT DUE' : 'SUBSCRIPTION',
-          'due': s['billing_date'],
-          'isRecurring': true,
-          'isPaid': checkPaid(name),
-        };
-      }),
-      ...ccBills
-          .where((c) => (c['statement_balance'] as num? ?? 0) > 0)
-          .map((c) => {
-                'id': 'cc_${c['id']}',
-                'name': c['bank'],
-                'title': c['bank'],
-                'amount': c['statement_balance'],
-                'type': 'CREDIT DUE',
-                'due': c['due_date'],
-                'isRecurring': true,
-                'isPaid': false,
-              }),
-      ...loanBills.map((l) => {
-            'id': 'loan_${l['id']}',
-            'name': l['name'],
-            'title': l['name'],
-            'amount': l['loan_type'] == 'Individual'
-                ? l['remaining_amount']
-                : l['emi'],
-            'type':
-                l['loan_type'] == 'Individual' ? 'BORROWING DUE' : 'LOAN EMI',
-            'due': l['due_date'],
-            'isRecurring': true,
-            'isPaid': checkPaid(l['name'] as String? ?? ''),
-          }),
-      ...recurringTx.map((r) {
-        // Format due date based on frequency
-        String dueDate;
-        final dayOfMonth = r['day_of_month'] as int?;
-        if (dayOfMonth != null) {
-          // For monthly recurring, use day of month
-          dueDate =
-              '${now.year}-${now.month.toString().padLeft(2, '0')}-${dayOfMonth.toString().padLeft(2, '0')}';
-        } else {
-          // For other frequencies, use current date as placeholder
-          dueDate = DateFormat('yyyy-MM-dd').format(now);
-        }
+    final List<BillSummary> bills = [];
 
-        return {
-          'id': 'recurring_${r['id']}',
-          'name': r['name'],
-          'title': r['name'],
-          'amount': r['amount'],
-          'type':
-              r['type'] == 'INCOME' ? 'RECURRING INCOME' : 'RECURRING EXPENSE',
-          'due': dueDate,
-          'isRecurring': true,
-          'isPaid': checkPaid(r['name'] as String? ?? ''),
-        };
-      }),
-    ];
+    // Map subscriptions
+    for (var s in subBills) {
+      final name = s['name'] as String;
+      final isSIP = name.toUpperCase().contains('SIP') ||
+          name.toUpperCase().contains('FUND');
+      final day = int.tryParse(s['billing_date'].toString()) ?? 1;
+      final dueDate = DateTime(now.year, now.month, day);
+
+      bills.add(BillSummary(
+        id: 'sub_${s['id']}',
+        name: name,
+        amount: (s['amount'] as num).toDouble(),
+        type: isSIP ? 'INVESTMENT DUE' : 'SUBSCRIPTION',
+        dueDate: dueDate,
+        isPaid: checkPaid(name),
+      ));
+    }
+
+    // Map credit cards
+    for (var c in ccBills) {
+      if ((c['statement_balance'] as num? ?? 0) > 0) {
+        final dueDateStr = c['due_date'] as String;
+        final dueDate = DateTime.tryParse(dueDateStr);
+        bills.add(BillSummary(
+          id: 'cc_${c['id']}',
+          name: c['bank'] as String,
+          amount: (c['statement_balance'] as num).toDouble(),
+          type: 'CREDIT DUE',
+          dueDate: dueDate,
+          isPaid: false,
+        ));
+      }
+    }
+
+    // Map loans
+    for (var l in loanBills) {
+      final name = l['name'] as String;
+      final dueDateStr = l['due_date'] as String;
+      final dueDate = DateTime.tryParse(dueDateStr);
+      bills.add(BillSummary(
+        id: 'loan_${l['id']}',
+        name: name,
+        amount: ((l['loan_type'] == 'Individual'
+                    ? l['remaining_amount']
+                    : l['emi']) as num?)
+                ?.toDouble() ??
+            0.0,
+        type: l['loan_type'] == 'Individual' ? 'BORROWING DUE' : 'LOAN EMI',
+        dueDate: dueDate,
+        isPaid: checkPaid(name),
+      ));
+    }
+
+    // Map recurring
+    for (var r in recurringTx) {
+      final name = r['name'] as String;
+      final dayOfMonth = r['day_of_month'] as int?;
+      DateTime dueDate;
+      if (dayOfMonth != null) {
+        dueDate = DateTime(now.year, now.month, dayOfMonth);
+      } else {
+        dueDate = now;
+      }
+
+      bills.add(BillSummary(
+        id: 'recurring_${r['id']}',
+        name: name,
+        amount: (r['amount'] as num).toDouble(),
+        type: r['type'] == 'INCOME' ? 'RECURRING INCOME' : 'RECURRING EXPENSE',
+        dueDate: dueDate,
+        isPaid: checkPaid(name),
+      ));
+    }
+
+    return bills;
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getCategorySpending() async {
+  Future<List<CategorySpending>> getCategorySpending() async {
     final db = await AppDatabase.db;
     final nowStr = DateTime.now().toIso8601String().substring(0, 7);
-    return await db.rawQuery('''
+    final res = await db.rawQuery('''
       SELECT cat as category, SUM(amt) as total FROM (
         SELECT category as cat, amount as amt FROM variable_expenses WHERE substr(date, 1, 7) = ?
         UNION ALL
@@ -211,13 +230,20 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         SELECT name as cat, amount as amt FROM subscriptions WHERE substr(date, 1, 7) = ?
       ) GROUP BY cat ORDER BY total DESC
     ''', [nowStr, nowStr, nowStr]);
+
+    return res
+        .map((e) => CategorySpending(
+              category: e['category'] as String,
+              total: (e['total'] as num).toDouble(),
+            ))
+        .toList();
   }
 
   @override
   Future<List<SavingGoal>> getSavingGoals() async {
     final db = await AppDatabase.db;
     final list = await db.query('saving_goals');
-    return list.map((e) => SavingGoal.fromMap(e)).toList();
+    return list.map((e) => SavingGoalDto.fromJson(e).toDomain()).toList();
   }
 
   @override
@@ -260,7 +286,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
 
       final budgetMap = Map<String, dynamic>.from(row);
       budgetMap['is_stable'] = isStable ? 1 : 0;
-      budgets.add(Budget.fromMap(budgetMap));
+      budgets.add(BudgetDto.fromJson(budgetMap).toDomain());
     }
 
     return budgets;
@@ -276,10 +302,11 @@ class FinancialRepositoryImpl implements IFinancialRepository {
 
   @override
   Future<void> addEntry(
-      String type, double amount, String category, String note, String date,
+      String type, double amount, String category, String note, DateTime date,
       {String? paymentMethod, Set<TransactionTag>? tags}) async {
     final db = await AppDatabase.db;
     final tagStr = tags?.map((t) => t.name).join(',');
+    final dateStr = DateFormat('yyyy-MM-dd').format(date);
 
     // Handle credit card balance update if payment method matches a card name
     if (paymentMethod != null && type != 'Income') {
@@ -299,7 +326,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         await db.insert('income_sources', {
           'source': category,
           'amount': amount,
-          'date': date,
+          'date': dateStr,
           'tags': tagStr ?? 'income'
         });
         break;
@@ -308,7 +335,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
           'name': category,
           'amount': amount,
           'category': type,
-          'date': date,
+          'date': dateStr,
           'tags': tagStr ?? 'transfer'
         });
         break;
@@ -318,7 +345,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
           'amount': amount,
           'active': 1,
           'billing_date': '1',
-          'date': date
+          'date': dateStr
         });
         break;
       case 'Investment':
@@ -327,13 +354,13 @@ class FinancialRepositoryImpl implements IFinancialRepository {
           'amount': amount,
           'active': 1,
           'type': category,
-          'date': date,
+          'date': dateStr,
           'tags': tagStr ?? 'transfer'
         });
         break;
       default:
         await db.insert('variable_expenses', {
-          'date': date,
+          'date': dateStr,
           'amount': amount,
           'category': category,
           'note': note,
@@ -369,11 +396,14 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         where: '${Schema.colActive} = ?', whereArgs: [1]);
 
     for (final r in recurring) {
-      final item = RecurringTransaction.fromMap(r);
+      final item = RecurringTransactionDto.fromJson(r).toDomain();
       final lastProcessed = item.lastProcessed;
 
       // Skip if already processed today
-      if (lastProcessed != null && lastProcessed.startsWith(todayStr)) continue;
+      if (lastProcessed != null &&
+          DateFormat('yyyy-MM-dd').format(lastProcessed) == todayStr) {
+        continue;
+      }
 
       bool shouldProcess = false;
 
@@ -404,7 +434,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
           item.amount,
           item.category,
           "${item.name} (Auto)",
-          todayStr,
+          now,
         );
 
         await db.update(
@@ -431,7 +461,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getMonthlyHistory([int? year]) async {
+  Future<List<FinancialTrend>> getMonthlyHistory([int? year]) async {
     final db = await AppDatabase.db;
     final yearStr = year?.toString() ?? "";
 
@@ -468,17 +498,17 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       final income = (row['income'] as num? ?? 0).toDouble();
       final expenses = (row['expenses'] as num? ?? 0).toDouble();
       final invested = (row['invested'] as num? ?? 0).toDouble();
-      return {
-        'month': row['month'],
-        'income': income,
-        'expenses': expenses,
-        'invested': invested,
-        'net': income - (expenses + invested),
-      };
+      return FinancialTrend(
+        month: row['month'] as String,
+        income: income,
+        spending: expenses,
+        invested: invested,
+        total: expenses + invested,
+      );
     }).toList()
       ..sort((a, b) {
-        final dateA = _parseStepMonth(a['month'] as String);
-        final dateB = _parseStepMonth(b['month'] as String);
+        final dateA = _parseStepMonth(a.month);
+        final dateB = _parseStepMonth(b.month);
         return dateB.compareTo(dateA); // History is usually newest first
       });
   }
@@ -503,21 +533,21 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   Future<List<Loan>> getLoans() async {
     final db = await AppDatabase.db;
     final list = await db.query('loans');
-    return list.map((e) => Loan.fromMap(e)).toList();
+    return list.map((e) => LoanDto.fromJson(e).toDomain()).toList();
   }
 
   @override
   Future<List<Subscription>> getSubscriptions() async {
     final db = await AppDatabase.db;
     final list = await db.query('subscriptions');
-    return list.map((e) => Subscription.fromMap(e)).toList();
+    return list.map((e) => SubscriptionDto.fromJson(e).toDomain()).toList();
   }
 
   @override
   Future<List<CreditCard>> getCreditCards() async {
     final db = await AppDatabase.db;
     final list = await db.query('credit_cards');
-    return list.map((e) => CreditCard.fromMap(e)).toList();
+    return list.map((e) => CreditCardDto.fromJson(e).toDomain()).toList();
   }
 
   @override
@@ -666,7 +696,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
         amount,
         'Card Payment: $bank',
         'Payment for $bank credit card',
-        DateTime.now().toIso8601String(),
+        DateTime.now(),
         tags: {TransactionTag.creditCardPayment},
       );
     }
@@ -801,7 +831,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       ORDER BY date DESC, id DESC
     ''', [month, month, month, month]);
 
-    return results.map((e) => LedgerItem.fromMap(e)).toList();
+    return results.map((e) => LedgerItemDto.fromJson(e).toDomain()).toList();
   }
 
   @override
@@ -834,7 +864,7 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       return (b['id'] as int).compareTo(a['id'] as int);
     });
 
-    return allItems.map((e) => LedgerItem.fromMap(e)).toList();
+    return allItems.map((e) => LedgerItemDto.fromJson(e).toDomain()).toList();
   }
 
   @override
@@ -1074,7 +1104,9 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       }
     }
 
-    return list.map((e) => TransactionCategory.fromMap(e)).toList();
+    return list
+        .map((e) => TransactionCategoryDto.fromJson(e).toDomain())
+        .toList();
   }
 
   @override
@@ -1118,15 +1150,22 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getCategorySpendingForRange(
+  Future<List<CategorySpending>> getCategorySpendingForRange(
       DateTime start, DateTime end) async {
     final db = await AppDatabase.db;
-    final startStr = start.toIso8601String().substring(0, 10);
-    final endStr = end.toIso8601String().substring(0, 10);
+    final startStr = start.toUtc().toIso8601String().substring(0, 10);
+    final endStr = end.toUtc().toIso8601String().substring(0, 10);
 
-    return await db.rawQuery(
+    final res = await db.rawQuery(
         'SELECT category, SUM(amount) as total FROM variable_expenses WHERE substr(date, 1, 10) >= ? AND substr(date, 1, 10) <= ? GROUP BY category ORDER BY total DESC',
         [startStr, endStr]);
+
+    return res
+        .map((e) => CategorySpending(
+              category: e['category'] as String,
+              total: (e['total'] as num).toDouble(),
+            ))
+        .toList();
   }
 
   static const Map<String, List<String>> _defaultCategories = {
@@ -1269,7 +1308,9 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   Future<List<RetirementAccount>> getRetirementAccounts() async {
     final db = await AppDatabase.db;
     final list = await db.query('retirement_contributions');
-    return list.map((e) => RetirementAccount.fromMap(e)).toList();
+    return list
+        .map((e) => RetirementAccountDto.fromJson(e).toDomain())
+        .toList();
   }
 
   @override
@@ -1285,18 +1326,18 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   Future<List<Asset>> getInvestments() async {
     final db = await AppDatabase.db;
     final list = await db.query('investments', where: 'active = 1');
-    return list.map((e) => Asset.fromMap(e)).toList();
+    return list.map((e) => AssetDto.fromJson(e).toDomain()).toList();
   }
 
   @override
   Future<void> addInvestment(
-      String name, double amount, String type, String date) async {
+      String name, double amount, String type, DateTime date) async {
     final db = await AppDatabase.db;
     await db.insert('investments', {
       'name': name,
       'amount': amount,
       'type': type,
-      'date': date,
+      'date': date.toUtc().toIso8601String(),
       'active': 1,
     });
   }
@@ -1305,7 +1346,9 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   Future<List<RecurringTransaction>> getRecurringTransactions() async {
     final db = await AppDatabase.db;
     final list = await db.query(Schema.recurringTransactionsTable);
-    return list.map((e) => RecurringTransaction.fromMap(e)).toList();
+    return list
+        .map((e) => RecurringTransactionDto.fromJson(e).toDomain())
+        .toList();
   }
 
   @override

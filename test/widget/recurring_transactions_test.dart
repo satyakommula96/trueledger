@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/automation/recurring_transactions.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/constants/widget_keys.dart';
 import '../helpers/currency_test_helpers.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -20,14 +19,11 @@ void main() {
   });
 
   Widget createTestWidget() {
-    return ProviderScope(
+    return wrapWidget(
+      const RecurringTransactionsScreen(),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
       ],
-      child: MaterialApp(
-        theme: AppTheme.lightTheme,
-        home: const RecurringTransactionsScreen(),
-      ),
     );
   }
 

@@ -1,19 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trueledger/domain/models/credit_card_model.dart';
+import 'package:trueledger/data/dtos/credit_card_dto.dart';
 
 void main() {
   group('CreditCard', () {
-    test('fromMap should parse correctly', () {
+    test('CreditCardDto should parse correctly', () {
       final map = {
         'id': 1,
         'bank': 'HDFC',
-        'credit_limit': 100000,
-        'statement_balance': 25000,
-        'min_due': 1000,
+        'credit_limit': 100000.0,
+        'statement_balance': 25000.0,
+        'current_balance': 25000.0,
+        'min_due': 1000.0,
         'due_date': '15',
+        'statement_date': '1st',
       };
 
-      final card = CreditCard.fromMap(map);
+      final card = CreditCardDto.fromJson(map).toDomain();
 
       expect(card.id, 1);
       expect(card.bank, 'HDFC');
@@ -23,17 +26,19 @@ void main() {
       expect(card.dueDate, '15');
     });
 
-    test('toMap should work correctly', () {
+    test('CreditCardDto should work correctly to json', () {
       final card = CreditCard(
         id: 1,
         bank: 'HDFC',
         creditLimit: 100000,
         statementBalance: 25000,
+        currentBalance: 25000,
         minDue: 1000,
         dueDate: '15',
+        statementDate: '1st',
       );
 
-      final map = card.toMap();
+      final map = CreditCardDto.fromDomain(card).toJson();
 
       expect(map['id'], 1);
       expect(map['bank'], 'HDFC');

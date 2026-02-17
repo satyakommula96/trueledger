@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/services/personalization_service.dart';
 import 'package:trueledger/presentation/screens/settings/personalization_settings.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockPersonalizationService extends Mock
     implements PersonalizationService {}
@@ -39,15 +38,12 @@ void main() {
   });
 
   Widget createWidgetUnderTest() {
-    return ProviderScope(
+    return wrapWidget(
+      const PersonalizationSettingsScreen(),
       overrides: [
         personalizationServiceProvider.overrideWithValue(mockService),
         financialRepositoryProvider.overrideWithValue(mockRepo),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const PersonalizationSettingsScreen(),
-      ),
     );
   }
 
@@ -99,6 +95,10 @@ void main() {
     });
 
     testWidgets('reset personalization shows dialog', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
       when(() => mockService.resetPersonalization())
           .thenAnswer((_) async => {});
 
@@ -106,7 +106,12 @@ void main() {
       await tester.pumpAndSettle();
 
       final resetTile = find.text('RESET PERSONALIZATION');
-      await tester.scrollUntilVisible(resetTile, 100);
+
+      // Attempt to scroll until visible manually if scrollUntilVisible fails
+      await tester.drag(find.byType(ListView), const Offset(0, -1000));
+      await tester.pumpAndSettle();
+
+      expect(resetTile, findsOneWidget);
       await tester.tap(resetTile);
       await tester.pumpAndSettle();
 

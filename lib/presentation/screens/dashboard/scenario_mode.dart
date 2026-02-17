@@ -3,8 +3,11 @@ import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class ScenarioScreen extends ConsumerStatefulWidget {
   const ScenarioScreen({super.key});
@@ -20,6 +23,7 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     final dashboardAsync = ref.watch(dashboardProvider);
 
     return Scaffold(
@@ -35,7 +39,7 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
           ),
         ),
         title: Text(
-          "Scenario Mode",
+          l10n.scenarioModeTitle,
           style: TextStyle(
               fontWeight: FontWeight.w900, color: semantic.text, fontSize: 18),
         ),
@@ -46,18 +50,19 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
           final catSpending = data.categorySpending;
           if (catSpending.isEmpty) {
             return Center(
-              child: Text("Start logging to use Scenario Mode",
+              child: Text(l10n.startLoggingToUseScenario,
                   style: TextStyle(color: semantic.secondaryText)),
             );
           }
 
-          _selectedCategory ??= catSpending.first['category'] as String;
+          _selectedCategory ??= catSpending.first.category;
 
           final selectedCatData = catSpending.firstWhere(
-            (e) => e['category'] == _selectedCategory,
-            orElse: () => {'total': 0},
+            (e) => e.category == _selectedCategory,
+            orElse: () =>
+                CategorySpending(category: _selectedCategory!, total: 0),
           );
-          final monthlyTotal = selectedCatData['total'] as int;
+          final monthlyTotal = selectedCatData.total;
           final monthlySaving = (monthlyTotal * _reductionPercent).round();
           final yearlySaving = monthlySaving * 12;
 
@@ -71,7 +76,7 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "SIMULATION",
+                      l10n.simulation,
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
@@ -81,7 +86,7 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "What if you\nsaved more?",
+                      l10n.whatIfSavedMore,
                       style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.w900,
@@ -110,7 +115,7 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "SELECT CATEGORY",
+                        l10n.selectCategory,
                         style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
@@ -134,7 +139,7 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
                                 color: semantic.text,
                                 fontSize: 16),
                             items: catSpending.map((c) {
-                              final name = c['category'] as String;
+                              final name = c.category;
                               return DropdownMenuItem(
                                 value: name,
                                 child: Text(name),
@@ -166,7 +171,7 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "REDUCTION PERCENT",
+                            l10n.reductionPercent,
                             style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w900,
@@ -225,7 +230,7 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
                   child: Column(
                     children: [
                       Text(
-                        "PROJECTED YEARLY SAVINGS",
+                        l10n.projectedYearlySavings,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.7),
                           fontSize: 11,
@@ -251,7 +256,11 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          "Cutting your $_selectedCategory bills by ${(_reductionPercent * 100).toInt()}% frees up ${CurrencyFormatter.format(monthlySaving)} every single month.",
+                          l10n.scenarioImpactMessage(
+                            _selectedCategory ?? "",
+                            (_reductionPercent * 100).toInt(),
+                            CurrencyFormatter.format(monthlySaving),
+                          ),
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
@@ -271,7 +280,7 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
                 const SizedBox(height: 48),
 
                 Text(
-                  "WEALTH IMPACT",
+                  l10n.wealthImpact,
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -282,14 +291,14 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
                 const SizedBox(height: 24),
                 _ImpactTile(
                   semantic: semantic,
-                  label: "1 Year Progress",
+                  label: l10n.oneYearProgress,
                   value: "+${CurrencyFormatter.format(yearlySaving)}",
                   icon: Icons.auto_graph_rounded,
                 ).animate(delay: 400.ms).fadeIn().slideY(begin: 0.1, end: 0),
                 const SizedBox(height: 16),
                 _ImpactTile(
                   semantic: semantic,
-                  label: "5 Year Milestones",
+                  label: l10n.fiveYearMilestones,
                   value: "+${CurrencyFormatter.format(yearlySaving * 5)}",
                   icon: Icons.account_balance_rounded,
                 ).animate(delay: 500.ms).fadeIn().slideY(begin: 0.1, end: 0),
@@ -300,7 +309,7 @@ class _ScenarioScreenState extends ConsumerState<ScenarioScreen> {
         loading: () =>
             Center(child: CircularProgressIndicator(color: semantic.primary)),
         error: (err, stack) => Center(
-            child: Text("Simulation failed: $err",
+            child: Text(l10n.simulationFailed(err.toString()),
                 style: TextStyle(color: semantic.overspent))),
       ),
     );

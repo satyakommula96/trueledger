@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/settings/manage_categories.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -19,14 +18,11 @@ void main() {
   });
 
   Widget createWidgetUnderTest() {
-    return ProviderScope(
+    return wrapWidget(
+      const ManageCategoriesScreen(),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const ManageCategoriesScreen(),
-      ),
     );
   }
 

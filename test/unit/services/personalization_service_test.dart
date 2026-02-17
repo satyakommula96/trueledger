@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/domain/services/personalization_service.dart';
 import 'package:trueledger/domain/models/models.dart';
+import 'package:trueledger/data/dtos/personalization_dto.dart';
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
@@ -127,7 +128,8 @@ void main() {
       // 2. Disable feature in settings
       final settings = PersonalizationSettings(rememberLastUsed: false);
       when(() => mockPrefs.getString(any(that: contains('settings'))))
-          .thenReturn(jsonEncode(settings.toJson()));
+          .thenReturn(jsonEncode(
+              PersonalizationSettingsDto.fromDomain(settings).toJson()));
 
       // 3. Verify
       final lastUsed = service.getLastUsed();
@@ -143,7 +145,8 @@ void main() {
         baselineReflections: false,
       );
       when(() => mockPrefs.getString(any(that: contains('settings'))))
-          .thenReturn(jsonEncode(settings.toJson()));
+          .thenReturn(jsonEncode(
+              PersonalizationSettingsDto.fromDomain(settings).toJson()));
 
       await service.recordSignal(key: 'test', reason: 'test');
 
@@ -172,7 +175,8 @@ void main() {
       // 2. Disable feature in settings
       final settings = PersonalizationSettings(baselineReflections: false);
       when(() => mockPrefs.getString(any(that: contains('settings'))))
-          .thenReturn(jsonEncode(settings.toJson()));
+          .thenReturn(jsonEncode(
+              PersonalizationSettingsDto.fromDomain(settings).toJson()));
 
       // 3. Verify
       final reflections = service.generateBaselineReflections();
@@ -182,7 +186,8 @@ void main() {
     test('recordUsage is a no-op if personalizationEnabled is false', () async {
       final settings = PersonalizationSettings(personalizationEnabled: false);
       when(() => mockPrefs.getString(any(that: contains('settings'))))
-          .thenReturn(jsonEncode(settings.toJson()));
+          .thenReturn(jsonEncode(
+              PersonalizationSettingsDto.fromDomain(settings).toJson()));
 
       await service.recordUsage(category: 'Test', paymentMethod: 'Test');
 
@@ -196,7 +201,8 @@ void main() {
         () async {
       final settings = PersonalizationSettings(personalizationEnabled: false);
       when(() => mockPrefs.getString(any(that: contains('settings'))))
-          .thenReturn(jsonEncode(settings.toJson()));
+          .thenReturn(jsonEncode(
+              PersonalizationSettingsDto.fromDomain(settings).toJson()));
 
       await service.recordSignal(key: 'test', reason: 'test');
 

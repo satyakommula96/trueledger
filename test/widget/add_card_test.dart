@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:trueledger/core/theme/theme.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
 import 'package:trueledger/presentation/screens/cards/add_card.dart';
 import 'package:trueledger/core/services/notification_service.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -26,15 +25,12 @@ void main() {
   });
 
   Widget createWidgetUnderTest() {
-    return ProviderScope(
+    return wrapWidget(
+      const AddCreditCardScreen(),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepository),
         notificationServiceProvider.overrideWithValue(mockNotificationService),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const AddCreditCardScreen(),
-      ),
     );
   }
 

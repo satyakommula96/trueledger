@@ -13,3 +13,4 @@ export 'bill_summary_model.dart';
 export 'transaction_tag.dart';
 export 'retirement_account.dart';
 export 'recurring_transaction_model.dart';
+export 'financial_models.dart';

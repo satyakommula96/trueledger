@@ -14,6 +14,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:trueledger/core/utils/web_saver.dart';
 import 'package:trueledger/core/services/file_service.dart';
+import 'package:trueledger/data/dtos/insight_dto.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
@@ -61,7 +62,8 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
       final insightKindHistory = prefs.getString('insight_kind_history');
 
       data['version'] = '2.0';
-      data['insights'] = insights.map((e) => e.toJson()).toList();
+      data['insights'] =
+          insights.map((e) => AIInsightDto.fromDomain(e).toJson()).toList();
       data['insights_meta'] = {
         'display_history':
             insightHistory != null ? jsonDecode(insightHistory) : {},

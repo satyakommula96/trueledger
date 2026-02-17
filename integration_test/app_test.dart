@@ -1,3 +1,6 @@
+@Timeout(Duration(minutes: 5))
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -8,67 +11,71 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
   // Disable native dependencies for CI early
   AppConfig.isIntegrationTest = true;
 
   testWidgets('App smoke test - verifies app launches', (tester) async {
-    // Small delay to ensure binding is fully settled in headless environments
-    await Future.delayed(const Duration(seconds: 1));
+    // 1. Setup mock environment
+    // Note: setMockInitialValues should be called before app.main()
+    SharedPreferences.setMockInitialValues({});
 
+    // 2. Launch the app
+    await app.main();
+
+    // 3. Wait for initial pump
+    await tester.pump(const Duration(seconds: 2));
+
+    // 4. Settle if possible - use a short timeout to avoid blocking CI for 10 minutes
+    // if infinite animations (like progress indicators) are present.
     try {
-      // Mock shared preferences for headless CI environments
-      // This prevents potential hangs in SharedPreferences.getInstance() on some Linux runners
-      SharedPreferences.setMockInitialValues({});
-
-      await app.main();
-      await tester.pump(const Duration(seconds: 3));
-      await tester.pumpAndSettle();
-
-      // Poll for up to 60 seconds for the app to settle on a known screen
-      bool found = false;
-      for (int i = 0; i < 500; i++) {
-        await tester
-            .pump(const Duration(milliseconds: 100)); // 100ms * 300 = 30s max
-
-        final finder = find.byWidgetPredicate((widget) {
-          if (widget is Text) {
-            final data = widget.data;
-            // Check for Title of Intro OR Dashboard OR specific failure/loading states that indicate app is alive
-            return data == 'Track Your Wealth' || // Intro Title
-                data == 'Dashboard' || // Dashboard Title
-                data == 'Wealth Overview' || // Dashboard Section
-                data == 'Smart Budgeting' || // Intro Page 2
-                data == 'ANALYSIS & BUDGETS' || // Analysis Screen
-                data == 'TrueLedger' || // App Bar Title
-                data == 'Initializing...' || // Loading State
-                data == 'Initialization Failed'; // Error State
-          }
-          return false;
-        });
-
-        if (finder.evaluate().isNotEmpty) {
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        debugPrint(
-            'Test timed out waiting for app to load. Dumping widget tree:');
-        debugDumpApp();
-        fail("App did not load Intro or Dashboard within 50 seconds");
-      }
-
-      expect(found, isTrue);
-
-      // Ensure all pending timers/animations are settled before test ends
-      await tester.pumpAndSettle();
-      // Brief pause to allow any platform channel cleanup to occur
-      await Future.delayed(const Duration(milliseconds: 500));
-    } catch (e, stack) {
-      debugPrint('CRITICAL: Test failed during app launch: $e');
-      debugPrint(stack.toString());
-      rethrow;
+      await tester.pumpAndSettle(
+        const Duration(milliseconds: 100),
+        EnginePhase.sendSemanticsUpdate,
+        const Duration(seconds: 10),
+      );
+    } catch (_) {
+      // Settle failed or timed out, we continue and rely on our polling logic
     }
+
+    // 5. Poll for success state
+    bool found = false;
+    final stopwatch = Stopwatch()..start();
+    const timeout = Duration(seconds: 45);
+
+    while (stopwatch.elapsed < timeout) {
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final finder = find.byWidgetPredicate((widget) {
+        if (widget is Text) {
+          final data = widget.data;
+          return data == 'Track Your Wealth' ||
+              data == 'Dashboard' ||
+              data == 'Wealth Overview' ||
+              data == 'TrueLedger';
+        }
+        return false;
+      });
+
+      if (finder.evaluate().isNotEmpty) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      debugPrint('Test timed out. Dumping widget tree:');
+      debugDumpApp();
+    }
+
+    expect(found, isTrue,
+        reason:
+            "App failed to show initial screen within ${timeout.inSeconds}s");
+
+    // 6. Finalization safety
+    // Allow any pending async tasks to settle and the platform to stabilize.
+    await tester.pump(const Duration(milliseconds: 500));
+    // Small delay to let the platform channel messages flush
+    await Future.delayed(const Duration(seconds: 1));
   });
 }

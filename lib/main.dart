@@ -1,5 +1,9 @@
 import 'dart:io';
+import 'package:intl/intl.dart';
+
 import 'package:flutter/foundation.dart';
+import 'package:intl/date_symbol_data_local.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,12 +18,17 @@ import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/presentation/providers/digest_provider.dart';
 import 'package:trueledger/presentation/components/privacy_guard.dart';
 import 'package:trueledger/presentation/screens/startup/startup_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
+import 'package:trueledger/core/providers/locale_provider.dart';
 
 Future<void> main() async {
   if (kIsWeb) {
     usePathUrlStrategy();
   }
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('te', null);
+  await initializeDateFormatting('en', null);
 
   // 1. Initial Desktop & Web Setup
   if (kIsWeb) {
@@ -62,6 +71,10 @@ class TrueLedgerApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Start the reactive coordinator for daily digest notifications
     ref.watch(dailyDigestCoordinatorProvider);
+    final locale = ref.watch(localeProvider);
+
+    // Sync Intl default locale
+    Intl.defaultLocale = locale.languageCode;
 
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
@@ -72,6 +85,18 @@ class TrueLedgerApp extends ConsumerWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: mode,
+          locale: locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', ''),
+            Locale('te', ''),
+          ],
+          onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
           scrollBehavior: const MaterialScrollBehavior().copyWith(
             dragDevices: {
               PointerDeviceKind.mouse,

@@ -1,12 +1,17 @@
 import 'package:intl/intl.dart';
 
 class DateHelper {
-  static String formatDue(String due, {String prefix = "DUE"}) {
+  static String formatDue(String due,
+      {String prefix = "DUE",
+      String? todayLabel,
+      String? tomorrowLabel,
+      String? flexibleLabel,
+      String? recurringLabel}) {
     if (due.toLowerCase() == 'flexible') {
-      return "FLEXIBLE";
+      return flexibleLabel?.toUpperCase() ?? "FLEXIBLE";
     }
     if (due.toLowerCase() == 'recurring') {
-      return "RECURRING";
+      return recurringLabel?.toUpperCase() ?? "RECURRING";
     }
 
     final now = DateTime.now();
@@ -41,11 +46,11 @@ class DateHelper {
       }
 
       if (isSameDay(next, today)) {
-        return "DUE TODAY";
+        return todayLabel?.toUpperCase() ?? "DUE TODAY";
       }
       final tomorrow = today.add(const Duration(days: 1));
       if (isSameDay(next, tomorrow)) {
-        return "DUE TOMORROW";
+        return tomorrowLabel?.toUpperCase() ?? "DUE TOMORROW";
       }
 
       return "$prefix: ${DateFormat('dd MMM yyyy').format(next).toUpperCase()}";

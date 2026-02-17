@@ -32,18 +32,16 @@ void main() {
         loansTotal: 0,
         totalMonthlyEMI: 0,
       );
-      final categorySpending = [
-        {'category': 'Food', 'total': 50}
-      ];
+      final categorySpending = [CategorySpending(category: 'Food', total: 50)];
       final budgets = [
         Budget(id: 1, category: 'Food', monthlyLimit: 100, spent: 50)
       ];
       final savingGoals = <SavingGoal>[];
       final trendData = [
-        {'month': '2026-01', 'total': 100}
+        FinancialTrend(month: '2026-01', spending: 100, income: 0, total: 100)
       ];
       final upcomingBills = [
-        {'title': 'Netflix', 'amount': 200}
+        BillSummary(id: '1', name: 'Netflix', amount: 200, type: 'BILL')
       ];
 
       when(() => mockRepository.getMonthlySummary())
@@ -58,8 +56,8 @@ void main() {
       when(() => mockRepository.getUpcomingBills())
           .thenAnswer((_) async => upcomingBills);
       when(() => mockRepository.getTodaySpend()).thenAnswer((_) async => 150);
-      when(() => mockRepository.getWeeklySummary())
-          .thenAnswer((_) async => {'thisWeek': 500, 'lastWeek': 400});
+      when(() => mockRepository.getWeeklySummary()).thenAnswer(
+          (_) async => <String, double>{'thisWeek': 500, 'lastWeek': 400});
       when(() => mockRepository.getActiveStreak()).thenAnswer((_) async => 5);
       when(() => mockRepository.getTodayTransactionCount())
           .thenAnswer((_) async => 3);

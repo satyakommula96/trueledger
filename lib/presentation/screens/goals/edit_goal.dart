@@ -6,8 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 
+import 'package:trueledger/domain/models/models.dart';
+
 class EditGoalScreen extends ConsumerStatefulWidget {
-  final Map<String, dynamic> goal;
+  final SavingGoal goal;
   const EditGoalScreen({super.key, required this.goal});
 
   @override
@@ -22,11 +24,11 @@ class _EditGoalScreenState extends ConsumerState<EditGoalScreen> {
   @override
   void initState() {
     super.initState();
-    nameCtrl = TextEditingController(text: widget.goal['name']);
+    nameCtrl = TextEditingController(text: widget.goal.name);
     targetCtrl =
-        TextEditingController(text: widget.goal['target_amount'].toString());
+        TextEditingController(text: widget.goal.targetAmount.toString());
     currentCtrl =
-        TextEditingController(text: widget.goal['current_amount'].toString());
+        TextEditingController(text: widget.goal.currentAmount.toString());
   }
 
   @override
@@ -108,7 +110,7 @@ class _EditGoalScreenState extends ConsumerState<EditGoalScreen> {
 
     final repo = ref.read(financialRepositoryProvider);
     await repo.updateGoal(
-      widget.goal['id'],
+      widget.goal.id,
       nameCtrl.text,
       target,
       current,
@@ -119,7 +121,7 @@ class _EditGoalScreenState extends ConsumerState<EditGoalScreen> {
 
   Future<void> _delete() async {
     final repo = ref.read(financialRepositoryProvider);
-    await repo.deleteItem('saving_goals', widget.goal['id']);
+    await repo.deleteItem('saving_goals', widget.goal.id);
     ref.invalidate(dashboardProvider);
     if (mounted) Navigator.pop(context);
   }

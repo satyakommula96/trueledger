@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/analysis/annual_reflection_screen.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/domain/usecases/get_annual_reflection_usecase.dart';
+import '../../helpers/test_wrapper.dart';
 
 // Mocks
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
@@ -42,16 +41,13 @@ void main() {
     );
 
     await tester.pumpWidget(
-      ProviderScope(
+      wrapWidget(
+        const AnnualReflectionScreen(year: 2026),
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepo),
           annualReflectionProvider(2026)
               .overrideWith((ref) async => reflectionData),
         ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AnnualReflectionScreen(year: 2026),
-        ),
       ),
     );
 
@@ -74,16 +70,13 @@ void main() {
   testWidgets('AnnualReflectionScreen shows error view on failure',
       (WidgetTester tester) async {
     await tester.pumpWidget(
-      ProviderScope(
+      wrapWidget(
+        const AnnualReflectionScreen(year: 2026),
         overrides: [
           financialRepositoryProvider.overrideWithValue(mockRepo),
           annualReflectionProvider(2026)
               .overrideWith((ref) async => throw Exception("Failed to load")),
         ],
-        child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AnnualReflectionScreen(year: 2026),
-        ),
       ),
     );
 

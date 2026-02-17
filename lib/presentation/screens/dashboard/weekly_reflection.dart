@@ -8,6 +8,7 @@ import 'package:trueledger/domain/usecases/usecase_base.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
 import 'package:trueledger/core/config/app_config.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 final weeklyReflectionProvider =
     FutureProvider<WeeklyReflectionData>((ref) async {
@@ -72,17 +73,17 @@ class WeeklyReflectionScreen extends ConsumerWidget {
               onRetry: () => ref.refresh(weeklyReflectionProvider),
             ),
             data: (data) {
+              final l10n = AppLocalizations.of(context)!;
               final daysUnder = data.daysUnderBudget;
               final increaseData = data.largestCategoryIncrease;
 
               String insightTitle =
-                  daysUnder > 3 ? "Great work this week." : "Review your week.";
-              String insight1 = "You stayed under budget $daysUnder days.";
+                  daysUnder > 3 ? l10n.greatWorkWeek : l10n.reviewYourWeek;
+              String insight1 = l10n.underBudgetDays(daysUnder);
               if (daysUnder == 7) {
-                insight1 = "Perfect week! You stayed under budget every day.";
+                insight1 = l10n.perfectWeek;
               } else if (daysUnder == 0) {
-                insight1 =
-                    "It was a heavy week. Try to track closer next week.";
+                insight1 = l10n.heavyWeek;
               }
 
               return SingleChildScrollView(
@@ -96,7 +97,7 @@ class WeeklyReflectionScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "WEEKLY SUMMARY",
+                          l10n.weeklySummary,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w900,
@@ -126,10 +127,11 @@ class WeeklyReflectionScreen extends ConsumerWidget {
                           : Icons.info_outline_rounded,
                       iconColor:
                           daysUnder > 3 ? semantic.income : semantic.warning,
-                      title: "Spending Consistency",
+                      title: l10n.spendingConsistency,
                       content: insight1,
-                      subContent:
-                          "Daily Benchmark: ~${CurrencyFormatter.format(data.budgetDailyAverage, compact: true)}",
+                      subContent: l10n.dailyBenchmark(CurrencyFormatter.format(
+                          data.budgetDailyAverage,
+                          compact: true)),
                       index: 0,
                     ),
                     const SizedBox(height: 20),
@@ -138,12 +140,15 @@ class WeeklyReflectionScreen extends ConsumerWidget {
                         semantic: semantic,
                         icon: Icons.trending_up_rounded,
                         iconColor: semantic.overspent,
-                        title: "Spending Spike",
-                        content:
-                            "${increaseData['category'].toString().toUpperCase()} increased by ${CurrencyFormatter.format(increaseData['increaseAmount'], compact: true)} vs last week.",
+                        title: l10n.spendingSpike,
+                        content: l10n.spikeMessage(
+                            increaseData['category'].toString().toUpperCase(),
+                            CurrencyFormatter.format(
+                                increaseData['increaseAmount'],
+                                compact: true)),
                         subContent: increaseData['isNew'] == true
-                            ? "This is a new expenditure category for you."
-                            : "Keep an eye on this category trend.",
+                            ? l10n.newCategoryExpenditure
+                            : l10n.eyeOnCategoryTrend,
                         index: 1,
                       ),
                     ] else ...[
@@ -151,11 +156,9 @@ class WeeklyReflectionScreen extends ConsumerWidget {
                         semantic: semantic,
                         icon: Icons.shield_rounded,
                         iconColor: semantic.income,
-                        title: "Stable Spending",
-                        content:
-                            "Zero significant spending spikes detected compared to last week.",
-                        subContent:
-                            "Your spending habits are stabilizing well.",
+                        title: l10n.stableSpending,
+                        content: l10n.noSpikesDetected,
+                        subContent: l10n.spendingStabilizing,
                         index: 1,
                       ),
                     ],
@@ -164,12 +167,17 @@ class WeeklyReflectionScreen extends ConsumerWidget {
                       semantic: semantic,
                       icon: Icons.compare_arrows_rounded,
                       iconColor: semantic.primary,
-                      title: "Volume Comparison",
+                      title: l10n.volumeComparison,
                       content: data.totalThisWeek < data.totalLastWeek
-                          ? "Success! You reduced spending by ${CurrencyFormatter.format(data.totalLastWeek - data.totalThisWeek)}."
-                          : "Spending increased by ${CurrencyFormatter.format(data.totalThisWeek - data.totalLastWeek)} vs last week.",
-                      subContent:
-                          "Last Week: ${CurrencyFormatter.format(data.totalLastWeek)} | This Week: ${CurrencyFormatter.format(data.totalThisWeek)}",
+                          ? l10n.reducedSpendingSuccess(
+                              CurrencyFormatter.format(
+                                  data.totalLastWeek - data.totalThisWeek))
+                          : l10n.increasedSpendingMessage(
+                              CurrencyFormatter.format(
+                                  data.totalThisWeek - data.totalLastWeek)),
+                      subContent: l10n.lastWeekVsThisWeek(
+                          CurrencyFormatter.format(data.totalLastWeek),
+                          CurrencyFormatter.format(data.totalThisWeek)),
                       index: 2,
                     ),
                     if (data.topCategory != null) ...[
@@ -178,17 +186,16 @@ class WeeklyReflectionScreen extends ConsumerWidget {
                         semantic: semantic,
                         icon: Icons.leaderboard_rounded,
                         iconColor: semantic.warning,
-                        title: "Primary Category",
-                        content:
-                            "${data.topCategory!.toUpperCase()} was your largest expenditure area.",
-                        subContent:
-                            "Evaluate if this aligns with your current priorities.",
+                        title: l10n.primaryCategory,
+                        content: l10n.largestExpenditureArea(
+                            data.topCategory!.toUpperCase()),
+                        subContent: l10n.alignWithPriorities,
                         index: 3,
                       ),
                     ],
                     const SizedBox(height: 64),
                     Text(
-                      "WEEKLY FOCUS",
+                      l10n.weeklyFocus,
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
@@ -201,18 +208,18 @@ class WeeklyReflectionScreen extends ConsumerWidget {
                       semantic: semantic,
                       icon: Icons.flag_rounded,
                       iconColor: Colors.deepPurple,
-                      title: "Gentle Goal",
+                      title: l10n.gentleGoal,
                       content: data.topCategory != null
-                          ? "Target a 10% reduction in ${data.topCategory!.toUpperCase()} spending."
-                          : "Attempt to stay under budget for 5 days next week.",
-                      subContent:
-                          "Sustainable progress comes from consistent, small adjustments.",
+                          ? l10n
+                              .reductionTarget(data.topCategory!.toUpperCase())
+                          : l10n.stayUnderBudgetGoal,
+                      subContent: l10n.sustainableProgress,
                       index: 4,
                     ),
                     const SizedBox(height: 80),
                     Center(
                       child: Text(
-                        "Reflection builds financial intuition.",
+                        l10n.reflectionFinancialIntuition,
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,

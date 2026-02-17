@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
 import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
@@ -8,7 +7,7 @@ import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
-import 'package:trueledger/core/theme/theme.dart';
+import '../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -28,15 +27,12 @@ void main() {
   });
 
   Widget createWidget(MonthDetailScreen screen) {
-    return ProviderScope(
+    return wrapWidget(
+      screen,
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: screen,
-      ),
     );
   }
 

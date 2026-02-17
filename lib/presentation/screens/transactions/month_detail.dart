@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/domain/models/models.dart';
-import 'package:trueledger/core/theme/theme.dart';
-import 'package:trueledger/core/utils/currency_formatter.dart';
-import 'package:trueledger/presentation/screens/transactions/edit_entry.dart';
-import 'package:trueledger/presentation/components/error_view.dart';
-import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
-import 'month_detail_components/category_icon.dart';
-import 'month_detail_components/month_detail_header.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
+import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:trueledger/core/theme/theme.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/presentation/screens/transactions/month_detail_components/category_icon.dart';
+import 'package:trueledger/presentation/components/error_view.dart';
+import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 import 'package:trueledger/presentation/components/empty_state.dart';
+import 'package:trueledger/presentation/screens/transactions/month_detail_components/month_detail_header.dart';
+import 'package:trueledger/presentation/screens/transactions/edit_entry.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class MonthDetailScreen extends ConsumerStatefulWidget {
   final String month;
@@ -100,6 +101,7 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
     final isPrivate = ref.watch(privacyProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -136,7 +138,7 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
       ),
       body: Column(
         children: [
-          _buildSummaryHeader(semantic, isPrivate),
+          _buildSummaryHeader(semantic, isPrivate, l10n),
           MonthDetailHeader(
             searchQuery: searchQuery,
             typeFilter: typeFilter,
@@ -154,20 +156,42 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
                         error: _error!,
                         onRetry: _loadData,
                       )
-                    : _buildLedgerList(semantic, isPrivate),
+                    : _buildLedgerList(semantic, isPrivate, l10n),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryHeader(AppColors semantic, bool isPrivate) {
+  Widget _buildSummaryHeader(
+      AppColors semantic, bool isPrivate, AppLocalizations l10n) {
     final items = _getFilteredItems();
     final total = items.fold<double>(0, (sum, item) => sum + item.amount);
     final isIncome = typeFilter == "Income";
     final displayColor = isIncome
         ? semantic.income
         : (typeFilter == "All" ? semantic.primary : semantic.overspent);
+
+    String getFilterLabel() {
+      switch (typeFilter) {
+        case 'All':
+          return l10n.all;
+        case 'Expenses':
+          return l10n.expenses;
+        case 'Income':
+          return l10n.income;
+        case 'Fixed':
+          return l10n.fixed;
+        case 'Variable':
+          return l10n.variable;
+        case 'Subscription':
+          return l10n.subscription;
+        case 'Investment':
+          return l10n.investment;
+        default:
+          return typeFilter;
+      }
+    }
 
     return Container(
       width: double.infinity,
@@ -193,7 +217,7 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${typeFilter.toUpperCase()} TOTAL",
+                  l10n.typeTotal(getFilterLabel().toUpperCase()),
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -245,12 +269,13 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
         .slideY(begin: 0.05, end: 0, curve: Curves.easeOutQuart);
   }
 
-  Widget _buildLedgerList(AppColors semantic, bool isPrivate) {
+  Widget _buildLedgerList(
+      AppColors semantic, bool isPrivate, AppLocalizations l10n) {
     final items = _getFilteredItems();
     if (items.isEmpty) {
-      return const EmptyState(
-        message: "NO ENTRIES YET",
-        subMessage: "NO TRANSACTIONS FOUND FOR THIS PERIOD.",
+      return EmptyState(
+        message: l10n.noEntriesYet,
+        subMessage: l10n.noTransactionsFoundPeriod,
         icon: Icons.receipt_long_rounded,
       );
     }
@@ -327,7 +352,7 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
-                                      type.toUpperCase(),
+                                      _localizeType(type, l10n).toUpperCase(),
                                       style: TextStyle(
                                         fontSize: 8,
                                         color: semantic.secondaryText,
@@ -376,7 +401,7 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
                           const SizedBox(height: 6),
                           Text(
                             DateFormat('dd MMM')
-                                .format(DateTime.parse(item.date))
+                                .format(item.date)
                                 .toUpperCase(),
                             style: TextStyle(
                               fontSize: 9,
@@ -409,6 +434,23 @@ class _MonthDetailScreenState extends ConsumerState<MonthDetailScreen> {
       return DateFormat('MMMM yyyy').format(date).toUpperCase();
     } catch (e) {
       return yyyyMm;
+    }
+  }
+
+  String _localizeType(String type, AppLocalizations l10n) {
+    switch (type) {
+      case 'Income':
+        return l10n.income;
+      case 'Fixed':
+        return l10n.fixed;
+      case 'Variable':
+        return l10n.variable;
+      case 'Subscription':
+        return l10n.subscription;
+      case 'Investment':
+        return l10n.investment;
+      default:
+        return type;
     }
   }
 }

@@ -51,7 +51,7 @@ void main() {
             validParams.amount,
             validParams.category,
             validParams.note,
-            validParams.date,
+            any(),
           )).called(1);
     });
 

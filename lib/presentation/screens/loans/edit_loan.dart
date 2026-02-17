@@ -11,6 +11,7 @@ import 'package:trueledger/domain/logic/loan_engine.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/core/constants/widget_keys.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class EditLoanScreen extends ConsumerStatefulWidget {
   final Loan loan;
@@ -117,7 +118,7 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
 
       // Date Filter: strict exclusion if transaction is before loan start date (by day)
       try {
-        final txDate = DateTime.parse(item.date);
+        final txDate = item.date;
         if (loanStart != null) {
           final txDay = DateTime(txDate.year, txDate.month, txDate.day);
           if (txDay.isBefore(loanStart)) return false;
@@ -172,7 +173,7 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("UPDATE LOAN"),
+        title: Text(AppLocalizations.of(context)!.updateLoan),
         centerTitle: true,
         actions: [
           IconButton(
@@ -194,8 +195,8 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("LOAN CLASSIFICATION",
-                    style: TextStyle(
+                Text(AppLocalizations.of(context)!.loanClassification,
+                    style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 2,
@@ -246,19 +247,23 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                   }).toList(),
                 ),
                 const SizedBox(height: 32),
-                _buildField("CREDITOR / LOAN NAME", nameCtrl,
+                _buildField(
+                    AppLocalizations.of(context)!.creditorLoanName, nameCtrl,
                     type: TextInputType.text),
                 const SizedBox(height: 24),
                 Row(
                   children: [
                     Expanded(
-                        child: _buildField("REMAINING BALANCE", remainingCtrl,
+                        child: _buildField(
+                            AppLocalizations.of(context)!.remainingBalance,
+                            remainingCtrl,
                             type: const TextInputType.numberWithOptions(
                                 decimal: true),
                             prefix: CurrencyFormatter.symbol)),
                     const SizedBox(width: 16),
                     Expanded(
-                        child: _buildField("TOTAL LOAN", totalCtrl,
+                        child: _buildField(
+                            AppLocalizations.of(context)!.totalLoan, totalCtrl,
                             type: const TextInputType.numberWithOptions(
                                 decimal: true),
                             prefix: CurrencyFormatter.symbol)),
@@ -269,13 +274,16 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                   Row(
                     children: [
                       Expanded(
-                          child: _buildField("MONTHLY EMI", emiCtrl,
+                          child: _buildField(
+                              AppLocalizations.of(context)!.monthlyEmi, emiCtrl,
                               type: const TextInputType.numberWithOptions(
                                   decimal: true),
                               prefix: CurrencyFormatter.symbol)),
                       const SizedBox(width: 16),
                       Expanded(
-                          child: _buildField("INTEREST RATE", rateCtrl,
+                          child: _buildField(
+                              AppLocalizations.of(context)!.interestRate,
+                              rateCtrl,
                               type: const TextInputType.numberWithOptions(
                                   decimal: true),
                               prefix: "%")),
@@ -288,8 +296,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                     Expanded(
                       child: _buildField(
                           selectedType == 'Individual'
-                              ? "EXPECTED REPAYMENT DATE"
-                              : "DUE DATE (DAY OF MONTH)",
+                              ? AppLocalizations.of(context)!
+                                  .expectedRepaymentDate
+                              : AppLocalizations.of(context)!.dueDateDayOfMonth,
                           dueCtrl,
                           type: TextInputType.text,
                           readOnly: true,
@@ -310,8 +319,8 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text("FLEXIBLE",
-                              style: TextStyle(
+                          child: Text(AppLocalizations.of(context)!.flexible,
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w900, fontSize: 11)),
                         ),
                       ),
@@ -360,8 +369,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                     child: OutlinedButton.icon(
                       onPressed: _payEmi,
                       icon: const Icon(Icons.payment_rounded),
-                      label: const Text("RECORD EMI PAYMENT",
-                          style: TextStyle(
+                      label: Text(
+                          AppLocalizations.of(context)!.recordEmiPayment,
+                          style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 2)),
@@ -381,8 +391,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                     child: OutlinedButton.icon(
                       onPressed: _prepay,
                       icon: const Icon(Icons.speed_rounded),
-                      label: const Text("RECORD PREPAYMENT",
-                          style: TextStyle(
+                      label: Text(
+                          AppLocalizations.of(context)!.recordPrepayment,
+                          style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 2)),
@@ -408,16 +419,16 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                           borderRadius: BorderRadius.circular(20)),
                       elevation: 0,
                     ),
-                    child: const Text("UPDATE BORROWING",
-                        style: TextStyle(
+                    child: Text(AppLocalizations.of(context)!.updateBorrowing,
+                        style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 2)),
                   ),
                 ),
                 const SizedBox(height: 32),
-                const Text("PAYMENT HISTORY",
-                    style: TextStyle(
+                Text(AppLocalizations.of(context)!.paymentHistory,
+                    style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 0.5,
@@ -426,11 +437,14 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                 if (_isLoadingHistory)
                   const Center(child: CircularProgressIndicator())
                 else if (_history.isEmpty)
-                  const Center(
+                  Center(
                     child: Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: Text("No recorded payment history found.",
-                          style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      padding: const EdgeInsets.all(24.0),
+                      child: Text(
+                          AppLocalizations.of(context)!
+                              .noRecordedPaymentHistory,
+                          style: const TextStyle(
+                              color: Colors.grey, fontSize: 12)),
                     ),
                   )
                 else
@@ -459,7 +473,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(item.date.substring(0, 10),
+                                      Text(
+                                          DateFormat('yyyy-MM-dd')
+                                              .format(item.date),
                                           style: const TextStyle(
                                               fontSize: 10,
                                               fontWeight: FontWeight.bold,
@@ -534,8 +550,10 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                                             Icons.add_circle_outline,
                                             size: 14,
                                             color: Colors.blue),
-                                        label: const Text("MARK AS EMI",
-                                            style: TextStyle(
+                                        label: Text(
+                                            AppLocalizations.of(context)!
+                                                .markAsEmi,
+                                            style: const TextStyle(
                                                 fontSize: 9,
                                                 fontWeight: FontWeight.w900)),
                                       )
@@ -551,8 +569,10 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                                             Icons.remove_circle_outline,
                                             size: 14,
                                             color: Colors.grey),
-                                        label: const Text("NOT A PAYMENT",
-                                            style: TextStyle(
+                                        label: Text(
+                                            AppLocalizations.of(context)!
+                                                .notAPayment,
+                                            style: const TextStyle(
                                                 fontSize: 9,
                                                 fontWeight: FontWeight.w900,
                                                 color: Colors.grey)),
@@ -570,7 +590,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                   Center(
                     child: TextButton(
                       onPressed: () => setState(() => _showAllHistory = true),
-                      child: Text("SHOW ALL (${_history.length} PAYMENTS)",
+                      child: Text(
+                          AppLocalizations.of(context)!
+                              .showAllWithCount(_history.length),
                           style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
@@ -634,9 +656,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Expanded(
-                child: Text("PAYOFF QUOTE",
-                    style: TextStyle(
+              Expanded(
+                child: Text(AppLocalizations.of(context)!.payoffQuote,
+                    style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 0.5,
@@ -650,8 +672,8 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                   color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Text("ESTIMATE",
-                    style: TextStyle(
+                child: Text(AppLocalizations.of(context)!.estimate,
+                    style: const TextStyle(
                         fontSize: 8,
                         fontWeight: FontWeight.bold,
                         color: Colors.blue)),
@@ -666,8 +688,9 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Valid until today",
-                        style: TextStyle(fontSize: 10, color: Colors.grey)),
+                    Text(AppLocalizations.of(context)!.validUntilToday,
+                        style:
+                            const TextStyle(fontSize: 10, color: Colors.grey)),
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
@@ -685,8 +708,8 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                   TextButton(
                     onPressed: () =>
                         _reconcileWithBank(payoffAmount, remaining, interest),
-                    child: const Text("RECONCILE WITH BANK",
-                        style: TextStyle(
+                    child: Text(AppLocalizations.of(context)!.reconcileWithBank,
+                        style: const TextStyle(
                             fontSize: 9, fontWeight: FontWeight.bold)),
                   ),
                   IconButton(
@@ -694,15 +717,25 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
                         showDialog(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                                  title: const Text("PAYOFF BREAKDOWN"),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .payoffBreakdown),
                                   content: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      _row("Principal Outstanding", remaining),
+                                      _row(
+                                          AppLocalizations.of(context)!
+                                              .principalOutstanding,
+                                          remaining),
                                       const Divider(),
-                                      _row("Interest Accrued", interest),
+                                      _row(
+                                          AppLocalizations.of(context)!
+                                              .interestAccrued,
+                                          interest),
                                       const Divider(),
-                                      _row("Total Quote", payoffAmount,
+                                      _row(
+                                          AppLocalizations.of(context)!
+                                              .totalQuote,
+                                          payoffAmount,
                                           isBold: true),
                                       const SizedBox(height: 16),
                                       const Text(
@@ -965,7 +998,7 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
           actualPayment,
           'EMI / Payment: ${nameCtrl.text}',
           'Loan payment for ${nameCtrl.text}',
-          nowIso,
+          DateTime.now(),
           tags: {TransactionTag.loanEmi});
 
       // Forensic Audit Log
@@ -1071,7 +1104,7 @@ class _EditLoanScreenState extends ConsumerState<EditLoanScreen> {
           result,
           'Prepayment / Loan: ${nameCtrl.text}',
           'Prepayment for ${nameCtrl.text}',
-          nowIso,
+          DateTime.now(),
           tags: {TransactionTag.loanPrepayment});
 
       // Prepayment Forensic Audit Log

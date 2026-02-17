@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/trend_chart.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:trueledger/domain/models/models.dart';
+import '../helpers/test_wrapper.dart';
 
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
@@ -20,25 +21,22 @@ void main() {
   });
 
   Widget createWidgetUnderTest({
-    required List<Map<String, dynamic>> trendData,
+    required List<FinancialTrend> trendData,
     bool isPrivate = false,
   }) {
-    return ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(mockPrefs),
-      ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: Scaffold(
-          body: Center(
-            child: TrendChart(
-              trendData: trendData,
-              semantic: AppTheme.darkColors,
-              isPrivate: isPrivate,
-            ),
+    return wrapWidget(
+      Scaffold(
+        body: Center(
+          child: TrendChart(
+            trendData: trendData,
+            semantic: AppTheme.darkColors,
+            isPrivate: isPrivate,
           ),
         ),
       ),
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(mockPrefs),
+      ],
     );
   }
 
@@ -50,9 +48,9 @@ void main() {
 
   testWidgets('renders LineChart with data', (WidgetTester tester) async {
     final trendData = [
-      {'month': '2023-01', 'total': 1000.0},
-      {'month': '2023-02', 'total': 1200.0},
-      {'month': '2023-03', 'total': 1100.0},
+      FinancialTrend(month: '2023-01', spending: 1000, income: 0, total: 1000),
+      FinancialTrend(month: '2023-02', spending: 1200, income: 0, total: 1200),
+      FinancialTrend(month: '2023-03', spending: 1100, income: 0, total: 1100),
     ];
 
     await tester.pumpWidget(createWidgetUnderTest(trendData: trendData));
