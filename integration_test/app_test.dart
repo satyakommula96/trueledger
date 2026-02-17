@@ -45,8 +45,7 @@ void main() {
           return data == 'Track Your Wealth' ||
               data == 'Dashboard' ||
               data == 'Wealth Overview' ||
-              data == 'TrueLedger' ||
-              data == 'Initializing...';
+              data == 'TrueLedger';
         }
         return false;
       });
@@ -68,11 +67,9 @@ void main() {
 
     // 6. Finalization safety
     // Allow any pending async tasks to settle and the platform to stabilize
-    try {
-      await tester.pumpAndSettle(const Duration(milliseconds: 500));
-    } catch (_) {
-      // Ignore finalization errors
-    }
+    // We use a simple pump to avoid hitting the 10-minute timeout of pumpAndSettle
+    // if there are infinite animations (like the startup loading indicator).
+    await tester.pump(const Duration(milliseconds: 500));
     await Future.delayed(const Duration(seconds: 1));
   });
 }

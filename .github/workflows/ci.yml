@@ -178,11 +178,11 @@ jobs:
 
           echo "Simulator ready. Starting tests..."
 
-          flutter drive \
-            --driver=test_driver/integration_test.dart \
-            --target=integration_test/app_test.dart \
+          # Using 'flutter test' instead of 'flutter drive' for better stability with modern integration_test package
+          flutter test integration_test/app_test.dart \
             -d "$UDID" \
-            --timeout 15m
+            --timeout 15m \
+            --no-pub
 
 # -------------------------
 # macOS DESKTOP INTEGRATION
