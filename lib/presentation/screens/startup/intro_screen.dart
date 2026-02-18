@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/presentation/providers/user_provider.dart';
 import 'package:trueledger/presentation/providers/notification_provider.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class IntroScreen extends ConsumerStatefulWidget {
   const IntroScreen({super.key});
@@ -24,7 +25,7 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
     if (name.length > 20) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Name is too long (max 20 characters)')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.nameTooLong)),
         );
       }
       return;
@@ -46,6 +47,7 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: Stack(
@@ -97,7 +99,7 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            "TrueLedger",
+                            l10n.introTrueLedger,
                             style: TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w900,
@@ -114,7 +116,7 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            "Your private financial companion.",
+                            l10n.introTagline,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -133,31 +135,31 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
                       _buildFeatureItem(
                         context,
                         Icons.trending_up_rounded,
-                        "Track Your Wealth",
-                        "See exactly where your money goes with crystal-clear insights.",
+                        l10n.trackYourWealth,
+                        l10n.trackYourWealthDesc,
                         400,
                       ),
                       const SizedBox(height: 24),
                       _buildFeatureItem(
                         context,
                         Icons.pie_chart_rounded,
-                        "Smart Budgeting",
-                        "Set goals and spending limits to save without the sacrifice.",
+                        l10n.smartBudgeting,
+                        l10n.smartBudgetingDesc,
                         500,
                       ),
                       const SizedBox(height: 24),
                       _buildFeatureItem(
                         context,
                         Icons.security_rounded,
-                        "Secure & Private",
-                        "Your data stays on this device. No cloud uploads, no tracking.",
+                        l10n.secureAndPrivate,
+                        l10n.secureAndPrivateDesc,
                         600,
                       ),
 
                       const SizedBox(height: 60),
                       // Name Input
                       Text(
-                        "What should we call you?",
+                        l10n.whatShouldWeCallYou,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -169,7 +171,7 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
                         controller: _nameController,
                         textCapitalization: TextCapitalization.words,
                         decoration: InputDecoration(
-                          hintText: "Enter your name",
+                          hintText: l10n.enterYourNameHint,
                           filled: true,
                           fillColor: colorScheme.surface,
                           prefixIcon: Icon(Icons.person_outline_rounded,
@@ -211,8 +213,8 @@ class _IntroScreenState extends ConsumerState<IntroScreen> {
                             ),
                             elevation: 0,
                           ),
-                          child: const Text(
-                            "GET STARTED",
+                          child: Text(
+                            l10n.getStarted,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,

@@ -126,7 +126,7 @@ void main() {
 
       await tester.pumpWidget(createSettingsScreen());
 
-      final resetTile = find.text('RESET APPLICATION');
+      final resetTile = find.text('RESET ALL DATA');
       await tester.scrollUntilVisible(resetTile, 100.0);
       await tester.tap(resetTile);
       await tester.pumpAndSettle();
@@ -141,7 +141,7 @@ void main() {
 
     testWidgets('covers name picker logic', (tester) async {
       await tester.pumpWidget(createSettingsScreen());
-      await tester.tap(find.text('USER NAME'));
+      await tester.tap(find.text('NAME'));
       await tester.pumpAndSettle();
 
       expect(find.text('SET USER NAME'), findsOneWidget);
@@ -162,7 +162,7 @@ void main() {
 
     testWidgets('covers seed data logic', (tester) async {
       await tester.pumpWidget(createSettingsScreen());
-      final seedTile = find.text('SEED SAMPLE DATA');
+      final seedTile = find.text('DATA SEEDING');
       await tester.scrollUntilVisible(seedTile, 100);
       await tester.tap(seedTile);
       await tester.pumpAndSettle();

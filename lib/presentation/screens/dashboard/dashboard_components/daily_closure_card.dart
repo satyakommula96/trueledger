@@ -5,6 +5,7 @@ import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:confetti/confetti.dart';
 import 'package:trueledger/presentation/providers/day_closure_provider.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class DailyClosureCard extends ConsumerStatefulWidget {
   final int transactionCount;
@@ -44,6 +45,7 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isClosed = ref.watch(dayClosureProvider);
     final now = DateTime.now();
     final isNight = now.hour >= 18 || now.hour < 4; // 6 PM to 4 AM
@@ -73,7 +75,7 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
             const SizedBox(width: 16),
             Flexible(
               child: Text(
-                "Ritual complete. Rest well.",
+                l10n.ritualComplete,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
@@ -124,7 +126,7 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
                         size: 12, color: widget.semantic.primary),
                     const SizedBox(width: 8),
                     Text(
-                      "DAY RITUAL",
+                      l10n.dayRitual.toUpperCase(),
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.w900,
@@ -141,7 +143,7 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Daily Review",
+                      l10n.dailyReview,
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w900,
@@ -152,7 +154,7 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      "You've logged ${widget.transactionCount} entries today.",
+                      l10n.loggedEntriesToday(widget.transactionCount),
                       style: TextStyle(
                         fontSize: 15,
                         color: widget.semantic.secondaryText,
@@ -186,8 +188,10 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
                             const SizedBox(width: 10),
                             Text(
                               isUnderBudget
-                                  ? "${CurrencyFormatter.format(diff)} under target"
-                                  : "${CurrencyFormatter.format(diff)} over target",
+                                  ? l10n.underTarget(
+                                      CurrencyFormatter.format(diff))
+                                  : l10n.overTarget(
+                                      CurrencyFormatter.format(diff)),
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w900,
@@ -217,8 +221,8 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
                               borderRadius: BorderRadius.circular(20)),
                           elevation: 0,
                         ),
-                        child: const Text(
-                          "Finish Daily Review",
+                        child: Text(
+                          l10n.finishDailyReview,
                           style: TextStyle(
                               fontWeight: FontWeight.w900, fontSize: 15),
                         ),
@@ -231,7 +235,7 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Still Day?",
+                      l10n.stillDay,
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.w900,
@@ -242,7 +246,7 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      "No transactions logged today. If you're all set, we'll see you tomorrow.",
+                      l10n.noTransactionsTodayDescription,
                       style: TextStyle(
                         fontSize: 15,
                         color: widget.semantic.secondaryText,
@@ -264,7 +268,7 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
                           ),
                         ),
                         child: Text(
-                          "Close Day",
+                          l10n.closeDay,
                           style: TextStyle(
                               fontWeight: FontWeight.w900,
                               fontSize: 16,

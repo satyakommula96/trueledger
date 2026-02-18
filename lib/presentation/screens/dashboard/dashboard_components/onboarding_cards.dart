@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/core/theme/theme.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class OnboardingActionCards extends StatelessWidget {
   final AppColors semantic;
@@ -24,7 +25,7 @@ class OnboardingActionCards extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Text(
-            "GET STARTED",
+            AppLocalizations.of(context)!.getStarted,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w900,
@@ -42,8 +43,8 @@ class OnboardingActionCards extends StatelessWidget {
                   children: [
                     _buildActionCard(
                       context,
-                      "Log First Expense",
-                      "Track where your money goes",
+                      AppLocalizations.of(context)!.logFirstExpense,
+                      AppLocalizations.of(context)!.logFirstExpenseDesc,
                       Icons.add_shopping_cart_rounded,
                       semantic.overspent,
                       onAddTransaction,
@@ -51,8 +52,8 @@ class OnboardingActionCards extends StatelessWidget {
                     ),
                     _buildActionCard(
                       context,
-                      "Set a Budget",
-                      "Keep your spending in check",
+                      AppLocalizations.of(context)!.setABudget,
+                      AppLocalizations.of(context)!.setABudgetDesc,
                       Icons.account_balance_rounded,
                       semantic.income,
                       onAddBudget,
@@ -60,8 +61,8 @@ class OnboardingActionCards extends StatelessWidget {
                     ),
                     _buildActionCard(
                       context,
-                      "See Analysis",
-                      "Identity spending patterns",
+                      AppLocalizations.of(context)!.seeAnalysis,
+                      AppLocalizations.of(context)!.seeAnalysisDesc,
                       Icons.insights_rounded,
                       Colors.purpleAccent,
                       onCheckAnalysis,
@@ -76,8 +77,8 @@ class OnboardingActionCards extends StatelessWidget {
                     children: [
                       _buildActionCard(
                         context,
-                        "Log First Expense",
-                        "Track where your money goes",
+                        AppLocalizations.of(context)!.logFirstExpense,
+                        AppLocalizations.of(context)!.logFirstExpenseDesc,
                         Icons.add_shopping_cart_rounded,
                         semantic.overspent,
                         onAddTransaction,
@@ -86,8 +87,8 @@ class OnboardingActionCards extends StatelessWidget {
                       const SizedBox(width: 16),
                       _buildActionCard(
                         context,
-                        "Set a Budget",
-                        "Keep your spending in check",
+                        AppLocalizations.of(context)!.setABudget,
+                        AppLocalizations.of(context)!.setABudgetDesc,
                         Icons.account_balance_rounded,
                         semantic.income,
                         onAddBudget,
@@ -96,8 +97,8 @@ class OnboardingActionCards extends StatelessWidget {
                       const SizedBox(width: 16),
                       _buildActionCard(
                         context,
-                        "See Analysis",
-                        "Identity spending patterns",
+                        AppLocalizations.of(context)!.seeAnalysis,
+                        AppLocalizations.of(context)!.seeAnalysisDesc,
                         Icons.insights_rounded,
                         Colors.purpleAccent,
                         onCheckAnalysis,

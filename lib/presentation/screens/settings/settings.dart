@@ -1234,6 +1234,8 @@ class SettingsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final biometricService = ref.watch(biometricServiceProvider);
 
+    final currentLocale = ref.watch(localeProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.settings.toUpperCase()),
@@ -1245,7 +1247,7 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           _buildOption(
             context,
-            "USER NAME",
+            l10n.nameLabel,
             userName,
             Icons.person_outline_rounded,
             semantic.primary,
@@ -1253,12 +1255,12 @@ class SettingsScreen extends ConsumerWidget {
             semantic,
           ),
           const SizedBox(height: 20),
-          _buildSectionHeader("SECURITY & TRUST", semantic),
+          _buildSectionHeader(l10n.trustAndControl.toUpperCase(), semantic),
           const SizedBox(height: 12),
           _buildOption(
             context,
-            "TRUST CENTER",
-            "Explicit guarantees & data health",
+            l10n.trustCenter.toUpperCase(),
+            l10n.trustCenterSubtitle,
             Icons.verified_user_outlined,
             semantic.success,
             () => Navigator.push(context,
@@ -1268,8 +1270,8 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildOption(
             context,
-            "APP SECURITY",
-            "Set PIN for access",
+            l10n.appSecurity.toUpperCase(),
+            l10n.appSecuritySubtitle,
             Icons.lock_outline_rounded,
             semantic.overspent,
             () => _setupPin(context, semantic),
@@ -1306,12 +1308,12 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           const SizedBox(height: 20),
-          _buildSectionHeader("CUSTOMIZATION", semantic),
+          _buildSectionHeader(l10n.personalization.toUpperCase(), semantic),
           const SizedBox(height: 12),
           _buildOption(
             context,
-            "APPEARANCE",
-            "Switch between Light, Dark, or System theme",
+            l10n.appearance.toUpperCase(),
+            l10n.appearanceSubtitle,
             Icons.dark_mode_outlined,
             semantic.primary,
             () => _showThemePicker(context, ref, semantic),
@@ -1321,7 +1323,7 @@ class SettingsScreen extends ConsumerWidget {
           _buildOption(
             context,
             l10n.language,
-            l10n.chooseLanguage,
+            currentLocale.languageCode == 'en' ? 'ENGLISH' : 'తెలుగు (TELUGU)',
             Icons.translate_rounded,
             Colors.deepPurple,
             () => _showLanguagePicker(context, ref, semantic),
@@ -1330,8 +1332,8 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildOption(
             context,
-            "PERSONALIZATION",
-            "Adaptive defaults & presets",
+            l10n.personalizationHeader.toUpperCase(),
+            l10n.personalizationSubtitle,
             Icons.auto_awesome_outlined,
             Colors.pinkAccent,
             () => Navigator.push(
@@ -1344,8 +1346,8 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildOption(
             context,
-            "CURRENCY",
-            "Preferred currency (${CurrencyFormatter.symbol})",
+            l10n.currency.toUpperCase(),
+            "${l10n.currencySubtitle} (${CurrencyFormatter.symbol})",
             Icons.payments_outlined,
             Colors.teal,
             () => _showCurrencyPicker(context, semantic),
@@ -1354,8 +1356,8 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _buildOption(
             context,
-            "MANAGE CATEGORIES",
-            "Add, edit, or remove your personal categories",
+            l10n.manageCategories.toUpperCase(),
+            l10n.manageCategoriesSubtitle,
             Icons.category_outlined,
             Colors.orange,
             () => Navigator.push(
@@ -1365,12 +1367,12 @@ class SettingsScreen extends ConsumerWidget {
             semantic,
           ),
           const SizedBox(height: 20),
-          _buildSectionHeader("DATA TOOLS", semantic),
+          _buildSectionHeader(l10n.dataTools.toUpperCase(), semantic),
           const SizedBox(height: 12),
           _buildOption(
             context,
-            "DATA & EXPORT",
-            "One-tap export (history, budgets, insights)",
+            l10n.dataExport.toUpperCase(),
+            l10n.dataExportSubtitle,
             Icons.ios_share_rounded,
             semantic.primary,
             () => Navigator.push(
@@ -1383,8 +1385,8 @@ class SettingsScreen extends ConsumerWidget {
           if (kDebugMode) ...[
             _buildOption(
               context,
-              "SEED SAMPLE DATA",
-              "Populate app with demo entries",
+              l10n.dataSeeding.toUpperCase(),
+              l10n.seedDataSubtitle,
               Icons.science_rounded,
               Colors.amber,
               () => _seedData(context, ref, semantic),
@@ -1394,8 +1396,8 @@ class SettingsScreen extends ConsumerWidget {
           ],
           _buildOption(
             context,
-            "RESET APPLICATION",
-            "Clear all data and start fresh",
+            l10n.resetAllData.toUpperCase(),
+            l10n.resetApplicationSubtitle,
             Icons.refresh_rounded,
             semantic.overspent,
             () => _resetData(context, ref, semantic),

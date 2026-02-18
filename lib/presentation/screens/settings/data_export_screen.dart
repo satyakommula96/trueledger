@@ -26,6 +26,7 @@ import 'package:trueledger/data/datasources/database.dart';
 import 'package:trueledger/core/services/backup_encryption_service.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class DataExportScreen extends ConsumerStatefulWidget {
   const DataExportScreen({super.key});
@@ -42,6 +43,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
   Future<void> _exportCompleteData() async {
     setState(() => _isExporting = true);
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     try {
       final repo = ref.read(financialRepositoryProvider);
       final dashboardData = await ref.read(dashboardProvider.future);
@@ -83,7 +85,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
           "trueledger_full_export_${DateTime.now().millisecondsSinceEpoch}.json";
 
       if (_encryptFullExport) {
-        String? password = await _showBackupPasswordDialog(semantic);
+        String? password = await _showBackupPasswordDialog(semantic, l10n);
         if (password == null || password.isEmpty) {
           setState(() => _isExporting = false);
           return;
@@ -108,8 +110,9 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         await saveFileWeb(utf8.encode(finalOutput), actualFileName);
       } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
         final outputFile = await FilePicker.platform.saveFile(
-          dialogTitle:
-              _encryptFullExport ? 'Save Encrypted Export' : 'Save Full Export',
+          dialogTitle: _encryptFullExport
+              ? l10n.saveEncryptedExport
+              : l10n.saveFullExport,
           fileName: actualFileName,
           type: FileType.custom,
           allowedExtensions: ['json'],
@@ -121,7 +124,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text("EXPORT SAVED TO $outputFile".toUpperCase()),
+                content: Text(l10n.exportSaved(outputFile).toUpperCase()),
                 backgroundColor: semantic.primary,
               ),
             );
@@ -135,18 +138,17 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         await file.writeAsString(finalOutput);
         await SharePlus.instance.share(ShareParams(
             files: [XFile(file.path)],
-            subject: _encryptFullExport
-                ? 'TrueLedger Encrypted Export'
-                : 'TrueLedger Data Export',
+            subject:
+                _encryptFullExport ? l10n.encryptBackup : l10n.oneTapArchive,
             text: _encryptFullExport
-                ? 'Here is my secure encrypted financial data export from TrueLedger.'
-                : 'Here is my complete financial data export from TrueLedger.'));
+                ? l10n.encryptBackupSubtitle
+                : l10n.dataSovereigntyDescription));
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("FULL DATA EXPORT COMPLETED"),
+            content: Text(l10n.fullDataExportCompleted),
             backgroundColor: semantic.success,
           ),
         );
@@ -155,7 +157,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("EXPORT FAILED: $e".toUpperCase()),
+            content: Text(l10n.exportFailed(e.toString()).toUpperCase()),
             backgroundColor: semantic.overspent,
           ),
         );
@@ -165,7 +167,8 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
     }
   }
 
-  Future<String?> _showBackupPasswordDialog(AppColors semantic) async {
+  Future<String?> _showBackupPasswordDialog(
+      AppColors semantic, AppLocalizations l10n) async {
     String input = "";
     bool obscure = true;
     return showDialog<String>(
@@ -180,7 +183,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
               borderRadius: BorderRadius.circular(32),
               side: BorderSide(color: semantic.divider, width: 1.5),
             ),
-            title: Text("ENCRYPT BACKUP",
+            title: Text(l10n.encryptBackup.toUpperCase(),
                 style: TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
@@ -189,7 +192,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("Enter a password to encrypt this file.",
+                Text(l10n.encryptBackupSubtitle,
                     style: TextStyle(
                         fontSize: 13,
                         color: semantic.text,
@@ -202,7 +205,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                       color: semantic.text, fontWeight: FontWeight.w900),
                   onChanged: (v) => input = v,
                   decoration: InputDecoration(
-                    labelText: "PASSWORD",
+                    labelText: l10n.password,
                     labelStyle: TextStyle(
                         color: semantic.secondaryText,
                         fontSize: 10,
@@ -227,7 +230,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
             actions: [
               TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: Text("CANCEL",
+                  child: Text(l10n.cancel.toUpperCase(),
                       style: TextStyle(
                           color: semantic.secondaryText,
                           fontWeight: FontWeight.w900,
@@ -239,7 +242,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12))),
-                child: const Text("CREATE BACKUP",
+                child: Text(l10n.backupCreated.toUpperCase(),
                     style:
                         TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
               ),
@@ -253,6 +256,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
   Future<void> _exportCSV(String type) async {
     setState(() => _isExporting = true);
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     try {
       final repo = ref.read(financialRepositoryProvider);
       List<List<dynamic>> rows = [];
@@ -365,7 +369,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("NO DATA FOUND TO EXPORT"),
+              content: Text(l10n.noDataFoundToExport),
               backgroundColor: semantic.secondaryText,
             ),
           );
@@ -379,7 +383,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         await saveFileWeb(utf8.encode(csv), fileName);
       } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
         final outputFile = await FilePicker.platform.saveFile(
-          dialogTitle: 'Save CSV Export',
+          dialogTitle: l10n.saveCsvExport,
           fileName: fileName,
           type: FileType.custom,
           allowedExtensions: ['csv'],
@@ -412,7 +416,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("${type.toUpperCase()} EXPORTED SUCCESSFUL"),
+            content: Text(l10n.exportSuccessful(type).toUpperCase()),
             backgroundColor: semantic.success,
           ),
         );
@@ -421,7 +425,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("CSV EXPORT FAILED: $e".toUpperCase()),
+            content: Text(l10n.exportFailed(e.toString()).toUpperCase()),
             backgroundColor: semantic.overspent,
           ),
         );
@@ -434,6 +438,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
   Future<void> _exportPDF() async {
     setState(() => _isExporting = true);
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     try {
       final repo = ref.read(financialRepositoryProvider);
 
@@ -509,7 +514,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                     pw.Text(
                         _selectedDateRange != null
                             ? '${_selectedDateRange!.start.toString().split(' ')[0]} to ${_selectedDateRange!.end.toString().split(' ')[0]}'
-                            : 'All Time',
+                            : l10n.allTime,
                         style: const pw.TextStyle(fontSize: 12)),
                   ],
                 ),
@@ -593,7 +598,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("PDF REPORT GENERATED SUCCESSFULLY"),
+            content: Text(l10n.pdfGenerated),
             backgroundColor: semantic.success,
           ),
         );
@@ -602,7 +607,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("PDF EXPORT FAILED: $e".toUpperCase()),
+            content: Text(l10n.exportFailed(e.toString()).toUpperCase()),
             backgroundColor: semantic.overspent,
           ),
         );
@@ -614,6 +619,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
 
   Future<void> _restoreData() async {
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(type: FileType.any);
     if (result == null || result.files.isEmpty) return;
 
@@ -637,7 +643,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
               BackupEncryptionService.decryptData(container['data'], deviceKey);
           data = jsonDecode(decryptedJson) as Map<String, dynamic>;
         } catch (_) {
-          String? password = await _showRestorePasswordDialog(semantic);
+          String? password = await _showRestorePasswordDialog(semantic, l10n);
           if (password == null) return;
 
           try {
@@ -670,24 +676,25 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
               borderRadius: BorderRadius.circular(32),
               side: BorderSide(color: semantic.divider, width: 1.5),
             ),
-            title: Text("RESTORE DATA?",
+            title: Text(l10n.restoreDataTitle.toUpperCase(),
                 style: TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
                     letterSpacing: 1.5,
                     color: semantic.overspent)),
-            content: const Column(
+            content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "This will REPLACE all your current data with the backup file.",
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                  l10n.restoreReplaceWarning,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w900, fontSize: 13),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 Text(
-                  "• Current state will be AUTO-BACKUPED.\n• Action can be UNDONE immediately.",
-                  style: TextStyle(
+                  l10n.restoreAutoBackupNotice,
+                  style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: Colors.grey),
@@ -697,7 +704,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
             actions: [
               TextButton(
                   onPressed: () => Navigator.pop(ctx, false),
-                  child: Text("CANCEL",
+                  child: Text(l10n.cancel.toUpperCase(),
                       style: TextStyle(
                           color: semantic.secondaryText,
                           fontWeight: FontWeight.w900))),
@@ -708,8 +715,8 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12))),
-                  child: const Text("RESTORE",
-                      style: TextStyle(fontWeight: FontWeight.w900))),
+                  child: Text(l10n.restore,
+                      style: const TextStyle(fontWeight: FontWeight.w900))),
             ],
           ),
         ),
@@ -753,19 +760,18 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
           if (result.isSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text("RESTORE SUCCESSFUL"),
+                content: Text(l10n.restoreSuccessful),
                 duration: const Duration(seconds: 8),
                 action: safetyBackup != null
                     ? SnackBarAction(
-                        label: "UNDO",
+                        label: l10n.undo.toUpperCase(),
                         onPressed: () async {
                           try {
                             await repo.clearData();
                             await repo.restoreBackup(safetyBackup!);
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text("RESTORE UNDONE")));
+                                  SnackBar(content: Text(l10n.restoreUndone)));
                             }
                           } catch (e) {
                             debugPrint("Undo failed: $e");
@@ -778,8 +784,8 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                  content:
-                      Text("RESTORE FAILED: ${result.failureOrThrow.message}")),
+                  content: Text(l10n
+                      .restoreFailedDetailed(result.failureOrThrow.message))),
             );
           }
         }
@@ -793,7 +799,8 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
     }
   }
 
-  Future<String?> _showRestorePasswordDialog(AppColors semantic) async {
+  Future<String?> _showRestorePasswordDialog(
+      AppColors semantic, AppLocalizations l10n) async {
     String input = "";
     bool obscure = true;
     return showDialog<String>(
@@ -807,7 +814,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(32),
                 side: BorderSide(color: semantic.divider, width: 1.5)),
-            title: Text("DECRYPT BACKUP",
+            title: Text(l10n.decryptBackup.toUpperCase(),
                 style: TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
@@ -854,8 +861,8 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12))),
-                  child: const Text("DECRYPT",
-                      style: TextStyle(fontWeight: FontWeight.w900))),
+                  child: Text(l10n.decrypt.toUpperCase(),
+                      style: const TextStyle(fontWeight: FontWeight.w900))),
             ],
           ),
         ),
@@ -866,10 +873,11 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("DATA & EXPORT"),
+        title: Text(l10n.dataExport.toUpperCase()),
         centerTitle: true,
       ),
       body: Stack(
@@ -878,15 +886,16 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
             padding: EdgeInsets.fromLTRB(
                 20, 16, 20, 48 + MediaQuery.of(context).padding.bottom),
             children: [
-              _buildHeader(semantic),
+              _buildHeader(semantic, l10n),
               const SizedBox(height: 32),
-              _buildOneTapSection(semantic),
+              _buildOneTapSection(semantic, l10n),
               const SizedBox(height: 32),
-              _buildRestoreSection(semantic),
+              _buildRestoreSection(semantic, l10n),
               const SizedBox(height: 32),
-              _buildSectionHeader("INDIVIDUAL REPORTS (CSV / PDF)", semantic),
+              _buildSectionHeader(
+                  l10n.individualReports.toUpperCase(), semantic),
               const SizedBox(height: 12),
-              _buildDateFilter(semantic),
+              _buildDateFilter(semantic, l10n),
               const SizedBox(height: 16),
 
               // Adaptive Grid Layout for export options
@@ -902,12 +911,13 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                             ? (constraints.maxWidth - 16) / 2
                             : constraints.maxWidth,
                         child: _buildExportOption(
-                          title: "TRANSACTIONS",
-                          subtitle: "Expenses, income (CSV)",
+                          title: l10n.transactions,
+                          subtitle: l10n.transactionsSubtitle,
                           icon: Icons.list_alt_rounded,
                           color: Colors.blue,
                           onTap: () => _exportCSV('transactions'),
                           semantic: semantic,
+                          l10n: l10n,
                         ),
                       ),
                       SizedBox(
@@ -915,12 +925,13 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                             ? (constraints.maxWidth - 16) / 2
                             : constraints.maxWidth,
                         child: _buildExportOption(
-                          title: "PDF REPORT",
-                          subtitle: "Printable financial report",
+                          title: l10n.pdfReport,
+                          subtitle: l10n.pdfReportSubtitle,
                           icon: Icons.picture_as_pdf_rounded,
                           color: Colors.red,
                           onTap: _exportPDF,
                           semantic: semantic,
+                          l10n: l10n,
                         ),
                       ),
                       SizedBox(
@@ -928,12 +939,13 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                             ? (constraints.maxWidth - 16) / 2
                             : constraints.maxWidth,
                         child: _buildExportOption(
-                          title: "BUDGETS",
-                          subtitle: "Limits and targets (CSV)",
+                          title: l10n.budgets.toUpperCase(),
+                          subtitle: l10n.budgetsSubtitle,
                           icon: Icons.pie_chart_outline_rounded,
                           color: Colors.orange,
                           onTap: () => _exportCSV('budgets'),
                           semantic: semantic,
+                          l10n: l10n,
                         ),
                       ),
                       SizedBox(
@@ -941,12 +953,13 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                             ? (constraints.maxWidth - 16) / 2
                             : constraints.maxWidth,
                         child: _buildExportOption(
-                          title: "AI INSIGHTS",
-                          subtitle: "Health analysis (CSV)",
+                          title: l10n.aiInsights.toUpperCase(),
+                          subtitle: l10n.aiInsightsSubtitle,
                           icon: Icons.auto_awesome_outlined,
                           color: Colors.purple,
                           onTap: () => _exportCSV('insights'),
                           semantic: semantic,
+                          l10n: l10n,
                         ),
                       ),
                       SizedBox(
@@ -954,12 +967,13 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                             ? (constraints.maxWidth - 16) / 2
                             : constraints.maxWidth,
                         child: _buildExportOption(
-                          title: "LOANS",
-                          subtitle: "Borrowing details (CSV)",
+                          title: l10n.loans.toUpperCase(),
+                          subtitle: l10n.loansSubtitle,
                           icon: Icons.account_balance_rounded,
                           color: Colors.redAccent,
                           onTap: () => _exportCSV('loans'),
                           semantic: semantic,
+                          l10n: l10n,
                         ),
                       ),
                     ],
@@ -967,7 +981,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                 },
               ),
               const SizedBox(height: 48),
-              _buildOwnershipNotice(semantic),
+              _buildOwnershipNotice(semantic, l10n),
             ],
           ),
           if (_isExporting)
@@ -1000,7 +1014,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
     );
   }
 
-  Widget _buildHeader(AppColors semantic) {
+  Widget _buildHeader(AppColors semantic, AppLocalizations l10n) {
     return Column(
       children: [
         Container(
@@ -1019,7 +1033,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         ),
         const SizedBox(height: 24),
         Text(
-          "DATA SOVEREIGNTY",
+          l10n.dataSovereignty.toUpperCase(),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w900,
@@ -1031,7 +1045,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text(
-            "Complete data portability. Export your entire history in open formats anytime you want.",
+            l10n.dataSovereigntyDescription,
             textAlign: TextAlign.center,
             style: TextStyle(
                 color: semantic.secondaryText,
@@ -1047,7 +1061,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart);
   }
 
-  Widget _buildOneTapSection(AppColors semantic) {
+  Widget _buildOneTapSection(AppColors semantic, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
@@ -1080,9 +1094,9 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                     color: Colors.white, size: 22),
               ),
               const SizedBox(width: 16),
-              const Flexible(
+              Flexible(
                 child: Text(
-                  "ONE-TAP ARCHIVE",
+                  l10n.oneTapArchive.toUpperCase(),
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
@@ -1095,8 +1109,8 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          const Text(
-            "Create a complete snapshot of your financial history, budgets, and AI insights in a secure JSON format.",
+          Text(
+            l10n.oneTapArchiveDescription,
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 14,
@@ -1132,8 +1146,8 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Flexible(
-                      child: Text("ENCRYPT BACKUP",
+                    Flexible(
+                      child: Text(l10n.encryptBackup.toUpperCase(),
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 12,
@@ -1155,7 +1169,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
-                    "EXPORT NOW",
+                    l10n.exportNow.toUpperCase(),
                     style: TextStyle(
                         color: semantic.primary,
                         fontWeight: FontWeight.w900,
@@ -1174,7 +1188,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         .slideY(begin: 0.05, end: 0);
   }
 
-  Widget _buildRestoreSection(AppColors semantic) {
+  Widget _buildRestoreSection(AppColors semantic, AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
         color: semantic.surfaceCombined.withValues(alpha: 0.3),
@@ -1200,17 +1214,17 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                       color: semantic.overspent, size: 24),
                 ),
                 const SizedBox(width: 20),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("RESTORE BACKUP",
+                      Text(l10n.restoreBackup.toUpperCase(),
                           style: TextStyle(
                               fontWeight: FontWeight.w900,
                               fontSize: 14,
                               letterSpacing: 1)),
                       SizedBox(height: 4),
-                      Text("Import data from a previous export",
+                      Text(l10n.restoreBackupSubtitle,
                           style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -1235,6 +1249,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
     required Color color,
     required VoidCallback onTap,
     required AppColors semantic,
+    required AppLocalizations l10n,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -1288,7 +1303,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
     );
   }
 
-  Widget _buildDateFilter(AppColors semantic) {
+  Widget _buildDateFilter(AppColors semantic, AppLocalizations l10n) {
     return HoverWrapper(
       onTap: () async {
         final picked = await showDateRangePicker(
@@ -1338,7 +1353,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "DATE RANGE",
+                    l10n.dateRange.toUpperCase(),
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
@@ -1348,7 +1363,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
                   const SizedBox(height: 4),
                   Text(
                     _selectedDateRange == null
-                        ? "All Time"
+                        ? l10n.allTime
                         : "${_selectedDateRange!.start.toString().split(' ')[0]} - ${_selectedDateRange!.end.toString().split(' ')[0]}",
                     style: TextStyle(
                         fontSize: 14,
@@ -1373,7 +1388,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
     );
   }
 
-  Widget _buildOwnershipNotice(AppColors semantic) {
+  Widget _buildOwnershipNotice(AppColors semantic, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -1389,7 +1404,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
           const SizedBox(width: 16),
           Expanded(
             child: Text(
-              "TrueLedger never retains a copy of your data on its servers. You are the sole custodian of your financial history.",
+              l10n.dataOwnershipNotice,
               style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,

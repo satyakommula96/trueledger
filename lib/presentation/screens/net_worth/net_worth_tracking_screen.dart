@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui';
+import 'package:intl/intl.dart' hide TextDirection;
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
@@ -666,21 +667,7 @@ class _NetWorthTrackingScreenState
   }
 
   String _getMonthLabel(DateTime date) {
-    const months = [
-      'JAN',
-      'FEB',
-      'MAR',
-      'APR',
-      'MAY',
-      'JUN',
-      'JUL',
-      'AUG',
-      'SEP',
-      'OCT',
-      'NOV',
-      'DEC'
-    ];
-    return '${months[date.month - 1]} ${date.year}';
+    return DateFormat.yMMM().format(date).toUpperCase();
   }
 
   Widget _buildInsightCard(AppColors semantic, bool isPrivate) {
@@ -753,17 +740,18 @@ class _NetWorthTrackingScreenState
                 children: [
                   TextSpan(
                     text: isPositive
-                        ? "Great progress! Your net worth has "
-                        : "Your net worth has ",
+                        ? l10n.netWorthIncreased
+                        : l10n.netWorthDecreased,
                   ),
                   TextSpan(
-                    text: isPositive ? "increased" : "decreased",
+                    text:
+                        isPositive ? l10n.increasedLabel : l10n.decreasedLabel,
                     style: TextStyle(
                       fontWeight: FontWeight.w900,
                       color: isPositive ? semantic.income : semantic.overspent,
                     ),
                   ),
-                  const TextSpan(text: " by "),
+                  TextSpan(text: l10n.byLabel),
                   TextSpan(
                     text: CurrencyFormatter.format(change.abs(),
                         isPrivate: isPrivate),
@@ -774,7 +762,7 @@ class _NetWorthTrackingScreenState
                   ),
                   TextSpan(
                     text:
-                        " (${percentChange.abs().toStringAsFixed(1)}%) over the last 12 months.",
+                        " (${percentChange.abs().toStringAsFixed(1)}%)${l10n.overLast12Months}",
                   ),
                 ],
               ),

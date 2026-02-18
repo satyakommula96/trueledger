@@ -1338,4 +1338,317 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectDueDay => 'Select Due Day';
+
+  @override
+  String get dataExport => 'DATA EXPORT';
+
+  @override
+  String get dangerousTerritory => 'DANGEROUS TERRITORY';
+
+  @override
+  String get dataSeeding => 'DATA SEEDING';
+
+  @override
+  String get resetAllData => 'RESET ALL DATA';
+
+  @override
+  String get appSecurity => 'APP SECURITY';
+
+  @override
+  String get appearance => 'APPEARANCE';
+
+  @override
+  String get personalizationHeader => 'PERSONALIZATION';
+
+  @override
+  String get currency => 'CURRENCY';
+
+  @override
+  String get dataTools => 'DATA TOOLS';
+
+  @override
+  String get trustCenterSubtitle => 'Explicit guarantees & data health';
+
+  @override
+  String get appSecuritySubtitle => 'Set PIN for access';
+
+  @override
+  String get appearanceSubtitle =>
+      'Switch between Light, Dark, or System theme';
+
+  @override
+  String get dataExportSubtitle =>
+      'One-tap export (history, budgets, insights)';
+
+  @override
+  String get resetApplicationSubtitle => 'Clear all data and start fresh';
+
+  @override
+  String get seedDataSubtitle => 'Populate app with demo entries';
+
+  @override
+  String get ritualComplete => 'Ritual complete. Rest well.';
+
+  @override
+  String get dayRitual => 'DAY RITUAL';
+
+  @override
+  String get dailyReview => 'Daily Review';
+
+  @override
+  String loggedEntriesToday(Object count) {
+    return 'You\'ve logged $count entries today.';
+  }
+
+  @override
+  String underTarget(Object amount) {
+    return '$amount under target';
+  }
+
+  @override
+  String overTarget(Object amount) {
+    return '$amount over target';
+  }
+
+  @override
+  String get finishDailyReview => 'Finish Daily Review';
+
+  @override
+  String get stillDay => 'Still Day?';
+
+  @override
+  String get noTransactionsTodayDescription =>
+      'No transactions logged today. If you\'re all set, we\'ll see you tomorrow.';
+
+  @override
+  String get closeDay => 'Close Day';
+
+  @override
+  String get dataSovereignty => 'DATA SOVEREIGNTY';
+
+  @override
+  String get dataSovereigntyDescription =>
+      'Complete data portability. Export your entire history in open formats anytime you want.';
+
+  @override
+  String get oneTapArchive => 'ONE-TAP ARCHIVE';
+
+  @override
+  String get oneTapArchiveDescription =>
+      'Create a complete snapshot of your financial history, budgets, and AI insights in a secure JSON format.';
+
+  @override
+  String get exportNow => 'EXPORT NOW';
+
+  @override
+  String get restoreBackup => 'RESTORE BACKUP';
+
+  @override
+  String get restoreBackupSubtitle => 'Import data from a previous export';
+
+  @override
+  String get individualReports => 'INDIVIDUAL REPORTS (CSV / PDF)';
+
+  @override
+  String get transactions => 'TRANSACTIONS';
+
+  @override
+  String get transactionsSubtitle => 'Expenses, income (CSV)';
+
+  @override
+  String get pdfReport => 'PDF REPORT';
+
+  @override
+  String get pdfReportSubtitle => 'Printable financial report';
+
+  @override
+  String get budgetsSubtitle => 'Limits and targets (CSV)';
+
+  @override
+  String get aiInsights => 'AI INSIGHTS';
+
+  @override
+  String get aiInsightsSubtitle => 'Health analysis (CSV)';
+
+  @override
+  String get loansSubtitle => 'Borrowing details (CSV)';
+
+  @override
+  String get dateRange => 'DATE RANGE';
+
+  @override
+  String get allTime => 'All Time';
+
+  @override
+  String get dataOwnershipNotice =>
+      'TrueLedger never retains a copy of your data on its servers. You are the sole custodian of your financial history.';
+
+  @override
+  String get encryptBackup => 'ENCRYPT BACKUP';
+
+  @override
+  String get encryptBackupSubtitle => 'Enter a password to encrypt this file.';
+
+  @override
+  String get password => 'PASSWORD';
+
+  @override
+  String get decrypt => 'DECRYPT';
+
+  @override
+  String get decryptBackup => 'DECRYPT BACKUP';
+
+  @override
+  String get backupCreated => 'CREATE BACKUP';
+
+  @override
+  String exportSaved(Object path) {
+    return 'EXPORT SAVED TO $path';
+  }
+
+  @override
+  String get fullDataExportCompleted => 'FULL DATA EXPORT COMPLETED';
+
+  @override
+  String exportFailed(Object error) {
+    return 'EXPORT FAILED: $error';
+  }
+
+  @override
+  String get noDataFoundToExport => 'NO DATA FOUND TO EXPORT';
+
+  @override
+  String exportSuccessful(Object type) {
+    return '$type EXPORTED SUCCESSFUL';
+  }
+
+  @override
+  String get pdfGenerated => 'PDF REPORT GENERATED SUCCESSFULLY';
+
+  @override
+  String get restoreSuccessful => 'RESTORE SUCCESSFUL';
+
+  @override
+  String restoreFailedDetailed(Object error) {
+    return 'RESTORE FAILED: $error';
+  }
+
+  @override
+  String get restoreUndone => 'RESTORE UNDONE';
+
+  @override
+  String errorDuringRestore(Object error) {
+    return 'ERROR DURING RESTORE: $error';
+  }
+
+  @override
+  String get restoreReplaceWarning =>
+      'This will REPLACE all your current data with the backup file.';
+
+  @override
+  String get restoreAutoBackupNotice =>
+      '• Current state will be AUTO-BACKUPED.\n• Action can be UNDONE immediately.';
+
+  @override
+  String get restore => 'RESTORE';
+
+  @override
+  String get saveEncryptedExport => 'Save Encrypted Export';
+
+  @override
+  String get saveFullExport => 'Save Full Export';
+
+  @override
+  String get saveCsvExport => 'Save CSV Export';
+
+  @override
+  String get introTrueLedger => 'TrueLedger';
+
+  @override
+  String get introTagline => 'Your private financial companion.';
+
+  @override
+  String get trackYourWealth => 'Track Your Wealth';
+
+  @override
+  String get trackYourWealthDesc =>
+      'See exactly where your money goes with crystal-clear insights.';
+
+  @override
+  String get smartBudgeting => 'Smart Budgeting';
+
+  @override
+  String get smartBudgetingDesc =>
+      'Set goals and spending limits to save without the sacrifice.';
+
+  @override
+  String get secureAndPrivate => 'Secure & Private';
+
+  @override
+  String get secureAndPrivateDesc =>
+      'Your data stays on this device. No cloud uploads, no tracking.';
+
+  @override
+  String get whatShouldWeCallYou => 'What should we call you?';
+
+  @override
+  String get enterYourNameHint => 'Enter your name';
+
+  @override
+  String get getStarted => 'GET STARTED';
+
+  @override
+  String get nameTooLong => 'Name is too long (max 20 characters)';
+
+  @override
+  String get quickAddNote => 'Quick add';
+
+  @override
+  String get netWorthIncreased => 'Great progress! Your net worth has ';
+
+  @override
+  String get netWorthDecreased => 'Your net worth has ';
+
+  @override
+  String get increasedLabel => 'increased';
+
+  @override
+  String get decreasedLabel => 'decreased';
+
+  @override
+  String get byLabel => ' by ';
+
+  @override
+  String get overLast12Months => ' over the last 12 months.';
+
+  @override
+  String get failedToRefreshDashboard => 'Failed to refresh dashboard';
+
+  @override
+  String get logFirstExpense => 'Log First Expense';
+
+  @override
+  String get logFirstExpenseDesc => 'Track where your money goes';
+
+  @override
+  String get setABudget => 'Set a Budget';
+
+  @override
+  String get setABudgetDesc => 'Keep your spending in check';
+
+  @override
+  String get seeAnalysis => 'See Analysis';
+
+  @override
+  String get seeAnalysisDesc => 'Identify spending patterns';
+
+  @override
+  String get personalizationSubtitle => 'Adaptive defaults & presets';
+
+  @override
+  String get currencySubtitle => 'Preferred currency';
+
+  @override
+  String get manageCategoriesSubtitle =>
+      'Add, edit, or remove your personal categories';
 }

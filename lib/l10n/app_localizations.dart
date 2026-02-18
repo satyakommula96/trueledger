@@ -2509,6 +2509,576 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select Due Day'**
   String get selectDueDay;
+
+  /// No description provided for @dataExport.
+  ///
+  /// In en, this message translates to:
+  /// **'DATA EXPORT'**
+  String get dataExport;
+
+  /// No description provided for @dangerousTerritory.
+  ///
+  /// In en, this message translates to:
+  /// **'DANGEROUS TERRITORY'**
+  String get dangerousTerritory;
+
+  /// No description provided for @dataSeeding.
+  ///
+  /// In en, this message translates to:
+  /// **'DATA SEEDING'**
+  String get dataSeeding;
+
+  /// No description provided for @resetAllData.
+  ///
+  /// In en, this message translates to:
+  /// **'RESET ALL DATA'**
+  String get resetAllData;
+
+  /// No description provided for @appSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'APP SECURITY'**
+  String get appSecurity;
+
+  /// No description provided for @appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'APPEARANCE'**
+  String get appearance;
+
+  /// No description provided for @personalizationHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'PERSONALIZATION'**
+  String get personalizationHeader;
+
+  /// No description provided for @currency.
+  ///
+  /// In en, this message translates to:
+  /// **'CURRENCY'**
+  String get currency;
+
+  /// No description provided for @dataTools.
+  ///
+  /// In en, this message translates to:
+  /// **'DATA TOOLS'**
+  String get dataTools;
+
+  /// No description provided for @trustCenterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explicit guarantees & data health'**
+  String get trustCenterSubtitle;
+
+  /// No description provided for @appSecuritySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set PIN for access'**
+  String get appSecuritySubtitle;
+
+  /// No description provided for @appearanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch between Light, Dark, or System theme'**
+  String get appearanceSubtitle;
+
+  /// No description provided for @dataExportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One-tap export (history, budgets, insights)'**
+  String get dataExportSubtitle;
+
+  /// No description provided for @resetApplicationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all data and start fresh'**
+  String get resetApplicationSubtitle;
+
+  /// No description provided for @seedDataSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Populate app with demo entries'**
+  String get seedDataSubtitle;
+
+  /// No description provided for @ritualComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Ritual complete. Rest well.'**
+  String get ritualComplete;
+
+  /// No description provided for @dayRitual.
+  ///
+  /// In en, this message translates to:
+  /// **'DAY RITUAL'**
+  String get dayRitual;
+
+  /// No description provided for @dailyReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Review'**
+  String get dailyReview;
+
+  /// No description provided for @loggedEntriesToday.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve logged {count} entries today.'**
+  String loggedEntriesToday(Object count);
+
+  /// No description provided for @underTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} under target'**
+  String underTarget(Object amount);
+
+  /// No description provided for @overTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} over target'**
+  String overTarget(Object amount);
+
+  /// No description provided for @finishDailyReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish Daily Review'**
+  String get finishDailyReview;
+
+  /// No description provided for @stillDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Still Day?'**
+  String get stillDay;
+
+  /// No description provided for @noTransactionsTodayDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions logged today. If you\'re all set, we\'ll see you tomorrow.'**
+  String get noTransactionsTodayDescription;
+
+  /// No description provided for @closeDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Close Day'**
+  String get closeDay;
+
+  /// No description provided for @dataSovereignty.
+  ///
+  /// In en, this message translates to:
+  /// **'DATA SOVEREIGNTY'**
+  String get dataSovereignty;
+
+  /// No description provided for @dataSovereigntyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete data portability. Export your entire history in open formats anytime you want.'**
+  String get dataSovereigntyDescription;
+
+  /// No description provided for @oneTapArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'ONE-TAP ARCHIVE'**
+  String get oneTapArchive;
+
+  /// No description provided for @oneTapArchiveDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a complete snapshot of your financial history, budgets, and AI insights in a secure JSON format.'**
+  String get oneTapArchiveDescription;
+
+  /// No description provided for @exportNow.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPORT NOW'**
+  String get exportNow;
+
+  /// No description provided for @restoreBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'RESTORE BACKUP'**
+  String get restoreBackup;
+
+  /// No description provided for @restoreBackupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import data from a previous export'**
+  String get restoreBackupSubtitle;
+
+  /// No description provided for @individualReports.
+  ///
+  /// In en, this message translates to:
+  /// **'INDIVIDUAL REPORTS (CSV / PDF)'**
+  String get individualReports;
+
+  /// No description provided for @transactions.
+  ///
+  /// In en, this message translates to:
+  /// **'TRANSACTIONS'**
+  String get transactions;
+
+  /// No description provided for @transactionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses, income (CSV)'**
+  String get transactionsSubtitle;
+
+  /// No description provided for @pdfReport.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF REPORT'**
+  String get pdfReport;
+
+  /// No description provided for @pdfReportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Printable financial report'**
+  String get pdfReportSubtitle;
+
+  /// No description provided for @budgetsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Limits and targets (CSV)'**
+  String get budgetsSubtitle;
+
+  /// No description provided for @aiInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'AI INSIGHTS'**
+  String get aiInsights;
+
+  /// No description provided for @aiInsightsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Health analysis (CSV)'**
+  String get aiInsightsSubtitle;
+
+  /// No description provided for @loansSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowing details (CSV)'**
+  String get loansSubtitle;
+
+  /// No description provided for @dateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'DATE RANGE'**
+  String get dateRange;
+
+  /// No description provided for @allTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All Time'**
+  String get allTime;
+
+  /// No description provided for @dataOwnershipNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'TrueLedger never retains a copy of your data on its servers. You are the sole custodian of your financial history.'**
+  String get dataOwnershipNotice;
+
+  /// No description provided for @encryptBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'ENCRYPT BACKUP'**
+  String get encryptBackup;
+
+  /// No description provided for @encryptBackupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a password to encrypt this file.'**
+  String get encryptBackupSubtitle;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'PASSWORD'**
+  String get password;
+
+  /// No description provided for @decrypt.
+  ///
+  /// In en, this message translates to:
+  /// **'DECRYPT'**
+  String get decrypt;
+
+  /// No description provided for @decryptBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'DECRYPT BACKUP'**
+  String get decryptBackup;
+
+  /// No description provided for @backupCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'CREATE BACKUP'**
+  String get backupCreated;
+
+  /// No description provided for @exportSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPORT SAVED TO {path}'**
+  String exportSaved(Object path);
+
+  /// No description provided for @fullDataExportCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'FULL DATA EXPORT COMPLETED'**
+  String get fullDataExportCompleted;
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPORT FAILED: {error}'**
+  String exportFailed(Object error);
+
+  /// No description provided for @noDataFoundToExport.
+  ///
+  /// In en, this message translates to:
+  /// **'NO DATA FOUND TO EXPORT'**
+  String get noDataFoundToExport;
+
+  /// No description provided for @exportSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'{type} EXPORTED SUCCESSFUL'**
+  String exportSuccessful(Object type);
+
+  /// No description provided for @pdfGenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF REPORT GENERATED SUCCESSFULLY'**
+  String get pdfGenerated;
+
+  /// No description provided for @restoreSuccessful.
+  ///
+  /// In en, this message translates to:
+  /// **'RESTORE SUCCESSFUL'**
+  String get restoreSuccessful;
+
+  /// No description provided for @restoreFailedDetailed.
+  ///
+  /// In en, this message translates to:
+  /// **'RESTORE FAILED: {error}'**
+  String restoreFailedDetailed(Object error);
+
+  /// No description provided for @restoreUndone.
+  ///
+  /// In en, this message translates to:
+  /// **'RESTORE UNDONE'**
+  String get restoreUndone;
+
+  /// No description provided for @errorDuringRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'ERROR DURING RESTORE: {error}'**
+  String errorDuringRestore(Object error);
+
+  /// No description provided for @restoreReplaceWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This will REPLACE all your current data with the backup file.'**
+  String get restoreReplaceWarning;
+
+  /// No description provided for @restoreAutoBackupNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'• Current state will be AUTO-BACKUPED.\n• Action can be UNDONE immediately.'**
+  String get restoreAutoBackupNotice;
+
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'RESTORE'**
+  String get restore;
+
+  /// No description provided for @saveEncryptedExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Encrypted Export'**
+  String get saveEncryptedExport;
+
+  /// No description provided for @saveFullExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Full Export'**
+  String get saveFullExport;
+
+  /// No description provided for @saveCsvExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Save CSV Export'**
+  String get saveCsvExport;
+
+  /// No description provided for @introTrueLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'TrueLedger'**
+  String get introTrueLedger;
+
+  /// No description provided for @introTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your private financial companion.'**
+  String get introTagline;
+
+  /// No description provided for @trackYourWealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Track Your Wealth'**
+  String get trackYourWealth;
+
+  /// No description provided for @trackYourWealthDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'See exactly where your money goes with crystal-clear insights.'**
+  String get trackYourWealthDesc;
+
+  /// No description provided for @smartBudgeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Budgeting'**
+  String get smartBudgeting;
+
+  /// No description provided for @smartBudgetingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Set goals and spending limits to save without the sacrifice.'**
+  String get smartBudgetingDesc;
+
+  /// No description provided for @secureAndPrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure & Private'**
+  String get secureAndPrivate;
+
+  /// No description provided for @secureAndPrivateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data stays on this device. No cloud uploads, no tracking.'**
+  String get secureAndPrivateDesc;
+
+  /// No description provided for @whatShouldWeCallYou.
+  ///
+  /// In en, this message translates to:
+  /// **'What should we call you?'**
+  String get whatShouldWeCallYou;
+
+  /// No description provided for @enterYourNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your name'**
+  String get enterYourNameHint;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'GET STARTED'**
+  String get getStarted;
+
+  /// No description provided for @nameTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is too long (max 20 characters)'**
+  String get nameTooLong;
+
+  /// No description provided for @quickAddNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick add'**
+  String get quickAddNote;
+
+  /// No description provided for @netWorthIncreased.
+  ///
+  /// In en, this message translates to:
+  /// **'Great progress! Your net worth has '**
+  String get netWorthIncreased;
+
+  /// No description provided for @netWorthDecreased.
+  ///
+  /// In en, this message translates to:
+  /// **'Your net worth has '**
+  String get netWorthDecreased;
+
+  /// No description provided for @increasedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'increased'**
+  String get increasedLabel;
+
+  /// No description provided for @decreasedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'decreased'**
+  String get decreasedLabel;
+
+  /// No description provided for @byLabel.
+  ///
+  /// In en, this message translates to:
+  /// **' by '**
+  String get byLabel;
+
+  /// No description provided for @overLast12Months.
+  ///
+  /// In en, this message translates to:
+  /// **' over the last 12 months.'**
+  String get overLast12Months;
+
+  /// No description provided for @failedToRefreshDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to refresh dashboard'**
+  String get failedToRefreshDashboard;
+
+  /// No description provided for @logFirstExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Log First Expense'**
+  String get logFirstExpense;
+
+  /// No description provided for @logFirstExpenseDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Track where your money goes'**
+  String get logFirstExpenseDesc;
+
+  /// No description provided for @setABudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a Budget'**
+  String get setABudget;
+
+  /// No description provided for @setABudgetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your spending in check'**
+  String get setABudgetDesc;
+
+  /// No description provided for @seeAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'See Analysis'**
+  String get seeAnalysis;
+
+  /// No description provided for @seeAnalysisDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Identify spending patterns'**
+  String get seeAnalysisDesc;
+
+  /// No description provided for @personalizationSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adaptive defaults & presets'**
+  String get personalizationSubtitle;
+
+  /// No description provided for @currencySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred currency'**
+  String get currencySubtitle;
+
+  /// No description provided for @manageCategoriesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add, edit, or remove your personal categories'**
+  String get manageCategoriesSubtitle;
 }
 
 class _AppLocalizationsDelegate
