@@ -6,10 +6,11 @@ part 'saving_goal_dto.g.dart';
 @JsonSerializable()
 class SavingGoalDto {
   final int id;
+  @JsonKey(defaultValue: '')
   final String name;
-  @JsonKey(name: 'target_amount')
+  @JsonKey(name: 'target_amount', defaultValue: 0.0)
   final double targetAmount;
-  @JsonKey(name: 'current_amount')
+  @JsonKey(name: 'current_amount', defaultValue: 0.0)
   final double currentAmount;
 
   SavingGoalDto({

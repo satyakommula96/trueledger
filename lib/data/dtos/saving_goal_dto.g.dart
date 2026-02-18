@@ -9,9 +9,9 @@ part of 'saving_goal_dto.dart';
 SavingGoalDto _$SavingGoalDtoFromJson(Map<String, dynamic> json) =>
     SavingGoalDto(
       id: (json['id'] as num).toInt(),
-      name: json['name'] as String,
-      targetAmount: (json['target_amount'] as num).toDouble(),
-      currentAmount: (json['current_amount'] as num).toDouble(),
+      name: json['name'] as String? ?? '',
+      targetAmount: (json['target_amount'] as num?)?.toDouble() ?? 0.0,
+      currentAmount: (json['current_amount'] as num?)?.toDouble() ?? 0.0,
     );
 
 Map<String, dynamic> _$SavingGoalDtoToJson(SavingGoalDto instance) =>

@@ -9,10 +9,10 @@ part of 'subscription_dto.dart';
 SubscriptionDto _$SubscriptionDtoFromJson(Map<String, dynamic> json) =>
     SubscriptionDto(
       id: (json['id'] as num).toInt(),
-      name: json['name'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      billingDate: json['billing_date'] as String,
-      isActive: (json['active'] as num).toInt(),
+      name: json['name'] as String? ?? '',
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      billingDate: json['billing_date'] as String? ?? '1',
+      isActive: (json['active'] as num?)?.toInt() ?? 1,
       date: json['date'] as String?,
     );
 

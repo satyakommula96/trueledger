@@ -8,8 +8,8 @@ part of 'budget_dto.dart';
 
 BudgetDto _$BudgetDtoFromJson(Map<String, dynamic> json) => BudgetDto(
       id: (json['id'] as num).toInt(),
-      category: json['category'] as String,
-      monthlyLimit: (json['monthly_limit'] as num).toDouble(),
+      category: json['category'] as String? ?? '',
+      monthlyLimit: (json['monthly_limit'] as num?)?.toDouble() ?? 0.0,
       spent: (json['spent'] as num?)?.toDouble(),
       lastReviewedAt: json['last_reviewed_at'] as String?,
       isStable: (json['is_stable'] as num?)?.toInt(),

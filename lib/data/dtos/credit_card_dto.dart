@@ -6,18 +6,19 @@ part 'credit_card_dto.g.dart';
 @JsonSerializable()
 class CreditCardDto {
   final int id;
+  @JsonKey(defaultValue: '')
   final String bank;
-  @JsonKey(name: 'credit_limit')
+  @JsonKey(name: 'credit_limit', defaultValue: 0.0)
   final double creditLimit;
-  @JsonKey(name: 'statement_balance')
+  @JsonKey(name: 'statement_balance', defaultValue: 0.0)
   final double statementBalance;
-  @JsonKey(name: 'current_balance')
+  @JsonKey(name: 'current_balance', defaultValue: 0.0)
   final double currentBalance;
-  @JsonKey(name: 'min_due')
+  @JsonKey(name: 'min_due', defaultValue: 0.0)
   final double minDue;
-  @JsonKey(name: 'due_date')
+  @JsonKey(name: 'due_date', defaultValue: '')
   final String dueDate;
-  @JsonKey(name: 'statement_date')
+  @JsonKey(name: 'statement_date', defaultValue: '')
   final String statementDate;
 
   CreditCardDto({

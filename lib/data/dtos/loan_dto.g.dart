@@ -8,13 +8,13 @@ part of 'loan_dto.dart';
 
 LoanDto _$LoanDtoFromJson(Map<String, dynamic> json) => LoanDto(
       id: (json['id'] as num).toInt(),
-      name: json['name'] as String,
-      loanType: json['loan_type'] as String,
-      totalAmount: (json['total_amount'] as num).toDouble(),
-      remainingAmount: (json['remaining_amount'] as num).toDouble(),
-      emi: (json['emi'] as num).toDouble(),
-      interestRate: (json['interest_rate'] as num).toDouble(),
-      dueDate: json['due_date'] as String,
+      name: json['name'] as String? ?? '',
+      loanType: json['loan_type'] as String? ?? 'Personal',
+      totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0.0,
+      remainingAmount: (json['remaining_amount'] as num?)?.toDouble() ?? 0.0,
+      emi: (json['emi'] as num?)?.toDouble() ?? 0.0,
+      interestRate: (json['interest_rate'] as num?)?.toDouble() ?? 0.0,
+      dueDate: json['due_date'] as String? ?? '',
       date: json['date'] as String?,
       lastPaymentDate: json['last_payment_date'] as String?,
       interestEngineVersion:

@@ -6,17 +6,19 @@ part 'loan_dto.g.dart';
 @JsonSerializable()
 class LoanDto {
   final int id;
+  @JsonKey(defaultValue: '')
   final String name;
-  @JsonKey(name: 'loan_type')
+  @JsonKey(name: 'loan_type', defaultValue: 'Personal')
   final String loanType;
-  @JsonKey(name: 'total_amount')
+  @JsonKey(name: 'total_amount', defaultValue: 0.0)
   final double totalAmount;
-  @JsonKey(name: 'remaining_amount')
+  @JsonKey(name: 'remaining_amount', defaultValue: 0.0)
   final double remainingAmount;
+  @JsonKey(defaultValue: 0.0)
   final double emi;
-  @JsonKey(name: 'interest_rate')
+  @JsonKey(name: 'interest_rate', defaultValue: 0.0)
   final double interestRate;
-  @JsonKey(name: 'due_date')
+  @JsonKey(name: 'due_date', defaultValue: '')
   final String dueDate;
   final String? date;
   @JsonKey(name: 'last_payment_date')

@@ -12,9 +12,9 @@ LedgerItemDto _$LedgerItemDtoFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String?,
       category: json['category'] as String?,
       source: json['source'] as String?,
-      amount: (json['amount'] as num).toDouble(),
-      date: json['date'] as String,
-      type: json['entryType'] as String,
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      date: json['date'] as String? ?? '',
+      type: json['entryType'] as String? ?? 'Variable',
       note: json['note'] as String?,
       tags: json['tags'] as String?,
     );

@@ -6,11 +6,13 @@ part 'subscription_dto.g.dart';
 @JsonSerializable()
 class SubscriptionDto {
   final int id;
+  @JsonKey(defaultValue: '')
   final String name;
+  @JsonKey(defaultValue: 0.0)
   final double amount;
-  @JsonKey(name: 'billing_date')
+  @JsonKey(name: 'billing_date', defaultValue: '1')
   final String billingDate;
-  @JsonKey(name: 'active')
+  @JsonKey(name: 'active', defaultValue: 1)
   final int isActive;
   final String? date;
 

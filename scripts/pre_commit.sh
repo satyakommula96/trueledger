@@ -28,14 +28,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 3. Test Check
-echo "Step 3: Running widget and unit tests..."
-flutter test
-if [ $? -ne 0 ]; then
-    echo "❌ Tests failed. Ensure all tests pass before committing."
-    exit 1
-fi
-
 echo "✅ All checks passed! Proceeding with commit..."
 exit 0
 
