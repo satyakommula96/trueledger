@@ -35,8 +35,10 @@ class AppDatabase {
 
   static Future<common.Database> get db async {
     if (_db != null) return _db!;
+    debugPrint('AppDatabase: Requesting database instance...');
     _initializationInstance ??= _initDb();
     _db = await _initializationInstance;
+    debugPrint('AppDatabase: Database instance acquired.');
     return _db!;
   }
 
@@ -58,6 +60,7 @@ class AppDatabase {
     }
 
     try {
+      debugPrint('AppDatabase: Reading key from Secure Storage...');
       String? key = await _storage.read(key: _keyParams);
       if (key == null) {
         final random = Random.secure();
@@ -76,6 +79,7 @@ class AppDatabase {
   }
 
   static Future<common.Database> _initDb() async {
+    debugPrint('AppDatabase: _initDb() started. _isTest=$_isTest');
     String path;
     if (kIsWeb) {
       path = _dbName;
@@ -283,10 +287,10 @@ class AppDatabase {
           CREATE TABLE ${Schema.creditCardsTable} (
             ${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT,
             ${Schema.colBank} TEXT,
-            ${Schema.colCreditLimit} REAL,
-            ${Schema.colStatementBalance} REAL,
-            ${Schema.colCurrentBalance} REAL,
-            ${Schema.colMinDue} REAL,
+            ${Schema.colCreditLimit} REAL DEFAULT 0.0,
+            ${Schema.colStatementBalance} REAL DEFAULT 0.0,
+            ${Schema.colCurrentBalance} REAL DEFAULT 0.0,
+            ${Schema.colMinDue} REAL DEFAULT 0.0,
             ${Schema.colDueDate} TEXT,
             ${Schema.colStatementDate} TEXT
           )
@@ -296,10 +300,10 @@ class AppDatabase {
             ${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT,
             ${Schema.colName} TEXT,
             ${Schema.colLoanType} TEXT,
-            ${Schema.colTotalAmount} REAL,
-            ${Schema.colRemainingAmount} REAL,
-            ${Schema.colEmi} REAL,
-            ${Schema.colInterestRate} REAL,
+            ${Schema.colTotalAmount} REAL DEFAULT 0.0,
+            ${Schema.colRemainingAmount} REAL DEFAULT 0.0,
+            ${Schema.colEmi} REAL DEFAULT 0.0,
+            ${Schema.colInterestRate} REAL DEFAULT 0.0,
             ${Schema.colDueDate} TEXT,
             ${Schema.colDate} TEXT,
             ${Schema.colLastPaymentDate} TEXT,
@@ -509,6 +513,7 @@ class AppDatabase {
       Schema.colBank: 'HDFC Infinia',
       Schema.colCreditLimit: 1500000,
       Schema.colStatementBalance: 87000,
+      Schema.colCurrentBalance: 87000,
       Schema.colMinDue: 0,
       Schema.colDueDate: DateFormat('dd-MM-yyyy')
           .format(DateTime(now.year, now.month + 1, 12)),
@@ -518,6 +523,7 @@ class AppDatabase {
       Schema.colBank: 'Amex Platinum',
       Schema.colCreditLimit: 1000000,
       Schema.colStatementBalance: 12500,
+      Schema.colCurrentBalance: 12500,
       Schema.colMinDue: 0,
       Schema.colDueDate: DateFormat('dd-MM-yyyy')
           .format(DateTime(now.year, now.month + 1, 24)),
@@ -813,8 +819,10 @@ class AppDatabase {
       Schema.colBank: 'HDFC MoneyBack',
       Schema.colCreditLimit: 200000,
       Schema.colStatementBalance: 195000, // Maxed out
+      Schema.colCurrentBalance: 195000,
       Schema.colMinDue: 15000,
       Schema.colDueDate: '15th',
+      Schema.colStatementDate: 'Day 15'
     });
 
     await batch.commit(noResult: true);

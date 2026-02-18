@@ -159,7 +159,7 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
             amount: amount,
             category: _selectedCategory,
             note: _noteController.text.isEmpty
-                ? 'Quick add'
+                ? l10n.quickAddNote
                 : _noteController.text,
             date: _selectedDate.toIso8601String(),
             paymentMethod: _paymentMethod,

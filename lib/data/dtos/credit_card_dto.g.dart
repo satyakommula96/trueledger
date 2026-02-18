@@ -9,13 +9,13 @@ part of 'credit_card_dto.dart';
 CreditCardDto _$CreditCardDtoFromJson(Map<String, dynamic> json) =>
     CreditCardDto(
       id: (json['id'] as num).toInt(),
-      bank: json['bank'] as String,
-      creditLimit: (json['credit_limit'] as num).toDouble(),
-      statementBalance: (json['statement_balance'] as num).toDouble(),
-      currentBalance: (json['current_balance'] as num).toDouble(),
-      minDue: (json['min_due'] as num).toDouble(),
-      dueDate: json['due_date'] as String,
-      statementDate: json['statement_date'] as String,
+      bank: json['bank'] as String? ?? '',
+      creditLimit: (json['credit_limit'] as num?)?.toDouble() ?? 0.0,
+      statementBalance: (json['statement_balance'] as num?)?.toDouble() ?? 0.0,
+      currentBalance: (json['current_balance'] as num?)?.toDouble() ?? 0.0,
+      minDue: (json['min_due'] as num?)?.toDouble() ?? 0.0,
+      dueDate: json['due_date'] as String? ?? '',
+      statementDate: json['statement_date'] as String? ?? '',
     );
 
 Map<String, dynamic> _$CreditCardDtoToJson(CreditCardDto instance) =>

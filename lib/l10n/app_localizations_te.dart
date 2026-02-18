@@ -1345,4 +1345,321 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get selectDueDay => 'చెల్లింపు రోజును ఎంచుకోండి';
+
+  @override
+  String get dataExport => 'డేటా ఎగుమతి';
+
+  @override
+  String get dangerousTerritory => 'ప్రమాదకరమైన ప్రాంతం';
+
+  @override
+  String get dataSeeding => 'డేటా సీడింగ్';
+
+  @override
+  String get resetAllData => 'మొత్తం డేటాను రీసెట్ చేయండి';
+
+  @override
+  String get appSecurity => 'యాప్ సెక్యూరిటీ';
+
+  @override
+  String get appearance => 'ప్రదర్శన';
+
+  @override
+  String get personalizationHeader => 'వ్యక్తిగతీకరణ';
+
+  @override
+  String get currency => 'కరెన్సీ';
+
+  @override
+  String get dataTools => 'డేటా టూల్స్';
+
+  @override
+  String get trustCenterSubtitle => 'స్పష్టమైన హామీలు & డేటా ఆరోగ్యం';
+
+  @override
+  String get appSecuritySubtitle => 'యాక్సెస్ కోసం పిన్ సెట్ చేయండి';
+
+  @override
+  String get appearanceSubtitle => 'లైట్, డార్క్ లేదా సిస్టమ్ థీమ్ మధ్య మారండి';
+
+  @override
+  String get dataExportSubtitle =>
+      'వన్-టాప్ ఎగుమతి (చరిత్ర, బడ్జెట్లు, అంతర్దృష్టులు)';
+
+  @override
+  String get resetApplicationSubtitle =>
+      'అన్ని డేటాను క్లియర్ చేసి కొత్తగా ప్రారంభించండి';
+
+  @override
+  String get seedDataSubtitle => 'డెమో ఎంట్రీలతో యాప్‌ను పూరించండి';
+
+  @override
+  String get ritualComplete => 'రిచువల్ పూర్తయింది. విశ్రాంతి తీసుకోండి.';
+
+  @override
+  String get dayRitual => 'డే రిచువల్';
+
+  @override
+  String get dailyReview => 'రోజువారీ సమీక్ష';
+
+  @override
+  String loggedEntriesToday(Object count) {
+    return 'ఈరోజు మీరు $count లావాదేవీలను నమోదు చేశారు.';
+  }
+
+  @override
+  String underTarget(Object amount) {
+    return '$amount లక్ష్యం కంటే తక్కువ';
+  }
+
+  @override
+  String overTarget(Object amount) {
+    return '$amount లక్ష్యం కంటే ఎక్కువ';
+  }
+
+  @override
+  String get finishDailyReview => 'రోజువారీ సమీక్షను ముగించండి';
+
+  @override
+  String get stillDay => 'ఇంకా రోజు ముగియలేదా?';
+
+  @override
+  String get noTransactionsTodayDescription =>
+      'ఈరోజు ఎటువంటి లావాదేవీలు నమోదు కాలేదు. అంతా సిద్ధంగా ఉంటే, రేపు కలుద్దాం.';
+
+  @override
+  String get closeDay => 'రోజును ముగించండి';
+
+  @override
+  String get dataSovereignty => 'డేటా సార్వభౌమాధికారం';
+
+  @override
+  String get dataSovereigntyDescription =>
+      'పూర్తి డేటా పోర్టబిలిటీ. మీకు నచ్చినప్పుడల్లా మీ మొత్తం హిస్టరీని ఓపెన్ ఫార్మాట్లలో ఎగుమతి చేసుకోండి.';
+
+  @override
+  String get oneTapArchive => 'వన్-టాప్ ఆర్కైవ్';
+
+  @override
+  String get oneTapArchiveDescription =>
+      'మీ ఆర్థిక హిస్టరీ, బడ్జెట్లు మరియు AI అంతర్దృష్టుల యొక్క పూర్తి స్నాప్‌షాట్‌ను సురక్షితమైన JSON ఫార్మాట్‌లో సృష్టించండి.';
+
+  @override
+  String get exportNow => 'ఇప్పుడే ఎగుమతి చేయి';
+
+  @override
+  String get restoreBackup => 'బ్యాకప్‌ను పునరుద్ధరించండి';
+
+  @override
+  String get restoreBackupSubtitle =>
+      'మునుపటి ఎగుమతి నుండి డేటాను దిగుమతి చేయండి';
+
+  @override
+  String get individualReports => 'వ్యక్తిగత నివేదికలు (CSV / PDF)';
+
+  @override
+  String get transactions => 'లావాదేవీలు';
+
+  @override
+  String get transactionsSubtitle => 'ఖర్చులు, ఆదాయం (CSV)';
+
+  @override
+  String get pdfReport => 'PDF నివేదిక';
+
+  @override
+  String get pdfReportSubtitle => 'ముద్రించదగిన ఆర్థిక నివేదిక';
+
+  @override
+  String get budgetsSubtitle => 'పరిమితులు మరియు లక్ష్యాలు (CSV)';
+
+  @override
+  String get aiInsights => 'AI అంతర్దృష్టులు';
+
+  @override
+  String get aiInsightsSubtitle => 'ఆరోగ్య విశ్లేషణ (CSV)';
+
+  @override
+  String get loansSubtitle => 'రుణ వివరాలు (CSV)';
+
+  @override
+  String get dateRange => 'తేదీ పరిధి';
+
+  @override
+  String get allTime => 'మొత్తం సమయం';
+
+  @override
+  String get dataOwnershipNotice =>
+      'ట్రూలెడ్జర్ మీ డేటా కాపీని తన సర్వర్‌లలో ఎప్పుడూ ఉంచుకోదు. మీ ఆర్థిక హిస్టరీకి మీరే ఏకైక సంరక్షకులు.';
+
+  @override
+  String get encryptBackup => 'బ్యాకప్‌ను ఎన్‌క్రిప్ట్ చేయండి';
+
+  @override
+  String get encryptBackupSubtitle =>
+      'ఈ ఫైల్‌ని ఎన్‌క్రిప్ట్ చేయడానికి పాస్‌వర్డ్‌ను నమోదు చేయండి.';
+
+  @override
+  String get password => 'పాస్‌వర్డ్';
+
+  @override
+  String get decrypt => 'డీక్రిప్ట్';
+
+  @override
+  String get decryptBackup => 'బ్యాకప్‌ను డీక్రిప్ట్ చేయండి';
+
+  @override
+  String get backupCreated => 'బ్యాకప్‌ను సృష్టించండి';
+
+  @override
+  String exportSaved(Object path) {
+    return 'ఎగుమతి ఇక్కడ సేవ్ చేయబడింది: $path';
+  }
+
+  @override
+  String get fullDataExportCompleted => 'పూర్తి డేటా ఎగుమతి పూర్తయింది';
+
+  @override
+  String exportFailed(Object error) {
+    return 'ఎగుమతి విఫలమైంది: $error';
+  }
+
+  @override
+  String get noDataFoundToExport =>
+      'ఎగుమతి చేయడానికి ఎటువంటి డేటా కనుగొనబడలేదు';
+
+  @override
+  String exportSuccessful(Object type) {
+    return '$type విజయవంతంగా ఎగుమతి చేయబడింది';
+  }
+
+  @override
+  String get pdfGenerated => 'PDF నివేదిక విజయవంతంగా రూపొందించబడింది';
+
+  @override
+  String get restoreSuccessful => 'పునరుద్ధరణ విజయవంతమైంది';
+
+  @override
+  String restoreFailedDetailed(Object error) {
+    return 'పునరుద్ధరణ విఫలమైంది: $error';
+  }
+
+  @override
+  String get restoreUndone => 'పునరుద్ధరణ రద్దు చేయబడింది';
+
+  @override
+  String errorDuringRestore(Object error) {
+    return 'పునరుద్ధరణ సమయంలో లోపం: $error';
+  }
+
+  @override
+  String get restoreReplaceWarning =>
+      'ఇది మీ ప్రస్తుత డేటాను బ్యాకప్ ఫైల్‌తో భర్తీ చేస్తుంది.';
+
+  @override
+  String get restoreAutoBackupNotice =>
+      '• ప్రస్తుత స్థితి ఆటోమేటిక్‌గా బ్యాకప్ చేయబడుతుంది.\n• ఈ చర్యను వెంటనే రద్దు చేయవచ్చు.';
+
+  @override
+  String get restore => 'పునరుద్ధరించు';
+
+  @override
+  String get saveEncryptedExport => 'ఎన్‌క్రిప్ట్ చేసిన ఎగుమతిని సేవ్ చేయి';
+
+  @override
+  String get saveFullExport => 'పూర్తి ఎగుమతిని సేవ్ చేయి';
+
+  @override
+  String get saveCsvExport => 'CSV ఎగుమతిని సేవ్ చేయి';
+
+  @override
+  String get introTrueLedger => 'ట్రూలెడ్జర్';
+
+  @override
+  String get introTagline => 'మీ ప్రైవేట్ ఆర్థిక తోడు.';
+
+  @override
+  String get trackYourWealth => 'మీ సంపదను ట్రాక్ చేయండి';
+
+  @override
+  String get trackYourWealthDesc =>
+      'మీ నగదు ఎక్కడికి వెళ్తుందో స్పష్టంగా తెలుసుకోండి.';
+
+  @override
+  String get smartBudgeting => 'స్మార్ట్ బడ్జెటింగ్';
+
+  @override
+  String get smartBudgetingDesc =>
+      'త్యాగం లేకుండా ఆదా చేయడానికి లక్ష్యాలను నిర్ణయించుకోండి.';
+
+  @override
+  String get secureAndPrivate => 'సురక్షితం & ప్రైవేట్';
+
+  @override
+  String get secureAndPrivateDesc =>
+      'మీ డేటా ఈ పరికరంలోనే ఉంటుంది. క్లౌడ్ అప్‌లోడ్ లేదు, ట్రాకింగ్ లేదు.';
+
+  @override
+  String get whatShouldWeCallYou => 'మిమ్మల్ని మేము ఏమని పిలవాలి?';
+
+  @override
+  String get enterYourNameHint => 'మీ పేరును నమోదు చేయండి';
+
+  @override
+  String get getStarted => 'ప్రారంభించండి';
+
+  @override
+  String get nameTooLong => 'పేరు చాలా పొడవుగా ఉంది (గరిష్టంగా 20 అక్షరాలు)';
+
+  @override
+  String get quickAddNote => 'త్వరిత జత';
+
+  @override
+  String get netWorthIncreased => 'అద్భుతమైన పురోగతి! మీ నికర విలువ ';
+
+  @override
+  String get netWorthDecreased => 'మీ నికర విలువ ';
+
+  @override
+  String get increasedLabel => 'పెరిగింది';
+
+  @override
+  String get decreasedLabel => 'తగ్గింది';
+
+  @override
+  String get byLabel => ' ద్వారా ';
+
+  @override
+  String get overLast12Months => ' గత 12 నెలల్లో.';
+
+  @override
+  String get failedToRefreshDashboard =>
+      'డాష్‌బోర్డ్‌ను రిఫ్రెష్ చేయడం విఫలమైంది';
+
+  @override
+  String get logFirstExpense => 'మొదటి ఖర్చును నమోదు చేయండి';
+
+  @override
+  String get logFirstExpenseDesc => 'మీ డబ్బు ఎక్కడికి వెళ్తుందో ట్రాక్ చేయండి';
+
+  @override
+  String get setABudget => 'బడ్జెట్‌ను సెట్ చేయండి';
+
+  @override
+  String get setABudgetDesc => 'మీ ఖర్చులను అదుపులో ఉంచుకోండి';
+
+  @override
+  String get seeAnalysis => 'విశ్లేషణ చూడండి';
+
+  @override
+  String get seeAnalysisDesc => 'ఖర్చు చేసే పద్ధతులను గుర్తించండి';
+
+  @override
+  String get personalizationSubtitle => 'అడాప్టివ్ డిఫాల్ట్లు మరియు ప్రిసెట్లు';
+
+  @override
+  String get currencySubtitle => 'ఇష్టపడే కరెన్సీ';
+
+  @override
+  String get manageCategoriesSubtitle =>
+      'మీ స్వంత వర్గాలను జోడించండి, సవరించండి లేదా తొలగించండి';
 }

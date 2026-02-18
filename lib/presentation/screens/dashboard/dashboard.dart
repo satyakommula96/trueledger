@@ -86,7 +86,9 @@ class Dashboard extends ConsumerWidget {
             }
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Failed to refresh dashboard")),
+                SnackBar(
+                    content: Text(AppLocalizations.of(context)!
+                        .failedToRefreshDashboard)),
               );
             }
           }

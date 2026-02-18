@@ -6,8 +6,9 @@ part 'budget_dto.g.dart';
 @JsonSerializable()
 class BudgetDto {
   final int id;
+  @JsonKey(defaultValue: '')
   final String category;
-  @JsonKey(name: 'monthly_limit')
+  @JsonKey(name: 'monthly_limit', defaultValue: 0.0)
   final double monthlyLimit;
   final double? spent;
   @JsonKey(name: 'last_reviewed_at')

@@ -10,9 +10,11 @@ class LedgerItemDto {
   final String? name;
   final String? category;
   final String? source;
+  @JsonKey(defaultValue: 0.0)
   final double amount;
+  @JsonKey(defaultValue: '')
   final String date;
-  @JsonKey(name: 'entryType')
+  @JsonKey(name: 'entryType', defaultValue: 'Variable')
   final String type;
   final String? note;
   final String? tags;
