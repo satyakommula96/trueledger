@@ -1309,6 +1309,9 @@ class AppLocalizationsTe extends AppLocalizations {
   String get sustainableRunway => 'మీ ఆర్థిక ప్రయాణం నిలకడగా ఉంది';
 
   @override
+  String get deficitRunway => 'ప్రస్తుత నిల్వ లోటులో ఉంది';
+
+  @override
   String get calculatingRunway => 'రన్ వే లెక్కిస్తోంది...';
 
   @override
@@ -1662,4 +1665,211 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get manageCategoriesSubtitle =>
       'మీ స్వంత వర్గాలను జోడించండి, సవరించండి లేదా తొలగించండి';
+
+  @override
+  String get inrRupeeName => 'భారత రూపాయి';
+
+  @override
+  String get usdDollarName => 'యుఎస్ డాలీర్';
+
+  @override
+  String get eurEuroName => 'యూరో';
+
+  @override
+  String get gbpPoundName => 'బ్రిటిష్ పౌండ్';
+
+  @override
+  String get jpyYenName => 'జపనీస్ యెన్';
+
+  @override
+  String get cadDollarName => 'కెనడియన్ డాలర్';
+
+  @override
+  String get audDollarName => 'ఆస్ట్రేలియన్ డాలర్';
+
+  @override
+  String get sgdDollarName => 'సింగపూర్ డాలర్';
+
+  @override
+  String get aedDirhamName => 'యూఏఈ దిర్హామ్';
+
+  @override
+  String get sarRiyalName => 'సౌదీ రియాల్';
+
+  @override
+  String get cnyYuanName => 'చైనీస్ యువాన్';
+
+  @override
+  String get krwWonName => 'దక్షిణ కొరియా వోన్';
+
+  @override
+  String get brlRealName => 'బ్రెజిలియన్ రియల్';
+
+  @override
+  String get mxnPesoName => 'మెక్సికన్ పెసో';
+
+  @override
+  String yearReview(Object year) {
+    return '$year సమీక్ష';
+  }
+
+  @override
+  String get annualReflection => 'వార్షిక ప్రతిబింబం';
+
+  @override
+  String get annualVolume => 'వార్షిక మొత్తం';
+
+  @override
+  String totalSpendingReached(Object amount) {
+    return 'మొత్తం ఖర్చు $amountకు చేరుకుంది.';
+  }
+
+  @override
+  String spendingIncrease(
+      Object amount, Object percentage, Object previousYear) {
+    return 'ఇది $previousYearతో పోలిస్తే $amount ($percentage%) పెరిగింది.';
+  }
+
+  @override
+  String spendingDecrease(
+      Object amount, Object percentage, Object previousYear) {
+    return 'ఇది $previousYearతో పోలిస్తే $amount ($percentage%) తగ్గింది.';
+  }
+
+  @override
+  String noDataForPreviousYear(Object year) {
+    return 'పోల్చడానికి $year డేటా అందుబాటులో లేదు.';
+  }
+
+  @override
+  String get peakSpending => 'గరిష్ట ఖర్చు';
+
+  @override
+  String highestSpendingMonth(Object month) {
+    return '$month సంవత్సరంలో అత్యధిక ఖర్చు చేసిన నెల.';
+  }
+
+  @override
+  String get noSignificantPeaks => 'గణనీయమైన ఖర్చు గరిష్టాలు ఏవీ కనుగొనబడలేదు.';
+
+  @override
+  String averageMonthlySpendStabilized(Object amount) {
+    return 'సగటు నెలవారీ ఖర్చు $amount వద్ద స్థిరపడింది.';
+  }
+
+  @override
+  String get keepTrackingTrends =>
+      'దీర్ఘకాలిక ధోరణులను చూడటానికి ట్రాక్ చేస్తూ ఉండండి.';
+
+  @override
+  String get topCategory => 'ప్రధాన వర్గం';
+
+  @override
+  String primaryExpenditureCategory(Object category) {
+    return '$category ప్రాథమిక ఖర్చు వర్గం.';
+  }
+
+  @override
+  String get categoryHabitNote =>
+      'ఈ వర్గంలో ఎక్కువ ఖర్చు తరచుగా స్థిర ఖర్చులు లేదా జీవనశైలి అలవాట్లను సూచిస్తుంది.';
+
+  @override
+  String get categoryStability => 'వర్గాల స్థిరత్వం';
+
+  @override
+  String stabilityCategory(Object category) {
+    return 'స్థిరత్వం: $category';
+  }
+
+  @override
+  String spendingStable(Object category, Object year) {
+    return '$year పొడవునా $category పై ఖర్చు చాలా స్థిరంగా ఉంది.';
+  }
+
+  @override
+  String spendingFluctuated(Object category) {
+    return '$category పై ఖర్చు గణనీయమైన హెచ్చుతగ్గులను చూపింది.';
+  }
+
+  @override
+  String get annualReflectionOnDevice =>
+      'మీ ప్రైవేట్, పరికరంలోని ఆర్థిక చరిత్ర నుండి రూపొందించబడిన వార్షిక ప్రతిబింబం.';
+
+  @override
+  String get trends => 'ధోరణులు';
+
+  @override
+  String get spending => 'ఖర్చు';
+
+  @override
+  String get january => 'జనవరి';
+
+  @override
+  String get february => 'ఫిబ్రవరి';
+
+  @override
+  String get march => 'మార్చి';
+
+  @override
+  String get april => 'ఏప్రిల్';
+
+  @override
+  String get may => 'మే';
+
+  @override
+  String get june => 'జూన్';
+
+  @override
+  String get july => 'జూలై';
+
+  @override
+  String get august => 'ఆగస్టు';
+
+  @override
+  String get september => 'సెప్టెంబరు';
+
+  @override
+  String get october => 'అక్టోబరు';
+
+  @override
+  String get november => 'నవంబరు';
+
+  @override
+  String get december => 'డిసెంబరు';
+
+  @override
+  String get janShort => 'జన';
+
+  @override
+  String get febShort => 'ఫిబ్ర';
+
+  @override
+  String get marShort => 'మార్చి';
+
+  @override
+  String get aprShort => 'ఏప్రి';
+
+  @override
+  String get mayShort => 'మే';
+
+  @override
+  String get junShort => 'జూన్';
+
+  @override
+  String get julShort => 'జూలై';
+
+  @override
+  String get augShort => 'ఆగస్టు';
+
+  @override
+  String get sepShort => 'సెప్టెంబరు';
+
+  @override
+  String get octShort => 'అక్టోబరు';
+
+  @override
+  String get novShort => 'నవంబరు';
+
+  @override
+  String get decShort => 'డిసెంబరు';
 }

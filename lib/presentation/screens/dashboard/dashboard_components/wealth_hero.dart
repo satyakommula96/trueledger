@@ -250,8 +250,10 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
                             data: (result) {
                               final text = result.isSustainable
                                   ? l10n.sustainableRunway
-                                  : l10n.runwayMonths(
-                                      result.monthsUntilDepletion ?? 0);
+                                  : (result.monthsUntilDepletion == 0
+                                      ? l10n.deficitRunway
+                                      : l10n.runwayMonths(
+                                          result.monthsUntilDepletion ?? 0));
                               return Text(
                                 text.toUpperCase(),
                                 style: TextStyle(

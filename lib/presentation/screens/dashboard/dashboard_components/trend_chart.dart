@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/domain/models/models.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class TrendChart extends StatelessWidget {
   final List<FinancialTrend> trendData;
@@ -28,6 +29,8 @@ class TrendChart extends StatelessWidget {
     final maxVal =
         (maxValSpend > maxValIncome ? maxValSpend : maxValIncome) * 1.2;
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -44,7 +47,7 @@ class TrendChart extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
-                "TRENDS",
+                l10n.trends,
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -56,9 +59,10 @@ class TrendChart extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 child: Row(
                   children: [
-                    _buildLegendItem(semantic.income, "INCOME"),
+                    _buildLegendItem(
+                        semantic.income, l10n.income.toUpperCase()),
                     const SizedBox(width: 16),
-                    _buildLegendItem(semantic.overspent, "SPENDING"),
+                    _buildLegendItem(semantic.overspent, l10n.spending),
                   ],
                 ),
               ),
@@ -117,19 +121,19 @@ class TrendChart extends StatelessWidget {
                           return const SizedBox();
                         }
                         String monthStr = trendData[index].month.split('-')[1];
-                        const months = [
-                          'JAN',
-                          'FEB',
-                          'MAR',
-                          'APR',
-                          'MAY',
-                          'JUN',
-                          'JUL',
-                          'AUG',
-                          'SEP',
-                          'OCT',
-                          'NOV',
-                          'DEC'
+                        final months = [
+                          l10n.janShort,
+                          l10n.febShort,
+                          l10n.marShort,
+                          l10n.aprShort,
+                          l10n.mayShort,
+                          l10n.junShort,
+                          l10n.julShort,
+                          l10n.augShort,
+                          l10n.sepShort,
+                          l10n.octShort,
+                          l10n.novShort,
+                          l10n.decShort
                         ];
                         return Padding(
                           padding: const EdgeInsets.only(top: 8.0),

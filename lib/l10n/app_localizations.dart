@@ -2438,6 +2438,12 @@ abstract class AppLocalizations {
   /// **'Your financial path is sustainable'**
   String get sustainableRunway;
 
+  /// No description provided for @deficitRunway.
+  ///
+  /// In en, this message translates to:
+  /// **'CURRENT BALANCE IN DEFICIT'**
+  String get deficitRunway;
+
   /// No description provided for @calculatingRunway.
   ///
   /// In en, this message translates to:
@@ -3077,8 +3083,370 @@ abstract class AppLocalizations {
   /// No description provided for @manageCategoriesSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Add, edit, or remove your personal categories'**
+  /// **'Add, edit or delete your own categories'**
   String get manageCategoriesSubtitle;
+
+  /// No description provided for @inrRupeeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Indian Rupee'**
+  String get inrRupeeName;
+
+  /// No description provided for @usdDollarName.
+  ///
+  /// In en, this message translates to:
+  /// **'US Dollar'**
+  String get usdDollarName;
+
+  /// No description provided for @eurEuroName.
+  ///
+  /// In en, this message translates to:
+  /// **'Euro'**
+  String get eurEuroName;
+
+  /// No description provided for @gbpPoundName.
+  ///
+  /// In en, this message translates to:
+  /// **'British Pound'**
+  String get gbpPoundName;
+
+  /// No description provided for @jpyYenName.
+  ///
+  /// In en, this message translates to:
+  /// **'Japanese Yen'**
+  String get jpyYenName;
+
+  /// No description provided for @cadDollarName.
+  ///
+  /// In en, this message translates to:
+  /// **'Canadian Dollar'**
+  String get cadDollarName;
+
+  /// No description provided for @audDollarName.
+  ///
+  /// In en, this message translates to:
+  /// **'Australian Dollar'**
+  String get audDollarName;
+
+  /// No description provided for @sgdDollarName.
+  ///
+  /// In en, this message translates to:
+  /// **'Singapore Dollar'**
+  String get sgdDollarName;
+
+  /// No description provided for @aedDirhamName.
+  ///
+  /// In en, this message translates to:
+  /// **'UAE Dirham'**
+  String get aedDirhamName;
+
+  /// No description provided for @sarRiyalName.
+  ///
+  /// In en, this message translates to:
+  /// **'Saudi Riyal'**
+  String get sarRiyalName;
+
+  /// No description provided for @cnyYuanName.
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese Yuan'**
+  String get cnyYuanName;
+
+  /// No description provided for @krwWonName.
+  ///
+  /// In en, this message translates to:
+  /// **'South Korean Won'**
+  String get krwWonName;
+
+  /// No description provided for @brlRealName.
+  ///
+  /// In en, this message translates to:
+  /// **'Brazilian Real'**
+  String get brlRealName;
+
+  /// No description provided for @mxnPesoName.
+  ///
+  /// In en, this message translates to:
+  /// **'Mexican Peso'**
+  String get mxnPesoName;
+
+  /// No description provided for @yearReview.
+  ///
+  /// In en, this message translates to:
+  /// **'{year} REVIEW'**
+  String yearReview(Object year);
+
+  /// No description provided for @annualReflection.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual Reflection'**
+  String get annualReflection;
+
+  /// No description provided for @annualVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual Volume'**
+  String get annualVolume;
+
+  /// No description provided for @totalSpendingReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Total spending reached {amount}.'**
+  String totalSpendingReached(Object amount);
+
+  /// No description provided for @spendingIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a increase of {amount} ({percentage}%) vs {previousYear}.'**
+  String spendingIncrease(
+      Object amount, Object percentage, Object previousYear);
+
+  /// No description provided for @spendingDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a decrease of {amount} ({percentage}%) vs {previousYear}.'**
+  String spendingDecrease(
+      Object amount, Object percentage, Object previousYear);
+
+  /// No description provided for @noDataForPreviousYear.
+  ///
+  /// In en, this message translates to:
+  /// **'No data available for {year} to compare.'**
+  String noDataForPreviousYear(Object year);
+
+  /// No description provided for @peakSpending.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak Spending'**
+  String get peakSpending;
+
+  /// No description provided for @highestSpendingMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'{month} was the year\'s highest spending month.'**
+  String highestSpendingMonth(Object month);
+
+  /// No description provided for @noSignificantPeaks.
+  ///
+  /// In en, this message translates to:
+  /// **'No significant spending peaks found.'**
+  String get noSignificantPeaks;
+
+  /// No description provided for @averageMonthlySpendStabilized.
+  ///
+  /// In en, this message translates to:
+  /// **'Average monthly spend stabilized at {amount}.'**
+  String averageMonthlySpendStabilized(Object amount);
+
+  /// No description provided for @keepTrackingTrends.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep tracking to see long-term trends.'**
+  String get keepTrackingTrends;
+
+  /// No description provided for @topCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Category'**
+  String get topCategory;
+
+  /// No description provided for @primaryExpenditureCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'{category} was the primary expenditure category.'**
+  String primaryExpenditureCategory(Object category);
+
+  /// No description provided for @categoryHabitNote.
+  ///
+  /// In en, this message translates to:
+  /// **'High volume in this category often suggests recurring fixed costs or lifestyle habits.'**
+  String get categoryHabitNote;
+
+  /// No description provided for @categoryStability.
+  ///
+  /// In en, this message translates to:
+  /// **'CATEGORY STABILITY'**
+  String get categoryStability;
+
+  /// No description provided for @stabilityCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'STABILITY: {category}'**
+  String stabilityCategory(Object category);
+
+  /// No description provided for @spendingStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending on {category} remained remarkably consistent throughout {year}.'**
+  String spendingStable(Object category, Object year);
+
+  /// No description provided for @spendingFluctuated.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending on {category} showed significant fluctuation.'**
+  String spendingFluctuated(Object category);
+
+  /// No description provided for @annualReflectionOnDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual reflection generated from your private,\non-device financial history.'**
+  String get annualReflectionOnDevice;
+
+  /// No description provided for @trends.
+  ///
+  /// In en, this message translates to:
+  /// **'TRENDS'**
+  String get trends;
+
+  /// No description provided for @spending.
+  ///
+  /// In en, this message translates to:
+  /// **'SPENDING'**
+  String get spending;
+
+  /// No description provided for @january.
+  ///
+  /// In en, this message translates to:
+  /// **'January'**
+  String get january;
+
+  /// No description provided for @february.
+  ///
+  /// In en, this message translates to:
+  /// **'February'**
+  String get february;
+
+  /// No description provided for @march.
+  ///
+  /// In en, this message translates to:
+  /// **'March'**
+  String get march;
+
+  /// No description provided for @april.
+  ///
+  /// In en, this message translates to:
+  /// **'April'**
+  String get april;
+
+  /// No description provided for @may.
+  ///
+  /// In en, this message translates to:
+  /// **'May'**
+  String get may;
+
+  /// No description provided for @june.
+  ///
+  /// In en, this message translates to:
+  /// **'June'**
+  String get june;
+
+  /// No description provided for @july.
+  ///
+  /// In en, this message translates to:
+  /// **'July'**
+  String get july;
+
+  /// No description provided for @august.
+  ///
+  /// In en, this message translates to:
+  /// **'August'**
+  String get august;
+
+  /// No description provided for @september.
+  ///
+  /// In en, this message translates to:
+  /// **'September'**
+  String get september;
+
+  /// No description provided for @october.
+  ///
+  /// In en, this message translates to:
+  /// **'October'**
+  String get october;
+
+  /// No description provided for @november.
+  ///
+  /// In en, this message translates to:
+  /// **'November'**
+  String get november;
+
+  /// No description provided for @december.
+  ///
+  /// In en, this message translates to:
+  /// **'December'**
+  String get december;
+
+  /// No description provided for @janShort.
+  ///
+  /// In en, this message translates to:
+  /// **'JAN'**
+  String get janShort;
+
+  /// No description provided for @febShort.
+  ///
+  /// In en, this message translates to:
+  /// **'FEB'**
+  String get febShort;
+
+  /// No description provided for @marShort.
+  ///
+  /// In en, this message translates to:
+  /// **'MAR'**
+  String get marShort;
+
+  /// No description provided for @aprShort.
+  ///
+  /// In en, this message translates to:
+  /// **'APR'**
+  String get aprShort;
+
+  /// No description provided for @mayShort.
+  ///
+  /// In en, this message translates to:
+  /// **'MAY'**
+  String get mayShort;
+
+  /// No description provided for @junShort.
+  ///
+  /// In en, this message translates to:
+  /// **'JUN'**
+  String get junShort;
+
+  /// No description provided for @julShort.
+  ///
+  /// In en, this message translates to:
+  /// **'JUL'**
+  String get julShort;
+
+  /// No description provided for @augShort.
+  ///
+  /// In en, this message translates to:
+  /// **'AUG'**
+  String get augShort;
+
+  /// No description provided for @sepShort.
+  ///
+  /// In en, this message translates to:
+  /// **'SEP'**
+  String get sepShort;
+
+  /// No description provided for @octShort.
+  ///
+  /// In en, this message translates to:
+  /// **'OCT'**
+  String get octShort;
+
+  /// No description provided for @novShort.
+  ///
+  /// In en, this message translates to:
+  /// **'NOV'**
+  String get novShort;
+
+  /// No description provided for @decShort.
+  ///
+  /// In en, this message translates to:
+  /// **'DEC'**
+  String get decShort;
 }
 
 class _AppLocalizationsDelegate

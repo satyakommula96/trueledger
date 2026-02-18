@@ -1302,6 +1302,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sustainableRunway => 'Your financial path is sustainable';
 
   @override
+  String get deficitRunway => 'CURRENT BALANCE IN DEFICIT';
+
+  @override
   String get calculatingRunway => 'Calculating runway...';
 
   @override
@@ -1650,5 +1653,211 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get manageCategoriesSubtitle =>
-      'Add, edit, or remove your personal categories';
+      'Add, edit or delete your own categories';
+
+  @override
+  String get inrRupeeName => 'Indian Rupee';
+
+  @override
+  String get usdDollarName => 'US Dollar';
+
+  @override
+  String get eurEuroName => 'Euro';
+
+  @override
+  String get gbpPoundName => 'British Pound';
+
+  @override
+  String get jpyYenName => 'Japanese Yen';
+
+  @override
+  String get cadDollarName => 'Canadian Dollar';
+
+  @override
+  String get audDollarName => 'Australian Dollar';
+
+  @override
+  String get sgdDollarName => 'Singapore Dollar';
+
+  @override
+  String get aedDirhamName => 'UAE Dirham';
+
+  @override
+  String get sarRiyalName => 'Saudi Riyal';
+
+  @override
+  String get cnyYuanName => 'Chinese Yuan';
+
+  @override
+  String get krwWonName => 'South Korean Won';
+
+  @override
+  String get brlRealName => 'Brazilian Real';
+
+  @override
+  String get mxnPesoName => 'Mexican Peso';
+
+  @override
+  String yearReview(Object year) {
+    return '$year REVIEW';
+  }
+
+  @override
+  String get annualReflection => 'Annual Reflection';
+
+  @override
+  String get annualVolume => 'Annual Volume';
+
+  @override
+  String totalSpendingReached(Object amount) {
+    return 'Total spending reached $amount.';
+  }
+
+  @override
+  String spendingIncrease(
+      Object amount, Object percentage, Object previousYear) {
+    return 'This is a increase of $amount ($percentage%) vs $previousYear.';
+  }
+
+  @override
+  String spendingDecrease(
+      Object amount, Object percentage, Object previousYear) {
+    return 'This is a decrease of $amount ($percentage%) vs $previousYear.';
+  }
+
+  @override
+  String noDataForPreviousYear(Object year) {
+    return 'No data available for $year to compare.';
+  }
+
+  @override
+  String get peakSpending => 'Peak Spending';
+
+  @override
+  String highestSpendingMonth(Object month) {
+    return '$month was the year\'s highest spending month.';
+  }
+
+  @override
+  String get noSignificantPeaks => 'No significant spending peaks found.';
+
+  @override
+  String averageMonthlySpendStabilized(Object amount) {
+    return 'Average monthly spend stabilized at $amount.';
+  }
+
+  @override
+  String get keepTrackingTrends => 'Keep tracking to see long-term trends.';
+
+  @override
+  String get topCategory => 'Top Category';
+
+  @override
+  String primaryExpenditureCategory(Object category) {
+    return '$category was the primary expenditure category.';
+  }
+
+  @override
+  String get categoryHabitNote =>
+      'High volume in this category often suggests recurring fixed costs or lifestyle habits.';
+
+  @override
+  String get categoryStability => 'CATEGORY STABILITY';
+
+  @override
+  String stabilityCategory(Object category) {
+    return 'STABILITY: $category';
+  }
+
+  @override
+  String spendingStable(Object category, Object year) {
+    return 'Spending on $category remained remarkably consistent throughout $year.';
+  }
+
+  @override
+  String spendingFluctuated(Object category) {
+    return 'Spending on $category showed significant fluctuation.';
+  }
+
+  @override
+  String get annualReflectionOnDevice =>
+      'Annual reflection generated from your private,\non-device financial history.';
+
+  @override
+  String get trends => 'TRENDS';
+
+  @override
+  String get spending => 'SPENDING';
+
+  @override
+  String get january => 'January';
+
+  @override
+  String get february => 'February';
+
+  @override
+  String get march => 'March';
+
+  @override
+  String get april => 'April';
+
+  @override
+  String get may => 'May';
+
+  @override
+  String get june => 'June';
+
+  @override
+  String get july => 'July';
+
+  @override
+  String get august => 'August';
+
+  @override
+  String get september => 'September';
+
+  @override
+  String get october => 'October';
+
+  @override
+  String get november => 'November';
+
+  @override
+  String get december => 'December';
+
+  @override
+  String get janShort => 'JAN';
+
+  @override
+  String get febShort => 'FEB';
+
+  @override
+  String get marShort => 'MAR';
+
+  @override
+  String get aprShort => 'APR';
+
+  @override
+  String get mayShort => 'MAY';
+
+  @override
+  String get junShort => 'JUN';
+
+  @override
+  String get julShort => 'JUL';
+
+  @override
+  String get augShort => 'AUG';
+
+  @override
+  String get sepShort => 'SEP';
+
+  @override
+  String get octShort => 'OCT';
+
+  @override
+  String get novShort => 'NOV';
+
+  @override
+  String get decShort => 'DEC';
 }

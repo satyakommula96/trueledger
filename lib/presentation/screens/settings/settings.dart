@@ -307,7 +307,7 @@ class SettingsScreen extends ConsumerWidget {
                             children: CurrencyFormatter.currencies.entries
                                 .where((e) =>
                                     e.key.toLowerCase().contains(searchQuery) ||
-                                    _getCurrencyName(e.key)
+                                    _getCurrencyName(context, e.key)
                                         .toLowerCase()
                                         .contains(searchQuery))
                                 .map((entry) {
@@ -371,7 +371,8 @@ class SettingsScreen extends ConsumerWidget {
                                                     fontSize: 16),
                                               ),
                                               Text(
-                                                _getCurrencyName(entry.key),
+                                                _getCurrencyName(
+                                                    context, entry.key),
                                                 style: TextStyle(
                                                     color:
                                                         semantic.secondaryText,
@@ -421,36 +422,37 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  String _getCurrencyName(String code) {
+  String _getCurrencyName(BuildContext context, String code) {
+    final l10n = AppLocalizations.of(context)!;
     switch (code) {
       case 'INR':
-        return 'Indian Rupee';
+        return l10n.inrRupeeName;
       case 'USD':
-        return 'US Dollar';
+        return l10n.usdDollarName;
       case 'EUR':
-        return 'Euro';
+        return l10n.eurEuroName;
       case 'GBP':
-        return 'British Pound';
+        return l10n.gbpPoundName;
       case 'JPY':
-        return 'Japanese Yen';
+        return l10n.jpyYenName;
       case 'CAD':
-        return 'Canadian Dollar';
+        return l10n.cadDollarName;
       case 'AUD':
-        return 'Australian Dollar';
+        return l10n.audDollarName;
       case 'SGD':
-        return 'Singapore Dollar';
+        return l10n.sgdDollarName;
       case 'AED':
-        return 'UAE Dirham';
+        return l10n.aedDirhamName;
       case 'SAR':
-        return 'Saudi Riyal';
+        return l10n.sarRiyalName;
       case 'CNY':
-        return 'Chinese Yuan';
+        return l10n.cnyYuanName;
       case 'KRW':
-        return 'South Korean Won';
+        return l10n.krwWonName;
       case 'BRL':
-        return 'Brazilian Real';
+        return l10n.brlRealName;
       case 'MXN':
-        return 'Mexican Peso';
+        return l10n.mxnPesoName;
       default:
         return '';
     }

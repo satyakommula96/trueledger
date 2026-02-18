@@ -7,6 +7,7 @@ import 'package:trueledger/presentation/providers/usecase_providers.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
 import 'package:trueledger/core/config/app_config.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 final annualReflectionProvider =
     FutureProvider.family<AnnualReflectionData, int>((ref, year) async {
@@ -26,6 +27,7 @@ class AnnualReflectionScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = Theme.of(context).extension<AppColors>()!;
     final dataAsync = ref.watch(annualReflectionProvider(year));
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: semantic.surfaceCombined,
@@ -110,7 +112,7 @@ class AnnualReflectionScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "$year REVIEW".toUpperCase(),
+                          l10n.yearReview(year).toUpperCase(),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w900,
@@ -120,7 +122,7 @@ class AnnualReflectionScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          "Annual\nReflection",
+                          l10n.annualReflection,
                           style: TextStyle(
                             fontSize: 48,
                             fontWeight: FontWeight.w900,
@@ -137,12 +139,20 @@ class AnnualReflectionScreen extends ConsumerWidget {
                       semantic: semantic,
                       icon: Icons.auto_graph_rounded,
                       iconColor: semantic.primary,
-                      title: "Annual Volume",
-                      content:
-                          "Total spending reached ${CurrencyFormatter.format(data.totalSpendCurrentYear)}.",
+                      title: l10n.annualVolume,
+                      content: l10n.totalSpendingReached(
+                          CurrencyFormatter.format(data.totalSpendCurrentYear)),
                       subContent: pctChange != null
-                          ? "This is a ${diff > 0 ? 'increase' : 'decrease'} of ${CurrencyFormatter.format(diff.abs())} ($pctChange%) vs ${year - 1}."
-                          : "No data available for ${year - 1} to compare.",
+                          ? (diff > 0
+                              ? l10n.spendingIncrease(
+                                  CurrencyFormatter.format(diff.abs()),
+                                  pctChange,
+                                  (year - 1).toString())
+                              : l10n.spendingDecrease(
+                                  CurrencyFormatter.format(diff.abs()),
+                                  pctChange,
+                                  (year - 1).toString()))
+                          : l10n.noDataForPreviousYear((year - 1).toString()),
                       index: 0,
                     ),
                     const SizedBox(height: 20),
@@ -150,13 +160,15 @@ class AnnualReflectionScreen extends ConsumerWidget {
                       semantic: semantic,
                       icon: Icons.calendar_today_rounded,
                       iconColor: semantic.warning,
-                      title: "Peak Spending",
+                      title: l10n.peakSpending,
                       content: data.mostExpensiveMonth != null
-                          ? "${_getMonthName(data.mostExpensiveMonth!)} was the year's highest spending month."
-                          : "No significant spending peaks found.",
+                          ? l10n.highestSpendingMonth(
+                              _getMonthName(context, data.mostExpensiveMonth!))
+                          : l10n.noSignificantPeaks,
                       subContent: data.mostExpensiveMonth != null
-                          ? "Average monthly spend stabilized at ${CurrencyFormatter.format(data.avgMonthlySpend)}."
-                          : "Keep tracking to see long-term trends.",
+                          ? l10n.averageMonthlySpendStabilized(
+                              CurrencyFormatter.format(data.avgMonthlySpend))
+                          : l10n.keepTrackingTrends,
                       index: 1,
                     ),
                     const SizedBox(height: 20),
@@ -164,16 +176,15 @@ class AnnualReflectionScreen extends ConsumerWidget {
                       semantic: semantic,
                       icon: Icons.pie_chart_outline_rounded,
                       iconColor: semantic.income,
-                      title: "Top Category",
-                      content:
-                          "${data.topCategory.toUpperCase()} was the primary expenditure category.",
-                      subContent:
-                          "High volume in this category often suggests recurring fixed costs or lifestyle habits.",
+                      title: l10n.topCategory,
+                      content: l10n.primaryExpenditureCategory(
+                          data.topCategory.toUpperCase()),
+                      subContent: l10n.categoryHabitNote,
                       index: 2,
                     ),
                     const SizedBox(height: 64),
                     Text(
-                      "CATEGORY STABILITY",
+                      l10n.categoryStability,
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
@@ -200,10 +211,11 @@ class AnnualReflectionScreen extends ConsumerWidget {
                           iconColor: stability.isStable
                               ? semantic.success
                               : semantic.warning,
-                          title: "STABILITY: ${stability.category}",
+                          title: l10n.stabilityCategory(stability.category),
                           content: stability.isStable
-                              ? "Spending on ${stability.category} remained remarkably consistent throughout $year."
-                              : "Spending on ${stability.category} showed significant fluctuation.",
+                              ? l10n.spendingStable(
+                                  stability.category, year.toString())
+                              : l10n.spendingFluctuated(stability.category),
                           subContent:
                               "${year - 1}: ${CurrencyFormatter.format(stability.previousYearTotal)} → $year: ${CurrencyFormatter.format(stability.currentYearTotal)}",
                           index: 3 + i,
@@ -227,7 +239,7 @@ class AnnualReflectionScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            "Annual reflection generated from your private,\non-device financial history.",
+                            l10n.annualReflectionOnDevice,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 11,
@@ -251,20 +263,21 @@ class AnnualReflectionScreen extends ConsumerWidget {
     );
   }
 
-  String _getMonthName(int month) {
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
+  String _getMonthName(BuildContext context, int month) {
+    final l10n = AppLocalizations.of(context)!;
+    final months = [
+      l10n.january,
+      l10n.february,
+      l10n.march,
+      l10n.april,
+      l10n.may,
+      l10n.june,
+      l10n.july,
+      l10n.august,
+      l10n.september,
+      l10n.october,
+      l10n.november,
+      l10n.december
     ];
     if (month < 1 || month > 12) return 'Unknown';
     return months[month - 1];

@@ -3,6 +3,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:trueledger/data/repositories/financial_repository_impl.dart';
 import 'package:trueledger/data/datasources/database.dart';
 import 'package:flutter/services.dart';
+import 'dart:io';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -10,9 +11,12 @@ void main() {
   group('FinancialRepositoryImpl', () {
     late FinancialRepositoryImpl repo;
 
+    late Directory tempDocs;
     setUpAll(() {
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
+
+      tempDocs = Directory.systemTemp.createTempSync('financial_repo_test_');
 
       // Mock path_provider
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -20,11 +24,18 @@ void main() {
         const MethodChannel('plugins.flutter.io/path_provider'),
         (message) async {
           if (message.method == 'getApplicationDocumentsDirectory') {
-            return '.';
+            return tempDocs.path;
           }
           return null;
         },
       );
+    });
+
+    tearDownAll(() async {
+      await AppDatabase.close();
+      if (tempDocs.existsSync()) {
+        tempDocs.deleteSync(recursive: true);
+      }
     });
 
     setUp(() async {
