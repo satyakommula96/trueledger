@@ -4,13 +4,18 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:trueledger/data/datasources/database.dart';
+import 'dart:io';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  late Directory tempDocs;
   setUpAll(() {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+
+    tempDocs = Directory.systemTemp.createTempSync('large_data_perf_test_');
 
     // Mock path_provider using the new API
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -18,11 +23,18 @@ void main() {
       const MethodChannel('plugins.flutter.io/path_provider'),
       (message) async {
         if (message.method == 'getApplicationDocumentsDirectory') {
-          return '.';
+          return tempDocs.path;
         }
         return null;
       },
     );
+  });
+
+  tearDownAll(() async {
+    await AppDatabase.close();
+    if (tempDocs.existsSync()) {
+      tempDocs.deleteSync(recursive: true);
+    }
   });
 
   group('Performance Benchmarks (Large Dataset)', () {
