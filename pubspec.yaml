@@ -53,7 +53,7 @@ dependencies:
   printing: ^5.14.2
   flutter_localizations:
     sdk: flutter
-  json_annotation: ^4.9.0
+  json_annotation: ^4.11.0
 
 dev_dependencies:
   flutter_test:
