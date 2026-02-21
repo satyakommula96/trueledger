@@ -578,8 +578,55 @@ class _AddExpenseState extends ConsumerState<AddExpense> {
       ref.invalidate(dashboardProvider);
       if (mounted) Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(result.failureOrThrow.message)));
+      final failure = result.failureOrThrow;
+      if (failure.message == "IMPULSE_LOCK") {
+        final semantic = Theme.of(context).extension<AppColors>()!;
+        final threshold = failure.extraData as double;
+        showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+                    backgroundColor: semantic.surfaceCombined,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24)),
+                    title: Text("Impulse Lock Triggered ✋",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w900, color: semantic.text)),
+                    content: Text(
+                      "You're about to spend ${CurrencyFormatter.format(amount)} on a single variable expense. This exceeds your safe threshold of ${CurrencyFormatter.format(threshold)}.\n\nAre you sure you want to commit this to your ledger?",
+                      style: TextStyle(
+                          color: semantic.secondaryText,
+                          height: 1.5,
+                          fontWeight: FontWeight.w700),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: Text("CANCEL",
+                            style: TextStyle(
+                                color: semantic.secondaryText,
+                                fontWeight: FontWeight.w900)),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          // Bypass the lock
+                          noteCtrl.text = "${noteCtrl.text} [APPROVED]";
+                          _save();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: semantic.overspent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text("PROCEED",
+                            style: TextStyle(fontWeight: FontWeight.w900)),
+                      )
+                    ]));
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(failure.message)));
+      }
     }
   }
 }

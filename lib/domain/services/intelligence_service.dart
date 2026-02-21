@@ -14,6 +14,10 @@ final intelligenceServiceProvider = Provider<IntelligenceService>((ref) {
 
 class IntelligenceService {
   final SharedPreferences _prefs;
+  final DateTime Function() clock;
+
+  IntelligenceService(this._prefs, {DateTime Function()? clock})
+      : clock = clock ?? (() => DateTime.now());
   static const Map<InsightGroup, int> _groupCooldowns = {
     InsightGroup.trend: 7, // Weekly
     InsightGroup.behavioral: 30, // Monthly
@@ -70,8 +74,6 @@ class IntelligenceService {
   List<AIInsight>? _memCache;
   DateTime? _memCacheDate;
 
-  IntelligenceService(this._prefs);
-
   Future<void> dismissInsight(String id, InsightGroup group) async {
     _recordShown(id, group);
     _clearCache();
@@ -80,7 +82,7 @@ class IntelligenceService {
   Future<void> snoozeInsight(String id, {int days = 7}) async {
     final historyJson = _prefs.getString(_historyKey) ?? '{}';
     final Map<String, dynamic> history = jsonDecode(historyJson);
-    final snoozeDate = DateTime.now().add(Duration(days: days));
+    final snoozeDate = clock().add(Duration(days: days));
 
     history['snooze_$id'] = snoozeDate.toIso8601String();
     await _prefs.setString(_historyKey, jsonEncode(history));
@@ -109,7 +111,7 @@ class IntelligenceService {
     bool forceRefresh = false,
     bool ignoreCooldown = false,
   }) {
-    final now = DateTime.now();
+    final now = clock();
 
     // 0. Safety Check: If data is empty, clear cache and return empty immediately
     // This prevents "Ghost Insights" from persisting after data deletion
@@ -266,7 +268,7 @@ class IntelligenceService {
       }
     }
 
-    // 5. Subscription Leakage - Low Priority
+    // 5. Subscription Leakage & Zombie Detection- Medium Priority
     if (summary.totalIncome > 0 &&
         summary.totalSubscriptions >
             (summary.totalIncome * _subscriptionIncomeThreshold)) {
@@ -284,9 +286,78 @@ class IntelligenceService {
       ));
     }
 
-    // 6. Savings Milestone - Low Priority
+    // 5.5 Zombie Subscription / Burn Rate
+    // If the user has fixed/stubborn expenses, calculate survival time without income
+    final mandatoryOutflow = summary.totalFixed + summary.totalSubscriptions;
+    if (summary.totalIncome == 0 &&
+        mandatoryOutflow > 0 &&
+        summary.netWorth > 0) {
+      final burnRateDays = (summary.netWorth / mandatoryOutflow) * 30;
+      allPotentialInsights.add(AIInsight(
+        id: 'burn_rate_warning',
+        title: "BURN RATE WARNING",
+        body:
+            "Based on current fixed obligations of ${CurrencyFormatter.format(mandatoryOutflow.toDouble())}/mo, your known liquid assets will run out in ${burnRateDays.toInt()} days.",
+        type: InsightType.warning,
+        priority: InsightPriority.high,
+        value: "Burn Rate",
+        group: InsightGroup.critical,
+        cooldown: const Duration(days: 3),
+      ));
+    }
+
+    // 5.6 True Cost Hourly Wage Analysis
+    // Example: Calculate the effective hourly wage (160 working hours)
+    if (summary.totalIncome > 0) {
+      final hourlyWage = summary.totalIncome / 160;
+
+      // Look for a particularly large single category spend this month
+      if (categorySpending.isNotEmpty) {
+        // Find highest spending category for the month
+        final topCategory = categorySpending
+            .reduce((curr, next) => curr.total > next.total ? curr : next);
+
+        // Only show if the top category is a substantial choice
+        if (topCategory.total > (summary.totalIncome * 0.1)) {
+          final hoursCost = (topCategory.total / hourlyWage).toInt();
+          allPotentialInsights.add(AIInsight(
+            id: 'true_cost_${topCategory.category}',
+            title: "TRUE COST: ${topCategory.category.toUpperCase()}",
+            body:
+                "Your spending on ${topCategory.category} this month (${CurrencyFormatter.format(topCategory.total.toDouble())}) cost you $hoursCost hours of your working life.",
+            type: InsightType.info,
+            priority: InsightPriority.medium,
+            value: "Hours Worked",
+            group: InsightGroup.behavioral,
+            cooldown: const Duration(days: 14),
+          ));
+        }
+      }
+    }
+
+    // 5.7 Guilt-Free Allowance (Psychological Relief & Gamification)
+    // If the user has saved at least 20% of their income, any remaining unspent
+    // baseline money can be designated as purely "Guilt-Free" to encourage healthy psychology.
     double savingsRate =
         summary.totalIncome > 0 ? (monthlyNet / summary.totalIncome) : 0;
+
+    if (summary.totalIncome > 0 && savingsRate >= 0.20) {
+      if (monthlyNet > 0) {
+        allPotentialInsights.add(AIInsight(
+          id: 'guilt_free_allowance',
+          title: "GUILT-FREE ALLOWANCE ✨",
+          body:
+              "You've secured a fantastic ${((savingsRate) * 100).toInt()}% savings rate! The remaining ${CurrencyFormatter.format(monthlyNet)} in your monthly net is completely guilt-free. Enjoy your hard work!",
+          type: InsightType.success,
+          priority: InsightPriority.high,
+          value: "Guilt Free",
+          group: InsightGroup.behavioral,
+          cooldown: const Duration(days: 5), // High visibility to reward users
+        ));
+      }
+    }
+
+    // 6. Savings Milestone - Low Priority
     if (savingsRate > _savingsRateThreshold) {
       allPotentialInsights.add(AIInsight(
         id: 'savings_milestone',
@@ -356,7 +427,7 @@ class IntelligenceService {
     final kindHistoryJson = _prefs.getString(_kindHistoryKey) ?? '{}';
     final Map<String, dynamic> history = jsonDecode(historyJson);
     final Map<String, dynamic> kindHistory = jsonDecode(kindHistoryJson);
-    final now = DateTime.now();
+    final now = clock();
     final List<AIInsight> filtered = [];
 
     for (final insight in potential) {
@@ -463,7 +534,7 @@ class IntelligenceService {
 
   void _recordShown(String id, InsightGroup group) {
     if (id == 'no_insights') return;
-    final nowStr = DateTime.now().toIso8601String();
+    final nowStr = clock().toIso8601String();
 
     // 1. Record Kind History
     final kindHistoryJson = _prefs.getString(_kindHistoryKey) ?? '{}';

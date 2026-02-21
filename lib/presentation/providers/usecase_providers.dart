@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/domain/usecases/add_transaction_usecase.dart';
+import 'package:trueledger/domain/services/personalization_service.dart';
+import 'package:trueledger/domain/services/intelligence_service.dart';
 import 'package:trueledger/domain/usecases/get_monthly_summary_usecase.dart';
 import 'package:trueledger/domain/usecases/get_dashboard_data_usecase.dart';
 import 'package:trueledger/domain/usecases/get_analysis_data_usecase.dart';
@@ -20,7 +22,11 @@ import 'repository_providers.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 
 final addTransactionUseCaseProvider = Provider<AddTransactionUseCase>((ref) {
-  return AddTransactionUseCase(ref.watch(financialRepositoryProvider));
+  return AddTransactionUseCase(
+    ref.watch(financialRepositoryProvider),
+    ref.watch(personalizationServiceProvider),
+    ref.watch(intelligenceServiceProvider),
+  );
 });
 
 final getMonthlySummaryUseCaseProvider =
