@@ -1,7 +1,7 @@
 name: trueledger
 description: "TrueLedger - Premium Personal Finance & Expense Tracking"
 publish_to: "none"
-version: 1.4.3+14
+version: 1.5.0+15
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -106,7 +106,7 @@ msix_config:
   # UPDATE FROM PARTNER CENTER: App Identity -> Package/Identity/Name
   # Example: 1234SatyaKommula.TrueLedger
   identity_name: com.satyakommula.trueledger
-  msix_version: 1.4.3.0
+  msix_version: 1.5.0.0
   logo_path: assets/icon/trueledger_icon.png
   capabilities: internetClient, internetClientServer, privateNetworkClientServer
   store: true
