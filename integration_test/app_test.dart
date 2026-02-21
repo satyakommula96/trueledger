@@ -41,18 +41,11 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     debugPrint('INTEGRATION_TEST_LOG: Initial pump completed.');
 
-    // 4. Settle with a strict timeout
-    debugPrint('INTEGRATION_TEST_LOG: Attempting pumpAndSettle...');
-    try {
-      await tester.pumpAndSettle(
-        const Duration(milliseconds: 200),
-        EnginePhase.sendSemanticsUpdate,
-        const Duration(seconds: 15),
-      );
-      debugPrint('INTEGRATION_TEST_LOG: pumpAndSettle finished.');
-    } catch (e) {
-      debugPrint('INTEGRATION_TEST_LOG: pumpAndSettle timed out or failed: $e');
-      // Settle failed or timed out, we continue and rely on our polling logic
+    // 4. Skip pumpAndSettle entirely to prevent iOS XCUITest deadlock on continuous animations
+    debugPrint(
+        'INTEGRATION_TEST_LOG: Skipping pumpAndSettle, navigating via manual pumps...');
+    for (int i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 500));
     }
 
     // 5. Poll for success state
