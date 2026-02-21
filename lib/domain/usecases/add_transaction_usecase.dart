@@ -4,6 +4,7 @@ import 'package:trueledger/core/utils/result.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/domain/services/personalization_service.dart';
+import 'package:trueledger/domain/services/intelligence_service.dart';
 import 'usecase_base.dart';
 
 class AddTransactionParams {
@@ -55,8 +56,10 @@ class AddTransactionUseCase
     extends UseCase<AddTransactionResult, AddTransactionParams> {
   final IFinancialRepository repository;
   final PersonalizationService? personalizationService;
+  final IntelligenceService? intelligenceService;
 
-  AddTransactionUseCase(this.repository, [this.personalizationService]);
+  AddTransactionUseCase(this.repository,
+      [this.personalizationService, this.intelligenceService]);
 
   @override
   Future<Result<AddTransactionResult>> call(AddTransactionParams params) async {
@@ -91,6 +94,26 @@ class AddTransactionUseCase
         amount: params.amount,
         note: params.note,
       );
+
+      // --- NEW: Impulse Cooldown Logic ---
+      if (params.type == 'Variable' && intelligenceService != null) {
+        // Find threshold based on active behavior or hardcoded limit for now.
+        // A simple rule: Any single variable expense > 5000 is checked.
+        final summary = await repository.getMonthlySummary();
+
+        // Dynamic threshold: 10% of total income, or 5000 if no income data.
+        final double dynamicThreshold =
+            (summary.totalIncome > 0) ? (summary.totalIncome * 0.10) : 5000.0;
+
+        if (params.amount >= dynamicThreshold &&
+            !params.note.contains("[APPROVED]")) {
+          // We intercept this large transaction immediately!
+          // Normally we'd queue this to a 'Pending' table, but returning a specialized failure
+          // will allow the UI to show the "Impulse Lock" dialog!
+          return Failure(
+              ValidationFailure("IMPULSE_LOCK", extraData: dynamicThreshold));
+        }
+      }
 
       bool shouldCancelDaily = false;
       NotificationIntent? budgetWarning;

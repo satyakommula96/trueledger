@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // New Design System 2.0 - Premium Slate & Indigo Palette
+  // Ultra-Premium "Neo-Glass" Design System
   static AppColors darkColors = AppColors(
-    income: const Color(0xFF10B981), // Emerald 500
-    expense: const Color(0xFFE2E8F0), // Slate 200 (for general text)
-    overspent: const Color(0xFFF43F5E), // Rose 500
-    warning: const Color(0xFFF59E0B), // Amber 500
-    divider: const Color(0xFF1E293B), // Slate 800
-    secondaryText: const Color(0xFF94A3B8), // Slate 400
-    surfaceCombined: const Color(0xFF0F172A), // Slate 900
+    income: const Color(0xFF00E676), // Neon Spring Green
+    expense: const Color(0xFFE2E8F0), // Frost White
+    overspent: const Color(0xFFFF2A5F), // Radiant Crimson
+    warning: const Color(0xFFFFAB00), // Electric Amber
+    divider: const Color(0xFF1A1D2D), // Deep Midnight Border
+    secondaryText: const Color(0xFF8B95A5), // Muted Steel
+    surfaceCombined: const Color(0xFF0A0D14), // Ultra Deep Space
     shimmer: Colors.white10,
-    text: const Color(0xFFF8FAFC), // Slate 50
-    success: const Color(0xFF10B981), // Emerald 500
-    primary: const Color(0xFF6366F1), // Indigo 500
+    text: const Color(0xFFFFFFFF), // Pure White
+    success: const Color(0xFF00E676),
+    primary: const Color(0xFF00F0FF), // Electric Cyan
   );
 
   static AppColors lightColors = AppColors(
-    income: const Color(0xFF059669), // Emerald 600
+    income: const Color(0xFF00C853), // Deep Emerald
     expense: const Color(0xFF1E293B), // Slate 800
-    overspent: const Color(0xFFE11D48), // Rose 600
-    warning: const Color(0xFFD97706), // Amber 600
-    divider: const Color(0xFFE2E8F0), // Slate 200
-    secondaryText: const Color(0xFF475569), // Slate 600 (Improved contrast)
-    surfaceCombined: const Color(0xFFF1F5F9), // Slate 100
+    overspent: const Color(0xFFE53935), // Ruby Red
+    warning: const Color(0xFFFF8F00), // Rich Amber
+    divider: const Color(0xFFEDF1F5), // Soft Frost
+    secondaryText: const Color(0xFF64748B), // Slate 500
+    surfaceCombined: const Color(0xFFFFFFFF), // Pure White
     shimmer: Colors.black12,
     text: const Color(0xFF0F172A), // Slate 900
-    success: const Color(0xFF059669),
-    primary: const Color(0xFF4F46E5), // Indigo 600
+    success: const Color(0xFF00C853),
+    primary: const Color(0xFF2962FF), // Royal Ultramarine
   );
 
   static ThemeData get darkTheme => ThemeData(
@@ -36,22 +36,22 @@ class AppTheme {
         extensions: [darkColors],
         colorScheme: ColorScheme.dark(
           primary: darkColors.primary,
-          onPrimary: Colors.white,
+          onPrimary: Colors.black,
           surface: darkColors.surfaceCombined,
           onSurface: darkColors.text,
           outline: darkColors.divider,
           error: darkColors.overspent,
         ),
-        scaffoldBackgroundColor: const Color(0xFF020617), // Slate 950
+        scaffoldBackgroundColor: const Color(0xFF040508), // Pitch OLED Black
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: false,
           titleTextStyle: TextStyle(
-            fontSize: 24,
+            fontSize: 26,
             fontWeight: FontWeight.w900,
             color: darkColors.text,
-            letterSpacing: -1,
+            letterSpacing: -1.2,
           ),
           iconTheme: IconThemeData(color: darkColors.text),
         ),
@@ -60,16 +60,16 @@ class AppTheme {
           color: darkColors.surfaceCombined,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: darkColors.divider, width: 1.5),
+            borderRadius: BorderRadius.circular(32), // Ultra rounded corners
+            side: BorderSide(color: darkColors.divider, width: 2.0),
           ),
         ),
         floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: darkColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 4,
+          foregroundColor: Colors.black,
+          elevation: 8,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
@@ -94,35 +94,36 @@ class AppTheme {
           outline: lightColors.divider,
           error: lightColors.overspent,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC), // Slate 50
+        scaffoldBackgroundColor: const Color(0xFFF4F7FB), // Premium Cool Grey
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: false,
           titleTextStyle: TextStyle(
-            fontSize: 24,
+            fontSize: 26,
             fontWeight: FontWeight.w900,
             color: lightColors.text,
-            letterSpacing: -1,
+            letterSpacing: -1.2,
           ),
           iconTheme: IconThemeData(color: lightColors.text),
         ),
         fontFamily: 'Outfit',
         cardTheme: CardThemeData(
           color: Colors.white,
-          elevation: 2,
-          shadowColor: lightColors.divider.withValues(alpha: 0.4),
+          elevation: 4,
+          shadowColor: lightColors.primary.withValues(alpha: 0.08),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: lightColors.divider, width: 1),
+            borderRadius: BorderRadius.circular(32), // Ultra rounded corners
+            side: BorderSide(
+                color: lightColors.divider.withValues(alpha: 0.5), width: 1.5),
           ),
         ),
         floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: lightColors.primary,
           foregroundColor: Colors.white,
-          elevation: 4,
+          elevation: 8,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {

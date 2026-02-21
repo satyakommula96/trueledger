@@ -26,6 +26,9 @@ class Schema {
   static const String colAppliedAt = 'applied_at';
   static const String colTags = 'tags';
   static const String colOrderIndex = 'order_index';
+  static const String colOriginalAmount = 'original_amount';
+  static const String colCurrencyCode = 'currency_code';
+  static const String colExchangeRate = 'exchange_rate';
 
   // Specific columns
   static const String colSource = 'source'; // income_sources

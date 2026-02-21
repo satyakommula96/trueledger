@@ -1,14 +1,15 @@
 sealed class AppFailure {
   final String message;
-  AppFailure(this.message);
+  final dynamic extraData;
+  AppFailure(this.message, {this.extraData});
 }
 
 class DatabaseFailure extends AppFailure {
-  DatabaseFailure(super.message);
+  DatabaseFailure(super.message, {super.extraData});
 }
 
 class ValidationFailure extends AppFailure {
-  ValidationFailure(super.message);
+  ValidationFailure(super.message, {super.extraData});
 }
 
 class MigrationFailure extends AppFailure {

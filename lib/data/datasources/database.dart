@@ -272,11 +272,11 @@ class AppDatabase {
 
   static Future<void> _createDb(common.DatabaseExecutor db) async {
     await db.execute(
-        'CREATE TABLE ${Schema.incomeSourcesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colSource} TEXT, ${Schema.colAmount} REAL, ${Schema.colDate} TEXT, ${Schema.colTags} TEXT)');
+        'CREATE TABLE ${Schema.incomeSourcesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colSource} TEXT, ${Schema.colAmount} REAL, ${Schema.colDate} TEXT, ${Schema.colTags} TEXT, ${Schema.colOriginalAmount} REAL, ${Schema.colCurrencyCode} TEXT, ${Schema.colExchangeRate} REAL)');
     await db.execute(
-        'CREATE TABLE ${Schema.fixedExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} REAL, ${Schema.colCategory} TEXT, ${Schema.colDate} TEXT, ${Schema.colTags} TEXT)');
+        'CREATE TABLE ${Schema.fixedExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} REAL, ${Schema.colCategory} TEXT, ${Schema.colDate} TEXT, ${Schema.colTags} TEXT, ${Schema.colOriginalAmount} REAL, ${Schema.colCurrencyCode} TEXT, ${Schema.colExchangeRate} REAL)');
     await db.execute(
-        'CREATE TABLE ${Schema.variableExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colDate} TEXT, ${Schema.colAmount} REAL, ${Schema.colCategory} TEXT, ${Schema.colNote} TEXT, ${Schema.colTags} TEXT)');
+        'CREATE TABLE ${Schema.variableExpensesTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colDate} TEXT, ${Schema.colAmount} REAL, ${Schema.colCategory} TEXT, ${Schema.colNote} TEXT, ${Schema.colTags} TEXT, ${Schema.colOriginalAmount} REAL, ${Schema.colCurrencyCode} TEXT, ${Schema.colExchangeRate} REAL)');
     await db.execute(
         'CREATE TABLE ${Schema.investmentsTable} (${Schema.colId} INTEGER PRIMARY KEY AUTOINCREMENT, ${Schema.colName} TEXT, ${Schema.colAmount} REAL, ${Schema.colActive} INTEGER, ${Schema.colType} TEXT, ${Schema.colDate} TEXT, ${Schema.colTags} TEXT)');
     await db.execute(
@@ -366,7 +366,12 @@ class AppDatabase {
 
     for (var migration in appMigrations) {
       if (migration.version > oldVersion && migration.version <= newVersion) {
+        final savepoint = 'migration_${migration.version}';
         try {
+          // Use SAVEPOINT instead of BEGIN TRANSACTION because sqflite
+          // already wraps onUpgrade in an outer transaction automatically.
+          await db.execute('SAVEPOINT $savepoint');
+
           await migration.up(db);
           await db.insert(
               Schema.migrationsTable,
@@ -375,10 +380,13 @@ class AppDatabase {
                 Schema.colAppliedAt: DateTime.now().toIso8601String(),
               },
               conflictAlgorithm: common.ConflictAlgorithm.replace);
+
+          await db.execute('RELEASE SAVEPOINT $savepoint');
           debugPrint(
               'Successfully applied migration to version ${migration.version}');
         } catch (e) {
           debugPrint('Migration failed for version ${migration.version}: $e');
+          await db.execute('ROLLBACK TO SAVEPOINT $savepoint');
           // Atomic failure: throw to trigger transaction rollback in caller
           rethrow;
         }

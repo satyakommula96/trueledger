@@ -243,7 +243,30 @@ final List<Migration> appMigrations = [
   MigrationV13(),
   MigrationV14(),
   MigrationV15(),
+  MigrationV16(),
 ];
+
+class MigrationV16 extends Migration {
+  MigrationV16() : super(16);
+
+  @override
+  Future<void> up(common.DatabaseExecutor db) async {
+    final tables = [
+      Schema.incomeSourcesTable,
+      Schema.fixedExpensesTable,
+      Schema.variableExpensesTable,
+    ];
+
+    for (var table in tables) {
+      await addColumnSafe(db, table, Schema.colOriginalAmount, "REAL");
+      await addColumnSafe(db, table, Schema.colCurrencyCode, "TEXT");
+      await addColumnSafe(db, table, Schema.colExchangeRate, "REAL");
+    }
+  }
+
+  @override
+  Future<void> down(common.DatabaseExecutor db) async {}
+}
 
 class MigrationV12 extends Migration {
   MigrationV12() : super(12);
