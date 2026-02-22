@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:simple_icons/simple_icons.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/utils/date_helper.dart';
@@ -112,6 +113,43 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
     );
   }
 
+  IconData _getAccountIcon(String name, String type) {
+    if (type == 'Individual') return Icons.person_rounded;
+
+    final lower = name.toLowerCase();
+    if (lower.contains('chase')) return SimpleIcons.chase;
+    if (lower.contains('amex') || lower.contains('american express')) {
+      return SimpleIcons.americanexpress;
+    }
+    if (lower.contains('visa')) return SimpleIcons.visa;
+    if (lower.contains('mastercard')) return SimpleIcons.mastercard;
+    if (lower.contains('discover')) return SimpleIcons.discover;
+    if (lower.contains('diners')) return SimpleIcons.dinersclub;
+    if (lower.contains('jcb')) return SimpleIcons.jcb;
+    if (lower.contains('hsbc')) return SimpleIcons.hsbc;
+    if (lower.contains('barclays')) return SimpleIcons.barclays;
+    if (lower.contains('hdfc')) return SimpleIcons.hdfcbank;
+    if (lower.contains('icici')) return SimpleIcons.icicibank;
+    if (lower.contains('paytm')) return SimpleIcons.paytm;
+    if (lower.contains('phonepe')) return SimpleIcons.phonepe;
+    if (lower.contains('gpay') || lower.contains('google pay')) {
+      return SimpleIcons.googlepay;
+    }
+    if (lower.contains('apple')) return SimpleIcons.apple;
+    if (lower.contains('amazon')) return SimpleIcons.amazon;
+    if (lower.contains('paypal')) return SimpleIcons.paypal;
+    if (lower.contains('stripe')) return SimpleIcons.stripe;
+    if (lower.contains('wise')) return SimpleIcons.wise;
+    if (lower.contains('revolut')) return SimpleIcons.revolut;
+    if (lower.contains('monzo')) return SimpleIcons.monzo;
+    if (lower.contains('n26')) return SimpleIcons.n26;
+    if (lower.contains('cash app') || lower.contains('cashapp')) {
+      return SimpleIcons.cashapp;
+    }
+
+    return Icons.account_balance_rounded;
+  }
+
   Widget _buildLoanCard(Loan l, int index, AppColors semantic) {
     final l10n = AppLocalizations.of(context)!;
 
@@ -153,9 +191,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Icon(
-                      l.loanType == 'Individual'
-                          ? Icons.person_rounded
-                          : Icons.account_balance_rounded,
+                      _getAccountIcon(l.name, l.loanType),
                       size: 20,
                       color: barColor,
                     ),
