@@ -17,8 +17,8 @@ Recurring monthly bills like rent or gym memberships. These are kept separate fr
 Stocks, mutual funds, or gold. These contribute positively to your **Net Worth**.
 
 ### 5. Liabilities (Debt)
-- **Loans**: Track EMIs, interest rates, and remaining balances.
-- **Credit Cards**: Track statement balances, minimum dues, and due dates.
+- **Loans**: Track EMIs, interest rates, and remaining balances. Automatically resolves real bank brand SVGs based on provider name.
+- **Credit Cards**: Track statement balances, minimum dues, and due dates. Renders dynamic brand logos (Chase, N26, Visa, etc.) based on card or bank name.
 
 ## 📝 Adding Data
 - Tap the **+** button or the specific "Add" buttons on the dashboard.

@@ -9,6 +9,13 @@ When you first launch TrueLedger, you'll see the **Intro Screen** with a brief o
 1. Tap **GET STARTED** or **SKIP** to go directly to the dashboard.
 2. **Grant notification permissions** (optional) to receive reminders for bills and budgets
 
+### 🧪 Demo Data / Seeding
+
+To easily experience TrueLedger with a rich set of populated data, you can instantly inject demo entries (transactions, budgets, loans, investments, and more):
+
+1. Navigate to **Settings**.
+2. Tap on **Seed Data** to automatically populate your dashboard. You can clear this anytime by tapping **Clear All Data**.
+
 ## Dashboard Overview
 
 The **Dashboard** is your financial command center:
@@ -88,10 +95,10 @@ Tap the **Analysis** tab to see:
 
 The dashboard displays **Smart Insights** powered by AI:
 
-- 📈 **Forecasts**: Predicted spending for next month
-- 💡 **Recommendations**: Personalized savings tips
-- ⚠️ **Alerts**: Budget warnings and unusual spending patterns
-- 🏆 **Financial Health Score**: Overall financial wellness rating
+- 📈 **Wealth Projections**: Predicts net worth growth based on current savings velocity.
+- 💡 **True Cost Analysis**: Translates heavy spending categories into "hours of life worked" based on your effective hourly wage.
+- ⚠️ **Overspending & Burn Rate**: Detects abnormal spending surges and calculates how many days your liquid assets will last if income stops.
+- 🧟 **Subscription Leakage**: Identifies zombie subscriptions consuming disproportionate amounts of income.
 
 ## Customization
 
