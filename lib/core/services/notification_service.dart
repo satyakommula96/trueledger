@@ -24,6 +24,7 @@ class NotificationService {
 
   /// Specifically used for the aggregated daily summary.
   static const int dailyBillDigestId = 999;
+  static const int tomorrowBillDigestId = 998;
 
   /// Notification ID for Salary Day alerts.
   static const int salaryDayId = 777;
@@ -404,6 +405,37 @@ class NotificationService {
     } else {
       await showNotification(
         id: dailyBillDigestId,
+        title: title,
+        body: body,
+        payload: routeDashboard,
+      );
+    }
+  }
+
+  Future<void> showTomorrowBillDigest(List<BillSummary> bills) async {
+    if (bills.isEmpty) return;
+    if (!_isInitialized) await init();
+
+    final int count = bills.length;
+    final double total = bills.fold(0.0, (sum, b) => sum + b.amount);
+
+    final String title = "Upcoming Bills Tomorrow";
+    final String body =
+        "Reminder: $count ${count == 1 ? 'bill is' : 'bills are'} due tomorrow. Total: ${CurrencyFormatter.format(total)}";
+
+    // Timing Guard: Schedule for 8 AM if it's before 8 AM, otherwise show immediately
+    final now = DateTime.now();
+    if (now.hour < 8) {
+      await scheduleNotification(
+        id: tomorrowBillDigestId,
+        title: title,
+        body: body,
+        scheduledDate: DateTime(now.year, now.month, now.day, 8, 0),
+        payload: routeDashboard,
+      );
+    } else {
+      await showNotification(
+        id: tomorrowBillDigestId,
         title: title,
         body: body,
         payload: routeDashboard,

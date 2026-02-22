@@ -28,6 +28,15 @@ class NoAction extends DailyDigestAction {
   const NoAction();
 }
 
+class DigestActions {
+  final DailyDigestAction todayAction;
+  final DailyDigestAction tomorrowAction;
+  const DigestActions({
+    required this.todayAction,
+    required this.tomorrowAction,
+  });
+}
+
 /// Use Case to manage the logic of the Daily Bill Digest.
 ///
 /// IMPORTANT:
@@ -48,7 +57,22 @@ class ManageDailyDigestUseCase {
   /// are added in the future to support "guaranteed morning delivery" without opening the app,
   /// this logic MUST be shared or coordinated with that worker to
   /// prevent double-notifications or conflicting tray updates.
-  Future<DailyDigestAction> execute(
+  Future<DigestActions> execute(
+    List<BillSummary> billsDueToday,
+    List<BillSummary> billsDueTomorrow,
+    AppRunContext runContext,
+  ) async {
+    final todayAction = await _evaluateToday(billsDueToday, runContext);
+    final tomorrowAction =
+        await _evaluateTomorrow(billsDueTomorrow, runContext);
+
+    return DigestActions(
+      todayAction: todayAction,
+      tomorrowAction: tomorrowAction,
+    );
+  }
+
+  Future<DailyDigestAction> _evaluateToday(
     List<BillSummary> billsDueToday,
     AppRunContext runContext,
   ) async {
@@ -66,17 +90,9 @@ class ManageDailyDigestUseCase {
         (lastTotal != currentTotal) ||
         (lastDigestDate != todayStr);
 
-    // If content and DATE are identical to last execution, no-op.
-    // Note: If lastDigestDate differs from todayStr (e.g. rolled over to new day),
-    // contentChanged becomes true, ensuring we evaluate downstream logic (likely cancelling yesterday's digest if today is empty).
     if (!contentChanged) {
       return const NoAction();
     }
-
-    // Logic for deciding Show vs Cancel:
-    // 1. If currently 0 bills (all paid), cancel any stale notification.
-    // 2. If app is RESUMED or COLD START (user looking at it), cancel notification (don't need it in tray).
-    // 3. Otherwise (background), show/update the notification.
 
     final bool shouldCancel = currentCount == 0 ||
         runContext == AppRunContext.resume ||
@@ -98,6 +114,54 @@ class ManageDailyDigestUseCase {
         total: currentTotal,
       );
       return ShowDigestAction(billsDueToday);
+    }
+
+    return const NoAction();
+  }
+
+  Future<DailyDigestAction> _evaluateTomorrow(
+    List<BillSummary> billsDueTomorrow,
+    AppRunContext runContext,
+  ) async {
+    final now = DateTime.now();
+    final todayStr = DateFormat('yyyy-MM-dd').format(now);
+
+    final lastDigestDate = _store.getTomorrowLastDigestDate();
+    final lastCount = _store.getTomorrowLastDigestCount();
+    final lastTotal = _store.getTomorrowLastDigestTotal();
+
+    final currentCount = billsDueTomorrow.length;
+    final currentTotal = billsDueTomorrow.fold(0.0, (sum, b) => sum + b.amount);
+
+    final bool contentChanged = (lastCount != currentCount) ||
+        (lastTotal != currentTotal) ||
+        (lastDigestDate != todayStr);
+
+    if (!contentChanged) {
+      return const NoAction();
+    }
+
+    // Like today's logic, we cancel if empty or if user is engaged with app
+    final bool shouldCancel = currentCount == 0 ||
+        runContext == AppRunContext.resume ||
+        runContext == AppRunContext.coldStart;
+
+    if (shouldCancel) {
+      await _store.saveTomorrowState(
+        date: todayStr,
+        count: currentCount,
+        total: currentTotal,
+      );
+      return const CancelDigestAction();
+    }
+
+    if (currentCount > 0) {
+      await _store.saveTomorrowState(
+        date: todayStr,
+        count: currentCount,
+        total: currentTotal,
+      );
+      return ShowDigestAction(billsDueTomorrow);
     }
 
     return const NoAction();

@@ -12,6 +12,7 @@ class DashboardData {
   final List<FinancialTrend> trendData;
   final List<BillSummary> upcomingBills;
   final List<BillSummary> billsDueToday;
+  final List<BillSummary> billsDueTomorrow;
   final double todaySpend;
   final double thisWeekSpend;
   final double lastWeekSpend;
@@ -26,6 +27,7 @@ class DashboardData {
     required this.trendData,
     required this.upcomingBills,
     required this.billsDueToday,
+    required this.billsDueTomorrow,
     required this.todaySpend,
     required this.thisWeekSpend,
     required this.lastWeekSpend,
@@ -64,11 +66,20 @@ class GetDashboardDataUseCase extends UseCase<DashboardData, NoParams> {
       final weeklySummary = results[7] as Map<String, double>;
 
       final now = DateTime.now();
+      final tomorrow = now.add(const Duration(days: 1));
+
       final billsDueToday = upcomingBills.where((b) {
         if (b.dueDate == null || b.isPaid) return false;
         return b.dueDate!.year == now.year &&
             b.dueDate!.month == now.month &&
             b.dueDate!.day == now.day;
+      }).toList();
+
+      final billsDueTomorrow = upcomingBills.where((b) {
+        if (b.dueDate == null || b.isPaid) return false;
+        return b.dueDate!.year == tomorrow.year &&
+            b.dueDate!.month == tomorrow.month &&
+            b.dueDate!.day == tomorrow.day;
       }).toList();
 
       return Success(DashboardData(
@@ -79,6 +90,7 @@ class GetDashboardDataUseCase extends UseCase<DashboardData, NoParams> {
         trendData: trendData,
         upcomingBills: upcomingBills,
         billsDueToday: billsDueToday,
+        billsDueTomorrow: billsDueTomorrow,
         todaySpend: (results[6] as num).toDouble(),
         thisWeekSpend: weeklySummary['thisWeek'] ?? 0.0,
         lastWeekSpend: weeklySummary['lastWeek'] ?? 0.0,

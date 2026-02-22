@@ -93,6 +93,7 @@ void main() {
     budgets: [],
     upcomingBills: [],
     billsDueToday: [],
+    billsDueTomorrow: [],
     trendData: [],
     categorySpending: [],
     savingGoals: [],

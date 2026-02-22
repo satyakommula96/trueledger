@@ -30,14 +30,23 @@ void main() {
             total: any(named: 'total'),
           )).thenAnswer((_) async {});
 
+      when(() => mockStore.getTomorrowLastDigestDate()).thenReturn(null);
+      when(() => mockStore.getTomorrowLastDigestCount()).thenReturn(null);
+      when(() => mockStore.getTomorrowLastDigestTotal()).thenReturn(null);
+      when(() => mockStore.saveTomorrowState(
+            date: any(named: 'date'),
+            count: any(named: 'count'),
+            total: any(named: 'total'),
+          )).thenAnswer((_) async {});
+
       final bills = [
         BillSummary(id: '1', name: 'Bill 1', amount: 100, type: 'BILL')
       ];
 
-      final result = await useCase.execute(bills, AppRunContext.background);
+      final result = await useCase.execute(bills, [], AppRunContext.background);
 
-      expect(result, isA<ShowDigestAction>());
-      expect((result as ShowDigestAction).bills, bills);
+      expect(result.todayAction, isA<ShowDigestAction>());
+      expect((result.todayAction as ShowDigestAction).bills, bills);
       verify(() => mockStore.saveState(date: todayStr, count: 1, total: 100))
           .called(1);
     });
@@ -47,13 +56,18 @@ void main() {
       when(() => mockStore.getLastDigestCount()).thenReturn(1);
       when(() => mockStore.getLastDigestTotal()).thenReturn(100);
 
+      when(() => mockStore.getTomorrowLastDigestDate()).thenReturn(todayStr);
+      when(() => mockStore.getTomorrowLastDigestCount()).thenReturn(0);
+      when(() => mockStore.getTomorrowLastDigestTotal()).thenReturn(0);
+
       final bills = [
         BillSummary(id: '1', name: 'Bill 1', amount: 100, type: 'BILL')
       ];
 
-      final result = await useCase.execute(bills, AppRunContext.coldStart);
+      final result = await useCase.execute(bills, [], AppRunContext.coldStart);
 
-      expect(result, isA<NoAction>());
+      expect(result.todayAction, isA<NoAction>());
+      expect(result.tomorrowAction, isA<NoAction>());
       verifyNever(() => mockStore.saveState(
             date: any(named: 'date'),
             count: any(named: 'count'),
@@ -72,13 +86,23 @@ void main() {
             total: any(named: 'total'),
           )).thenAnswer((_) async {});
 
+      when(() => mockStore.getTomorrowLastDigestDate())
+          .thenReturn('2026-01-01');
+      when(() => mockStore.getTomorrowLastDigestCount()).thenReturn(0);
+      when(() => mockStore.getTomorrowLastDigestTotal()).thenReturn(0);
+      when(() => mockStore.saveTomorrowState(
+            date: any(named: 'date'),
+            count: any(named: 'count'),
+            total: any(named: 'total'),
+          )).thenAnswer((_) async {});
+
       final bills = [
         BillSummary(id: '1', name: 'Bill 1', amount: 100, type: 'BILL')
       ];
 
-      final result = await useCase.execute(bills, AppRunContext.resume);
+      final result = await useCase.execute(bills, [], AppRunContext.resume);
 
-      expect(result, isA<CancelDigestAction>());
+      expect(result.todayAction, isA<CancelDigestAction>());
       verify(() => mockStore.saveState(date: todayStr, count: 1, total: 100))
           .called(1);
     });
@@ -93,9 +117,20 @@ void main() {
             total: any(named: 'total'),
           )).thenAnswer((_) async {});
 
-      final result = await useCase.execute([], AppRunContext.coldStart);
+      when(() => mockStore.getTomorrowLastDigestDate())
+          .thenReturn('2026-01-01');
+      when(() => mockStore.getTomorrowLastDigestCount()).thenReturn(5);
+      when(() => mockStore.getTomorrowLastDigestTotal()).thenReturn(500);
+      when(() => mockStore.saveTomorrowState(
+            date: any(named: 'date'),
+            count: any(named: 'count'),
+            total: any(named: 'total'),
+          )).thenAnswer((_) async {});
 
-      expect(result, isA<CancelDigestAction>());
+      final result = await useCase.execute([], [], AppRunContext.coldStart);
+
+      expect(result.todayAction, isA<CancelDigestAction>());
+      expect(result.tomorrowAction, isA<CancelDigestAction>());
       verify(() => mockStore.saveState(date: todayStr, count: 0, total: 0))
           .called(1);
     });
@@ -118,9 +153,19 @@ void main() {
             total: any(named: 'total'),
           )).thenAnswer((_) async {});
 
-      final result = await useCase.execute([], AppRunContext.coldStart);
+      when(() => mockStore.getTomorrowLastDigestDate())
+          .thenReturn('2026-01-01');
+      when(() => mockStore.getTomorrowLastDigestCount()).thenReturn(0);
+      when(() => mockStore.getTomorrowLastDigestTotal()).thenReturn(0);
+      when(() => mockStore.saveTomorrowState(
+            date: any(named: 'date'),
+            count: any(named: 'count'),
+            total: any(named: 'total'),
+          )).thenAnswer((_) async {});
 
-      expect(result, isA<CancelDigestAction>());
+      final result = await useCase.execute([], [], AppRunContext.coldStart);
+
+      expect(result.todayAction, isA<CancelDigestAction>());
       verify(() => mockStore.saveState(date: todayStr, count: 0, total: 0))
           .called(1);
     });
