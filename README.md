@@ -61,7 +61,7 @@ mkdocs serve
 ### 🧪 Demo Data / Seeding
 To easily experience TrueLedger with a rich set of populated data, you can instantly inject demo entries (transactions, budgets, loans, investments, and more):
 1. Launch the **TrueLedger App**.
-2. Navigate to **Settings** -> **Data & Privacy**.
+2. Navigate to **Settings**.
 3. Tap on **Seed Data** to automatically populate your dashboard. You can clear this anytime by tapping **Clear All Data**.
 
 ### Prerequisites
