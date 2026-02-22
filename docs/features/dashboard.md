@@ -6,6 +6,7 @@ The Dashboard is the central hub of TrueLedger, designed to give you an immediat
 - **Monthly Summary**: Large visualization of your Income, Expenses, and Net Savings for the current month.
 - **Spending Trend**: A 6-month historical graph showing how your spending compares to your income.
 - **Category Breakdown**: An interactive donut chart showing where your money is going this month.
+- **Payment Calendar**: A visual, grid-based calendar widget tracking upcoming subscriptions, loans, and bills. Features highly recognizable dynamic brand SVG logos, interactive tooltips, and iOS-style red notification badges if multiple unpaid bills stack up on a single day.
 
 ## 🔥 Engagement Features
 - **Streak Tracking**: Displays your current daily tracking streak. A streak increases when you record at least one variable expense per day.

@@ -43,14 +43,17 @@ jobs:
       - name: Run tests with coverage
         run: flutter test --coverage
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+      - name: Install lcov for Coverage Report
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Report Coverage
+        if: matrix.os == 'ubuntu-latest'
+        uses: zgosalvez/github-actions-report-lcov@v4
         with:
-          files: coverage/lcov.info
-          flags: unit
-          name: trueledger-unit
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
+          coverage-files: coverage/lcov.info
+          minimum-coverage: 0
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
 # -------------------------
 # LINUX INTEGRATION

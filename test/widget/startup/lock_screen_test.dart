@@ -97,6 +97,7 @@ void main() {
               trendData: [],
               upcomingBills: [],
               billsDueToday: [],
+              billsDueTomorrow: [],
               todaySpend: 0,
               thisWeekSpend: 0,
               lastWeekSpend: 0,

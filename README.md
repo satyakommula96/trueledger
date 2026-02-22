@@ -12,7 +12,11 @@ A privacy-first personal finance tracker with AI-powered insights.
 
 - **💰 Complete Financial Tracking**: Track income, expenses, budgets, and saving goals.
 - **🌐 Web Support**: Fully responsive web version powered by **SQLite WASM** for local persistence.
-- **🤖 AI-Powered Insights**: Get intelligent forecasts and personalized financial advice.
+- **🤖 AI-Powered Insights**: An intelligent local engine that analyzes your financial behavior to provide actionable advice:
+  - **Wealth Projections**: Predicts net worth growth based on current savings velocity.
+  - **Overspending & Burn Rate**: Detects abnormal spending surges and calculates how many days your liquid assets will last if income stops.
+  - **Subscription Leakage**: Identifies zombie subscriptions consuming disproportionate amounts of income.
+  - **True Cost Analysis**: Translates heavy spending categories into "hours of life worked" based on your effective hourly wage.
 - **🔒 Privacy First**: All data stored locally with AES-256 encryption (SQLCipher) on mobile/desktop.
 - **📊 Beautiful Analytics**: Visualize your financial health with interactive charts and streak tracking.
 - **🌙 Modern UI**: Dark mode, smooth animations, and premium design inspired by modern fintech apps.
@@ -57,6 +61,12 @@ mkdocs serve
 ```
 
 ## 🚀 Quick Start
+
+### 🧪 Demo Data / Seeding
+To easily experience TrueLedger with a rich set of populated data, you can instantly inject demo entries (transactions, budgets, loans, investments, and more):
+1. Launch the **TrueLedger App**.
+2. Navigate to **Settings**.
+3. Tap on **Seed Data** to automatically populate your dashboard. You can clear this anytime by tapping **Clear All Data**.
 
 ### Prerequisites
 

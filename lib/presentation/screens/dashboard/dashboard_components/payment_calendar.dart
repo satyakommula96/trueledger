@@ -307,7 +307,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Badge(
-                          isLabelVisible: events.length > 1 && unpaidCount > 0,
+                          isLabelVisible: unpaidCount > 0,
                           label: Text("$unpaidCount",
                               style: const TextStyle(
                                   fontSize: 8, fontWeight: FontWeight.bold)),

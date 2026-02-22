@@ -58,6 +58,7 @@ void main() {
       trendData: [],
       upcomingBills: [],
       billsDueToday: [],
+      billsDueTomorrow: [],
       todaySpend: 0,
       thisWeekSpend: 0,
       lastWeekSpend: 0,
@@ -65,8 +66,11 @@ void main() {
       todayTransactionCount: 0,
     );
 
-    when(() => mockUseCase.execute(any(), any()))
-        .thenAnswer((_) async => const NoAction());
+    when(() => mockUseCase.execute(any(), any(), any()))
+        .thenAnswer((_) async => const DigestActions(
+              todayAction: NoAction(),
+              tomorrowAction: NoAction(),
+            ));
 
     final container = ProviderContainer(
       overrides: [
@@ -85,7 +89,7 @@ void main() {
     // Give it a microtask to run the whenData callback
     await Future.microtask(() {});
 
-    verify(() => mockUseCase.execute(any(), AppRunContext.background))
+    verify(() => mockUseCase.execute(any(), any(), AppRunContext.background))
         .called(1);
   });
 
@@ -111,6 +115,7 @@ void main() {
       trendData: [],
       upcomingBills: [],
       billsDueToday: bills,
+      billsDueTomorrow: [],
       todaySpend: 0,
       thisWeekSpend: 0,
       lastWeekSpend: 0,
@@ -118,8 +123,11 @@ void main() {
       todayTransactionCount: 0,
     );
 
-    when(() => mockUseCase.execute(any(), any()))
-        .thenAnswer((_) async => ShowDigestAction(bills));
+    when(() => mockUseCase.execute(any(), any(), any()))
+        .thenAnswer((_) async => DigestActions(
+              todayAction: ShowDigestAction(bills),
+              tomorrowAction: const NoAction(),
+            ));
     when(() => mockNotifications.showDailyBillDigest(any()))
         .thenAnswer((_) async => {});
 

@@ -29,13 +29,23 @@ final dailyDigestCoordinatorProvider = Provider.autoDispose<void>((ref) {
       _ => AppRunContext.background,
     };
 
-    final action = await useCase.execute(data.billsDueToday, runContext);
+    final actions = await useCase.execute(
+        data.billsDueToday, data.billsDueTomorrow, runContext);
 
-    if (action is ShowDigestAction) {
-      await notificationService.showDailyBillDigest(action.bills);
-    } else if (action is CancelDigestAction) {
+    if (actions.todayAction is ShowDigestAction) {
+      await notificationService
+          .showDailyBillDigest((actions.todayAction as ShowDigestAction).bills);
+    } else if (actions.todayAction is CancelDigestAction) {
       await notificationService
           .cancelNotification(NotificationService.dailyBillDigestId);
+    }
+
+    if (actions.tomorrowAction is ShowDigestAction) {
+      await notificationService.showTomorrowBillDigest(
+          (actions.tomorrowAction as ShowDigestAction).bills);
+    } else if (actions.tomorrowAction is CancelDigestAction) {
+      await notificationService
+          .cancelNotification(NotificationService.tomorrowBillDigestId);
     }
   });
 });

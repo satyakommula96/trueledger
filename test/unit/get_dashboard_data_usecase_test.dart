@@ -40,8 +40,32 @@ void main() {
       final trendData = [
         FinancialTrend(month: '2026-01', spending: 100, income: 0, total: 100)
       ];
+      final now = DateTime.now();
+      final tomorrow = now.add(const Duration(days: 1));
       final upcomingBills = [
-        BillSummary(id: '1', name: 'Netflix', amount: 200, type: 'BILL')
+        BillSummary(
+            id: '1', name: 'Netflix', amount: 200, type: 'BILL', dueDate: null),
+        BillSummary(
+            id: '2',
+            name: 'Spotify',
+            amount: 10,
+            type: 'BILL',
+            dueDate: now,
+            isPaid: false),
+        BillSummary(
+            id: '3',
+            name: 'Rent',
+            amount: 1000,
+            type: 'BILL',
+            dueDate: tomorrow,
+            isPaid: false),
+        BillSummary(
+            id: '4',
+            name: 'Paid',
+            amount: 50,
+            type: 'BILL',
+            dueDate: now,
+            isPaid: true)
       ];
 
       when(() => mockRepository.getMonthlySummary())
@@ -75,6 +99,10 @@ void main() {
       expect(data.thisWeekSpend, 500);
       expect(data.lastWeekSpend, 400);
       expect(data.activeStreak, 5);
+      expect(data.billsDueToday.length, 1);
+      expect(data.billsDueToday.first.name, 'Spotify');
+      expect(data.billsDueTomorrow.length, 1);
+      expect(data.billsDueTomorrow.first.name, 'Rent');
     });
 
     test('should return Failure when any repository call fails', () async {
