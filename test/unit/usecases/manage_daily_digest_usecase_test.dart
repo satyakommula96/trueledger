@@ -43,10 +43,13 @@ void main() {
         BillSummary(id: '1', name: 'Bill 1', amount: 100, type: 'BILL')
       ];
 
-      final result = await useCase.execute(bills, [], AppRunContext.background);
+      final result =
+          await useCase.execute(bills, bills, AppRunContext.background);
 
       expect(result.todayAction, isA<ShowDigestAction>());
       expect((result.todayAction as ShowDigestAction).bills, bills);
+      expect(result.tomorrowAction, isA<ShowDigestAction>());
+      expect((result.tomorrowAction as ShowDigestAction).bills, bills);
       verify(() => mockStore.saveState(date: todayStr, count: 1, total: 100))
           .called(1);
     });
