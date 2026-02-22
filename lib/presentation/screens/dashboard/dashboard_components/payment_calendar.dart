@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
+import 'package:simple_icons/simple_icons.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
@@ -67,6 +68,103 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
       }
     }
     return events;
+  }
+
+  IconData _getSubscriptionIcon(String name) {
+    final lower = name.toLowerCase();
+    if (lower.contains('netflix')) return SimpleIcons.netflix;
+    if (lower.contains('prime') || lower.contains('amazon')) {
+      return SimpleIcons.primevideo;
+    }
+    if (lower.contains('spotify')) return SimpleIcons.spotify;
+    if (lower.contains('apple') || lower.contains('icloud')) {
+      return SimpleIcons.apple;
+    }
+    if (lower.contains('youtube')) return SimpleIcons.youtube;
+    if (lower.contains('google')) return SimpleIcons.google;
+    if (lower.contains('playstation')) return SimpleIcons.playstation;
+    if (lower.contains('canva')) return SimpleIcons.canva;
+    if (lower.contains('openai') || lower.contains('chatgpt')) {
+      return SimpleIcons.openai;
+    }
+    if (lower.contains('github')) return SimpleIcons.github;
+    if (lower.contains('discord')) return SimpleIcons.discord;
+    if (lower.contains('audible')) return SimpleIcons.audible;
+    if (lower.contains('patreon')) return SimpleIcons.patreon;
+    if (lower.contains('movie') ||
+        lower.contains('cinema') ||
+        lower.contains('video') ||
+        lower.contains('hotstar') ||
+        lower.contains('hulu')) {
+      return Icons.movie;
+    }
+    if (lower.contains('music') ||
+        lower.contains('gaana') ||
+        lower.contains('saavn')) {
+      return Icons.music_note;
+    }
+    if (lower.contains('gym') ||
+        lower.contains('cult') ||
+        lower.contains('fitness') ||
+        lower.contains('health')) {
+      return Icons.fitness_center;
+    }
+    if (lower.contains('wifi') ||
+        lower.contains('internet') ||
+        lower.contains('broadband') ||
+        lower.contains('jio') ||
+        lower.contains('airtel') ||
+        lower.contains('phone')) {
+      return Icons.wifi;
+    }
+    if (lower.contains('game') ||
+        lower.contains('nintendo') ||
+        lower.contains('xbox')) {
+      return Icons.videogame_asset;
+    }
+    if (lower.contains('cloud') ||
+        lower.contains('drive') ||
+        lower.contains('storage')) {
+      return Icons.cloud;
+    }
+
+    return Icons.subscriptions;
+  }
+
+  Color _getSubscriptionColor(String name, Color defaultColor, bool isDark) {
+    final lower = name.toLowerCase();
+    if (lower.contains('netflix') ||
+        lower.contains('youtube') ||
+        lower.contains('adobe')) {
+      return Colors.red;
+    }
+    if (lower.contains('spotify') ||
+        lower.contains('whatsapp') ||
+        lower.contains('xbox')) {
+      return Colors.green;
+    }
+    if (lower.contains('prime') ||
+        lower.contains('facebook') ||
+        lower.contains('twitter') ||
+        lower.contains('linkedin') ||
+        lower.contains('playstation') ||
+        lower.contains('discord')) {
+      return Colors.blue;
+    }
+    if (lower.contains('apple') || lower.contains('github')) {
+      return isDark ? Colors.white : Colors.black;
+    }
+    if (lower.contains('hotstar') || lower.contains('canva')) {
+      return Colors.indigo;
+    }
+    if (lower.contains('openai') || lower.contains('chatgpt')) {
+      return Colors.teal;
+    }
+    if (lower.contains('audible') || lower.contains('patreon')) {
+      return Colors.orange;
+    }
+
+    return defaultColor;
   }
 
   @override
@@ -174,6 +272,7 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
 
               final allPaid =
                   events.isNotEmpty && events.every((e) => e.isPaid == true);
+              final unpaidCount = events.where((e) => e.isPaid != true).length;
 
               return InkWell(
                 onTap: events.isNotEmpty
@@ -207,48 +306,87 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("$day",
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: events.isNotEmpty || isToday
-                                    ? FontWeight.w900
-                                    : FontWeight.normal,
-                                color: allPaid
-                                    ? Colors.green
-                                    : (events.isNotEmpty || isToday
-                                        ? Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                        : Colors.grey))),
+                        Badge(
+                          isLabelVisible: events.length > 1 && unpaidCount > 0,
+                          label: Text("$unpaidCount",
+                              style: const TextStyle(
+                                  fontSize: 8, fontWeight: FontWeight.bold)),
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          offset: const Offset(12, -6),
+                          child: Text("$day",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: events.isNotEmpty || isToday
+                                      ? FontWeight.w900
+                                      : FontWeight.normal,
+                                  color: allPaid
+                                      ? Colors.green
+                                      : (events.isNotEmpty || isToday
+                                          ? Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                          : Colors.grey))),
+                        ),
                         if (events.isNotEmpty) ...[
                           const SizedBox(height: 2),
                           if (allPaid)
                             const Icon(Icons.check_rounded,
-                                size: 10, color: Colors.green)
+                                size: 12, color: Colors.green)
                           else
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: events.take(4).map((e) {
                                 Color dotColor = widget.semantic.secondaryText;
-                                if (e.isPaid == true) {
-                                  dotColor = widget.semantic.divider;
+                                IconData dotIcon = Icons.receipt_long;
+
+                                if (e.type == 'CREDIT DUE') {
+                                  dotColor = Colors.red;
+                                  dotIcon = Icons.credit_card;
+                                } else if (e.type == 'LOAN EMI') {
+                                  dotColor = Colors.orange;
+                                  dotIcon = Icons.account_balance;
+                                } else if (e.type == 'SUBSCRIPTION') {
+                                  dotColor = widget.semantic.overspent;
+                                  dotIcon = _getSubscriptionIcon(e.name);
+                                  dotColor = _getSubscriptionColor(
+                                      e.name,
+                                      dotColor,
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark);
+                                } else if (e.type == 'BORROWING DUE') {
+                                  dotColor = Colors.purple;
+                                  dotIcon = Icons.person;
+                                } else if (e.type == 'RECURRING INCOME') {
+                                  dotColor = Colors.green;
+                                  dotIcon = Icons.arrow_downward_rounded;
                                 } else {
-                                  if (e.type == 'CREDIT DUE') {
-                                    dotColor = Colors.red;
-                                  } else if (e.type == 'LOAN EMI') {
-                                    dotColor = Colors.orange;
-                                  } else if (e.type == 'SUBSCRIPTION') {
-                                    dotColor = widget.semantic.overspent;
+                                  dotColor = widget.semantic.overspent;
+                                  dotIcon = _getSubscriptionIcon(e.name);
+                                  if (dotIcon == Icons.subscriptions) {
+                                    dotIcon = Icons.receipt_long;
+                                  } else {
+                                    dotColor = _getSubscriptionColor(
+                                        e.name,
+                                        dotColor,
+                                        Theme.of(context).brightness ==
+                                            Brightness.dark);
                                   }
                                 }
 
+                                if (e.isPaid == true) {
+                                  dotColor = widget.semantic.divider;
+                                }
+
                                 return Container(
-                                  width: 3,
-                                  height: 3,
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 1),
-                                  decoration: BoxDecoration(
-                                      color: dotColor, shape: BoxShape.circle),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 1.5),
+                                  child: Tooltip(
+                                    message:
+                                        "${e.name} (${CurrencyFormatter.format(e.amount, compact: true)})",
+                                    child: Icon(dotIcon,
+                                        size: 14, color: dotColor),
+                                  ),
                                 );
                               }).toList(),
                             )
@@ -489,8 +627,9 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
     Color color = widget.semantic.secondaryText;
 
     if (bill.type == 'SUBSCRIPTION') {
-      icon = Icons.subscriptions;
-      color = widget.semantic.overspent;
+      icon = _getSubscriptionIcon(bill.name);
+      color = _getSubscriptionColor(bill.name, widget.semantic.overspent,
+          Theme.of(context).brightness == Brightness.dark);
     } else if (bill.type == 'LOAN EMI') {
       icon = Icons.account_balance;
       color = Colors.orange;
@@ -500,6 +639,18 @@ class _PaymentCalendarState extends ConsumerState<PaymentCalendar> {
     } else if (bill.type == 'BORROWING DUE') {
       icon = Icons.person;
       color = Colors.purple;
+    } else if (bill.type == 'RECURRING INCOME') {
+      icon = Icons.arrow_downward_rounded;
+      color = Colors.green;
+    } else {
+      icon = _getSubscriptionIcon(bill.name);
+      color = widget.semantic.overspent;
+      if (icon == Icons.subscriptions) {
+        icon = Icons.receipt_long;
+      } else {
+        color = _getSubscriptionColor(
+            bill.name, color, Theme.of(context).brightness == Brightness.dark);
+      }
     }
 
     final isPaid = bill.isPaid == true;

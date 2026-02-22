@@ -54,6 +54,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   json_annotation: ^4.11.0
+  simple_icons: ^14.6.1
 
 dev_dependencies:
   flutter_test:
