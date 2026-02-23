@@ -558,5 +558,40 @@
   "sepShort": "సెప్టెంబరు",
   "octShort": "అక్టోబరు",
   "novShort": "నవంబరు",
-  "decShort": "డిసెంబరు"
+  "decShort": "డిసెంబరు",
+  "liveTracking": "లైవ్ ట్రాకింగ్",
+  "burnRate": "ఖర్చు రేటు",
+  "leftOfRunway": "బ్యాంకు నిల్వ కాలం",
+  "subscriptionLeakage": "సబ్‌స్క్రిప్షన్ లీకేజీ",
+  "potentialMonthlySavings": "నెలవారీ ఆదా సాధ్యత",
+  "monthlySpend": "నెలవారీ ఖర్చు",
+  "vsLastMonth": "గత నెలతో పోలిస్తే",
+  "financialPosition": "ఆర్థిక స్థితి",
+  "trackGrowthInsights": "మీ వృద్ధి మరియు అంతర్దృష్టులను ట్రాక్ చేయండి",
+  "invested": "పెట్టుబడి పెట్టినవి",
+  "allTransactions": "అన్ని లావాదేవీలు",
+  "cancelMore": "రద్దు చేయి\nమరో {count}",
+  "@cancelMore": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "savedAmount": "ఆదా చేయబడింది: {amount}/నెల",
+  "@savedAmount": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "debtManagement": "రుణ నిర్వహణ",
+  "activeLoans": "ప్రస్తుత రుణాలు",
+  "activeWithCount": "{count} ప్రస్తుతం ఉన్నాయి",
+  "@activeWithCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "payoffStrategy": "రుణ విముక్తి వ్యూహం",
+  "activeDebtPayoffPlan": "ప్రస్తుత రుణ విముక్తి ప్రణాళిక",
+  "noBorrowings": "రుణాలు లేవు",
+  "debtFreeMessage": "మీరు రుణముక్తులు! మీ సంపదను నిర్మించడం ప్రారంభించండి."
 }

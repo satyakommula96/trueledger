@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/dashboard_bottom_bar.dart';
 import '../helpers/test_wrapper.dart';
@@ -66,10 +67,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.account_balance_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.credit_card_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.auto_graph_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.grid_view_rounded), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.house_fill), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.creditcard_fill), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.chart_pie_fill), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.square_grid_2x2_fill), findsOneWidget);
     });
   });
 }

@@ -1860,4 +1860,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get decShort => 'DEC';
+
+  @override
+  String get liveTracking => 'Live Tracking';
+
+  @override
+  String get burnRate => 'Burn Rate';
+
+  @override
+  String get leftOfRunway => 'Left of runway';
+
+  @override
+  String get subscriptionLeakage => 'Subscription Leakage';
+
+  @override
+  String get potentialMonthlySavings => 'Potential Monthly Savings';
+
+  @override
+  String get monthlySpend => 'Monthly Spend';
+
+  @override
+  String get vsLastMonth => 'vs last month';
+
+  @override
+  String get financialPosition => 'Financial Position';
+
+  @override
+  String get trackGrowthInsights => 'Track your growth & insights';
+
+  @override
+  String get invested => 'Invested';
+
+  @override
+  String get allTransactions => 'All Transactions';
+
+  @override
+  String cancelMore(int count) {
+    return 'Cancel\n$count more';
+  }
+
+  @override
+  String savedAmount(String amount) {
+    return 'Saved: $amount/mo';
+  }
+
+  @override
+  String get debtManagement => 'Debt Management';
+
+  @override
+  String get activeLoans => 'Active Loans';
+
+  @override
+  String activeWithCount(int count) {
+    return '$count Active';
+  }
+
+  @override
+  String get payoffStrategy => 'Payoff Strategy';
+
+  @override
+  String get activeDebtPayoffPlan => 'Active Debt Payoff Plan';
+
+  @override
+  String get noBorrowings => 'No Borrowings';
+
+  @override
+  String get debtFreeMessage =>
+      'You are debt-free! Start building your wealth.';
 }

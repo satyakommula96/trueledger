@@ -7,6 +7,8 @@ import 'package:trueledger/presentation/screens/subscriptions/add_subscription.d
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
+import 'package:trueledger/core/theme/theme.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 
 class SubscriptionsScreen extends ConsumerStatefulWidget {
   const SubscriptionsScreen({super.key});
@@ -39,15 +41,14 @@ class _SubscriptionsScreenState extends ConsumerState<SubscriptionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final semantic = Theme.of(context).extension<AppColors>()!;
     final total =
-        subs.isEmpty ? 0 : subs.map((e) => e.amount).reduce((a, b) => a + b);
+        subs.isEmpty ? 0.0 : subs.map((e) => e.amount).reduce((a, b) => a + b);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("SUBSCRIPTIONS")),
+    return AppleScaffold(
+      title: "Subscriptions",
+      subtitle: "Monthly Recurring",
       floatingActionButton: FloatingActionButton(
-        backgroundColor: colorScheme.onSurface,
-        foregroundColor: colorScheme.surface,
         onPressed: () async {
           await Navigator.push(context,
               MaterialPageRoute(builder: (_) => const AddSubscriptionScreen()));
@@ -55,131 +56,196 @@ class _SubscriptionsScreenState extends ConsumerState<SubscriptionsScreen> {
         },
         child: const Icon(Icons.add),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(32),
-                  margin: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(28),
-                    border: Border.all(
-                        color: colorScheme.onSurface.withValues(alpha: 0.06)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("MONTHLY BURN",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 10,
-                              letterSpacing: 2,
-                              color: Colors.grey)),
-                      Text(CurrencyFormatter.format(total),
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w900, fontSize: 24)),
-                    ],
-                  ),
+      slivers: [
+        if (_isLoading)
+          const SliverFillRemaining(
+            child: Center(child: CircularProgressIndicator()),
+          )
+        else ...[
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: AppleGlassCard(
+                padding: EdgeInsets.zero,
+                gradient: LinearGradient(
+                  colors: [
+                    semantic.primary,
+                    semantic.primary.withValues(alpha: 0.8)
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                Expanded(
-                  child: subs.isEmpty
-                      ? const Center(
-                          child: Text("Empty stream",
-                              style: TextStyle(color: Colors.grey)))
-                      : ListView.builder(
-                          padding: EdgeInsets.fromLTRB(24, 0, 24,
-                              100 + MediaQuery.of(context).padding.bottom),
-                          itemCount: subs.length,
-                          itemBuilder: (context, i) {
-                            final s = subs[i];
-                            return InkWell(
-                              onTap: () async {
-                                await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) => AddSubscriptionScreen(
-                                            subscription: s)));
-                                load();
-                              },
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                      color: colorScheme.onSurface
-                                          .withValues(alpha: 0.06)),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(10),
-                                      margin: const EdgeInsets.only(right: 16),
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.secondaryContainer
-                                            .withValues(alpha: 0.5),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Icon(Icons.subscriptions_rounded,
-                                          color:
-                                              colorScheme.onSecondaryContainer,
-                                          size: 20),
-                                    ),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(s.name.toUpperCase(),
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.w900,
-                                                  fontSize: 13,
-                                                  letterSpacing: 1),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis),
-                                          Text(
-                                              DateHelper.formatDue(
-                                                  s.billingDate,
-                                                  prefix: "NEXT"),
-                                              style: const TextStyle(
-                                                  fontSize: 10,
-                                                  color: Colors.grey,
-                                                  fontWeight: FontWeight.bold)),
-                                        ],
-                                      ),
-                                    ),
-                                    Flexible(
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        alignment: Alignment.centerRight,
-                                        child: Text(
-                                            CurrencyFormatter.format(s.amount),
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: 15)),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    IconButton(
-                                      onPressed: () => _delete(s.id),
-                                      icon: Icon(Icons.delete_outline,
-                                          color: colorScheme.error
-                                              .withValues(alpha: 0.5),
-                                          size: 20),
-                                    )
-                                  ],
+                child: Stack(
+                  children: [
+                    Positioned(
+                      right: -30,
+                      top: -30,
+                      child: Container(
+                        width: 150,
+                        height: 150,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.white.withValues(alpha: 0.15),
+                              Colors.white.withValues(alpha: 0)
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(28.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "MONTHLY BURN",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 10,
+                                  letterSpacing: 2,
+                                  color: Colors.white.withValues(alpha: 0.6),
                                 ),
                               ),
-                            );
-                          },
-                        ),
+                              const SizedBox(height: 4),
+                              Text(
+                                CurrencyFormatter.format(total),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 32,
+                                  color: Colors.white,
+                                  letterSpacing: -1,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.receipt_long_rounded,
+                                color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
+          ),
+          if (subs.isEmpty)
+            const SliverFillRemaining(
+              child: Center(
+                  child: Text("No subscriptions tracked",
+                      style: TextStyle(color: Colors.grey))),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) {
+                    final s = subs[i];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: AppleGlassCard(
+                        padding: EdgeInsets.zero,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () async {
+                              await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => AddSubscriptionScreen(
+                                          subscription: s)));
+                              load();
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: semantic.primary
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: Icon(Icons.subscriptions_rounded,
+                                        color: semantic.primary, size: 24),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          s.name,
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 16,
+                                              color: semantic.text),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          DateHelper.formatDue(s.billingDate,
+                                              prefix: "Next"),
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: semantic.secondaryText,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        CurrencyFormatter.format(s.amount),
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 18,
+                                            color: semantic.text),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      GestureDetector(
+                                        onTap: () => _delete(s.id),
+                                        child: Text(
+                                          "Remove",
+                                          style: TextStyle(
+                                              color: semantic.overspent
+                                                  .withValues(alpha: 0.8),
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: subs.length,
+                ),
+              ),
+            ),
+        ],
+      ],
     );
   }
 

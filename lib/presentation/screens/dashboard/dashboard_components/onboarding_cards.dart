@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/l10n/app_localizations.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 
 class OnboardingActionCards extends StatelessWidget {
   final AppColors semantic;
@@ -45,7 +47,7 @@ class OnboardingActionCards extends StatelessWidget {
                       context,
                       AppLocalizations.of(context)!.logFirstExpense,
                       AppLocalizations.of(context)!.logFirstExpenseDesc,
-                      Icons.add_shopping_cart_rounded,
+                      CupertinoIcons.cart_badge_plus,
                       semantic.overspent,
                       onAddTransaction,
                       constraints.maxWidth,
@@ -54,7 +56,7 @@ class OnboardingActionCards extends StatelessWidget {
                       context,
                       AppLocalizations.of(context)!.setABudget,
                       AppLocalizations.of(context)!.setABudgetDesc,
-                      Icons.account_balance_rounded,
+                      CupertinoIcons.house_fill,
                       semantic.income,
                       onAddBudget,
                       constraints.maxWidth,
@@ -63,8 +65,8 @@ class OnboardingActionCards extends StatelessWidget {
                       context,
                       AppLocalizations.of(context)!.seeAnalysis,
                       AppLocalizations.of(context)!.seeAnalysisDesc,
-                      Icons.insights_rounded,
-                      Colors.purpleAccent,
+                      CupertinoIcons.sparkles,
+                      semantic.primary,
                       onCheckAnalysis,
                       constraints.maxWidth,
                     ),
@@ -79,7 +81,7 @@ class OnboardingActionCards extends StatelessWidget {
                         context,
                         AppLocalizations.of(context)!.logFirstExpense,
                         AppLocalizations.of(context)!.logFirstExpenseDesc,
-                        Icons.add_shopping_cart_rounded,
+                        CupertinoIcons.cart_badge_plus,
                         semantic.overspent,
                         onAddTransaction,
                         constraints.maxWidth,
@@ -89,7 +91,7 @@ class OnboardingActionCards extends StatelessWidget {
                         context,
                         AppLocalizations.of(context)!.setABudget,
                         AppLocalizations.of(context)!.setABudgetDesc,
-                        Icons.account_balance_rounded,
+                        CupertinoIcons.house_fill,
                         semantic.income,
                         onAddBudget,
                         constraints.maxWidth,
@@ -99,8 +101,8 @@ class OnboardingActionCards extends StatelessWidget {
                         context,
                         AppLocalizations.of(context)!.seeAnalysis,
                         AppLocalizations.of(context)!.seeAnalysisDesc,
-                        Icons.insights_rounded,
-                        Colors.purpleAccent,
+                        CupertinoIcons.sparkles,
+                        semantic.primary,
                         onCheckAnalysis,
                         constraints.maxWidth,
                       ),
@@ -123,18 +125,17 @@ class OnboardingActionCards extends StatelessWidget {
   ) {
     // Adapt width based on available space
     final cardWidth = parentWidth > 600 ? 240.0 : 200.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return InkWell(
+    return AppleGlassCard(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        width: cardWidth,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-        ),
+      borderRadius: 24,
+      padding: const EdgeInsets.all(20),
+      color: color.withValues(alpha: isDark ? 0.1 : 0.05),
+      border: Border.all(
+          color: color.withValues(alpha: isDark ? 0.25 : 0.35), width: 1.0),
+      child: SizedBox(
+        width: cardWidth - 40, // Subtract padding
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -149,9 +150,10 @@ class OnboardingActionCards extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w900,
                 fontSize: 14,
+                color: semantic.text,
               ),
             ),
             const SizedBox(height: 4),

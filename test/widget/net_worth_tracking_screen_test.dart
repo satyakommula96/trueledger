@@ -67,6 +67,14 @@ void main() {
     when(() => mockRepo.getLoans()).thenAnswer((_) async => []);
   }
 
+  // Helper: settle async state without waiting for infinite animations
+  Future<void> pumpSettle(WidgetTester tester) async {
+    await tester.pump(); // start frame
+    await tester.pump(const Duration(milliseconds: 100)); // flush microtasks
+    await tester.pump(const Duration(milliseconds: 500)); // async futures
+    await tester.pump(const Duration(seconds: 2)); // let animations progress
+  }
+
   group('NetWorthTrackingScreen', () {
     testWidgets('displays loading indicator initially',
         (WidgetTester tester) async {
@@ -75,19 +83,28 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      // Clean up: dispose the widget and process any pending timers
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
     });
 
     testWidgets('displays list sections correctly using keys',
         (WidgetTester tester) async {
       setupEmptyData();
 
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await pumpSettle(tester);
 
       // Verify structural presence via keys instead of text
       expect(find.byKey(WidgetKeys.dashboardNetWorthValue), findsOneWidget);
       expect(find.byKey(WidgetKeys.dashboardAssetsButton), findsOneWidget);
       expect(find.byKey(WidgetKeys.analysisTrendChart), findsOneWidget);
+      tester.view.resetPhysicalSize();
     });
 
     testWidgets('calculates and displays negative net worth correctly',
@@ -138,7 +155,7 @@ void main() {
       );
 
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await pumpSettle(tester);
 
       // Robust assertion: check the specific widget by key and look for formatted value
       final netWorthFinder = find.byKey(WidgetKeys.dashboardNetWorthValue);
@@ -192,7 +209,7 @@ void main() {
       );
 
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await pumpSettle(tester);
 
       expect(findFormattedAmount(650000), findsOneWidget);
     });
@@ -201,14 +218,20 @@ void main() {
         (WidgetTester tester) async {
       setupEmptyData();
 
-      await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
 
-      // Use key for navigation trigger instead of vulnerable text
-      await tester.tap(find.byKey(WidgetKeys.dashboardAssetsButton));
-      await tester.pumpAndSettle();
+      await tester.pumpWidget(createTestWidget());
+      await pumpSettle(tester);
+
+      // Scroll the assets button into view if needed
+      final assetsButton = find.byKey(WidgetKeys.dashboardAssetsButton);
+      await tester.scrollUntilVisible(assetsButton, 100.0);
+      await tester.tap(assetsButton);
+      await pumpSettle(tester);
 
       expect(find.byType(NetWorthDetailsScreen), findsOneWidget);
+      tester.view.resetPhysicalSize();
     });
 
     testWidgets('excludes inactive investments from calculations',
@@ -225,10 +248,9 @@ void main() {
       when(() => mockRepo.getLoans()).thenAnswer((_) async => []);
 
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await pumpSettle(tester);
 
-      // Sum should only be 100,000 (compact formatting might apply in some cases,
-      // but here we check the full formatted version)
+      // Sum should only be 100,000 (only the active investment)
       expect(findFormattedAmount(100000), findsAtLeastNWidgets(1));
     });
   });

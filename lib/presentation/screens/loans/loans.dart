@@ -10,9 +10,9 @@ import 'package:trueledger/presentation/screens/loans/add_loan.dart';
 import 'package:trueledger/presentation/screens/loans/edit_loan.dart';
 import 'package:trueledger/presentation/screens/loans/debt_payoff_planner.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
-import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/core/theme/color_helper.dart';
 import 'package:trueledger/l10n/app_localizations.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 
 class LoansScreen extends ConsumerStatefulWidget {
   const LoansScreen({super.key});
@@ -58,16 +58,15 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
   @override
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.borrowingsAndLoans),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+    return AppleScaffold(
+      title: l10n.borrowingsAndLoans,
+      subtitle: l10n.debtManagement,
       floatingActionButton: FloatingActionButton(
         backgroundColor: semantic.primary,
         foregroundColor: Colors.white,
+        elevation: 4,
         onPressed: () async {
           await Navigator.push(context,
               MaterialPageRoute(builder: (_) => const AddLoanScreen()));
@@ -75,84 +74,65 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
         },
         child: const Icon(Icons.add_rounded, size: 32),
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: semantic.primary))
-          : _buildBody(semantic),
-    );
-  }
-
-  Widget _buildBody(AppColors semantic) {
-    if (loans.isEmpty) {
-      return Center(
-        child: Text(
-          AppLocalizations.of(context)!.noActiveBorrowings,
-          style: TextStyle(
-            color: semantic.secondaryText,
-            fontSize: 10,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.5,
-          ),
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          sliver: _isLoading
+              ? const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()))
+              : loans.isEmpty
+                  ? SliverFillRemaining(child: _buildEmptyState(semantic))
+                  : SliverList(
+                      delegate: SliverChildListDelegate([
+                        _buildTotalSummaryCard(semantic),
+                        const SizedBox(height: 24),
+                        _buildPlannerBanner(context, semantic),
+                        const SizedBox(height: 48),
+                        AppleSectionHeader(
+                          title: l10n.activeLoans,
+                          subtitle: l10n.activeWithCount(loans.length),
+                        ),
+                        const SizedBox(height: 20),
+                        ...loans.asMap().entries.map((entry) =>
+                            _buildLoanCard(entry.value, entry.key, semantic)),
+                      ]),
+                    ),
         ),
-      );
-    }
-
-    return ListView(
-      padding: EdgeInsets.fromLTRB(
-          20, 16, 20, 100 + MediaQuery.of(context).padding.bottom),
-      children: [
-        _buildTotalSummaryCard(semantic),
-        const SizedBox(height: 16),
-        _buildPlannerBanner(context, semantic),
-        const SizedBox(height: 32),
-        ...loans.asMap().entries.map((entry) {
-          final i = entry.key;
-          final l = entry.value;
-          return _buildLoanCard(l, i, semantic);
-        }),
       ],
     );
   }
 
-  IconData _getAccountIcon(String name, String type) {
-    if (type == 'Individual') return Icons.person_rounded;
-
-    final lower = name.toLowerCase();
-    if (lower.contains('chase')) return SimpleIcons.chase;
-    if (lower.contains('amex') || lower.contains('american express')) {
-      return SimpleIcons.americanexpress;
-    }
-    if (lower.contains('visa')) return SimpleIcons.visa;
-    if (lower.contains('mastercard')) return SimpleIcons.mastercard;
-    if (lower.contains('discover')) return SimpleIcons.discover;
-    if (lower.contains('diners')) return SimpleIcons.dinersclub;
-    if (lower.contains('jcb')) return SimpleIcons.jcb;
-    if (lower.contains('hsbc')) return SimpleIcons.hsbc;
-    if (lower.contains('barclays')) return SimpleIcons.barclays;
-    if (lower.contains('hdfc')) return SimpleIcons.hdfcbank;
-    if (lower.contains('icici')) return SimpleIcons.icicibank;
-    if (lower.contains('paytm')) return SimpleIcons.paytm;
-    if (lower.contains('phonepe')) return SimpleIcons.phonepe;
-    if (lower.contains('gpay') || lower.contains('google pay')) {
-      return SimpleIcons.googlepay;
-    }
-    if (lower.contains('apple')) return SimpleIcons.apple;
-    if (lower.contains('amazon')) return SimpleIcons.amazon;
-    if (lower.contains('paypal')) return SimpleIcons.paypal;
-    if (lower.contains('stripe')) return SimpleIcons.stripe;
-    if (lower.contains('wise')) return SimpleIcons.wise;
-    if (lower.contains('revolut')) return SimpleIcons.revolut;
-    if (lower.contains('monzo')) return SimpleIcons.monzo;
-    if (lower.contains('n26')) return SimpleIcons.n26;
-    if (lower.contains('cash app') || lower.contains('cashapp')) {
-      return SimpleIcons.cashapp;
-    }
-
-    return Icons.account_balance_rounded;
+  Widget _buildEmptyState(AppColors semantic) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.account_balance_rounded,
+              size: 64, color: semantic.divider.withValues(alpha: 0.5)),
+          const SizedBox(height: 24),
+          Text(
+            l10n.noBorrowings,
+            style: TextStyle(
+                color: semantic.text,
+                fontSize: 18,
+                fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.debtFreeMessage,
+            style: TextStyle(
+                color: semantic.secondaryText,
+                fontSize: 13,
+                fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildLoanCard(Loan l, int index, AppColors semantic) {
     final l10n = AppLocalizations.of(context)!;
-
     final total = l.totalAmount.toDouble();
     final remaining = l.remainingAmount.toDouble();
     final emi = l.emi.toDouble();
@@ -161,318 +141,300 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
     final isHighDebt = progress > 0.9;
     final barColor = isHighDebt ? semantic.overspent : loanColor;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: HoverWrapper(
-        onTap: () async {
-          await Navigator.push(context,
-              MaterialPageRoute(builder: (_) => EditLoanScreen(loan: l)));
-          load();
-        },
-        borderRadius: 28,
-        glowColor: barColor.withValues(alpha: 0.3),
-        glowOpacity: 0.05,
-        child: Container(
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: semantic.surfaceCombined.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: semantic.divider, width: 1.5),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: barColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
+    return AppleGlassCard(
+      padding: EdgeInsets.zero,
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () async {
+            await Navigator.push(context,
+                MaterialPageRoute(builder: (_) => EditLoanScreen(loan: l)));
+            load();
+          },
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                          color: barColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(14)),
+                      child: Icon(_getAccountIcon(l.name, l.loanType),
+                          size: 20, color: barColor),
                     ),
-                    child: Icon(
-                      _getAccountIcon(l.name, l.loanType),
-                      size: 20,
-                      color: barColor,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l.name,
+                            style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: semantic.text),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _localizeLoanType(l.loanType, context)
+                                .toUpperCase(),
+                            style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: semantic.secondaryText,
+                                letterSpacing: 1),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
+                    Icon(Icons.chevron_right_rounded,
+                        color: semantic.divider, size: 20),
+                  ],
+                ),
+                const SizedBox(height: 28),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l.name.toUpperCase(),
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              color: semantic.text,
-                              letterSpacing: 0),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _localizeLoanType(l.loanType, context).toUpperCase(),
-                          style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: semantic.secondaryText,
-                              letterSpacing: 1),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 28),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context)!.remaining,
+                          l10n.remaining.toUpperCase(),
                           style: TextStyle(
                               fontSize: 9,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w800,
                               color: semantic.secondaryText,
                               letterSpacing: 1.2),
                         ),
-                        const SizedBox(height: 4),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            CurrencyFormatter.format(remaining),
-                            style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w900,
-                                color: semantic.text,
-                                letterSpacing: -1),
-                          ),
+                        const SizedBox(height: 6),
+                        Text(
+                          CurrencyFormatter.format(remaining),
+                          style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w800,
+                              color: semantic.text,
+                              letterSpacing: -1),
                         ),
                       ],
                     ),
-                  ),
-                  Flexible(
-                    child: Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: semantic.divider.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                              color: Colors.white.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.1))),
                           child: Text(
                             DateHelper.formatDue(l.dueDate,
                                     prefix: l.loanType == 'Individual'
                                         ? l10n.due
-                                        : l10n.emi,
-                                    todayLabel: l10n.dueTodayLabel,
-                                    tomorrowLabel: l10n.dueTomorrowLabel,
-                                    flexibleLabel: l10n.flexible,
-                                    recurringLabel: l10n.recurring)
+                                        : l10n.emi)
                                 .toUpperCase(),
                             style: TextStyle(
                                 fontSize: 9,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w800,
                                 color: semantic.secondaryText),
                           ),
                         ),
                         if (l.loanType != 'Individual') ...[
                           const SizedBox(height: 8),
-                          Text(
-                            AppLocalizations.of(context)!.emi,
-                            style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w900,
-                                color: semantic.secondaryText,
-                                letterSpacing: 1.2),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            CurrencyFormatter.format(emi),
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                color: barColor),
-                          ),
+                          Text(CurrencyFormatter.format(emi),
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: barColor)),
                         ],
                       ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 28),
-              Stack(
-                children: [
-                  Container(
-                    height: 8,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: semantic.divider.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(10),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Stack(
+                  children: [
+                    Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                          color: semantic.divider.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(3)),
                     ),
-                  ),
-                  AnimatedContainer(
-                    duration: 1200.ms,
-                    curve: Curves.easeOutCubic,
-                    height: 8,
-                    width: (MediaQuery.of(context).size.width - 96) *
-                        (total == 0 ? 0.0 : 1 - progress).clamp(0.01, 1.0),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
+                    AnimatedContainer(
+                      duration: 1200.ms,
+                      curve: Curves.easeOutQuart,
+                      height: 6,
+                      width: (MediaQuery.of(context).size.width - 88) *
+                          (total == 0 ? 0.0 : 1 - progress).clamp(0.01, 1.0),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: [
                           barColor,
-                          barColor.withValues(alpha: 0.6),
+                          barColor.withValues(alpha: 0.7)
+                        ]),
+                        borderRadius: BorderRadius.circular(3),
+                        boxShadow: [
+                          BoxShadow(
+                              color: barColor.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2))
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                            color: barColor.withValues(alpha: 0.3),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4)),
-                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.percentRepaid(
-                        ((1 - progress) * 100).toStringAsFixed(0)),
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        color: barColor,
-                        letterSpacing: 0.5),
-                  ),
-                  Text(
-                    AppLocalizations.of(context)!
-                        .ofAmount(CurrencyFormatter.format(total)),
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        color: semantic.secondaryText.withValues(alpha: 0.6),
-                        letterSpacing: 0.5),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n.percentRepaid(
+                          ((1 - progress) * 100).toStringAsFixed(0)),
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: barColor),
+                    ),
+                    Text(
+                      l10n.ofAmount(CurrencyFormatter.format(total)),
+                      style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: semantic.secondaryText),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     )
         .animate()
-        .fadeIn(delay: (100 * index).ms)
-        .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart);
+        .fadeIn(delay: (50 * index).ms)
+        .slideY(begin: 0.05, end: 0, curve: Curves.easeOutQuint);
   }
 
   Widget _buildTotalSummaryCard(AppColors semantic) {
-    double totalRemaining = 0;
-    for (var loan in loans) {
-      totalRemaining += loan.remainingAmount;
-    }
+    double totalRemaining =
+        loans.fold(0, (sum, item) => sum + item.remainingAmount);
 
-    return Container(
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        color: semantic.overspent.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(
-            color: semantic.overspent.withValues(alpha: 0.2), width: 1.5),
+    return AppleGlassCard(
+      padding: const EdgeInsets.all(32),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          semantic.overspent.withValues(alpha: 0.15),
+          semantic.overspent.withValues(alpha: 0.05),
+        ],
       ),
       child: Column(
         children: [
           Text(
-            AppLocalizations.of(context)!.totalBorrowings,
+            AppLocalizations.of(context)!.totalBorrowings.toUpperCase(),
             style: TextStyle(
-              color: semantic.overspent,
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
-            ),
+                color: semantic.overspent.withValues(alpha: 0.7),
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 2.0),
           ),
           const SizedBox(height: 12),
           Text(
             CurrencyFormatter.format(totalRemaining, compact: false),
             style: TextStyle(
-              color: semantic.overspent,
-              fontSize: 36,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1,
-            ),
+                color: semantic.overspent,
+                fontSize: 48,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -2),
           )
               .animate()
               .fadeIn(delay: 200.ms)
-              .scale(duration: 800.ms, curve: Curves.easeOutBack),
+              .scale(duration: 800.ms, curve: Curves.easeOutQuint),
         ],
       ),
     )
         .animate()
         .fadeIn(duration: 600.ms)
-        .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuart);
+        .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint);
   }
 
   Widget _buildPlannerBanner(BuildContext context, AppColors semantic) {
-    return HoverWrapper(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (_) => const DebtPayoffPlannerScreen())),
-      borderRadius: 24,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: semantic.primary.withValues(alpha: 0.05),
+    final l10n = AppLocalizations.of(context)!;
+    return AppleGlassCard(
+      padding: EdgeInsets.zero,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const DebtPayoffPlannerScreen())),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-              color: semantic.primary.withValues(alpha: 0.2), width: 1.5),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: semantic.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(Icons.auto_graph_rounded,
-                  color: semantic.primary, size: 24),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                      color: semantic.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Icon(Icons.auto_awesome_rounded,
+                      color: semantic.primary, size: 24),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l10n.payoffStrategy.toUpperCase(),
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: semantic.secondaryText,
+                              letterSpacing: 1.5)),
+                      const SizedBox(height: 4),
+                      Text(l10n.activeDebtPayoffPlan,
+                          style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: semantic.text)),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: semantic.divider),
+              ],
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(AppLocalizations.of(context)!.strategy,
-                      style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: semantic.secondaryText,
-                          letterSpacing: 1.5)),
-                  const SizedBox(height: 4),
-                  Text(AppLocalizations.of(context)!.debtPayoffPlanner,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: semantic.text)),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded, color: semantic.secondaryText),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  IconData _getAccountIcon(String name, String type) {
+    if (type == 'Individual') return Icons.person_rounded;
+    final lower = name.toLowerCase();
+    if (lower.contains('chase')) return SimpleIcons.chase;
+    if (lower.contains('amex') || lower.contains('american express')) {
+      return SimpleIcons.americanexpress;
+    }
+    if (lower.contains('visa')) return SimpleIcons.visa;
+    if (lower.contains('mastercard')) return SimpleIcons.mastercard;
+    if (lower.contains('discover')) return SimpleIcons.discover;
+    if (lower.contains('hdfc')) return SimpleIcons.hdfcbank;
+    if (lower.contains('icici')) return SimpleIcons.icicibank;
+    if (lower.contains('apple')) return SimpleIcons.apple;
+    if (lower.contains('amazon')) return SimpleIcons.amazon;
+    if (lower.contains('paypal')) return SimpleIcons.paypal;
+    return Icons.account_balance_rounded;
   }
 
   String _localizeLoanType(String type, BuildContext context) {

@@ -51,6 +51,15 @@ void main() {
     );
   }
 
+  // Bounded settle: avoids infinite animation loops from flutter_animate
+  Future<void> pumpSettle(WidgetTester tester) async {
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(seconds: 2));
+  }
+
   group('BudgetScreen', () {
     testWidgets('displays loading state', (tester) async {
       when(() => mockRepo.getBudgets()).thenAnswer((_) => Future.delayed(
@@ -61,10 +70,13 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       await tester.pump(const Duration(milliseconds: 100));
-      await tester.pumpAndSettle();
+      await pumpSettle(tester);
     });
 
     testWidgets('displays budgets and spending limits', (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+
       final testBudgets = [
         Budget(id: 1, category: 'Food', monthlyLimit: 5000, spent: 2000),
         Budget(id: 2, category: 'Rent', monthlyLimit: 15000, spent: 15000),
@@ -73,12 +85,22 @@ void main() {
       when(() => mockRepo.getBudgets()).thenAnswer((_) async => testBudgets);
 
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      // Pump microtasks to resolve FutureProvider
+      await tester.pump();
+      await tester.pump(Duration.zero);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pump(const Duration(seconds: 3));
 
-      expect(find.text('BUDGETS'), findsOneWidget);
-      expect(find.text('Spending Limits'), findsOneWidget);
+      // Should no longer be loading
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      // l10n.budgets = 'Budgets' — shown in SliverAppBar title
+      expect(find.text('Budgets'), findsAtLeastNWidgets(1));
+      // l10n.liveTracking = 'Live Tracking' — shown in AppleSectionHeader
+      expect(find.text('Live Tracking'), findsOneWidget);
+      // Budget category names are uppercased in BudgetSection
       expect(find.text('FOOD'), findsOneWidget);
       expect(find.text('RENT'), findsOneWidget);
+      tester.view.resetPhysicalSize();
     });
 
     testWidgets('navigates to AddBudgetScreen when FAB is pressed',
@@ -86,7 +108,7 @@ void main() {
       when(() => mockRepo.getBudgets()).thenAnswer((_) async => <Budget>[]);
 
       await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+      await pumpSettle(tester);
 
       final fab = find.byType(FloatingActionButton);
       expect(fab, findsOneWidget);
@@ -94,7 +116,7 @@ void main() {
       await tester.tap(fab, warnIfMissed: false);
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      await tester.pumpAndSettle();
+      await pumpSettle(tester);
 
       expect(find.text('CATEGORY IDENTIFIER'), findsOneWidget);
     });

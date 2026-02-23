@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/screens/net_worth/net_worth_details.dart';
-import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 
 class AssetLiabilityCard extends ConsumerWidget {
   final MonthlySummary summary;
@@ -36,7 +37,7 @@ class AssetLiabilityCard extends ConsumerWidget {
             title: "ASSETS",
             value: totalAssets,
             color: semantic.income,
-            icon: Icons.account_balance_rounded,
+            icon: CupertinoIcons.house_fill,
             onTap: () async {
               await Navigator.push(
                   context,
@@ -55,7 +56,7 @@ class AssetLiabilityCard extends ConsumerWidget {
             title: "LIABILITIES",
             value: totalLiabilities,
             color: semantic.overspent,
-            icon: Icons.receipt_long_rounded,
+            icon: CupertinoIcons.doc_text_fill,
             onTap: () async {
               await Navigator.push(
                   context,
@@ -80,65 +81,52 @@ class AssetLiabilityCard extends ConsumerWidget {
     required VoidCallback onTap,
     required bool isPrivate,
   }) {
-    return HoverWrapper(
+    return AppleGlassCard(
       onTap: onTap,
       borderRadius: 24,
-      glowColor: color,
-      glowOpacity: 0.1,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: semantic.surfaceCombined.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: semantic.divider, width: 1.5),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, size: 14, color: color),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(width: 8), // Added space between icon and text
-                Expanded(
-                  // Changed Flexible to Expanded to ensure text takes available space
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w900,
-                      color: semantic.secondaryText,
-                      letterSpacing: 1.5,
-                    ),
+                child: Icon(icon, size: 16, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: semantic.secondaryText,
+                    letterSpacing: 1.5,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                CurrencyFormatter.format(value, isPrivate: isPrivate),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: color,
-                  letterSpacing: -0.5,
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              CurrencyFormatter.format(value, isPrivate: isPrivate),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                color: color,
+                letterSpacing: -0.5,
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

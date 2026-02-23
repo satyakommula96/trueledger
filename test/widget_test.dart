@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/main.dart';
@@ -42,10 +43,15 @@ void main() {
     );
 
     // Pump frames to allow initialization to finish
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1)); // Allow animations to start
 
     // Verify that the intro title is present
     expect(find.text('Track Your Wealth'), findsOneWidget);
+
+    // Clean up to avoid '!timersPending'
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump();
   });
 }

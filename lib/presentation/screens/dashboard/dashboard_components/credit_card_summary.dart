@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/theme/theme.dart';
@@ -44,7 +45,7 @@ class CreditCardSummary extends StatelessWidget {
                 color: semantic.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(Icons.credit_card_rounded,
+              child: Icon(CupertinoIcons.creditcard_fill,
                   size: 22, color: semantic.primary),
             ),
             const SizedBox(width: 20),
@@ -74,8 +75,8 @@ class CreditCardSummary extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded,
-                color: semantic.secondaryText.withValues(alpha: 0.5)),
+            Icon(CupertinoIcons.chevron_right,
+                size: 16, color: semantic.secondaryText.withValues(alpha: 0.5)),
           ],
         ),
       ),

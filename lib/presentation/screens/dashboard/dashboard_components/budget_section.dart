@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/domain/models/models.dart';
@@ -101,7 +102,7 @@ class BudgetSection extends ConsumerWidget {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.verified_rounded,
+                                        Icon(CupertinoIcons.checkmark_seal_fill,
                                             size: 10, color: semantic.success),
                                         const SizedBox(width: 4),
                                         Text(

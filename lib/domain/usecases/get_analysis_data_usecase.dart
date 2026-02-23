@@ -31,9 +31,9 @@ class GetAnalysisDataUseCase extends UseCase<AnalysisData, NoParams> {
       ]);
 
       return Success(AnalysisData(
-        budgets: (results[0] as List).cast<Budget>(),
-        trendData: (results[1] as List).cast<FinancialTrend>(),
-        categoryData: (results[2] as List).cast<CategorySpending>(),
+        budgets: results[0] as List<Budget>,
+        trendData: results[1] as List<FinancialTrend>,
+        categoryData: results[2] as List<CategorySpending>,
       ));
     } catch (e) {
       return Failure(

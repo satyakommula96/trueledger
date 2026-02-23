@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Ultra-Premium "Neo-Glass" Design System
+  // Apple-Inspired "Financial Clarity" Design System
   static AppColors darkColors = AppColors(
-    income: const Color(0xFF00E676), // Neon Spring Green
-    expense: const Color(0xFFE2E8F0), // Frost White
-    overspent: const Color(0xFFFF2A5F), // Radiant Crimson
-    warning: const Color(0xFFFFAB00), // Electric Amber
-    divider: const Color(0xFF1A1D2D), // Deep Midnight Border
-    secondaryText: const Color(0xFF8B95A5), // Muted Steel
-    surfaceCombined: const Color(0xFF0A0D14), // Ultra Deep Space
+    income: const Color(0xFF30D158), // System Green (Dark)
+    expense: const Color(0xFFE5E5EA), // System Gray 6 (Light)
+    overspent: const Color(0xFFFF453A), // System Red (Dark)
+    warning: const Color(0xFFFF9F0A), // System Orange (Dark)
+    divider: const Color(0xFF38383A), // System Gray 4 (Dark)
+    secondaryText: const Color(0xFF8E8E93), // System Gray
+    surfaceCombined: const Color(0xFF1C1C1E), // System Gray 6 (Dark)
     shimmer: Colors.white10,
-    text: const Color(0xFFFFFFFF), // Pure White
-    success: const Color(0xFF00E676),
-    primary: const Color(0xFF00F0FF), // Electric Cyan
+    text: const Color(0xFFFFFFFF), // Label
+    success: const Color(0xFF30D158),
+    primary: const Color(0xFF0A84FF), // System Blue (Dark)
   );
 
   static AppColors lightColors = AppColors(
-    income: const Color(0xFF00C853), // Deep Emerald
-    expense: const Color(0xFF1E293B), // Slate 800
-    overspent: const Color(0xFFE53935), // Ruby Red
-    warning: const Color(0xFFFF8F00), // Rich Amber
-    divider: const Color(0xFFEDF1F5), // Soft Frost
-    secondaryText: const Color(0xFF64748B), // Slate 500
-    surfaceCombined: const Color(0xFFFFFFFF), // Pure White
+    income: const Color(0xFF34C759), // System Green (Light)
+    expense: const Color(0xFF1C1C1E), // System Gray 6 (Dark)
+    overspent: const Color(0xFFFF3B30), // System Red (Light)
+    warning: const Color(0xFFFF9500), // System Orange (Light)
+    divider: const Color(0xFFC6C6C8), // System Gray 4 (Light)
+    secondaryText: const Color(0xFF8E8E93), // System Gray
+    surfaceCombined: const Color(0xFFFFFFFF), // Secondary Background
     shimmer: Colors.black12,
-    text: const Color(0xFF0F172A), // Slate 900
-    success: const Color(0xFF00C853),
-    primary: const Color(0xFF2962FF), // Royal Ultramarine
+    text: const Color(0xFF000000), // Label
+    success: const Color(0xFF34C759),
+    primary: const Color(0xFF007AFF), // System Blue (Light)
   );
 
   static ThemeData get darkTheme => ThemeData(
@@ -36,22 +36,23 @@ class AppTheme {
         extensions: [darkColors],
         colorScheme: ColorScheme.dark(
           primary: darkColors.primary,
-          onPrimary: Colors.black,
+          onPrimary: Colors.white,
           surface: darkColors.surfaceCombined,
           onSurface: darkColors.text,
           outline: darkColors.divider,
           error: darkColors.overspent,
         ),
-        scaffoldBackgroundColor: const Color(0xFF040508), // Pitch OLED Black
+        scaffoldBackgroundColor: const Color(0xFF000000), // Pure OLED Black
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: false,
           titleTextStyle: TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w900,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
             color: darkColors.text,
-            letterSpacing: -1.2,
+            letterSpacing: -0.5,
+            fontFamily: 'Outfit',
           ),
           iconTheme: IconThemeData(color: darkColors.text),
         ),
@@ -60,16 +61,16 @@ class AppTheme {
           color: darkColors.surfaceCombined,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(32), // Ultra rounded corners
-            side: BorderSide(color: darkColors.divider, width: 2.0),
+            borderRadius: BorderRadius.circular(20), // Apple Standard
+            side: BorderSide(color: darkColors.divider, width: 0.5),
           ),
         ),
         floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: darkColors.primary,
-          foregroundColor: Colors.black,
-          elevation: 8,
+          foregroundColor: Colors.white,
+          elevation: 4,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
@@ -94,36 +95,37 @@ class AppTheme {
           outline: lightColors.divider,
           error: lightColors.overspent,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF4F7FB), // Premium Cool Grey
+        scaffoldBackgroundColor: const Color(0xFFF2F2F7), // Apple System Gray 6
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: false,
           titleTextStyle: TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w900,
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
             color: lightColors.text,
-            letterSpacing: -1.2,
+            letterSpacing: -0.5,
+            fontFamily: 'Outfit',
           ),
           iconTheme: IconThemeData(color: lightColors.text),
         ),
         fontFamily: 'Outfit',
         cardTheme: CardThemeData(
           color: Colors.white,
-          elevation: 4,
-          shadowColor: lightColors.primary.withValues(alpha: 0.08),
+          elevation: 2,
+          shadowColor: Colors.black.withValues(alpha: 0.05),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(32), // Ultra rounded corners
+            borderRadius: BorderRadius.circular(20), // Apple Standard
             side: BorderSide(
-                color: lightColors.divider.withValues(alpha: 0.5), width: 1.5),
+                color: lightColors.divider.withValues(alpha: 0.5), width: 0.5),
           ),
         ),
         floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: lightColors.primary,
           foregroundColor: Colors.white,
-          elevation: 8,
+          elevation: 4,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
