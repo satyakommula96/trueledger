@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,8 +105,8 @@ void main() {
 
       await tester.pump(const Duration(seconds: 2));
 
-      expect(find.byIcon(Icons.account_balance_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.receipt_long_rounded), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.house_fill), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.doc_text_fill), findsOneWidget);
     });
   });
 }

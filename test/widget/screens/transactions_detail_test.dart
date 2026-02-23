@@ -66,7 +66,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
 
-    expect(find.text('TEST RANGE'), findsOneWidget);
+    expect(find.text('Test Range'), findsOneWidget);
     expect(find.text('FOOD'), findsOneWidget);
     expect(find.text('SALARY'), findsOneWidget);
     expect(find.textContaining('50'), findsWidgets);

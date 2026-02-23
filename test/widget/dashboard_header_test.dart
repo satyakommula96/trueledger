@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -67,8 +68,7 @@ void main() {
     await tester.pump(const Duration(seconds: 2));
 
     // Greeting changes based on time, but it should contain "Test User"
-    expect(find.textContaining('TEST USER'), findsOneWidget);
-    expect(find.text('TrueLedger'), findsOneWidget);
+    expect(find.textContaining('Test User'), findsOneWidget);
   });
 
   testWidgets('toggles privacy mode when visibility icon is tapped',
@@ -77,7 +77,7 @@ void main() {
     // Wait for initial fade in
     await tester.pump(const Duration(seconds: 2));
 
-    final visibilityIconFinder = find.byIcon(Icons.visibility_rounded);
+    final visibilityIconFinder = find.byIcon(CupertinoIcons.eye_fill);
     expect(visibilityIconFinder, findsOneWidget);
 
     await tester.tap(visibilityIconFinder);
@@ -85,8 +85,8 @@ void main() {
     await tester
         .pump(const Duration(milliseconds: 500)); // Allow animation to play
 
-    // After toggle, it should show visibility_off
-    expect(find.byIcon(Icons.visibility_off_rounded), findsOneWidget);
+    // After toggle, it should show eye_slash_fill
+    expect(find.byIcon(CupertinoIcons.eye_slash_fill), findsOneWidget);
     verify(() => mockPrefs.setBool('is_private_mode', true)).called(1);
   });
 
@@ -97,7 +97,8 @@ void main() {
         .pumpWidget(createWidgetUnderTest(onLoad: () => onLoadCalledCount++));
     await tester.pump(const Duration(seconds: 2));
 
-    final settingsIconFinder = find.byIcon(Icons.sort_rounded);
+    // The settings icon is now the circular avatar with initial
+    final settingsIconFinder = find.text('T');
     expect(settingsIconFinder, findsOneWidget);
 
     await tester.tap(settingsIconFinder);
@@ -106,8 +107,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     // Verify we are on Settings screen (or at least it pushed)
-    // We can check for some text in SettingsScreen
-    expect(find.text('SETTINGS'), findsOneWidget);
+    expect(find.text('Settings'), findsOneWidget);
 
     // Better: just pop
     await tester.pageBack();
@@ -127,22 +127,23 @@ void main() {
         .pumpWidget(createWidgetUnderTest(onLoad: () => onLoadCalledCount++));
     await tester.pump(const Duration(seconds: 2));
 
-    await tester.tap(find.byIcon(Icons.sort_rounded));
+    // The settings icon is now the circular avatar with initial
+    await tester.tap(find.text('T'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
     // Verify we are on Settings screen
-    expect(find.text('SETTINGS'), findsOneWidget);
+    expect(find.text('Settings'), findsOneWidget);
 
     // Navigate back - simulating a return without modification
     // In real usage, onLoad is only called when Navigator.pop returns true
     // For this test, we just verify the navigation works
-    Navigator.of(tester.element(find.text('SETTINGS'))).pop();
+    Navigator.of(tester.element(find.text('Settings'))).pop();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    // Should be back on dashboard
-    expect(find.text('TrueLedger'), findsOneWidget);
+    // Should be back on dashboard (Test User greeting should be visible)
+    expect(find.textContaining('Test User'), findsOneWidget);
     // onLoad should NOT have been called since we didn't pass true
     expect(onLoadCalledCount, 0);
   });

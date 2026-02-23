@@ -80,7 +80,7 @@ void main() {
     expect(find.text('Secure & Private'), findsOneWidget);
 
     // 3. Verify Name Input is present
-    expect(find.text('What should we call you?'), findsOneWidget);
+    expect(find.text('WHAT SHOULD WE CALL YOU?'), findsOneWidget);
     final nameField = find.byType(TextField);
     expect(nameField, findsOneWidget);
 

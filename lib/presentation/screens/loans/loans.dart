@@ -112,7 +112,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
               size: 64, color: semantic.divider.withValues(alpha: 0.5)),
           const SizedBox(height: 24),
           Text(
-            l10n.noBorrowings,
+            l10n.noActiveBorrowings,
             style: TextStyle(
                 color: semantic.text,
                 fontSize: 18,
@@ -174,7 +174,7 @@ class _LoansScreenState extends ConsumerState<LoansScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            l.name,
+                            l.name.toUpperCase(),
                             style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w700,

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/domain/repositories/i_financial_repository.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/screens/transactions/monthly_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trueledger/core/providers/shared_prefs_provider.dart';
 import 'package:trueledger/domain/models/models.dart';
+import '../../../helpers/test_wrapper.dart';
 
 class MockFinancialRepository extends Mock implements IFinancialRepository {}
 
@@ -28,15 +27,12 @@ void main() {
   });
 
   Widget createSubject() {
-    return ProviderScope(
+    return wrapWidget(
+      const MonthlyHistoryScreen(),
       overrides: [
         financialRepositoryProvider.overrideWithValue(mockRepo),
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
       ],
-      child: MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const MonthlyHistoryScreen(),
-      ),
     );
   }
 
@@ -47,7 +43,7 @@ void main() {
     await tester.pumpWidget(createSubject());
     await tester.pumpAndSettle();
 
-    expect(find.text('LEDGER HISTORY'), findsOneWidget);
+    expect(find.text('Monthly History'), findsOneWidget);
     expect(find.text('2023'), findsOneWidget);
     expect(find.text('2024'), findsOneWidget);
     expect(find.text('NO PERIODS TRACKED.'), findsOneWidget);
@@ -78,9 +74,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('JANUARY 2023'), findsOneWidget);
-    expect(find.text('SURPLUS PERIOD'), findsOneWidget);
+    expect(find.text('SURPLUS'), findsOneWidget);
     expect(find.text('FEBRUARY 2023'), findsOneWidget);
-    expect(find.text('DEFICIT PERIOD'), findsOneWidget);
+    expect(find.text('DEFICIT'), findsOneWidget);
   });
 
   testWidgets('MonthlyHistoryScreen selects year and reloads', (tester) async {
