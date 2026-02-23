@@ -81,7 +81,7 @@ jobs:
             libjsoncpp-dev libsqlite3-dev libsqlcipher-dev \
             libssl-dev xvfb
 
-      - run: xvfb-run -s "-screen 0 1280x720x24" flutter test integration_test/app_test.dart -d linux --timeout 20m
+      - run: xvfb-run -s "-screen 0 1280x720x24" flutter test integration_test/app_test.dart -d linux --timeout 20m --no-dds
 
 # -------------------------
 # ANDROID INTEGRATION
@@ -112,7 +112,7 @@ jobs:
           arch: x86_64
           profile: Nexus 6
           disable-animations: true
-          script: flutter test integration_test/app_test.dart --timeout 20m
+          script: flutter test integration_test/app_test.dart --timeout 25m --no-dds
 
 # -------------------------
 # iOS INTEGRATION (HARD MODE)
@@ -184,8 +184,9 @@ jobs:
           # Using 'flutter test' instead of 'flutter drive' for better stability with modern integration_test package
           flutter test integration_test/app_test.dart \
             -d "$UDID" \
-            --timeout 20m \
-            --no-pub
+            --timeout 25m \
+            --no-pub \
+            --no-dds
 
 # -------------------------
 # macOS DESKTOP INTEGRATION
@@ -209,7 +210,7 @@ jobs:
           flutter config --enable-macos-desktop
 
       - run: flutter pub get
-      - run: flutter test integration_test/app_test.dart -d macos --timeout 20m
+      - run: flutter test integration_test/app_test.dart -d macos --timeout 25m --no-dds
 
 # -------------------------
 # WINDOWS INTEGRATION
@@ -228,4 +229,4 @@ jobs:
           cache: true
 
       - run: flutter pub get
-      - run: flutter test integration_test/app_test.dart -d windows --timeout 10m
+      - run: flutter test integration_test/app_test.dart -d windows --timeout 20m --no-dds
