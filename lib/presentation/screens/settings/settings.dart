@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 
 import 'package:trueledger/main.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
@@ -26,7 +27,6 @@ import 'package:trueledger/domain/services/intelligence_service.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/insights_provider.dart';
 import 'package:trueledger/presentation/providers/analysis_provider.dart';
-import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/domain/services/biometric_service.dart';
 import 'package:trueledger/core/providers/locale_provider.dart';
 import 'package:trueledger/l10n/app_localizations.dart';
@@ -1235,264 +1235,271 @@ class SettingsScreen extends ConsumerWidget {
     final userName = ref.watch(userProvider);
     final l10n = AppLocalizations.of(context)!;
     final biometricService = ref.watch(biometricServiceProvider);
-
     final currentLocale = ref.watch(localeProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settings.toUpperCase()),
-        centerTitle: true,
-      ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(
-            20, 16, 20, 48 + MediaQuery.of(context).padding.bottom),
-        children: [
-          _buildOption(
-            context,
-            l10n.nameLabel,
-            userName,
-            Icons.person_outline_rounded,
-            semantic.primary,
-            () => _showNamePicker(context, ref, semantic),
-            semantic,
-          ),
-          const SizedBox(height: 20),
-          _buildSectionHeader(l10n.trustAndControl.toUpperCase(), semantic),
-          const SizedBox(height: 12),
-          _buildOption(
-            context,
-            l10n.trustCenter.toUpperCase(),
-            l10n.trustCenterSubtitle,
-            Icons.verified_user_outlined,
-            semantic.success,
-            () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const TrustCenterScreen())),
-            semantic,
-          ),
-          const SizedBox(height: 16),
-          _buildOption(
-            context,
-            l10n.appSecurity.toUpperCase(),
-            l10n.appSecuritySubtitle,
-            Icons.lock_outline_rounded,
-            semantic.overspent,
-            () => _setupPin(context, semantic),
-            semantic,
-          ),
-          const SizedBox(height: 16),
-          FutureBuilder<bool>(
-            future: biometricService.canCheckBiometrics(),
-            builder: (context, snapshot) {
-              if (snapshot.data == true) {
-                return _buildOption(
+    return AppleScaffold(
+      title: l10n.settings,
+      subtitle: "Preferences & Security",
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              _buildOption(
+                context,
+                l10n.nameLabel,
+                userName,
+                Icons.person_rounded,
+                semantic.primary,
+                () => _showNamePicker(context, ref, semantic),
+                semantic,
+              ),
+              const SizedBox(height: 24),
+              _buildSectionHeader(l10n.trustAndControl, semantic),
+              const SizedBox(height: 8),
+              _buildOption(
+                context,
+                l10n.trustCenter,
+                l10n.trustCenterSubtitle,
+                Icons.verified_user_rounded,
+                semantic.success,
+                () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const TrustCenterScreen())),
+                semantic,
+              ),
+              const SizedBox(height: 12),
+              _buildOption(
+                context,
+                l10n.appSecurity,
+                l10n.appSecuritySubtitle,
+                Icons.lock_rounded,
+                semantic.overspent,
+                () => _setupPin(context, semantic),
+                semantic,
+              ),
+              const SizedBox(height: 12),
+              FutureBuilder<bool>(
+                future: biometricService.canCheckBiometrics(),
+                builder: (context, snapshot) {
+                  if (snapshot.data == true) {
+                    return _buildOption(
+                      context,
+                      l10n.biometrics,
+                      l10n.enableBiometrics,
+                      Icons.fingerprint_rounded,
+                      Colors.blueGrey,
+                      () async {
+                        final enabled = biometricService.isBiometricEnabled;
+                        await biometricService.setBiometricEnabled(!enabled);
+                        ref.invalidate(biometricServiceProvider);
+                      },
+                      semantic,
+                      trailing: SizedBox(
+                        height: 24,
+                        child: Switch(
+                          value: biometricService.isBiometricEnabled,
+                          onChanged: (val) async {
+                            await biometricService.setBiometricEnabled(val);
+                            ref.invalidate(biometricServiceProvider);
+                          },
+                          activeThumbColor: semantic.primary,
+                        ),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+              const SizedBox(height: 24),
+              _buildSectionHeader(l10n.personalization, semantic),
+              const SizedBox(height: 8),
+              _buildOption(
+                context,
+                l10n.appearance,
+                l10n.appearanceSubtitle,
+                Icons.dark_mode_rounded,
+                semantic.primary,
+                () => _showThemePicker(context, ref, semantic),
+                semantic,
+              ),
+              const SizedBox(height: 12),
+              _buildOption(
+                context,
+                l10n.language,
+                currentLocale.languageCode == 'en'
+                    ? 'English'
+                    : 'తెలుగు (Telugu)',
+                Icons.translate_rounded,
+                Colors.deepPurple,
+                () => _showLanguagePicker(context, ref, semantic),
+                semantic,
+              ),
+              const SizedBox(height: 12),
+              _buildOption(
+                context,
+                l10n.personalizationHeader,
+                l10n.personalizationSubtitle,
+                Icons.auto_awesome_rounded,
+                Colors.pinkAccent,
+                () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            const PersonalizationSettingsScreen())),
+                semantic,
+              ),
+              const SizedBox(height: 12),
+              _buildOption(
+                context,
+                l10n.currency,
+                "${l10n.currencySubtitle} (${CurrencyFormatter.symbol})",
+                Icons.payments_rounded,
+                Colors.teal,
+                () => _showCurrencyPicker(context, semantic),
+                semantic,
+              ),
+              const SizedBox(height: 12),
+              _buildOption(
+                context,
+                l10n.manageCategories,
+                l10n.manageCategoriesSubtitle,
+                Icons.category_rounded,
+                Colors.orange,
+                () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ManageCategoriesScreen())),
+                semantic,
+              ),
+              const SizedBox(height: 24),
+              _buildSectionHeader(l10n.dataTools, semantic),
+              const SizedBox(height: 8),
+              _buildOption(
+                context,
+                l10n.dataExport,
+                l10n.dataExportSubtitle,
+                Icons.ios_share_rounded,
+                semantic.primary,
+                () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const DataExportScreen())),
+                semantic,
+              ),
+              if (kDebugMode) ...[
+                const SizedBox(height: 12),
+                _buildOption(
                   context,
-                  l10n.biometrics,
-                  l10n.enableBiometrics,
-                  Icons.fingerprint_rounded,
-                  Colors.blueGrey,
-                  () async {
-                    final enabled = biometricService.isBiometricEnabled;
-                    await biometricService.setBiometricEnabled(!enabled);
-                    ref.invalidate(biometricServiceProvider);
-                  },
+                  l10n.dataSeeding,
+                  l10n.seedDataSubtitle,
+                  Icons.science_rounded,
+                  Colors.amber,
+                  () => _seedData(context, ref, semantic),
                   semantic,
-                  trailing: Switch(
-                    value: biometricService.isBiometricEnabled,
-                    onChanged: (val) async {
-                      await biometricService.setBiometricEnabled(val);
-                      ref.invalidate(biometricServiceProvider);
-                    },
-                    activeThumbColor: semantic.primary,
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-          const SizedBox(height: 20),
-          _buildSectionHeader(l10n.personalization.toUpperCase(), semantic),
-          const SizedBox(height: 12),
-          _buildOption(
-            context,
-            l10n.appearance.toUpperCase(),
-            l10n.appearanceSubtitle,
-            Icons.dark_mode_outlined,
-            semantic.primary,
-            () => _showThemePicker(context, ref, semantic),
-            semantic,
-          ),
-          const SizedBox(height: 16),
-          _buildOption(
-            context,
-            l10n.language,
-            currentLocale.languageCode == 'en' ? 'ENGLISH' : 'తెలుగు (TELUGU)',
-            Icons.translate_rounded,
-            Colors.deepPurple,
-            () => _showLanguagePicker(context, ref, semantic),
-            semantic,
-          ),
-          const SizedBox(height: 16),
-          _buildOption(
-            context,
-            l10n.personalizationHeader.toUpperCase(),
-            l10n.personalizationSubtitle,
-            Icons.auto_awesome_outlined,
-            Colors.pinkAccent,
-            () => Navigator.push(
+                ),
+              ],
+              const SizedBox(height: 12),
+              _buildOption(
                 context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        const PersonalizationSettingsScreen())),
-            semantic,
+                l10n.resetAllData,
+                l10n.resetApplicationSubtitle,
+                Icons.refresh_rounded,
+                semantic.overspent,
+                () => _resetData(context, ref, semantic),
+                semantic,
+              ),
+              const SizedBox(height: 48),
+              _buildFooter(ref, semantic, context),
+            ]),
           ),
-          const SizedBox(height: 16),
-          _buildOption(
-            context,
-            l10n.currency.toUpperCase(),
-            "${l10n.currencySubtitle} (${CurrencyFormatter.symbol})",
-            Icons.payments_outlined,
-            Colors.teal,
-            () => _showCurrencyPicker(context, semantic),
-            semantic,
-          ),
-          const SizedBox(height: 16),
-          _buildOption(
-            context,
-            l10n.manageCategories.toUpperCase(),
-            l10n.manageCategoriesSubtitle,
-            Icons.category_outlined,
-            Colors.orange,
-            () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const ManageCategoriesScreen())),
-            semantic,
-          ),
-          const SizedBox(height: 20),
-          _buildSectionHeader(l10n.dataTools.toUpperCase(), semantic),
-          const SizedBox(height: 12),
-          _buildOption(
-            context,
-            l10n.dataExport.toUpperCase(),
-            l10n.dataExportSubtitle,
-            Icons.ios_share_rounded,
-            semantic.primary,
-            () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const DataExportScreen())),
-            semantic,
-          ),
-          const SizedBox(height: 16),
-          if (kDebugMode) ...[
-            _buildOption(
-              context,
-              l10n.dataSeeding.toUpperCase(),
-              l10n.seedDataSubtitle,
-              Icons.science_rounded,
-              Colors.amber,
-              () => _seedData(context, ref, semantic),
-              semantic,
-            ),
-            const SizedBox(height: 16),
-          ],
-          _buildOption(
-            context,
-            l10n.resetAllData.toUpperCase(),
-            l10n.resetApplicationSubtitle,
-            Icons.refresh_rounded,
-            semantic.overspent,
-            () => _resetData(context, ref, semantic),
-            semantic,
-          ),
-          const SizedBox(height: 48),
-          _buildFooter(ref, semantic, context),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildSectionHeader(String title, AppColors semantic) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8, bottom: 4),
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
-        title,
+        title.toUpperCase(),
         style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w900,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
           color: semantic.secondaryText,
-          letterSpacing: 1.5,
+          letterSpacing: 1.2,
         ),
       ),
     );
   }
 
   Widget _buildFooter(WidgetRef ref, AppColors semantic, BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          Text("TRUELEDGER",
-              style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 12,
-                  letterSpacing: 4,
-                  color: semantic.secondaryText.withValues(alpha: 0.5))),
-          const SizedBox(height: 8),
-          ref.watch(appVersionProvider).when(
-                data: (version) => Text("VERSION $version",
-                    style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w900,
-                        color: semantic.secondaryText.withValues(alpha: 0.4))),
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => Text("VERSION 1.1.0",
-                    style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w900,
-                        color: semantic.secondaryText.withValues(alpha: 0.4))),
-              ),
-          const SizedBox(height: 24),
-          Text(
-            "TrueLedger stores all data locally on your device.\nNo data is transmitted or stored on external servers.",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 10,
-                color: semantic.secondaryText.withValues(alpha: 0.6),
-                fontWeight: FontWeight.w700),
+    return Column(
+      children: [
+        Text(
+          "TRUELEDGER",
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 12,
+            letterSpacing: 4,
+            color: semantic.secondaryText.withValues(alpha: 0.3),
           ),
-          const SizedBox(height: 32),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 24,
-            runSpacing: 12,
-            children: [
-              _buildFooterLink("TRUST GUARANTEES", () {
-                Navigator.push(
+        ),
+        const SizedBox(height: 8),
+        ref.watch(appVersionProvider).when(
+              data: (version) => Text("Version $version",
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: semantic.secondaryText.withValues(alpha: 0.4))),
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => Text("Version 1.2.0",
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: semantic.secondaryText.withValues(alpha: 0.4))),
+            ),
+        const SizedBox(height: 40),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 24,
+          runSpacing: 12,
+          children: [
+            _buildFooterLink(
+                "Trust Center",
+                () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) => const TrustCenterScreen()));
-              }, semantic),
-              _buildFooterLink("PRIVACY POLICY", () {
-                launchUrl(Uri.parse(
-                    "https://satyakommula96.github.io/trueledger/privacy/"));
-              }, semantic),
-              _buildFooterLink("LICENSES", () {
-                showLicensePage(
-                  context: context,
-                  applicationName: "TrueLedger",
-                  applicationVersion: ref.read(appVersionProvider).value ?? "",
-                  applicationIcon: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Image.asset('assets/icon/trueledger_icon.png',
-                        width: 48, height: 48),
-                  ),
-                );
-              }, semantic),
-            ],
+                        builder: (_) => const TrustCenterScreen())),
+                semantic),
+            _buildFooterLink(
+                "Privacy Policy",
+                () =>
+                    launchUrl(Uri.parse("https://trueledger.finance/privacy")),
+                semantic),
+            _buildFooterLink("Licenses", () {
+              showLicensePage(
+                context: context,
+                applicationName: "TrueLedger",
+                applicationVersion: ref.read(appVersionProvider).value ?? "",
+              );
+            }, semantic),
+          ],
+        ),
+        const SizedBox(height: 32),
+        Text(
+          "TrueLedger is privacy-first. All your financial data stays on your device and is never uploaded to any cloud.",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11,
+            color: semantic.secondaryText.withValues(alpha: 0.5),
+            fontWeight: FontWeight.w500,
+            height: 1.4,
           ),
-        ],
-      ).animate().fadeIn(delay: 400.ms),
-    );
+        ),
+      ],
+    ).animate().fadeIn(duration: 600.ms);
   }
 
   Widget _buildFooterLink(String text, VoidCallback onTap, AppColors semantic) {
@@ -1501,11 +1508,9 @@ class SettingsScreen extends ConsumerWidget {
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 10,
+          fontSize: 12,
           color: semantic.primary,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 0.5,
-          decoration: TextDecoration.underline,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -1514,55 +1519,56 @@ class SettingsScreen extends ConsumerWidget {
   Widget _buildOption(BuildContext context, String title, String sub,
       IconData icon, Color color, VoidCallback onTap, AppColors semantic,
       {Widget? trailing}) {
-    return HoverWrapper(
-      onTap: onTap,
-      borderRadius: 28,
-      glowColor: color.withValues(alpha: 0.3),
-      glowOpacity: 0.05,
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: semantic.surfaceCombined.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: semantic.divider, width: 1.5),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16)),
-              child: Icon(icon, color: color, size: 22),
+    return AppleGlassCard(
+      padding: EdgeInsets.zero,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12)),
+                  child: Icon(icon, color: color, size: 22),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: semantic.text,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        sub,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: semantic.secondaryText),
+                      ),
+                    ],
+                  ),
+                ),
+                trailing ??
+                    Icon(Icons.chevron_right_rounded,
+                        color: semantic.divider, size: 24),
+              ],
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title.toUpperCase(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          color: semantic.text,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 14,
-                          letterSpacing: 0.5)),
-                  const SizedBox(height: 4),
-                  Text(sub,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: semantic.secondaryText)),
-                ],
-              ),
-            ),
-            trailing ??
-                Icon(Icons.chevron_right_rounded,
-                    color: semantic.divider, size: 24),
-          ],
+          ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 library;
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -20,6 +21,10 @@ void main() {
     debugPrint('INTEGRATION_TEST_LOG: Starting testWidgets...');
 
     // 1. Setup mock environment early
+    debugPrint('INTEGRATION_TEST_LOG: Platform: ${Platform.operatingSystem}');
+    debugPrint(
+        'INTEGRATION_TEST_LOG: Environment: ${Platform.environment.keys.take(5).toList()}');
+
     // Note: setMockInitialValues should be called before app.main()
     // We only mock SharedPreferences to ensure a clean state
     SharedPreferences.setMockInitialValues({'intro_seen': false});
@@ -28,6 +33,7 @@ void main() {
     // 2. Launch the app
     try {
       debugPrint('INTEGRATION_TEST_LOG: Invoking app.main()...');
+      // Ensure we don't have multiple bindings trying to initialized
       await app.main();
       debugPrint('INTEGRATION_TEST_LOG: app.main() completed.');
     } catch (e, stack) {

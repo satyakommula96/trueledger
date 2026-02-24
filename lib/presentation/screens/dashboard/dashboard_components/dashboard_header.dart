@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,215 +44,95 @@ class DashboardHeader extends ConsumerWidget {
 
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        padding: const EdgeInsets.fromLTRB(20, 32, 20, 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        getGreeting().toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
-                          color: semantic.secondaryText,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          userName.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
-                            color: semantic.text,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    getGreeting(),
+                    style: TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w700,
+                      color: semantic.text,
+                      letterSpacing: -1.0,
+                    ),
                   )
                       .animate()
-                      .fadeIn(duration: 400.ms)
-                      .slideX(begin: -0.1, end: 0),
-                  const SizedBox(height: 4),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      children: [
-                        Text(
-                          l10n.appTitle,
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            color: semantic.text,
-                            letterSpacing: -0.8,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          key: const ValueKey('dashboard_glowing_dot'),
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: semantic.primary,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: semantic.primary.withValues(alpha: 0.5),
-                                blurRadius: 4,
-                                spreadRadius: 1,
-                              ),
-                            ],
-                          ),
-                        )
-                            .animate(
-                                onPlay: (controller) =>
-                                    controller.repeat(reverse: true))
-                            .scale(
-                              duration: 1500.ms,
-                              begin: const Offset(0.8, 0.8),
-                              end: const Offset(1.3, 1.3),
-                              curve: Curves.easeInOut,
-                            )
-                            .blur(
-                              duration: 1500.ms,
-                              begin: const Offset(0, 0),
-                              end: const Offset(8, 8),
-                              curve: Curves.easeInOut,
-                            ),
-                      ],
+                      .fadeIn(duration: 600.ms)
+                      .slideY(begin: 0.1, end: 0),
+                  const SizedBox(height: 2),
+                  Text(
+                    userName,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: semantic.secondaryText,
                     ),
-                  ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1, end: 0),
+                  ).animate(delay: 100.ms).fadeIn(),
                 ],
               ),
             ),
-            Flexible(
-              flex: 1,
-              child: Wrap(
-                alignment: WrapAlignment.end,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (activeStreak > 0)
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              backgroundColor: semantic.surfaceCombined,
-                              title: Row(
-                                children: [
-                                  Icon(Icons.whatshot_rounded,
-                                      color: Colors.orange, size: 24),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text(l10n.dailyStreak,
-                                        style: TextStyle(color: semantic.text)),
-                                  ),
-                                ],
-                              ),
-                              content: Text(
-                                l10n.streakMessage(activeStreak),
-                                style: TextStyle(color: semantic.secondaryText),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: Text(l10n.gotIt,
-                                      style:
-                                          TextStyle(color: semantic.primary)),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: hasLoggedToday
-                                ? Colors.orange.withValues(alpha: 0.1)
-                                : semantic.surfaceCombined,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                                color: hasLoggedToday
-                                    ? Colors.orange.withValues(alpha: 0.5)
-                                    : semantic.divider),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.whatshot_rounded,
-                                  size: 14,
-                                  color: hasLoggedToday
-                                      ? Colors.orange
-                                      : semantic.secondaryText),
-                              const SizedBox(width: 4),
-                              Text(
-                                "$activeStreak",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  color: hasLoggedToday
-                                      ? Colors.orange
-                                      : semantic.secondaryText,
-                                ),
-                              ),
-                            ],
-                          ),
+            Row(
+              children: [
+                _buildHeaderAction(
+                  context,
+                  icon: isPrivacy
+                      ? CupertinoIcons.eye_slash_fill
+                      : CupertinoIcons.eye_fill,
+                  onTap: () => ref.read(privacyProvider.notifier).toggle(),
+                  color: isPrivacy ? semantic.primary : semantic.secondaryText,
+                  semantic: semantic,
+                ),
+                const SizedBox(width: 8),
+                _buildHeaderAction(
+                  context,
+                  badgeCount: notificationCount,
+                  icon: CupertinoIcons.bell,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const NotificationsScreen()),
+                  ),
+                  semantic: semantic,
+                ),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: () async {
+                    final shouldReload = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    );
+                    if (shouldReload == true) onLoad();
+                  },
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: semantic.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: semantic.primary.withValues(alpha: 0.2),
+                          width: 1.5),
+                    ),
+                    child: Center(
+                      child: Text(
+                        userName.isNotEmpty ? userName[0].toUpperCase() : '?',
+                        style: TextStyle(
+                          color: semantic.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
                         ),
                       ),
-                    ).animate().fadeIn().slideX(begin: 0.1, end: 0),
-                  _buildHeaderAction(
-                    context,
-                    icon: isPrivacy
-                        ? Icons.visibility_off_rounded
-                        : Icons.visibility_rounded,
-                    onTap: () => ref.read(privacyProvider.notifier).toggle(),
-                    color:
-                        isPrivacy ? semantic.primary : semantic.secondaryText,
-                    semantic: semantic,
-                  ),
-                  _buildHeaderAction(
-                    context,
-                    badgeCount: notificationCount,
-                    icon: Icons.notifications_none_rounded,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const NotificationsScreen()),
                     ),
-                    semantic: semantic,
                   ),
-                  _buildHeaderAction(
-                    context,
-                    icon: Icons.sort_rounded,
-                    onTap: () async {
-                      final shouldReload = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const SettingsScreen()),
-                      );
-                      if (shouldReload == true) onLoad();
-                    },
-                    semantic: semantic,
-                  ),
-                ],
-              ),
-            ).animate().fadeIn(delay: 400.ms),
+                ),
+              ],
+            ).animate(delay: 200.ms).fadeIn(),
           ],
         ),
       ),

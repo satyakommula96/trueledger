@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/transactions/add_expense.dart';
 import 'package:trueledger/presentation/screens/loans/add_loan.dart';
 import 'package:trueledger/presentation/screens/cards/add_card.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 
 class QuickAddActions extends StatelessWidget {
   final AppColors semantic;
@@ -19,19 +21,22 @@ class QuickAddActions extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("QUICK ADD",
-            style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                color: Colors.grey,
-                letterSpacing: 2)),
+        Text(
+          "QUICK ADD",
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            color: semantic.secondaryText,
+            letterSpacing: 2,
+          ),
+        ),
         const SizedBox(height: 16),
         Row(
           children: [
             _buildAction(
               context,
               "Income",
-              Icons.add_chart_rounded,
+              CupertinoIcons.checkmark_circle_fill,
               semantic.income,
               () => _navigate(
                   context,
@@ -42,7 +47,7 @@ class QuickAddActions extends StatelessWidget {
             _buildAction(
               context,
               "Expense",
-              Icons.shopping_cart_checkout_rounded,
+              CupertinoIcons.minus_circle_fill,
               semantic.overspent,
               () => _navigate(
                   context,
@@ -58,8 +63,8 @@ class QuickAddActions extends StatelessWidget {
             _buildAction(
               context,
               "Asset",
-              Icons.trending_up_rounded,
-              Colors.blue,
+              CupertinoIcons.graph_circle_fill,
+              semantic.primary,
               () => _navigate(
                   context,
                   const AddExpense(
@@ -69,8 +74,8 @@ class QuickAddActions extends StatelessWidget {
             _buildAction(
               context,
               "Liability",
-              Icons.account_balance_rounded,
-              Colors.orange,
+              CupertinoIcons.building_2_fill,
+              semantic.warning,
               () => _showLiabilityOptions(context),
             ),
           ],
@@ -88,11 +93,8 @@ class QuickAddActions extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardTheme.color,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        ),
+      builder: (context) => AppleGlassCard(
+        borderRadius: 32,
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -101,21 +103,30 @@ class QuickAddActions extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.3),
+                color: semantic.secondaryText.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
+              ),
+              child: Icon(CupertinoIcons.chevron_right,
+                  size: 14, color: semantic.secondaryText),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              "ADD LIABILITY",
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+                color: semantic.text,
               ),
             ),
             const SizedBox(height: 24),
-            const Text("ADD LIABILITY",
-                style:
-                    TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
-            const SizedBox(height: 24),
             ListTile(
               leading:
-                  const Icon(Icons.credit_card_rounded, color: Colors.orange),
-              title: const Text("Credit Card",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text("Add a new card with balance"),
+                  Icon(CupertinoIcons.creditcard_fill, color: semantic.warning),
+              title: Text("Credit Card",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: semantic.text)),
+              subtitle: Text("Add a new card with balance",
+                  style: TextStyle(color: semantic.secondaryText)),
               onTap: () {
                 Navigator.pop(context);
                 _navigate(context, const AddCreditCardScreen());
@@ -123,10 +134,12 @@ class QuickAddActions extends StatelessWidget {
             ),
             ListTile(
               leading:
-                  const Icon(Icons.handshake_rounded, color: Colors.orange),
-              title: const Text("Bank/Personal Loan",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text("Add a new loan or borrowing"),
+                  Icon(CupertinoIcons.person_2_fill, color: semantic.warning),
+              title: Text("Bank/Personal Loan",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: semantic.text)),
+              subtitle: Text("Add a new loan or borrowing",
+                  style: TextStyle(color: semantic.secondaryText)),
               onTap: () {
                 Navigator.pop(context);
                 _navigate(context, const AddLoanScreen());
@@ -142,76 +155,46 @@ class QuickAddActions extends StatelessWidget {
   Widget _buildAction(BuildContext context, String label, IconData icon,
       Color color, VoidCallback onTap) {
     return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.15),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Theme.of(context).cardTheme.color,
-          borderRadius: BorderRadius.circular(24),
-          child: RepaintBoundary(
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(24),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      child: AppleGlassCard(
+        padding: EdgeInsets.zero,
+        borderRadius: 24,
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: color.withValues(alpha: 0.2)),
                   gradient: LinearGradient(
-                    colors: [
-                      color.withValues(alpha: 0.08),
-                      color.withValues(alpha: 0.02),
-                    ],
+                    colors: [color, color.withValues(alpha: 0.8)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [color, color.withValues(alpha: 0.8)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: color.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Icon(icon, size: 16, color: Colors.white),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        label,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: Theme.of(context).colorScheme.onSurface,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
+                child: Icon(icon, size: 16, color: Colors.white),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: semantic.text,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

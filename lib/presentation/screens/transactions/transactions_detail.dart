@@ -8,7 +8,7 @@ import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 import 'package:trueledger/presentation/screens/transactions/month_detail_components/category_icon.dart';
 import 'package:trueledger/presentation/components/empty_state.dart';
 import 'package:trueledger/presentation/screens/transactions/month_detail_components/month_detail_header.dart';
@@ -111,13 +111,9 @@ class _TransactionsDetailScreenState
     final isPrivate = ref.watch(privacyProvider);
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: semantic.surfaceCombined,
-      appBar: AppBar(
-        title: Text(widget.title.toUpperCase()),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+    return AppleScaffold(
+      title: widget.title,
+      subtitle: typeFilter == "All" ? l10n.allTransactions : typeFilter,
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final added = await showModalBottomSheet<bool>(
@@ -132,32 +128,45 @@ class _TransactionsDetailScreenState
         },
         backgroundColor: semantic.primary,
         foregroundColor: Colors.white,
+        elevation: 4,
         child: const Icon(Icons.add_rounded, size: 32),
       ),
-      body: Column(
-        children: [
-          _buildSummaryHeader(semantic, isPrivate, l10n),
-          MonthDetailHeader(
-            searchQuery: searchQuery,
-            typeFilter: typeFilter,
-            showFilters: widget.showFilters,
-            onSearchChanged: (v) => setState(() => searchQuery = v),
-            onFilterChanged: (v) => setState(() => typeFilter = v),
-            semantic: semantic,
-          ).animate().fadeIn(delay: 100.ms),
-          Expanded(
-            child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(color: semantic.primary))
-                : _error != null
-                    ? AppErrorView(
-                        error: _error!,
-                        onRetry: _loadData,
-                      )
-                    : _buildLedgerList(semantic, isPrivate, l10n),
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            children: [
+              _buildSummaryHeader(semantic, isPrivate, l10n),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: MonthDetailHeader(
+                  searchQuery: searchQuery,
+                  typeFilter: typeFilter,
+                  showFilters: widget.showFilters,
+                  onSearchChanged: (v) => setState(() => searchQuery = v),
+                  onFilterChanged: (v) => setState(() => typeFilter = v),
+                  semantic: semantic,
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
-        ],
-      ),
+        ),
+        if (_isLoading)
+          SliverFillRemaining(
+            child: Center(
+                child: CircularProgressIndicator(color: semantic.primary)),
+          )
+        else if (_error != null)
+          SliverFillRemaining(
+            child: AppErrorView(error: _error!, onRetry: _loadData),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: _buildLedgerListSliver(semantic, isPrivate, l10n),
+          ),
+      ],
     );
   }
 
@@ -170,39 +179,9 @@ class _TransactionsDetailScreenState
         ? semantic.income
         : (typeFilter == "All" ? semantic.primary : semantic.overspent);
 
-    String getFilterLabel() {
-      switch (typeFilter) {
-        case 'All':
-          return l10n.all;
-        case 'Expenses':
-          return l10n.expenses;
-        case 'Income':
-          return l10n.income;
-        case 'Fixed':
-          return l10n.fixed;
-        case 'Variable':
-          return l10n.variable;
-        default:
-          return typeFilter;
-      }
-    }
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(28),
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: semantic.surfaceCombined.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: semantic.divider, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: displayColor.withValues(alpha: 0.05),
-            blurRadius: 40,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+    return AppleGlassCard(
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+      color: displayColor.withValues(alpha: 0.05),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -211,12 +190,12 @@ class _TransactionsDetailScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n.typeTotal(getFilterLabel().toUpperCase()),
+                  l10n.typeTotal(typeFilter.toUpperCase()),
                   style: TextStyle(
                     fontSize: 10,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: displayColor,
-                    letterSpacing: 2.5,
+                    letterSpacing: 2.0,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -226,199 +205,104 @@ class _TransactionsDetailScreenState
                   child: Text(
                     CurrencyFormatter.format(total, isPrivate: isPrivate),
                     style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w700,
                       color: semantic.text,
-                      letterSpacing: -1.5,
-                      height: 1,
+                      letterSpacing: -1.0,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 20),
           Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: displayColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: displayColor.withValues(alpha: 0.2)),
+              shape: BoxShape.circle,
             ),
             child: Icon(
               isIncome
                   ? Icons.trending_up_rounded
-                  : (typeFilter == "All"
-                      ? Icons.analytics_rounded
-                      : Icons.trending_down_rounded),
+                  : Icons.trending_down_rounded,
               color: displayColor,
-              size: 28,
+              size: 24,
             ),
           ),
         ],
       ),
-    )
-        .animate()
-        .fadeIn(duration: 600.ms)
-        .slideY(begin: 0.05, end: 0, curve: Curves.easeOutQuart);
+    );
   }
 
-  Widget _buildLedgerList(
+  Widget _buildLedgerListSliver(
       AppColors semantic, bool isPrivate, AppLocalizations l10n) {
     final items = _getFilteredItems();
     if (items.isEmpty) {
-      return EmptyState(
-        message:
-            searchQuery.isEmpty ? l10n.noEntriesYet : l10n.noResultsMatched,
-        subMessage: l10n.noTransactionsFoundPeriod,
-        icon: Icons.receipt_long_rounded,
+      return SliverFillRemaining(
+        child: EmptyState(
+          message:
+              searchQuery.isEmpty ? l10n.noEntriesYet : l10n.noResultsMatched,
+          subMessage: l10n.noTransactionsFoundPeriod,
+          icon: Icons.receipt_long_rounded,
+        ),
       );
     }
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 800),
-        child: ListView.builder(
-          physics: const BouncingScrollPhysics(),
-          padding: EdgeInsets.fromLTRB(
-              24, 8, 24, 24 + MediaQuery.of(context).padding.bottom),
-          itemCount: items.length,
-          itemBuilder: (context, i) {
-            final item = items[i];
-            final String type = item.type;
-            final isIncome = type == 'Income';
-            final label = item.label;
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, i) {
+          final item = items[i];
+          final isIncome = item.type == 'Income';
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: HoverWrapper(
-                borderRadius: 24,
-                scale: 1.01,
-                translateY: -2,
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => EditEntryScreen(entry: item),
-                    ),
-                  );
-                  _loadData();
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: semantic.surfaceCombined.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: semantic.divider, width: 1.5),
-                  ),
-                  padding: const EdgeInsets.all(18),
-                  child: Row(
-                    children: [
-                      CategoryIcon(
-                        type: type,
-                        label: label,
-                        semantic: semantic,
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              label.toString().toUpperCase(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 13,
-                                letterSpacing: 0.2,
-                                color: semantic.text,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: semantic.divider
-                                          .withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      type.toUpperCase(),
-                                      style: TextStyle(
-                                        fontSize: 8,
-                                        color: semantic.secondaryText,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 1.2,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ),
-                                if (item.note != null &&
-                                    item.note!.isNotEmpty) ...[
-                                  const SizedBox(width: 8),
-                                  Icon(
-                                    Icons.notes_rounded,
-                                    size: 11,
-                                    color: semantic.secondaryText
-                                        .withValues(alpha: 0.5),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              CurrencyFormatter.format(item.amount,
-                                  isPrivate: isPrivate),
-                              style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 17,
-                                color:
-                                    isIncome ? semantic.income : semantic.text,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            DateFormat('dd MMM')
-                                .format(item.date)
-                                .toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 9,
-                              color:
-                                  semantic.secondaryText.withValues(alpha: 0.4),
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+          return AppleGlassCard(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            child: ListTile(
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => EditEntryScreen(entry: item)),
+                );
+                _loadData();
+              },
+              contentPadding: EdgeInsets.zero,
+              leading: CategoryIcon(
+                type: item.type,
+                label: item.label,
+                semantic: semantic,
+              ),
+              title: Text(
+                item.label.toUpperCase(),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  color: semantic.text,
+                  letterSpacing: 0.5,
                 ),
               ),
-            )
-                .animate()
-                .fadeIn(
-                    delay: (100 + (25 * i)).clamp(0, 600).ms, duration: 500.ms)
-                .slideX(begin: 0.03, end: 0, curve: Curves.easeOutQuart);
-          },
-        ),
+              subtitle: Text(
+                DateFormat('dd MMM').format(item.date).toUpperCase(),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: semantic.secondaryText,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              trailing: Text(
+                CurrencyFormatter.format(item.amount, isPrivate: isPrivate),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: isIncome ? semantic.income : semantic.text,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ),
+          ).animate().fadeIn(delay: (20 * i).ms).slideX(begin: 0.05, end: 0);
+        },
+        childCount: items.length,
       ),
     );
   }

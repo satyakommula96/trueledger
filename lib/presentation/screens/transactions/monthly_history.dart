@@ -4,11 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/core/theme/theme.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 import 'package:trueledger/presentation/screens/transactions/month_detail.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
-import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/domain/models/models.dart';
+import 'package:trueledger/l10n/app_localizations.dart';
 
 class MonthlyHistoryScreen extends ConsumerStatefulWidget {
   const MonthlyHistoryScreen({super.key});
@@ -58,24 +59,25 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
   Widget build(BuildContext context) {
     final semantic = Theme.of(context).extension<AppColors>()!;
     final isPrivate = ref.watch(privacyProvider);
+    final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("LEDGER HISTORY"),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          if (availableYears.isNotEmpty) _buildYearSelector(semantic),
-          Expanded(
-            child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(color: semantic.primary))
-                : _buildHistoryList(semantic, isPrivate),
+    return AppleScaffold(
+      title: l10n.monthlyHistory,
+      subtitle: "$selectedYear ARCHIVE",
+      slivers: [
+        if (availableYears.isNotEmpty)
+          SliverToBoxAdapter(child: _buildYearSelector(semantic)),
+        if (_isLoading)
+          SliverFillRemaining(
+            child: Center(
+                child: CircularProgressIndicator(color: semantic.primary)),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: _buildHistoryListSliver(semantic, isPrivate, l10n),
           ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -86,7 +88,7 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         scrollDirection: Axis.horizontal,
         itemCount: availableYears.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final year = availableYears[index];
           final isSelected = year == selectedYear;
@@ -103,34 +105,26 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
             child: AnimatedContainer(
               duration: 400.ms,
               curve: Curves.easeOutQuart,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected
                     ? semantic.primary
-                    : semantic.surfaceCombined.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(30),
+                    : semantic.surfaceCombined.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isSelected ? Colors.transparent : semantic.divider,
-                  width: 1.5,
+                  color: isSelected
+                      ? Colors.transparent
+                      : semantic.divider.withValues(alpha: 0.3),
+                  width: 0.5,
                 ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: semantic.primary.withValues(alpha: 0.25),
-                          blurRadius: 15,
-                          offset: const Offset(0, 8),
-                        )
-                      ]
-                    : null,
               ),
               alignment: Alignment.center,
               child: Text(
                 "$year",
                 style: TextStyle(
                   color: isSelected ? Colors.white : semantic.text,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   fontSize: 14,
-                  letterSpacing: 0.5,
                 ),
               ),
             ),
@@ -140,66 +134,53 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
     );
   }
 
-  Widget _buildHistoryList(AppColors semantic, bool isPrivate) {
+  Widget _buildHistoryListSliver(
+      AppColors semantic, bool isPrivate, AppLocalizations l10n) {
     if (monthSummaries.isEmpty) {
-      return Center(
-        child: Text(
-          "NO PERIODS TRACKED.",
-          style: TextStyle(
-            color: semantic.secondaryText,
-            fontSize: 10,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.5,
+      return SliverFillRemaining(
+        child: Center(
+          child: Text(
+            "NO PERIODS TRACKED.",
+            style: TextStyle(
+              color: semantic.secondaryText,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.0,
+            ),
           ),
         ),
       );
     }
 
-    return ListView.builder(
-      padding: EdgeInsets.fromLTRB(
-          24, 0, 24, 24 + MediaQuery.of(context).padding.bottom),
-      itemCount: monthSummaries.length,
-      itemBuilder: (_, i) {
-        final s = monthSummaries[i];
-        final netValue = s.net.toInt();
-        final income = s.income.toInt();
-        final expenses = s.spending.toInt();
-        final invested = s.invested.toInt();
-        final positive = netValue >= 0;
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, i) {
+          final s = monthSummaries[i];
+          final positive = s.net >= 0;
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: HoverWrapper(
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => MonthDetailScreen(month: s.month),
-                ),
-              );
-              load();
-            },
-            borderRadius: 28,
-            glowColor: positive ? semantic.income : semantic.overspent,
-            glowOpacity: 0.05,
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: semantic.surfaceCombined.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: semantic.divider, width: 1.5),
-              ),
-              child: Column(
-                children: [
-                  Row(
+          return AppleGlassCard(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => MonthDetailScreen(month: s.month)),
+                    );
+                    load();
+                  },
+                  child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color:
                               (positive ? semantic.income : semantic.overspent)
                                   .withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(16),
+                          shape: BoxShape.circle,
                         ),
                         child: Icon(
                           positive
@@ -207,10 +188,10 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
                               : Icons.trending_down_rounded,
                           color:
                               positive ? semantic.income : semantic.overspent,
-                          size: 24,
+                          size: 20,
                         ),
                       ),
-                      const SizedBox(width: 20),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,151 +199,85 @@ class _MonthlyHistoryScreenState extends ConsumerState<MonthlyHistoryScreen> {
                             Text(
                               _formatMonth(s.month),
                               style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
                                 color: semantic.text,
-                                letterSpacing: -0.5,
+                                letterSpacing: -0.3,
                               ),
                             ),
                             Text(
-                              positive ? "SURPLUS PERIOD" : "DEFICIT PERIOD",
+                              positive ? "SURPLUS" : "DEFICIT",
                               style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
                                 color: (positive
                                         ? semantic.income
                                         : semantic.overspent)
                                     .withValues(alpha: 0.7),
-                                letterSpacing: 1.5,
+                                letterSpacing: 1.0,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Flexible(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            CurrencyFormatter.format(netValue,
-                                isPrivate: isPrivate),
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              color: positive
-                                  ? semantic.income
-                                  : semantic.overspent,
-                              fontSize: 22,
-                              letterSpacing: -0.8,
-                            ),
-                          ),
+                      Text(
+                        CurrencyFormatter.format(s.net, isPrivate: isPrivate),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color:
+                              positive ? semantic.income : semantic.overspent,
+                          fontSize: 18,
+                          letterSpacing: -0.5,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  Container(
-                    height: 1.5,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          semantic.divider.withValues(alpha: 0),
-                          semantic.divider,
-                          semantic.divider.withValues(alpha: 0),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatItem(
-                          "INCOME",
-                          CurrencyFormatter.format(income,
-                              isPrivate: isPrivate),
-                          Icons.arrow_downward_rounded,
-                          semantic.income,
-                          semantic,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildStatItem(
-                          "SPENDING",
-                          CurrencyFormatter.format(expenses,
-                              isPrivate: isPrivate),
-                          Icons.arrow_upward_rounded,
-                          semantic.overspent,
-                          semantic,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildStatItem(
-                          "INVESTED",
-                          CurrencyFormatter.format(invested,
-                              isPrivate: isPrivate),
-                          Icons.account_balance_rounded,
-                          semantic.primary,
-                          semantic,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+                Divider(
+                    height: 1, color: semantic.divider.withValues(alpha: 0.2)),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildStatItem(l10n.income.toUpperCase(), s.income,
+                        semantic.income, isPrivate, semantic),
+                    _buildStatItem(l10n.spending.toUpperCase(), s.spending,
+                        semantic.overspent, isPrivate, semantic),
+                    _buildStatItem(l10n.invested.toUpperCase(), s.invested,
+                        semantic.primary, isPrivate, semantic),
+                  ],
+                ),
+              ],
             ),
-          ),
-        )
-            .animate()
-            .fadeIn(
-              delay: (80 * i).clamp(0, 400).ms,
-              duration: 600.ms,
-            )
-            .slideY(
-              begin: 0.1,
-              end: 0,
-              curve: Curves.easeOutQuart,
-            );
-      },
+          ).animate().fadeIn(delay: (20 * i).ms).slideY(begin: 0.1, end: 0);
+        },
+        childCount: monthSummaries.length,
+      ),
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color,
+  Widget _buildStatItem(String label, double value, Color color, bool isPrivate,
       AppColors semantic) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(icon, size: 10, color: color.withValues(alpha: 0.7)),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w900,
-                  color: semantic.secondaryText,
-                  letterSpacing: 1.2,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 8,
+            fontWeight: FontWeight.w700,
+            color: semantic.secondaryText,
+            letterSpacing: 1.0,
+          ),
         ),
-        const SizedBox(height: 8),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              fontSize: 15,
-              color: semantic.text,
-              letterSpacing: -0.2,
-            ),
+        const SizedBox(height: 2),
+        Text(
+          CurrencyFormatter.format(value, isPrivate: isPrivate),
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+            color: semantic.text,
           ),
         ),
       ],

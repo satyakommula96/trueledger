@@ -859,5 +859,40 @@
   "sepShort": "SEP",
   "octShort": "OCT",
   "novShort": "NOV",
-  "decShort": "DEC"
+  "decShort": "DEC",
+  "liveTracking": "Live Tracking",
+  "burnRate": "Burn Rate",
+  "leftOfRunway": "Left of runway",
+  "subscriptionLeakage": "Subscription Leakage",
+  "potentialMonthlySavings": "Potential Monthly Savings",
+  "monthlySpend": "Monthly Spend",
+  "vsLastMonth": "vs last month",
+  "financialPosition": "Financial Position",
+  "trackGrowthInsights": "Track your growth & insights",
+  "invested": "Invested",
+  "allTransactions": "All Transactions",
+  "cancelMore": "Cancel\n{count} more",
+  "@cancelMore": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "savedAmount": "Saved: {amount}/mo",
+  "@savedAmount": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "debtManagement": "Debt Management",
+  "activeLoans": "Active Loans",
+  "activeWithCount": "{count} Active",
+  "@activeWithCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "payoffStrategy": "Payoff Strategy",
+  "activeDebtPayoffPlan": "Active Debt Payoff Plan",
+  "noBorrowings": "No Borrowings",
+  "debtFreeMessage": "You are debt-free! Start building your wealth."
 }

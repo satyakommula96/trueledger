@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'dart:ui';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/screens/cards/credit_cards.dart';
@@ -41,20 +42,15 @@ class DashboardBottomBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: semantic.surfaceCombined.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: semantic.divider, width: 1.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 30,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+                  border: Border.all(
+                      color: semantic.divider.withValues(alpha: 0.5),
+                      width: 1.0),
                 ),
                 child: Row(
                   children: [
                     _buildActionIcon(
                       context,
-                      Icons.account_balance_rounded,
+                      CupertinoIcons.house_fill,
                       l10n.accounts,
                       semantic.income,
                       () => Navigator.push(
@@ -65,7 +61,7 @@ class DashboardBottomBar extends StatelessWidget {
                     ),
                     _buildActionIcon(
                       context,
-                      Icons.credit_card_rounded,
+                      CupertinoIcons.creditcard_fill,
                       l10n.cards,
                       semantic.primary,
                       () => Navigator.push(
@@ -76,7 +72,7 @@ class DashboardBottomBar extends StatelessWidget {
                     ),
                     _buildActionIcon(
                       context,
-                      Icons.auto_graph_rounded,
+                      CupertinoIcons.chart_pie_fill,
                       l10n.analysis,
                       const Color(0xFFA855F7),
                       () => Navigator.push(
@@ -87,7 +83,7 @@ class DashboardBottomBar extends StatelessWidget {
                     ),
                     _buildActionIcon(
                       context,
-                      Icons.grid_view_rounded,
+                      CupertinoIcons.square_grid_2x2_fill,
                       l10n.more,
                       semantic.warning,
                       () => _showMoreMenu(context, semantic, l10n),
@@ -121,7 +117,7 @@ class DashboardBottomBar extends StatelessWidget {
             children: [
               _buildMenuItem(
                 context,
-                Icons.savings_rounded,
+                CupertinoIcons.flag_fill,
                 l10n.savingGoals,
                 l10n.trackYourMilestones,
                 const Color(0xFF10B981),
@@ -134,7 +130,7 @@ class DashboardBottomBar extends StatelessWidget {
               const SizedBox(height: 16),
               _buildMenuItem(
                 context,
-                Icons.pie_chart_rounded,
+                CupertinoIcons.chart_bar_square_fill,
                 l10n.portfolio,
                 l10n.assetAllocation,
                 const Color(0xFF10B981),
@@ -149,7 +145,7 @@ class DashboardBottomBar extends StatelessWidget {
               const SizedBox(height: 16),
               _buildMenuItem(
                 context,
-                Icons.history_toggle_off_rounded,
+                CupertinoIcons.clock_fill,
                 l10n.monthlyHistory,
                 l10n.viewPastPerformance,
                 semantic.warning,
@@ -164,7 +160,7 @@ class DashboardBottomBar extends StatelessWidget {
               const SizedBox(height: 16),
               _buildMenuItem(
                 context,
-                Icons.auto_awesome_rounded,
+                CupertinoIcons.bolt_fill,
                 l10n.automation,
                 l10n.recurringTransactions,
                 const Color(0xFF10B981),
@@ -179,7 +175,7 @@ class DashboardBottomBar extends StatelessWidget {
               const SizedBox(height: 16),
               _buildMenuItem(
                 context,
-                Icons.account_balance_wallet_rounded,
+                CupertinoIcons.briefcase_fill,
                 l10n.budgets,
                 l10n.manageSpendingLimits,
                 semantic.primary,
@@ -238,7 +234,8 @@ class DashboardBottomBar extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            Icon(Icons.chevron_right_rounded, color: semantic.divider),
+            Icon(CupertinoIcons.chevron_right,
+                color: semantic.divider, size: 16),
           ],
         ),
       ),

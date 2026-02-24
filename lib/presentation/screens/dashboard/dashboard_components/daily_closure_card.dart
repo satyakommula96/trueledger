@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:confetti/confetti.dart';
 import 'package:trueledger/presentation/providers/day_closure_provider.dart';
 import 'package:trueledger/l10n/app_localizations.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 
 class DailyClosureCard extends ConsumerStatefulWidget {
   final int transactionCount;
@@ -53,14 +55,9 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
     if (!isNight && !widget.forceShow) return const SizedBox.shrink();
 
     if (isClosed) {
-      return Container(
-        width: double.infinity,
+      return AppleGlassCard(
+        borderRadius: 28,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        decoration: BoxDecoration(
-          color: widget.semantic.surfaceCombined.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: widget.semantic.divider, width: 1.5),
-        ),
         child: Row(
           children: [
             Container(
@@ -69,7 +66,7 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
                 color: widget.semantic.success.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.check_circle_rounded,
+              child: Icon(CupertinoIcons.checkmark_circle_fill,
                   color: widget.semantic.success, size: 16),
             ),
             const SizedBox(width: 16),
@@ -94,21 +91,9 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Container(
-          width: double.infinity,
+        AppleGlassCard(
+          borderRadius: 32,
           padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: widget.semantic.surfaceCombined.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: widget.semantic.divider, width: 1.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 30,
-                offset: const Offset(0, 15),
-              ),
-            ],
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -122,7 +107,7 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.nightlight_round,
+                    Icon(CupertinoIcons.moon_stars_fill,
                         size: 12, color: widget.semantic.primary),
                     const SizedBox(width: 8),
                     Text(
@@ -178,8 +163,9 @@ class _DailyClosureCardState extends ConsumerState<DailyClosureCard> {
                           children: [
                             Icon(
                               isUnderBudget
-                                  ? Icons.check_circle_rounded
-                                  : Icons.warning_rounded,
+                                  ? CupertinoIcons.checkmark_circle_fill
+                                  : CupertinoIcons
+                                      .exclamationmark_triangle_fill,
                               size: 16,
                               color: isUnderBudget
                                   ? widget.semantic.success

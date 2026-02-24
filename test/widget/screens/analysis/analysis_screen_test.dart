@@ -43,6 +43,15 @@ void main() {
     // Pump a single frame to show loading
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    // To avoid !timersPending error from CircularProgressIndicator and animations,
+    // we must complete the future and let it settle.
+    completer.complete(AnalysisData(
+      budgets: [],
+      trendData: [],
+      categoryData: [],
+    ));
+    await tester.pumpAndSettle();
   });
 
   testWidgets('AnalysisScreen renders empty content', (tester) async {
@@ -57,9 +66,11 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    expect(find.text('ANALYSIS'), findsOneWidget);
-    expect(find.text('ARCHIVE'), findsOneWidget);
-    expect(find.text('MOMENTUM'), findsNothing);
+    expect(find.text('Analysis'), findsOneWidget);
+    expect(find.text('ARCHIVE'),
+        findsOneWidget); // Checked ARB: archiveLabel is "ARCHIVE"
+    expect(find.text('MOMENTUM'),
+        findsNothing); // Checked ARB: momentum is "Momentum"
     expect(find.text('NO DATA AVAILABLE'), findsOneWidget);
   });
 
@@ -94,8 +105,9 @@ void main() {
       await tester.pumpAndSettle(const Duration(milliseconds: 200));
     }
 
-    expect(find.text('ANALYSIS'), findsOneWidget);
+    expect(find.text('Analysis'), findsOneWidget);
     expect(find.byIcon(Icons.trending_up_rounded), findsOneWidget);
-    expect(find.text('MOMENTUM'), findsOneWidget);
+    expect(find.text('MOMENTUM'),
+        findsOneWidget); // momentum.toUpperCase() is used in widget
   });
 }

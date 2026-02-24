@@ -1872,4 +1872,72 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get decShort => 'డిసెంబరు';
+
+  @override
+  String get liveTracking => 'లైవ్ ట్రాకింగ్';
+
+  @override
+  String get burnRate => 'ఖర్చు రేటు';
+
+  @override
+  String get leftOfRunway => 'బ్యాంకు నిల్వ కాలం';
+
+  @override
+  String get subscriptionLeakage => 'సబ్‌స్క్రిప్షన్ లీకేజీ';
+
+  @override
+  String get potentialMonthlySavings => 'నెలవారీ ఆదా సాధ్యత';
+
+  @override
+  String get monthlySpend => 'నెలవారీ ఖర్చు';
+
+  @override
+  String get vsLastMonth => 'గత నెలతో పోలిస్తే';
+
+  @override
+  String get financialPosition => 'ఆర్థిక స్థితి';
+
+  @override
+  String get trackGrowthInsights =>
+      'మీ వృద్ధి మరియు అంతర్దృష్టులను ట్రాక్ చేయండి';
+
+  @override
+  String get invested => 'పెట్టుబడి పెట్టినవి';
+
+  @override
+  String get allTransactions => 'అన్ని లావాదేవీలు';
+
+  @override
+  String cancelMore(int count) {
+    return 'రద్దు చేయి\nమరో $count';
+  }
+
+  @override
+  String savedAmount(String amount) {
+    return 'ఆదా చేయబడింది: $amount/నెల';
+  }
+
+  @override
+  String get debtManagement => 'రుణ నిర్వహణ';
+
+  @override
+  String get activeLoans => 'ప్రస్తుత రుణాలు';
+
+  @override
+  String activeWithCount(int count) {
+    return '$count ప్రస్తుతం ఉన్నాయి';
+  }
+
+  @override
+  String get payoffStrategy => 'రుణ విముక్తి వ్యూహం';
+
+  @override
+  String get activeDebtPayoffPlan => 'ప్రస్తుత రుణ విముక్తి ప్రణాళిక';
+
+  @override
+  String get noBorrowings => 'రుణాలు లేవు';
+
+  @override
+  String get debtFreeMessage =>
+      'మీరు రుణముక్తులు! మీ సంపదను నిర్మించడం ప్రారంభించండి.';
 }

@@ -9,6 +9,7 @@ import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
 import 'package:trueledger/presentation/providers/repository_providers.dart';
 import 'package:trueledger/l10n/app_localizations.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 
 class InvestmentsScreen extends ConsumerWidget {
   const InvestmentsScreen({super.key});
@@ -18,159 +19,131 @@ class InvestmentsScreen extends ConsumerWidget {
     final investmentsAsync = ref.watch(investmentsProvider);
     final isPrivate = ref.watch(privacyProvider);
     final semantic = Theme.of(context).extension<AppColors>()!;
+    final l10n = AppLocalizations.of(context)!;
 
     return investmentsAsync.when(
-      loading: () => Scaffold(
-        backgroundColor: semantic.surfaceCombined,
+      loading: () => AppleScaffold(
+        title: l10n.portfolio,
         body: Center(child: CircularProgressIndicator(color: semantic.primary)),
       ),
-      error: (err, stack) => Scaffold(body: Center(child: Text("Error: $err"))),
+      error: (err, stack) => AppleScaffold(
+          title: l10n.portfolio, body: Center(child: Text("Error: $err"))),
       data: (data) {
-        return Scaffold(
-          extendBodyBehindAppBar: true,
-          appBar: AppBar(
-            title: Text(AppLocalizations.of(context)!.portfolio.toUpperCase()),
-            centerTitle: true,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: ClipRRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(color: Colors.transparent),
-              ),
-            ),
-          ),
+        return AppleScaffold(
+          title: l10n.portfolio,
+          subtitle: "Assets & Allocation",
           floatingActionButton: FloatingActionButton(
             onPressed: () => _showAddInvestmentDialog(context, ref),
             backgroundColor: semantic.primary,
+            elevation: 4,
             child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
           ),
-          body: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(
-                20, MediaQuery.of(context).padding.top + 80, 20, 100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildPortfolioHero(
-                        data.totalValue, semantic, isPrivate, context)
-                    .animate()
-                    .fadeIn(duration: 600.ms)
-                    .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint),
-                const SizedBox(height: 48),
-                if (data.distribution.isNotEmpty) ...[
-                  _buildSectionHeader(
-                      semantic,
-                      AppLocalizations.of(context)!.allocation,
-                      AppLocalizations.of(context)!.assetClasses),
-                  const SizedBox(height: 24),
-                  _buildAllocationWidget(
-                      data.distribution, data.totalValue, semantic),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  _buildPortfolioHero(
+                          data.totalValue, semantic, isPrivate, context)
+                      .animate()
+                      .fadeIn(duration: 600.ms)
+                      .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint),
                   const SizedBox(height: 48),
-                ],
-                _buildSectionHeader(
-                    semantic,
-                    AppLocalizations.of(context)!.myAssets,
-                    AppLocalizations.of(context)!.fullList),
-                const SizedBox(height: 24),
-                if (data.investments.isEmpty)
-                  _buildEmptyState(semantic, context)
-                else
-                  ...data.investments.map(
-                      (inv) => _buildInvestmentCard(inv, semantic, isPrivate)),
-              ],
+                  if (data.distribution.isNotEmpty) ...[
+                    AppleSectionHeader(
+                      title: l10n.allocation,
+                      subtitle: l10n.assetClasses,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildAllocationWidget(
+                        data.distribution, data.totalValue, semantic),
+                    const SizedBox(height: 48),
+                  ],
+                  AppleSectionHeader(
+                    title: l10n.myAssets,
+                    subtitle: l10n.fullList,
+                  ),
+                  const SizedBox(height: 20),
+                  if (data.investments.isEmpty)
+                    _buildEmptyState(semantic, context)
+                  else
+                    ...data.investments.map((inv) =>
+                        _buildInvestmentCard(inv, semantic, isPrivate)),
+                ]),
+              ),
             ),
-          ),
+          ],
         );
       },
     );
   }
 
-  Widget _buildSectionHeader(AppColors semantic, String title, String sub) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          sub.toUpperCase(),
-          style: TextStyle(
-              fontSize: 10,
-              color: semantic.secondaryText,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          title,
-          style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              color: semantic.text,
-              letterSpacing: -0.5),
-        ),
-      ],
-    );
-  }
-
   Widget _buildPortfolioHero(
       double total, AppColors semantic, bool isPrivate, BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: semantic.surfaceCombined,
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: semantic.divider, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
+    final l10n = AppLocalizations.of(context)!;
+    return AppleGlassCard(
+      padding: EdgeInsets.zero,
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          semantic.success.withValues(alpha: 0.2),
+          semantic.primary.withValues(alpha: 0.1),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Text(
-                  AppLocalizations.of(context)!.netPortfolioValue,
+          Positioned(
+            right: -20,
+            bottom: -20,
+            child: Icon(
+              Icons.auto_graph_rounded,
+              size: 120,
+              color: semantic.success.withValues(alpha: 0.1),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.netPortfolioValue.toUpperCase(),
                   style: TextStyle(
                     color: semantic.secondaryText,
                     fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2.0,
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Icon(Icons.auto_graph_rounded, color: semantic.success, size: 20),
-            ],
-          ),
-          const SizedBox(height: 12),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              CurrencyFormatter.format(total, isPrivate: isPrivate),
-              style: TextStyle(
-                color: semantic.text,
-                fontSize: 40,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1.0,
-              ),
+                const SizedBox(height: 16),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    CurrencyFormatter.format(total, isPrivate: isPrivate),
+                    style: TextStyle(
+                      color: semantic.text,
+                      fontSize: 44,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -1.5,
+                      height: 1.0,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    _buildSimpleInsightTag(
+                        semantic, Icons.trending_up_rounded, "Growth +12.4%"),
+                    _buildSimpleInsightTag(
+                        semantic, Icons.verified_user_rounded, "Diversified"),
+                  ],
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 24),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              _buildSimpleInsightTag(
-                  semantic, Icons.trending_up_rounded, "Growth +12.4%"),
-              _buildSimpleInsightTag(
-                  semantic, Icons.verified_user_rounded, "Diversified"),
-            ],
           ),
         ],
       ),
@@ -182,22 +155,21 @@ class InvestmentsScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: semantic.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: semantic.primary),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                color: semantic.primary,
-              ),
+          Icon(icon, size: 14, color: semantic.success),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: semantic.text.withValues(alpha: 0.8),
             ),
           ),
         ],
@@ -205,7 +177,6 @@ class InvestmentsScreen extends ConsumerWidget {
     );
   }
 
-  // Re-implementing allocation breakdown with context for sizing
   Widget _buildAllocationWidget(
       Map<String, double> distribution, double total, AppColors semantic) {
     return LayoutBuilder(builder: (context, constraints) {
@@ -215,64 +186,60 @@ class InvestmentsScreen extends ConsumerWidget {
         children: sortedTypes.map((entry) {
           final percentage = total == 0 ? 0.0 : entry.value / total;
           return Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        entry.key.toUpperCase(),
-                        overflow: TextOverflow.ellipsis,
+            padding: const EdgeInsets.only(bottom: 16),
+            child: AppleGlassCard(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        entry.key,
                         style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: semantic.text,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: semantic.text),
+                      ),
+                      Text(
+                        "${(percentage * 100).toStringAsFixed(1)}%",
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: semantic.primary),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Stack(
+                    children: [
+                      Container(
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: semantic.divider.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(3),
                         ),
                       ),
-                    ),
-                    Text(
-                      "${(percentage * 100).toStringAsFixed(1)}%",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                        color: semantic.secondaryText,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Stack(
-                  children: [
-                    Container(
-                      height: 10,
-                      decoration: BoxDecoration(
-                        color: semantic.divider.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    AnimatedContainer(
-                      duration: 1.seconds,
-                      curve: Curves.easeOutQuint,
-                      height: 10,
-                      width: constraints.maxWidth * percentage,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            semantic.primary,
-                            semantic.primary.withValues(alpha: 0.7)
-                          ],
+                      AnimatedContainer(
+                        duration: 1.seconds,
+                        curve: Curves.easeOutQuint,
+                        height: 6,
+                        width: (constraints.maxWidth - 64) * percentage,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              semantic.primary,
+                              semantic.primary.withValues(alpha: 0.7)
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(3),
                         ),
-                        borderRadius: BorderRadius.circular(5),
                       ),
-                    ).animate().shimmer(
-                        duration: 2.seconds,
-                        color: Colors.white.withValues(alpha: 0.1)),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           );
         }).toList(),
@@ -281,64 +248,63 @@ class InvestmentsScreen extends ConsumerWidget {
   }
 
   Widget _buildInvestmentCard(dynamic inv, AppColors semantic, bool isPrivate) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: semantic.surfaceCombined.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: semantic.divider),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: semantic.success.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(_getIconForType(inv.type),
-                color: semantic.success, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return AppleGlassCard(
+      padding: EdgeInsets.zero,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {},
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                Text(
-                  inv.name,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    color: semantic.text,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: semantic.success.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(_getIconForType(inv.type),
+                      color: semantic.success, size: 20),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        inv.name,
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: semantic.text),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        inv.type.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: semantic.secondaryText,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 Text(
-                  inv.type.toUpperCase(),
+                  CurrencyFormatter.format(inv.amount, isPrivate: isPrivate),
                   style: TextStyle(
-                    fontSize: 10,
-                    color: semantic.secondaryText,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
-                  ),
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: semantic.text),
                 ),
               ],
             ),
           ),
-          Flexible(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                CurrencyFormatter.format(inv.amount, isPrivate: isPrivate),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  color: semantic.text,
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -360,29 +326,28 @@ class InvestmentsScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(AppColors semantic, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         children: [
           const SizedBox(height: 48),
-          Icon(Icons.layers_clear_rounded, size: 64, color: semantic.divider),
+          Icon(Icons.layers_clear_rounded,
+              size: 64, color: semantic.divider.withValues(alpha: 0.5)),
           const SizedBox(height: 24),
           Text(
-            AppLocalizations.of(context)!.noAssetsTracked,
+            l10n.noAssetsTracked,
             style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-              color: semantic.secondaryText,
-              letterSpacing: 1.5,
-            ),
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: semantic.text),
           ),
           const SizedBox(height: 8),
           Text(
-            AppLocalizations.of(context)!.addFirstInvestment,
+            l10n.addFirstInvestment,
             style: TextStyle(
-              fontSize: 14,
-              color: semantic.secondaryText,
-              fontWeight: FontWeight.w600,
-            ),
+                fontSize: 14,
+                color: semantic.secondaryText,
+                fontWeight: FontWeight.w500),
             textAlign: TextAlign.center,
           ),
         ],
@@ -402,67 +367,80 @@ class InvestmentsScreen extends ConsumerWidget {
       'Real Estate',
       'Other'
     ];
+    final semantic = Theme.of(context).extension<AppColors>()!;
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          backgroundColor:
-              Theme.of(context).extension<AppColors>()!.surfaceCombined,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: const Text("ADD INVESTMENT",
-              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: "Asset Name"),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: amountController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: "Current Value"),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  initialValue: selectedType,
-                  decoration: const InputDecoration(labelText: "Type"),
-                  items: types
-                      .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                      .toList(),
-                  onChanged: (val) => setState(() => selectedType = val!),
-                ),
-              ],
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            backgroundColor: semantic.surfaceCombined.withValues(alpha: 0.95),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+                side: BorderSide(color: semantic.divider)),
+            title: const Text("Add Investment",
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                        labelText: "Asset Name", hintText: "e.g. Apple Stock"),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: amountController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                        labelText: "Current Value", hintText: "0.00"),
+                  ),
+                  const SizedBox(height: 20),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedType,
+                    decoration:
+                        const InputDecoration(labelText: "Asset Category"),
+                    items: types
+                        .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                        .toList(),
+                    onChanged: (val) => setState(() => selectedType = val!),
+                  ),
+                ],
+              ),
             ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Cancel",
+                      style: TextStyle(color: semantic.secondaryText))),
+              ElevatedButton(
+                onPressed: () async {
+                  if (nameController.text.isEmpty ||
+                      amountController.text.isEmpty) {
+                    return;
+                  }
+                  final amount = double.tryParse(amountController.text) ?? 0;
+                  await ref.read(financialRepositoryProvider).addInvestment(
+                        nameController.text,
+                        amount,
+                        selectedType,
+                        DateTime.now(),
+                      );
+                  ref.invalidate(investmentsProvider);
+                  ref.invalidate(dashboardProvider);
+                  if (context.mounted) Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: semantic.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12))),
+                child: const Text("Save Asset"),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("CANCEL")),
-            ElevatedButton(
-              onPressed: () async {
-                if (nameController.text.isEmpty ||
-                    amountController.text.isEmpty) {
-                  return;
-                }
-                final amount = double.tryParse(amountController.text) ?? 0;
-                await ref.read(financialRepositoryProvider).addInvestment(
-                      nameController.text,
-                      amount,
-                      selectedType,
-                      DateTime.now(),
-                    );
-                ref.invalidate(investmentsProvider);
-                ref.invalidate(dashboardProvider);
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: const Text("SAVE"),
-            ),
-          ],
         ),
       ),
     );

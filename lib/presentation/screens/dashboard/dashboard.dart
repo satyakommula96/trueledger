@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:trueledger/l10n/app_localizations.dart';
-import 'package:trueledger/core/config/app_config.dart';
 
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/presentation/providers/insights_provider.dart';
@@ -34,6 +34,7 @@ import 'package:trueledger/presentation/screens/transactions/transactions_detail
 import 'package:trueledger/presentation/screens/transactions/monthly_history.dart';
 import 'package:trueledger/presentation/screens/analysis/analysis_screen.dart';
 import 'package:trueledger/presentation/screens/net_worth/net_worth_tracking_screen.dart';
+import 'package:trueledger/presentation/screens/dashboard/dashboard_components/streak_card.dart';
 import 'package:trueledger/presentation/components/error_view.dart';
 import 'package:trueledger/presentation/screens/dashboard/dashboard_components/onboarding_cards.dart';
 
@@ -51,7 +52,6 @@ class Dashboard extends ConsumerWidget {
       }
     });
 
-    final colorScheme = Theme.of(context).colorScheme;
     final semantic = Theme.of(context).extension<AppColors>()!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -100,7 +100,7 @@ class Dashboard extends ConsumerWidget {
             valueListenable: CurrencyFormatter.currencyNotifier,
             builder: (context, currency, _) {
               return Scaffold(
-                extendBody: true,
+                extendBody: false,
                 backgroundColor: semantic.surfaceCombined,
                 floatingActionButton: Padding(
                   padding: const EdgeInsets.only(bottom: 90),
@@ -119,50 +119,13 @@ class Dashboard extends ConsumerWidget {
                     backgroundColor: semantic.primary,
                     foregroundColor: Colors.white,
                     elevation: 8,
-                    child: const Icon(Icons.add_rounded, size: 32),
+                    child: const Icon(CupertinoIcons.add, size: 28),
                   ),
                 ),
                 body: Stack(
                   children: [
-                    // Persistent Background Mesh Effects
-                    Positioned(
-                      top: -100,
-                      right: -100,
-                      child: Container(
-                        width: 400,
-                        height: 400,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              semantic.primary.withValues(alpha: 0.05),
-                              semantic.primary.withValues(alpha: 0),
-                            ],
-                          ),
-                        ),
-                      ).animate(onPlay: (c) {
-                        if (!AppConfig.isTest) c.repeat(reverse: true);
-                      }).move(duration: 10.seconds, end: const Offset(-40, 40)),
-                    ),
-                    Positioned(
-                      bottom: 100,
-                      left: -150,
-                      child: Container(
-                        width: 350,
-                        height: 350,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              colorScheme.secondary.withValues(alpha: 0.03),
-                              colorScheme.secondary.withValues(alpha: 0),
-                            ],
-                          ),
-                        ),
-                      ).animate(onPlay: (c) {
-                        if (!AppConfig.isTest) c.repeat(reverse: true);
-                      }).move(duration: 12.seconds, end: const Offset(50, -30)),
-                    ),
+                    // Mesh effects removed for stabilization
+
                     Positioned.fill(
                       child: SafeArea(
                         child: RefreshIndicator(
@@ -311,8 +274,7 @@ class Dashboard extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              Icon(Icons.notification_important_rounded,
-                  size: 20, color: semantic.primary),
+              Icon(CupertinoIcons.bell_fill, size: 20, color: semantic.primary),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
@@ -327,33 +289,47 @@ class Dashboard extends ConsumerWidget {
                   ),
                 ),
               ),
-              Icon(Icons.chevron_right_rounded,
-                  size: 18, color: semantic.primary.withValues(alpha: 0.5)),
+              Icon(CupertinoIcons.chevron_right,
+                  size: 14, color: semantic.primary.withValues(alpha: 0.5)),
             ],
           ),
         ).animate().fadeIn().slideY(begin: 0.1, end: 0),
         const SizedBox(height: 8),
       ],
-      WealthHero(
-        summary: summary,
-        activeStreak: data.activeStreak,
-        hasLoggedToday: data.todayTransactionCount > 0,
-        onTapNetWorth: () {
-          Navigator.push(
-            ref.context,
-            MaterialPageRoute(
-              builder: (_) => const NetWorthTrackingScreen(),
-            ),
-          ).then((_) => reload());
-        },
-        onTapStreak: () {
-          Navigator.push(ref.context,
-              MaterialPageRoute(builder: (_) => const MonthlyHistoryScreen()));
-        },
+      Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: WealthHero(
+            summary: summary,
+            activeStreak: data.activeStreak,
+            hasLoggedToday: data.todayTransactionCount > 0,
+            onTapNetWorth: () {
+              Navigator.push(
+                ref.context,
+                MaterialPageRoute(
+                  builder: (_) => const NetWorthTrackingScreen(),
+                ),
+              ).then((_) => reload());
+            },
+            onTapStreak: () {
+              Navigator.push(
+                  ref.context,
+                  MaterialPageRoute(
+                      builder: (_) => const MonthlyHistoryScreen()));
+            },
+          ),
+        ),
       )
           .animate()
           .fade(duration: 800.ms)
           .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuart),
+      if (data.activeStreak > 0) ...[
+        const SizedBox(height: 16),
+        StreakCard(
+          activeStreak: data.activeStreak,
+          hasLoggedToday: data.todayTransactionCount > 0,
+        ),
+      ],
       const SizedBox(height: 24),
       if (summary.totalIncome == 0 &&
           (summary.totalFixed + summary.totalVariable) == 0) ...[
@@ -444,7 +420,7 @@ class Dashboard extends ConsumerWidget {
                       isPrivate: ref.watch(privacyProvider)),
                   valueColor: semantic.income,
                   semantic: semantic,
-                  icon: Icons.payments_rounded,
+                  icon: CupertinoIcons.arrow_down_circle_fill,
                   onTap: () {
                     Navigator.push(
                         ref.context,
@@ -466,7 +442,7 @@ class Dashboard extends ConsumerWidget {
                       isPrivate: ref.watch(privacyProvider)),
                   valueColor: semantic.overspent,
                   semantic: semantic,
-                  icon: Icons.shopping_cart_checkout_rounded,
+                  icon: CupertinoIcons.arrow_up_circle_fill,
                   onTap: () {
                     Navigator.push(
                         ref.context,
@@ -487,13 +463,18 @@ class Dashboard extends ConsumerWidget {
 
   Widget _buildInsightsSection(AppColors semantic, WidgetRef ref,
       MonthlySummary summary, List<Budget> budgets) {
-    return SmartInsightsCard(
-      insights: ref.watch(insightsProvider),
-      score: IntelligenceService.calculateHealthScore(
-        summary: summary,
-        budgets: budgets,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 800),
+        child: SmartInsightsCard(
+          insights: ref.watch(insightsProvider),
+          score: IntelligenceService.calculateHealthScore(
+            summary: summary,
+            budgets: budgets,
+          ),
+          semantic: semantic,
+        ),
       ),
-      semantic: semantic,
     )
         .animate(delay: 700.ms)
         .fade(duration: 800.ms)

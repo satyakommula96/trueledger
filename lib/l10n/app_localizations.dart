@@ -3447,6 +3447,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'DEC'**
   String get decShort;
+
+  /// No description provided for @liveTracking.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Tracking'**
+  String get liveTracking;
+
+  /// No description provided for @burnRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Burn Rate'**
+  String get burnRate;
+
+  /// No description provided for @leftOfRunway.
+  ///
+  /// In en, this message translates to:
+  /// **'Left of runway'**
+  String get leftOfRunway;
+
+  /// No description provided for @subscriptionLeakage.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription Leakage'**
+  String get subscriptionLeakage;
+
+  /// No description provided for @potentialMonthlySavings.
+  ///
+  /// In en, this message translates to:
+  /// **'Potential Monthly Savings'**
+  String get potentialMonthlySavings;
+
+  /// No description provided for @monthlySpend.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Spend'**
+  String get monthlySpend;
+
+  /// No description provided for @vsLastMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'vs last month'**
+  String get vsLastMonth;
+
+  /// No description provided for @financialPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial Position'**
+  String get financialPosition;
+
+  /// No description provided for @trackGrowthInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your growth & insights'**
+  String get trackGrowthInsights;
+
+  /// No description provided for @invested.
+  ///
+  /// In en, this message translates to:
+  /// **'Invested'**
+  String get invested;
+
+  /// No description provided for @allTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'All Transactions'**
+  String get allTransactions;
+
+  /// No description provided for @cancelMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel\n{count} more'**
+  String cancelMore(int count);
+
+  /// No description provided for @savedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved: {amount}/mo'**
+  String savedAmount(String amount);
+
+  /// No description provided for @debtManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt Management'**
+  String get debtManagement;
+
+  /// No description provided for @activeLoans.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Loans'**
+  String get activeLoans;
+
+  /// No description provided for @activeWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Active'**
+  String activeWithCount(int count);
+
+  /// No description provided for @payoffStrategy.
+  ///
+  /// In en, this message translates to:
+  /// **'Payoff Strategy'**
+  String get payoffStrategy;
+
+  /// No description provided for @activeDebtPayoffPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Debt Payoff Plan'**
+  String get activeDebtPayoffPlan;
+
+  /// No description provided for @noBorrowings.
+  ///
+  /// In en, this message translates to:
+  /// **'No Borrowings'**
+  String get noBorrowings;
+
+  /// No description provided for @debtFreeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You are debt-free! Start building your wealth.'**
+  String get debtFreeMessage;
 }
 
 class _AppLocalizationsDelegate

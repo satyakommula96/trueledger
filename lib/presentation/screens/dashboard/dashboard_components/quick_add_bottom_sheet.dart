@@ -16,6 +16,7 @@ import 'package:trueledger/domain/services/personalization_service.dart';
 import 'package:trueledger/presentation/providers/dashboard_provider.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:trueledger/l10n/app_localizations.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 
 class QuickAddBottomSheet extends ConsumerStatefulWidget {
   const QuickAddBottomSheet({super.key});
@@ -233,12 +234,9 @@ class _QuickAddBottomSheetState extends ConsumerState<QuickAddBottomSheet> {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: Container(
+      child: AppleGlassCard(
+        borderRadius: 28,
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        ),
         child: SingleChildScrollView(
           controller: _scrollController,
           child: Column(

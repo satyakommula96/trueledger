@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/domain/models/models.dart';
 import 'package:trueledger/core/theme/theme.dart';
+import 'package:trueledger/core/config/app_config.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trueledger/presentation/providers/privacy_provider.dart';
@@ -31,7 +34,6 @@ class WealthHero extends ConsumerStatefulWidget {
 }
 
 class _WealthHeroState extends ConsumerState<WealthHero> {
-  bool _isHovered = false;
   late ConfettiController _confettiController;
 
   @override
@@ -63,255 +65,245 @@ class _WealthHeroState extends ConsumerState<WealthHero> {
     final l10n = AppLocalizations.of(context)!;
     final isNegative = widget.summary.netWorth < 0;
 
-    // Premium Mesh Gradient logic
+    // Apple Card Inspired Mesh Gradient
     final displayColor = isNegative ? semantic.overspent : semantic.primary;
 
-    final isTouch = Theme.of(context).platform == TargetPlatform.iOS ||
-        Theme.of(context).platform == TargetPlatform.android;
-
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isWide = screenWidth > 768;
-
-    final mainContent = Stack(
-      alignment: Alignment.topCenter,
-      children: [
-        AnimatedContainer(
-          duration: 400.ms,
-          curve: Curves.easeOutQuart,
-          // ignore: deprecated_member_use
-          transform: Matrix4.identity()
-            // ignore: deprecated_member_use
-            ..scale(_isHovered ? 1.015 : 1.0)
-            // ignore: deprecated_member_use
-            ..translate(0.0, _isHovered ? -2.0 : 0.0),
-          width: double.infinity,
-          height: isWide ? 260 : 220,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                displayColor.withValues(alpha: 0.9),
-                displayColor.withValues(alpha: 0.7),
-                displayColor.withValues(alpha: 0.6),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: displayColor.withValues(alpha: _isHovered ? 0.25 : 0.15),
-                blurRadius: _isHovered ? 40 : 20,
-                offset: Offset(0, _isHovered ? 15 : 10),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(32),
-            child: Stack(
-              children: [
-                // Organic background shapes for mesh effect
-                Positioned(
-                  right: -80,
-                  top: -80,
-                  child: Container(
-                    width: 280,
-                    height: 280,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          Colors.white.withValues(alpha: 0.15),
-                          Colors.white.withValues(alpha: 0),
-                        ],
-                      ),
-                    ),
-                  )
-                      .animate(
-                          onPlay: (controller) =>
-                              controller.repeat(reverse: true))
-                      .move(
-                          duration: 4.seconds,
-                          begin: const Offset(0, 0),
-                          end: const Offset(-20, 20))
-                      .scale(
-                          duration: 4.seconds,
-                          begin: const Offset(1, 1),
-                          end: const Offset(1.1, 1.1)),
-                ),
-                Positioned(
-                  left: -50,
-                  bottom: -50,
-                  child: Container(
-                    width: 220,
-                    height: 220,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          Colors.white.withValues(alpha: 0.08),
-                          Colors.white.withValues(alpha: 0),
-                        ],
-                      ),
-                    ),
-                  )
-                      .animate(
-                          onPlay: (controller) =>
-                              controller.repeat(reverse: true))
-                      .move(
-                          duration: 5.seconds,
-                          begin: const Offset(0, 0),
-                          end: const Offset(30, -10))
-                      .scale(
-                          duration: 5.seconds,
-                          begin: const Offset(1.1, 1.1),
-                          end: const Offset(0.9, 0.9)),
-                ),
-                // Gloss / Shine Effect Overlay
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withValues(alpha: 0.1),
-                            Colors.white.withValues(alpha: 0),
-                            Colors.white.withValues(alpha: 0.05),
-                            Colors.white.withValues(alpha: 0),
-                          ],
-                          stops: const [0.1, 0.4, 0.5, 0.8],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Spacer(),
-                      Text(
-                        l10n.currentBalance,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2.5,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TweenAnimationBuilder<double>(
-                        tween: Tween<double>(
-                          begin: 0,
-                          end: widget.summary.netWorth.toDouble(),
-                        ),
-                        duration: 2.seconds,
-                        curve: Curves.easeOutExpo,
-                        builder: (context, value, child) {
-                          final text = CurrencyFormatter.format(
-                            value,
-                            compact: false,
-                            isPrivate: isPrivate,
-                          );
-                          return FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: ShaderMask(
-                              shaderCallback: (bounds) => const LinearGradient(
-                                colors: [Colors.white, Colors.white70],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              ).createShader(bounds),
-                              child: Text(
-                                text,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 52,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -2,
-                                  height: 1.0,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      Consumer(
-                        builder: (context, ref, child) {
-                          final runwayAsync = ref.watch(runwayProvider);
-                          return runwayAsync.when(
-                            data: (result) {
-                              final text = result.isSustainable
-                                  ? l10n.sustainableRunway
-                                  : (result.monthsUntilDepletion == 0
-                                      ? l10n.deficitRunway
-                                      : l10n.runwayMonths(
-                                          result.monthsUntilDepletion ?? 0));
-                              return Text(
-                                text.toUpperCase(),
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5,
-                                ),
-                              ).animate().fadeIn(duration: 400.ms);
-                            },
-                            loading: () => Text(
-                              l10n.calculatingRunway.toUpperCase(),
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                fontSize: 9,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                            error: (_, __) => const SizedBox.shrink(),
-                          );
-                        },
-                      ),
+    return AppleGlassCard(
+      padding: EdgeInsets.zero,
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          displayColor,
+          displayColor.withValues(alpha: 0.8),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Top Right Mesh Sphere
+          Positioned(
+            right: -60,
+            top: -60,
+            child: ExcludeSemantics(
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.15),
+                      Colors.white.withValues(alpha: 0),
                     ],
                   ),
                 ),
-              ],
+              )
+                  .animate(
+                      onPlay: (c) => !AppConfig.isTest
+                          ? c.repeat(reverse: true)
+                          : c.forward())
+                  .move(
+                      duration: 8.seconds,
+                      begin: const Offset(0, 0),
+                      end: const Offset(-30, 30))
+                  .scale(
+                      duration: 8.seconds,
+                      begin: const Offset(1, 1),
+                      end: const Offset(1.1, 1.1)),
             ),
           ),
-        ),
-        ConfettiWidget(
-          confettiController: _confettiController,
-          blastDirectionality: BlastDirectionality.explosive,
-          shouldLoop: false,
-          colors: const [
-            Colors.green,
-            Colors.blue,
-            Colors.pink,
-            Colors.orange,
-            Colors.purple
-          ],
-          gravity: 0.1,
-        ),
-      ],
-    );
-
-    final clickableContent = GestureDetector(
-      onTap: widget.onTapNetWorth,
-      child: mainContent,
-    );
-
-    if (isTouch) return clickableContent.animate().fadeIn(duration: 600.ms);
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: clickableContent.animate().fadeIn(duration: 600.ms),
+          // Bottom Left Mesh Sphere
+          Positioned(
+            left: -80,
+            bottom: -80,
+            child: ExcludeSemantics(
+              child: Container(
+                width: 250,
+                height: 250,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.1),
+                      Colors.white.withValues(alpha: 0),
+                    ],
+                  ),
+                ),
+              )
+                  .animate(
+                      onPlay: (c) => !AppConfig.isTest
+                          ? c.repeat(reverse: true)
+                          : c.forward())
+                  .move(
+                      duration: 10.seconds,
+                      begin: const Offset(0, 0),
+                      end: const Offset(40, -20))
+                  .scale(
+                      duration: 10.seconds,
+                      begin: const Offset(1, 1),
+                      end: const Offset(0.9, 0.9)),
+            ),
+          ),
+          Positioned(
+            top: -100,
+            left: -100,
+            child: ExcludeSemantics(
+              child: Transform.rotate(
+                angle: 45 * 3.1415927 / 180,
+                child: Container(
+                  width: 300,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0),
+                        Colors.white.withValues(alpha: 0.05),
+                        Colors.white.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: widget.onTapNetWorth,
+              borderRadius: BorderRadius.circular(28),
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          l10n.currentBalance.toUpperCase(),
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.6),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 2.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 48),
+                    TweenAnimationBuilder<double>(
+                      tween: Tween<double>(
+                        begin: 0,
+                        end: widget.summary.netWorth.toDouble(),
+                      ),
+                      duration: 1500.ms,
+                      curve: Curves.easeOutQuart,
+                      builder: (context, value, child) {
+                        final text = CurrencyFormatter.format(
+                          value,
+                          compact: false,
+                          isPrivate: isPrivate,
+                        );
+                        return FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            text,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 52,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -1.5,
+                              height: 1.0,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    // Dynamic Runway Insight
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final runwayAsync = ref.watch(runwayProvider);
+                        return runwayAsync.when(
+                          data: (result) {
+                            final text = result.isSustainable
+                                ? l10n.sustainableRunway
+                                : (result.monthsUntilDepletion == 0
+                                    ? l10n.deficitRunway
+                                    : l10n.runwayMonths(
+                                        result.monthsUntilDepletion ?? 0));
+                            return Row(
+                              children: [
+                                Icon(
+                                  result.isSustainable
+                                      ? CupertinoIcons.sparkles
+                                      : CupertinoIcons.info_circle,
+                                  color: Colors.white.withValues(alpha: 0.5),
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  text.toUpperCase(),
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                          loading: () => const SizedBox(
+                            height: 14,
+                            width: 14,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white24),
+                          ),
+                          error: (_, __) => const SizedBox.shrink(),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          ConfettiWidget(
+            confettiController: _confettiController,
+            blastDirectionality: BlastDirectionality.explosive,
+            shouldLoop: false,
+            colors: const [
+              Colors.green,
+              Colors.blue,
+              Colors.pink,
+              Colors.orange,
+              Colors.purple
+            ],
+            gravity: 0.1,
+          ),
+        ],
+      ),
     );
   }
+}
+
+class GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 0.5;
+
+    const step = 20.0;
+    for (double i = 0; i < size.width; i += step) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+    for (double i = 0; i < size.height; i += step) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

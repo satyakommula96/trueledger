@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:ui';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/core/utils/currency_formatter.dart';
@@ -11,6 +11,7 @@ import 'package:trueledger/presentation/screens/net_worth/net_worth_details.dart
 import 'package:trueledger/presentation/screens/investments/investments_screen.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
 import 'package:trueledger/l10n/app_localizations.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 import 'package:trueledger/core/constants/widget_keys.dart';
 
 class NetWorthTrackingScreen extends ConsumerStatefulWidget {
@@ -105,87 +106,51 @@ class _NetWorthTrackingScreenState
     final l10n = AppLocalizations.of(context)!;
     final isPrivate = ref.watch(privacyProvider);
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(l10n.netWorthTrackingTitle),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        flexibleSpace: ClipRRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(color: Colors.transparent),
-          ),
-        ),
-      ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: semantic.primary),
-            )
-          : SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                MediaQuery.of(context).padding.top + 80,
-                20,
-                100,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildCurrentNetWorthCard(semantic, isPrivate)
-                      .animate()
-                      .fadeIn(duration: 600.ms)
-                      .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint),
-                  const SizedBox(height: 32),
-                  _buildAssetsLiabilitiesRow(semantic, isPrivate)
-                      .animate()
-                      .fadeIn(delay: 200.ms, duration: 600.ms)
-                      .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint),
-                  const SizedBox(height: 16),
-                  _buildInvestmentsBanner(semantic)
-                      .animate()
-                      .fadeIn(delay: 300.ms, duration: 600.ms),
-                  const SizedBox(height: 48),
-                  _buildSectionHeader(
-                      semantic, l10n.trend, l10n.twelveMonthOverview),
-                  const SizedBox(height: 20),
-                  _buildTrendChart(semantic, isPrivate)
-                      .animate()
-                      .fadeIn(delay: 400.ms, duration: 600.ms)
-                      .slideY(begin: 0.05, end: 0, curve: Curves.easeOutQuint),
-                  const SizedBox(height: 48),
-                  _buildInsightCard(semantic, isPrivate)
-                      .animate()
-                      .fadeIn(delay: 600.ms, duration: 600.ms),
-                ],
-              ),
+    return AppleScaffold(
+      title: l10n.netWorthTrackingTitle,
+      subtitle: l10n.financialPosition,
+      slivers: [
+        if (_isLoading)
+          SliverFillRemaining(
+            child: Center(
+                child: CircularProgressIndicator(color: semantic.primary)),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _buildCurrentNetWorthCard(semantic, isPrivate)
+                    .animate()
+                    .fadeIn(duration: 600.ms)
+                    .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint),
+                const SizedBox(height: 24),
+                _buildAssetsLiabilitiesRow(semantic, isPrivate)
+                    .animate()
+                    .fadeIn(delay: 200.ms, duration: 600.ms)
+                    .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint),
+                const SizedBox(height: 16),
+                _buildInvestmentsBanner(semantic)
+                    .animate()
+                    .fadeIn(delay: 300.ms, duration: 600.ms),
+                const SizedBox(height: 48),
+                AppleSectionHeader(
+                  title: l10n.trend,
+                  subtitle: l10n.twelveMonthOverview,
+                ),
+                const SizedBox(height: 16),
+                _buildTrendChart(semantic, isPrivate)
+                    .animate()
+                    .fadeIn(delay: 400.ms, duration: 600.ms)
+                    .slideY(begin: 0.05, end: 0, curve: Curves.easeOutQuint),
+                const SizedBox(height: 48),
+                _buildInsightCard(semantic, isPrivate)
+                    .animate()
+                    .fadeIn(delay: 600.ms, duration: 600.ms),
+                const SizedBox(height: 100),
+              ]),
             ),
-    );
-  }
-
-  Widget _buildSectionHeader(AppColors semantic, String title, String sub) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          sub.toUpperCase(),
-          style: TextStyle(
-            fontSize: 10,
-            color: semantic.secondaryText,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.2,
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w900,
-            color: semantic.text,
-            letterSpacing: -0.5,
-          ),
-        ),
       ],
     );
   }
@@ -194,12 +159,9 @@ class _NetWorthTrackingScreenState
     final l10n = AppLocalizations.of(context)!;
     final isNegative = _currentNetWorth < 0;
 
-    // Choose dynamic colors based on status
     final primaryColor = isNegative ? semantic.overspent : semantic.primary;
-    final secondaryColor =
-        isNegative ? Colors.orange.shade700 : semantic.income;
+    final secondaryColor = isNegative ? Colors.orange : semantic.success;
 
-    // Calculate 1-month change for the "badge"
     double monthlyChange = 0;
     if (_monthlyData.length >= 2) {
       final prevMonthNetWorth =
@@ -211,170 +173,117 @@ class _NetWorthTrackingScreenState
       }
     }
 
-    return Container(
-      width: double.infinity,
-      height: 220,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(36),
-        boxShadow: [
-          BoxShadow(
-            color: primaryColor.withValues(alpha: 0.3),
-            blurRadius: 40,
-            offset: const Offset(0, 20),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(36),
-        child: Stack(
-          children: [
-            // Base Gradient
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [primaryColor, primaryColor.withValues(alpha: 0.8)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 800),
+        child: AspectRatio(
+          aspectRatio: 1.6,
+          child: AppleGlassCard(
+            padding: EdgeInsets.zero,
+            gradient: LinearGradient(
+              colors: [primaryColor, primaryColor.withValues(alpha: 0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-
-            // Mesh Circles (Animated/Dynamic feel)
-            _buildMeshCircle(
-                -50, -50, 250, secondaryColor.withValues(alpha: 0.4)),
-            _buildMeshCircle(150, 40, 200, Colors.white.withValues(alpha: 0.1)),
-            _buildMeshCircle(-20, 100, 150, Colors.blue.withValues(alpha: 0.2)),
-
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Stack(
+              children: [
+                _buildMeshCircle(
+                    -60, -60, 280, secondaryColor.withValues(alpha: 0.3)),
+                _buildMeshCircle(
+                    160, 50, 220, Colors.white.withValues(alpha: 0.1)),
+                Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Net Worth Pill
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.account_balance_wallet_rounded,
-                                size: 14, color: Colors.white),
-                            const SizedBox(width: 8),
-                            Text(
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.1)),
+                            ),
+                            child: Text(
                               l10n.netWorth.toUpperCase(),
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w900,
+                                fontWeight: FontWeight.w700,
                                 fontSize: 10,
                                 letterSpacing: 1.5,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-
-                      // Trend pill
-                      if (monthlyChange != 0)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color:
-                                (monthlyChange > 0 ? Colors.green : Colors.red)
-                                    .withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                monthlyChange > 0
-                                    ? Icons.trending_up
-                                    : Icons.trending_down,
-                                size: 14,
-                                color: Colors.white,
+                          if (monthlyChange != 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: (monthlyChange > 0
+                                        ? Colors.white
+                                        : Colors.white)
+                                    .withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                "${monthlyChange > 0 ? '+' : ''}${monthlyChange.toStringAsFixed(1)}%",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 10,
-                                ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    monthlyChange > 0
+                                        ? CupertinoIcons.graph_circle_fill
+                                        : CupertinoIcons.minus_circle_fill,
+                                    size: 14,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    "${monthlyChange > 0 ? '+' : ''}${monthlyChange.toStringAsFixed(1)}%",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Text(
-                    l10n.currentBalance.toUpperCase(),
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 2.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      CurrencyFormatter.format(_currentNetWorth,
-                          isPrivate: isPrivate),
-                      key: WidgetKeys.dashboardNetWorthValue,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 54, // Bigger font
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -2,
-                        height: 1.0,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black26,
-                            offset: Offset(0, 4),
-                            blurRadius: 10,
-                          ),
+                            ),
                         ],
                       ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Gloss Reflection
-            Positioned(
-              top: -100,
-              left: -100,
-              child: Transform.rotate(
-                angle: 45 * 3.1415927 / 180,
-                child: Container(
-                  width: 300,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0),
-                        Colors.white.withValues(alpha: 0.05),
-                        Colors.white.withValues(alpha: 0),
-                      ],
-                    ),
+                      const Spacer(),
+                      Text(
+                        l10n.currentBalance.toUpperCase(),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          CurrencyFormatter.format(_currentNetWorth,
+                              isPrivate: isPrivate),
+                          key: WidgetKeys.dashboardNetWorthValue,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 52,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -1.5,
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -428,7 +337,7 @@ class _NetWorthTrackingScreenState
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.account_balance_wallet_rounded,
+                      Icon(CupertinoIcons.square_stack_3d_up_fill,
                           color: semantic.income, size: 18),
                       const SizedBox(width: 8),
                       Flexible(
@@ -492,7 +401,7 @@ class _NetWorthTrackingScreenState
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.credit_card_rounded,
+                      Icon(CupertinoIcons.creditcard_fill,
                           color: semantic.overspent, size: 18),
                       const SizedBox(width: 8),
                       Flexible(
@@ -536,12 +445,7 @@ class _NetWorthTrackingScreenState
   Widget _buildTrendChart(AppColors semantic, bool isPrivate) {
     final l10n = AppLocalizations.of(context)!;
     if (_monthlyData.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(40),
-        decoration: BoxDecoration(
-          color: semantic.surfaceCombined.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(20),
-        ),
+      return AppleGlassCard(
         child: Center(
           child: Text(
             l10n.noResultsMatched,
@@ -571,14 +475,9 @@ class _NetWorthTrackingScreenState
     final range = maxValue - minValue;
     final padding = range * 0.1; // 10% padding
 
-    return Container(
+    return AppleGlassCard(
       key: WidgetKeys.analysisTrendChart,
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: semantic.surfaceCombined.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: semantic.divider, width: 1.5),
-      ),
       child: Column(
         children: [
           SizedBox(
@@ -621,7 +520,7 @@ class _NetWorthTrackingScreenState
                         lineColor: _currentNetWorth >= 0
                             ? semantic.income
                             : semantic.overspent,
-                        gridColor: semantic.divider,
+                        gridColor: semantic.divider.withValues(alpha: 0.1),
                         hoveredIndex: _hoveredIndex,
                         isPrivate: isPrivate,
                         symbol: CurrencyFormatter.symbol,
@@ -681,154 +580,135 @@ class _NetWorthTrackingScreenState
         firstNetWorth != 0 ? (change / firstNetWorth.abs()) * 100 : 0;
     final isPositive = change >= 0;
 
-    return HoverWrapper(
-      borderRadius: 24,
-      glowColor: isPositive ? semantic.income : semantic.overspent,
-      glowOpacity: 0.1,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: (isPositive ? semantic.income : semantic.overspent)
-              .withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: (isPositive ? semantic.income : semantic.overspent)
-                .withValues(alpha: 0.2),
-            width: 1.5,
+    return AppleGlassCard(
+      color: (isPositive ? semantic.income : semantic.overspent)
+          .withValues(alpha: 0.05),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: (isPositive ? semantic.income : semantic.overspent)
+                      .withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  CupertinoIcons.lightbulb_fill,
+                  color: isPositive ? semantic.income : semantic.overspent,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                l10n.insight.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                  color: semantic.secondaryText,
+                ),
+              ),
+            ],
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+          const SizedBox(height: 20),
+          RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: semantic.text,
+                height: 1.5,
+              ),
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: (isPositive ? semantic.income : semantic.overspent)
-                        .withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.lightbulb_rounded,
+                TextSpan(
+                    text: isPositive
+                        ? l10n.netWorthIncreased
+                        : l10n.netWorthDecreased),
+                TextSpan(
+                  text: isPositive ? l10n.increasedLabel : l10n.decreasedLabel,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
                     color: isPositive ? semantic.income : semantic.overspent,
-                    size: 18,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Text(
-                  l10n.insight,
+                TextSpan(text: l10n.byLabel),
+                TextSpan(
+                  text: CurrencyFormatter.format(change.abs(),
+                      isPrivate: isPrivate),
                   style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                    color: semantic.secondaryText,
+                    fontWeight: FontWeight.w700,
+                    color: isPositive ? semantic.income : semantic.overspent,
                   ),
+                ),
+                TextSpan(
+                  text:
+                      " (${percentChange.abs().toStringAsFixed(1)}%)${l10n.overLast12Months}",
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: semantic.text,
-                  height: 1.5,
-                ),
-                children: [
-                  TextSpan(
-                    text: isPositive
-                        ? l10n.netWorthIncreased
-                        : l10n.netWorthDecreased,
-                  ),
-                  TextSpan(
-                    text:
-                        isPositive ? l10n.increasedLabel : l10n.decreasedLabel,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: isPositive ? semantic.income : semantic.overspent,
-                    ),
-                  ),
-                  TextSpan(text: l10n.byLabel),
-                  TextSpan(
-                    text: CurrencyFormatter.format(change.abs(),
-                        isPrivate: isPrivate),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: isPositive ? semantic.income : semantic.overspent,
-                    ),
-                  ),
-                  TextSpan(
-                    text:
-                        " (${percentChange.abs().toStringAsFixed(1)}%)${l10n.overLast12Months}",
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildInvestmentsBanner(AppColors semantic) {
     final l10n = AppLocalizations.of(context)!;
-    return HoverWrapper(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const InvestmentsScreen()),
-      ),
-      borderRadius: 24,
-      glowColor: semantic.success,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-              color: semantic.success.withValues(alpha: 0.2), width: 1.5),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: semantic.success.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(Icons.pie_chart_rounded,
-                  color: semantic.success, size: 24),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.assetAllocation,
-                    style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.5,
-                        color: semantic.secondaryText),
+    return AppleGlassCard(
+      padding: EdgeInsets.zero,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const InvestmentsScreen()),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: semantic.success.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.investmentPortfolio,
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: semantic.text,
-                        letterSpacing: -0.2),
+                  child: Icon(CupertinoIcons.chart_bar_square_fill,
+                      color: semantic.success, size: 24),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.investments.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: semantic.secondaryText,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.trackGrowthInsights,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: semantic.text,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                Icon(CupertinoIcons.chevron_right, color: semantic.divider),
+              ],
             ),
-            Icon(Icons.chevron_right_rounded, color: semantic.secondaryText),
-          ],
+          ),
         ),
       ),
     );

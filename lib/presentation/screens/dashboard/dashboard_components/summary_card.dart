@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/core/theme/theme.dart';
 import 'package:trueledger/presentation/components/hover_wrapper.dart';
+import 'package:trueledger/presentation/components/apple_style.dart';
 
 class SummaryCard extends StatelessWidget {
   final String label;
@@ -27,53 +28,40 @@ class SummaryCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: 24,
       glowColor: valueColor,
-      glowOpacity: 0.1,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: semantic.surfaceCombined.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: semantic.divider, width: 1.5),
-        ),
+      glowOpacity: 0.05,
+      child: AppleGlassCard(
+        borderRadius: 24,
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: valueColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(icon, size: 16, color: valueColor),
-                ),
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      label.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: semantic.secondaryText,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: valueColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 16, color: valueColor),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+            Text(
+              label.toUpperCase(),
+              style: TextStyle(
+                fontSize: 10,
+                color: semantic.secondaryText,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 4),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
                 value,
                 style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
                   color: semantic.text,
                   letterSpacing: -0.5,
                 ),
@@ -108,26 +96,22 @@ class FullWidthSummaryCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: 24,
       glowColor: valueColor,
-      glowOpacity: 0.1,
-      child: Container(
+      glowOpacity: 0.05,
+      child: AppleGlassCard(
+        borderRadius: 24,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        decoration: BoxDecoration(
-          color: semantic.surfaceCombined.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: semantic.divider, width: 1.5),
-        ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: valueColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                shape: BoxShape.circle,
               ),
               child: Icon(
                 valueColor == semantic.income
-                    ? Icons.account_balance_wallet_rounded
-                    : Icons.receipt_long_rounded,
+                    ? CupertinoIcons.square_stack_3d_up_fill
+                    : CupertinoIcons.doc_text_fill,
                 size: 20,
                 color: valueColor,
               ),
@@ -142,18 +126,18 @@ class FullWidthSummaryCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 10,
                       color: semantic.secondaryText,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
                       value,
                       style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
                         color: semantic.text,
                         letterSpacing: -0.5,
                       ),
@@ -163,8 +147,9 @@ class FullWidthSummaryCard extends StatelessWidget {
               ),
             ),
             Icon(
-              Icons.chevron_right_rounded,
-              color: semantic.secondaryText.withValues(alpha: 0.5),
+              CupertinoIcons.chevron_right,
+              size: 14,
+              color: semantic.secondaryText.withValues(alpha: 0.3),
             ),
           ],
         ),

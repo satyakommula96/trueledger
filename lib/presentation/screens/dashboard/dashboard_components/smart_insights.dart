@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:trueledger/domain/services/intelligence_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,7 +67,7 @@ class SmartInsightsCard extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: semantic.divider, width: 1.5),
               ),
-              child: Icon(Icons.psychology_rounded,
+              child: Icon(CupertinoIcons.sparkles,
                   size: 20, color: semantic.primary),
             ),
           ],
@@ -139,7 +140,7 @@ class SmartInsightsCard extends ConsumerWidget {
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.rocket_launch_rounded,
+              child: const Icon(CupertinoIcons.rocket_fill,
                   color: Colors.white, size: 24),
             ),
             const SizedBox(height: 20),
@@ -191,7 +192,7 @@ class SmartInsightsCard extends ConsumerWidget {
                   color: semantic.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.auto_awesome_rounded,
+                child: Icon(CupertinoIcons.sparkles,
                     size: 16, color: semantic.primary),
               ),
               const SizedBox(width: 12),
@@ -252,23 +253,23 @@ class ScoreCard extends StatelessWidget {
     if (score >= 80) {
       scoreColor = semantic.success;
       label = AppLocalizations.of(context)!.excellentLabel;
-      icon = Icons.verified_rounded;
+      icon = CupertinoIcons.checkmark_seal_fill;
     } else if (score >= 60) {
       scoreColor = semantic.primary;
       label = AppLocalizations.of(context)!.goodLabel;
-      icon = Icons.trending_up_rounded;
+      icon = CupertinoIcons.graph_circle_fill;
     } else if (score >= 40) {
       scoreColor = semantic.warning;
       label = AppLocalizations.of(context)!.averageLabel;
-      icon = Icons.info_rounded;
+      icon = CupertinoIcons.info_circle_fill;
     } else if (score == 0) {
       scoreColor = semantic.secondaryText;
       label = AppLocalizations.of(context)!.calibrating;
-      icon = Icons.hourglass_empty_rounded;
+      icon = CupertinoIcons.hourglass;
     } else {
       scoreColor = semantic.overspent;
       label = AppLocalizations.of(context)!.atRisk;
-      icon = Icons.warning_rounded;
+      icon = CupertinoIcons.exclamationmark_triangle_fill;
     }
 
     return HoverWrapper(
@@ -385,19 +386,19 @@ class InsightItem extends ConsumerWidget {
     switch (insight.type) {
       case InsightType.warning:
         accentColor = semantic.overspent;
-        icon = Icons.warning_rounded;
+        icon = CupertinoIcons.exclamationmark_triangle_fill;
         break;
       case InsightType.success:
         accentColor = semantic.success;
-        icon = Icons.check_circle_rounded;
+        icon = CupertinoIcons.checkmark_circle_fill;
         break;
       case InsightType.prediction:
         accentColor = semantic.primary;
-        icon = Icons.auto_awesome_rounded;
+        icon = CupertinoIcons.sparkles;
         break;
       default:
         accentColor = semantic.primary;
-        icon = Icons.lightbulb_rounded;
+        icon = CupertinoIcons.lightbulb_fill;
     }
 
     return HoverWrapper(
@@ -429,7 +430,7 @@ class InsightItem extends ConsumerWidget {
                 Row(
                   children: [
                     _buildActionButton(
-                      icon: Icons.access_time_rounded,
+                      icon: CupertinoIcons.clock,
                       tooltip: AppLocalizations.of(context)!.snooze7Days,
                       onTap: () async {
                         await ref
@@ -440,7 +441,7 @@ class InsightItem extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     _buildActionButton(
-                      icon: Icons.close_rounded,
+                      icon: CupertinoIcons.xmark,
                       tooltip: AppLocalizations.of(context)!.dismiss,
                       onTap: () async {
                         await ref
