@@ -79,9 +79,9 @@ jobs:
             clang cmake ninja-build pkg-config \
             libgtk-3-dev liblzma-dev libsecret-1-dev \
             libjsoncpp-dev libsqlite3-dev libsqlcipher-dev \
-            libssl-dev xvfb
+            libssl-dev xvfb libglu1-mesa
 
-      - run: xvfb-run -s "-screen 0 1280x720x24" flutter test integration_test/app_test.dart -d linux --timeout 20m --no-dds
+      - run: xvfb-run -s "-screen 0 1280x720x24" flutter test integration_test/app_test.dart -d linux --timeout 20m
 
 # -------------------------
 # ANDROID INTEGRATION
@@ -112,7 +112,7 @@ jobs:
           arch: x86_64
           profile: Nexus 6
           disable-animations: true
-          script: flutter test integration_test/app_test.dart --timeout 25m --no-dds
+          script: flutter test integration_test/app_test.dart --timeout 25m
 
 # -------------------------
 # iOS INTEGRATION (HARD MODE)
@@ -185,8 +185,7 @@ jobs:
           flutter test integration_test/app_test.dart \
             -d "$UDID" \
             --timeout 25m \
-            --no-pub \
-            --no-dds
+            --no-pub
 
 # -------------------------
 # macOS DESKTOP INTEGRATION
@@ -210,7 +209,7 @@ jobs:
           flutter config --enable-macos-desktop
 
       - run: flutter pub get
-      - run: flutter test integration_test/app_test.dart -d macos --timeout 25m --no-dds
+      - run: flutter test integration_test/app_test.dart -d macos --timeout 25m
 
 # -------------------------
 # WINDOWS INTEGRATION
@@ -229,4 +228,4 @@ jobs:
           cache: true
 
       - run: flutter pub get
-      - run: flutter test integration_test/app_test.dart -d windows --timeout 20m --no-dds
+      - run: flutter test integration_test/app_test.dart -d windows --timeout 20m
