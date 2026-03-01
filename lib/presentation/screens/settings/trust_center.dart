@@ -305,7 +305,15 @@ class TrustCenterScreen extends ConsumerWidget {
       (l10n.noAds, l10n.noAdsDesc, Icons.block_rounded),
       (l10n.noTracking, l10n.noTrackingDesc, Icons.visibility_off_rounded),
       (l10n.noProfiling, l10n.noProfilingDesc, Icons.psychology_alt_rounded),
-      (l10n.localOnly, l10n.localOnlyDesc, Icons.devices_rounded),
+      if (kIsWeb ||
+          (!Platform.isWindows && !Platform.isLinux && !Platform.isMacOS))
+        (l10n.localOnly, l10n.localOnlyDesc, Icons.devices_rounded)
+      else
+        (
+          l10n.desktopIsolation,
+          l10n.desktopIsolationDesc,
+          Icons.computer_rounded
+        ),
     ];
 
     return LayoutBuilder(builder: (context, constraints) {
@@ -373,6 +381,7 @@ class TrustCenterScreen extends ConsumerWidget {
       l10n.noBankScraping,
       l10n.noCloudSync,
       l10n.noSellingLogs,
+      l10n.noExternalAi,
     ];
 
     return Container(

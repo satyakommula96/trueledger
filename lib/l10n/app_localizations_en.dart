@@ -139,6 +139,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get netPortfolioValue => 'NET PORTFOLIO VALUE';
 
   @override
+  String get diversified => 'Diversified';
+
+  @override
+  String assetClassesCount(int count) {
+    return '$count ASSET CLASSES';
+  }
+
+  @override
+  String activeAssetsCount(int count) {
+    return '$count ACTIVE ASSETS';
+  }
+
+  @override
   String get allocation => 'Allocation';
 
   @override
@@ -1251,7 +1264,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noProfilingDesc =>
-      'Your financial habits are private. We don\'t build profiles for targeting.';
+      'Your habits are private. Insights & patterns are calculated locally and never sent to external AI servers.';
 
   @override
   String get localOnly => '100% LOCAL';
@@ -1274,6 +1287,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noSellingLogs => 'No selling or sharing of user logs';
+
+  @override
+  String get noExternalAi => 'NO DATA SENT TO EXTERNAL AI';
+
+  @override
+  String get localProcessingOnly => 'Processing is 100% on-device';
+
+  @override
+  String get desktopIsolation => 'DESKTOP ISOLATION';
+
+  @override
+  String get desktopIsolationDesc =>
+      'Data is stored in your private user profile only.';
 
   @override
   String get restoreDataTitle => 'RESTORE DATA?';

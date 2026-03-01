@@ -140,6 +140,19 @@ class AppLocalizationsTe extends AppLocalizations {
   String get netPortfolioValue => 'నికర పోర్ట్‌ఫోలియో విలువ';
 
   @override
+  String get diversified => 'వైవిధ్యభరితమైనది';
+
+  @override
+  String assetClassesCount(int count) {
+    return '$count ఆస్తి తరగతులు';
+  }
+
+  @override
+  String activeAssetsCount(int count) {
+    return '$count క్రియాశీల ఆస్తులు';
+  }
+
+  @override
   String get allocation => 'కేటాయింపు';
 
   @override
@@ -1281,6 +1294,19 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get noSellingLogs =>
       'వినియోగదారు లాగ్‌లను అమ్మడం లేదా పంచుకోవడం జరగదు';
+
+  @override
+  String get noExternalAi => 'NO DATA SENT TO EXTERNAL AI';
+
+  @override
+  String get localProcessingOnly => 'Processing is 100% on-device';
+
+  @override
+  String get desktopIsolation => 'DESKTOP ISOLATION';
+
+  @override
+  String get desktopIsolationDesc =>
+      'Data is stored in your private user profile only.';
 
   @override
   String get restoreDataTitle => 'డేటాను పునరుద్ధరించాలా?';

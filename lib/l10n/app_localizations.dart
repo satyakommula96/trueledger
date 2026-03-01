@@ -350,6 +350,24 @@ abstract class AppLocalizations {
   /// **'NET PORTFOLIO VALUE'**
   String get netPortfolioValue;
 
+  /// No description provided for @diversified.
+  ///
+  /// In en, this message translates to:
+  /// **'Diversified'**
+  String get diversified;
+
+  /// No description provided for @assetClassesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ASSET CLASSES'**
+  String assetClassesCount(int count);
+
+  /// No description provided for @activeAssetsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ACTIVE ASSETS'**
+  String activeAssetsCount(int count);
+
   /// No description provided for @allocation.
   ///
   /// In en, this message translates to:
@@ -2351,7 +2369,7 @@ abstract class AppLocalizations {
   /// No description provided for @noProfilingDesc.
   ///
   /// In en, this message translates to:
-  /// **'Your financial habits are private. We don\'t build profiles for targeting.'**
+  /// **'Your habits are private. Insights & patterns are calculated locally and never sent to external AI servers.'**
   String get noProfilingDesc;
 
   /// No description provided for @localOnly.
@@ -2395,6 +2413,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No selling or sharing of user logs'**
   String get noSellingLogs;
+
+  /// No description provided for @noExternalAi.
+  ///
+  /// In en, this message translates to:
+  /// **'NO DATA SENT TO EXTERNAL AI'**
+  String get noExternalAi;
+
+  /// No description provided for @localProcessingOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing is 100% on-device'**
+  String get localProcessingOnly;
+
+  /// No description provided for @desktopIsolation.
+  ///
+  /// In en, this message translates to:
+  /// **'DESKTOP ISOLATION'**
+  String get desktopIsolation;
+
+  /// No description provided for @desktopIsolationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Data is stored in your private user profile only.'**
+  String get desktopIsolationDesc;
 
   /// No description provided for @restoreDataTitle.
   ///

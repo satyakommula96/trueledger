@@ -89,12 +89,16 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest(bills));
     await tester.pumpAndSettle();
 
-    // Verify day has an event (dot or circle)
-    expect(find.text('${now.day}'), findsOneWidget);
+    final dayFinder = find.byWidgetPredicate((widget) =>
+        widget is Text &&
+        widget.data == '${now.day}' &&
+        widget.style?.fontSize == 12);
 
-    // Tap on the day to open details
-    await tester.ensureVisible(find.text('${now.day}'));
-    await tester.tap(find.text('${now.day}'));
+    // Verify day has an event (dot or circle)
+    expect(dayFinder, findsOneWidget);
+
+    await tester.ensureVisible(dayFinder);
+    await tester.tap(dayFinder);
     await tester.pumpAndSettle();
 
     expect(find.text('Rent'), findsOneWidget);
@@ -125,8 +129,13 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest(bills));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('${now.day}'));
-    await tester.tap(find.text('${now.day}'));
+    final dayFinder = find.byWidgetPredicate((widget) =>
+        widget is Text &&
+        widget.data == '${now.day}' &&
+        widget.style?.fontSize == 12);
+
+    await tester.ensureVisible(dayFinder);
+    await tester.tap(dayFinder);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('MARK PAID'));

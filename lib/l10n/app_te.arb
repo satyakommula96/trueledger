@@ -41,6 +41,19 @@
   "relativeToLastPeriod": " గత కాలంతో పోలిస్తే.",
   "portfolio": "పోర్ట్‌ఫోలియో",
   "netPortfolioValue": "నికర పోర్ట్‌ఫోలియో విలువ",
+  "diversified": "వైవిధ్యభరితమైనది",
+  "assetClassesCount": "{count} ఆస్తి తరగతులు",
+  "@assetClassesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "activeAssetsCount": "{count} క్రియాశీల ఆస్తులు",
+  "@activeAssetsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "allocation": "కేటాయింపు",
   "assetClasses": "ఆస్తి తరగతులు",
   "myAssets": "నా ఆస్తులు",
@@ -383,6 +396,10 @@
   "noBankScraping": "బ్యాంక్ లేదా SMS స్క్రాపింగ్ లేదు",
   "noCloudSync": "క్లౌడ్ సింక్ లేదా బాహ్య స్టోరేజ్ లేదు",
   "noSellingLogs": "వినియోగదారు లాగ్‌లను అమ్మడం లేదా పంచుకోవడం జరగదు",
+  "noExternalAi": "బాహ్య AI కి ఎటువంటి డేటా పంపబడదు",
+  "localProcessingOnly": "ప్రాసెసింగ్ 100% మీ పరికరంలోనే జరుగుతుంది",
+  "desktopIsolation": "డెస్క్‌టాప్ ఐసోలేషన్ (Desktop Isolation)",
+  "desktopIsolationDesc": "డేటా మీ ప్రైవేట్ యూజర్ ప్రొఫైల్‌లో మాత్రమే నిల్వ చేయబడుతుంది.",
   "restoreDataTitle": "డేటాను పునరుద్ధరించాలా?",
   "restoreDataWarning": "ఇది మీ ప్రస్తుత డేటాను ఈ బ్యాకప్‌తో భర్తీ చేస్తుంది. ఇది తిరిగి మార్చబడదు.",
   "restoreNow": "ఇప్పుడే పునరుద్ధరించు",

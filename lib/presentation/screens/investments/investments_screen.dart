@@ -43,8 +43,7 @@ class InvestmentsScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  _buildPortfolioHero(
-                          data.totalValue, semantic, isPrivate, context)
+                  _buildPortfolioHero(data, semantic, isPrivate, context)
                       .animate()
                       .fadeIn(duration: 600.ms)
                       .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuint),
@@ -78,8 +77,9 @@ class InvestmentsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPortfolioHero(
-      double total, AppColors semantic, bool isPrivate, BuildContext context) {
+  Widget _buildPortfolioHero(InvestmentData data, AppColors semantic,
+      bool isPrivate, BuildContext context) {
+    final total = data.totalValue;
     final l10n = AppLocalizations.of(context)!;
     return AppleGlassCard(
       padding: EdgeInsets.zero,
@@ -131,17 +131,28 @@ class InvestmentsScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    _buildSimpleInsightTag(
-                        semantic, Icons.trending_up_rounded, "Growth +12.4%"),
-                    _buildSimpleInsightTag(
-                        semantic, Icons.verified_user_rounded, "Diversified"),
-                  ],
-                ),
+                if (total > 0) ...[
+                  const SizedBox(height: 24),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      if (data.distribution.length >= 3)
+                        _buildSimpleInsightTag(semantic,
+                            Icons.verified_user_rounded, l10n.diversified),
+                      _buildSimpleInsightTag(
+                        semantic,
+                        Icons.category_rounded,
+                        l10n.assetClassesCount(data.distribution.length),
+                      ),
+                      _buildSimpleInsightTag(
+                        semantic,
+                        Icons.inventory_2_rounded,
+                        l10n.activeAssetsCount(data.investments.length),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
