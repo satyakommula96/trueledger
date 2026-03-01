@@ -1475,8 +1475,8 @@ class SettingsScreen extends ConsumerWidget {
                 semantic),
             _buildFooterLink(
                 "Privacy Policy",
-                () =>
-                    launchUrl(Uri.parse("https://trueledger.finance/privacy")),
+                () => launchUrl(Uri.parse(
+                    "https://satyakommula96.github.io/trueledger/privacy/")),
                 semantic),
             _buildFooterLink("Licenses", () {
               showLicensePage(

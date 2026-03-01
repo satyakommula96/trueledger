@@ -55,6 +55,19 @@
   "relativeToLastPeriod": " relative to last period.",
   "portfolio": "Portfolio",
   "netPortfolioValue": "NET PORTFOLIO VALUE",
+  "diversified": "Diversified",
+  "assetClassesCount": "{count} ASSET CLASSES",
+  "activeAssetsCount": "{count} ACTIVE ASSETS",
+  "@assetClassesCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "@activeAssetsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "allocation": "Allocation",
   "assetClasses": "Asset Classes",
   "myAssets": "My Assets",
@@ -556,7 +569,7 @@
   "noTracking": "NO TRACKING",
   "noTrackingDesc": "We don't track your behavior, location, or usage. You are not a data point.",
   "noProfiling": "NO PROFILING",
-  "noProfilingDesc": "Your financial habits are private. We don't build profiles for targeting.",
+  "noProfilingDesc": "Your habits are private. Insights & patterns are calculated locally and never sent to external AI servers.",
   "localOnly": "100% LOCAL",
   "localOnlyDesc": "Your database exists only on your device. We have no access to your logs.",
   "noAnalyticsSdk": "No analytics or tracking SDKs",
@@ -564,6 +577,10 @@
   "noBankScraping": "No bank or SMS scraping",
   "noCloudSync": "No cloud sync or external storage",
   "noSellingLogs": "No selling or sharing of user logs",
+  "noExternalAi": "NO DATA SENT TO EXTERNAL AI",
+  "localProcessingOnly": "Processing is 100% on-device",
+  "desktopIsolation": "DESKTOP ISOLATION",
+  "desktopIsolationDesc": "Data is stored in your private user profile only.",
   "restoreDataTitle": "RESTORE DATA?",
   "restoreDataWarning": "This will REPLACE all your current data with the data from this backup. This action cannot be undone.",
   "restoreNow": "RESTORE NOW",
