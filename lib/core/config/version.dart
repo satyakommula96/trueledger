@@ -1,6 +1,6 @@
 class AppVersion {
   // App Version (Semantic Versioning) - Displayed in Settings
-  static const String current = '1.5.1';
+  static const String current = '1.5.2';
 
   // Database Version (Integer) - Used for SQLite Migrations
   // Increment this ONLY when you modify the database schema (db/schema.dart)
