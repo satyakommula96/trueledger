@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../assets/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
@@ -594,7 +594,7 @@
   <a href="#data-stored-locally" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Data Stored Locally
+        Data Stored Locally:
       
     </span>
   </a>
@@ -2217,7 +2217,7 @@
   <a href="#data-stored-locally" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Data Stored Locally
+        Data Stored Locally:
       
     </span>
   </a>
@@ -2344,64 +2344,42 @@
 
 
 <h1 id="privacy-policy">Privacy Policy<a class="headerlink" href="#privacy-policy" title="Permanent link">&para;</a></h1>
-<p>TrueLedger is designed with a <strong>privacy-first, offline-only</strong> architecture. Your financial data remains entirely on your device and under your control at all times.</p>
+<p><strong>Last updated:</strong> March 01, 2026</p>
+<p>TrueLedger is designed with a <strong>privacy-first, offline-only</strong> architecture. Your financial data remains entirely on your device and under your control at all times. This policy explains how your information is handled locally and confirms that no data is collected, shared, or tracked by the application.</p>
 <h2 id="1-data-collection-and-use">1. Data Collection and Use<a class="headerlink" href="#1-data-collection-and-use" title="Permanent link">&para;</a></h2>
-<p>TrueLedger <strong>does not collect, transmit, or store any personal or financial data on external servers</strong>.</p>
-<p>All data entered into the app is processed and stored locally on your device only.</p>
-<h3 id="data-stored-locally">Data Stored Locally<a class="headerlink" href="#data-stored-locally" title="Permanent link">&para;</a></h3>
+<p>TrueLedger functions as a local database for your financial life. All information you enter remains stored on your physical device.</p>
+<h3 id="data-stored-locally">Data Stored Locally:<a class="headerlink" href="#data-stored-locally" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Financial Data</strong>: Income, expenses, budgets, subscriptions, loans, goals, and related records.</li>
-<li><strong>App Preferences</strong>: Theme selection, currency preference, and UI settings.</li>
-<li><strong>Security Data</strong>: Encrypted PIN and recovery key stored using platform-secure storage (Android Keystore / iOS Keychain).</li>
+<li><strong>Financial Data:</strong> Income, expenses, budgets, subscriptions, loans, goals, assets, and related records.</li>
+<li><strong>Intelligence &amp; Insights:</strong> Behavior patterns, wealth projections, and health scores are calculated entirely on your device using local algorithms.</li>
+<li><strong>Preferences:</strong> App settings, categories, and personalization data.</li>
 </ul>
-<p>TrueLedger does not require user accounts and does not associate data with any identity.</p>
-<hr />
+<p>TrueLedger does <strong>not</strong> collect, transmit, or store any personal or financial data on external servers. We do not have access to your database, your logs, or your usage history.</p>
 <h2 id="2-no-data-sharing-or-tracking">2. No Data Sharing or Tracking<a class="headerlink" href="#2-no-data-sharing-or-tracking" title="Permanent link">&para;</a></h2>
-<p>TrueLedger does <strong>not</strong>:</p>
-<ul>
-<li>Use analytics or telemetry services</li>
-<li>Use advertising SDKs</li>
-<li>Track user behavior</li>
-<li>Share data with third parties</li>
-<li>Transmit data over the network</li>
-</ul>
-<p>There are <strong>no trackers, cookies, or background network calls</strong>.</p>
-<hr />
+<p>Our commitment to your privacy is absolute:
+*   <strong>No Third-Party Analytics:</strong> We do not use analytics or telemetry services (such as Google Analytics or Firebase) to track how you use the app.
+*   <strong>No Data Selling:</strong> Since we do not collect your data, we have nothing to sell or share with third parties, advertisers, or data brokers.
+*   <strong>No Cloud Sync:</strong> By default, TrueLedger does not sync with any cloud services. Backup and data transfer are entirely manual processes controlled by the user.</p>
 <h2 id="3-data-security">3. Data Security<a class="headerlink" href="#3-data-security" title="Permanent link">&para;</a></h2>
 <h3 id="local-encryption">Local Encryption<a class="headerlink" href="#local-encryption" title="Permanent link">&para;</a></h3>
-<p>On supported platforms, local databases are encrypted using <strong>SQLCipher (AES-256)</strong>.
-Encryption keys are managed by the operating system’s secure key storage.</p>
+<p>On supported platforms, local databases are encrypted using <strong>SQLCipher (AES-256)</strong>. Encryption keys are managed by the operating system’s secure key storage (such as Keychain on iOS/macOS or Keystore on Android).</p>
 <h3 id="app-lock-pin-biometrics">App Lock (PIN &amp; Biometrics)<a class="headerlink" href="#app-lock-pin-biometrics" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Optional PIN protection is stored securely using system-level secure storage.</li>
-<li>Optional biometric authentication uses device APIs only.</li>
-<li>A recovery key is generated when PIN protection is enabled.</li>
-</ul>
-<p>If both the PIN and recovery key are lost, <strong>data cannot be recovered</strong>. TrueLedger has no backdoor access.</p>
-<hr />
+<p>Users can optionally enable a local PIN or biometric authentication (Fingerprint, Face ID, etc.) to prevent unauthorized physical access to the app on their device.</p>
 <h2 id="4-permissions">4. Permissions<a class="headerlink" href="#4-permissions" title="Permanent link">&para;</a></h2>
-<p>TrueLedger requests permissions <strong>only when required for user-initiated features</strong>:</p>
-<ul>
-<li><strong>Notifications</strong>: Bill reminders and alerts (optional).</li>
-<li><strong>Storage / Files</strong>: Only when exporting or backing up data at the user’s request.</li>
-<li><strong>Biometrics</strong>: Optional device-level authentication for unlocking the app.</li>
-</ul>
-<p>Permissions are never accessed in the background.</p>
-<hr />
+<p>TrueLedger requests permissions only when required for user-initiated features:
+*   <strong>Notifications:</strong> Used locally for bill reminders and alerts (optional).
+*   <strong>Storage / Files:</strong> Only accessed when you explicitly choose to export a report or create a manual backup.
+*   <strong>Biometrics:</strong> Optional device-level authentication for unlocking the app.</p>
+<p>Permissions are never accessed in the background and no data from these permissions is uploaded.</p>
 <h2 id="5-data-deletion">5. Data Deletion<a class="headerlink" href="#5-data-deletion" title="Permanent link">&para;</a></h2>
-<p>You can delete all app data at any time by using the <strong>Reset Application</strong> option within the app.</p>
-<p>Uninstalling the app also permanently removes all locally stored data from your device.</p>
-<hr />
+<p>You are the sole owner of your data. You can delete all your records at any time:
+1.  By using the "Reset All Data" option in the App Settings.
+2.  By uninstalling the application, which removes all local app data from your device.</p>
 <h2 id="6-desktop-platforms">6. Desktop Platforms<a class="headerlink" href="#6-desktop-platforms" title="Permanent link">&para;</a></h2>
-<p>On desktop platforms (Linux, macOS, Windows), all data is stored locally on the user’s device using the operating system’s file system.
-No data is transmitted externally.</p>
-<hr />
+<p>On desktop platforms (Linux, macOS, Windows), all data is stored locally in your user profile's application directory. This data is not shared between system users and is never transmitted externally.</p>
 <h2 id="7-contact-and-transparency">7. Contact and Transparency<a class="headerlink" href="#7-contact-and-transparency" title="Permanent link">&para;</a></h2>
-<p>TrueLedger is an open-source application.
-For privacy-related questions or concerns, issues can be raised via the project’s GitHub repository.</p>
-<hr />
-<p><strong>Last updated:</strong> January 25, 2026</p>
-<hr />
+<p>TrueLedger is an open-source application. Our code is transparent and available for audit by the community.</p>
+<p>For privacy-related questions or concerns, issues can be raised via the project’s GitHub repository: <a href="https://github.com/satyakommula96/trueledger">satyakommula96/trueledger</a></p>
 
 
 
@@ -2424,7 +2402,7 @@ For privacy-related questions or concerns, issues can be raised via the project�
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 26, 2026 11:14:32 UTC">January 26, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="March 1, 2026 04:33:18 UTC">March 1, 2026</span>
   </span>
 
     
