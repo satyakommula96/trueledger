@@ -48,7 +48,7 @@ jobs:
           chmod +x scripts/create_deb.sh
           VERSION=${{ steps.version.outputs.VERSION }} ./scripts/create_deb.sh
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: linux-deb
           path: TrueLedger.deb
@@ -90,12 +90,12 @@ jobs:
       - run: flutter build appbundle --release --build-name=${{ steps.version.outputs.VERSION }}
       - run: flutter build apk --release --build-name=${{ steps.version.outputs.VERSION }}
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: android-aab
           path: build/app/outputs/bundle/release/app-release.aab
@@ -151,17 +151,17 @@ jobs:
           candle -arch x64 -dAppVersion=${{ steps.version.outputs.CLEAN_VERSION }} windows/installer/TrueLedger.wxs
           light TrueLedger.wixobj -o TrueLedger.msi
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: windows-exe
           path: build/windows/x64/installer/TrueLedger.exe
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: windows-msix
           path: build/windows/x64/runner/Release/TrueLedger.msix
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: windows-msi
           path: TrueLedger.msi
@@ -195,7 +195,7 @@ jobs:
           chmod +x scripts/create_dmg.sh
           VERSION=${{ steps.version.outputs.VERSION }} ./scripts/create_dmg.sh
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: macos-dmg
           path: TrueLedger.dmg
@@ -228,7 +228,7 @@ jobs:
           cp -r build/ios/iphoneos/Runner.app Payload/TrueLedger.app
           zip -r TrueLedger.ipa Payload
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: ios-ipa
           path: TrueLedger.ipa
