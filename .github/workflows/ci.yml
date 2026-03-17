@@ -8,6 +8,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -17,12 +21,13 @@ env:
 
 jobs:
 # -------------------------
-# UNIT + ANALYSIS (FAST)
+# UNIT + ANALYSIS
 # -------------------------
   test:
     name: Unit & Analysis (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
+
     strategy:
       fail-fast: false
       matrix:
@@ -40,15 +45,39 @@ jobs:
       - run: dart format --output=none --set-exit-if-changed .
       - run: flutter analyze
 
+      # -------------------------
+      # TESTS
+      # -------------------------
+      - name: Run tests (no coverage)
+        if: matrix.os != 'ubuntu-latest'
+        run: flutter test
+
       - name: Run tests with coverage
+        if: matrix.os == 'ubuntu-latest'
         run: flutter test --coverage
 
-      - name: Install lcov for Coverage Report
+      # -------------------------
+      # FIX COVERAGE PATHS (CRITICAL)
+      # -------------------------
+      - name: Normalize coverage paths
         if: matrix.os == 'ubuntu-latest'
+        run: |
+          sed -i 's|/home/runner/work/trueledger/trueledger/||g' coverage/lcov.info
+
+      # Optional sanity check (remove later)
+      - name: Debug coverage
+        if: matrix.os == 'ubuntu-latest'
+        run: head -20 coverage/lcov.info
+
+      # -------------------------
+      # REPORT COVERAGE (NO PRs)
+      # -------------------------
+      - name: Install lcov
+        if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request'
         run: sudo apt-get update && sudo apt-get install -y lcov
 
       - name: Report Coverage
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request'
         uses: zgosalvez/github-actions-report-lcov@v7
         with:
           coverage-files: coverage/lcov.info
@@ -115,7 +144,7 @@ jobs:
           script: flutter test integration_test/app_test.dart --timeout 25m
 
 # -------------------------
-# iOS INTEGRATION (HARD MODE)
+# iOS INTEGRATION
 # -------------------------
   integration-ios:
     name: Integration (iOS)
@@ -131,64 +160,36 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Flutter dependencies
-        run: |
+      - run: |
           flutter pub get
           flutter precache --ios
           cd ios && pod install
 
-      - name: Run iOS Integration Test
-        run: |
+      - run: |
           set -euo pipefail
 
           SIM_NAME="FlutterTester"
           DEVICE_TYPE="iPhone 15"
 
-          # Find device UDID safely (returns empty if not found, instead of exiting shell)
           UDID=$(xcrun simctl list devices | grep "$SIM_NAME" | head -n 1 | awk -F '[()]' '{print $2}' || true)
 
-          if [ -z "$UDID" ] || [ ${#UDID} -lt 10 ]; then
-            echo "Creating new simulator: $DEVICE_TYPE"
-            UDID=$(xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE" || xcrun simctl create "$SIM_NAME" "iPhone 15")
+          if [ -z "$UDID" ]; then
+            UDID=$(xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE")
           else
-            echo "Found existing simulator: $UDID. Cleaning..."
             xcrun simctl shutdown "$UDID" || true
             xcrun simctl erase "$UDID" || true
           fi
 
-          echo "Booting simulator ($UDID)..."
-
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
 
-          echo "Waiting for simulator readiness..."
-
-          NEXT_WAIT_TIME=0
-          until xcrun simctl spawn "$UDID" launchctl print system >/dev/null 2>&1; do
-            sleep 5
-            NEXT_WAIT_TIME=$((NEXT_WAIT_TIME + 5))
-            echo "Waiting for system... ($NEXT_WAIT_TIME s)"
-            if [ $NEXT_WAIT_TIME -gt 300 ]; then echo "Timeout waiting for system"; exit 1; fi
-          done
-
-          NEXT_WAIT_TIME=0
-          until xcrun simctl spawn "$UDID" defaults read com.apple.springboard >/dev/null 2>&1; do
-            sleep 5
-            NEXT_WAIT_TIME=$((NEXT_WAIT_TIME + 5))
-            echo "Waiting for springboard... ($NEXT_WAIT_TIME s)"
-            if [ $NEXT_WAIT_TIME -gt 300 ]; then echo "Timeout waiting for springboard"; exit 1; fi
-          done
-
-          echo "Simulator ready. Starting tests..."
-
-          # Using 'flutter test' instead of 'flutter drive' for better stability with modern integration_test package
           flutter test integration_test/app_test.dart \
             -d "$UDID" \
             --timeout 25m \
             --no-pub
 
 # -------------------------
-# macOS DESKTOP INTEGRATION
+# macOS INTEGRATION
 # -------------------------
   integration-macos:
     name: Integration (macOS)
@@ -203,8 +204,7 @@ jobs:
           channel: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: Setup macOS Environment
-        run: |
+      - run: |
           brew install sqlcipher
           flutter config --enable-macos-desktop
 
