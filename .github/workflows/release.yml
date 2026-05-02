@@ -266,7 +266,7 @@ jobs:
           mv dist/macos-dmg/TrueLedger.dmg out/TrueLedger_${{ steps.version.outputs.VERSION }}.dmg
           mv dist/ios-ipa/TrueLedger.ipa out/TrueLedger_${{ steps.version.outputs.VERSION }}_unsigned.ipa
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: out/*
           generate_release_notes: true
