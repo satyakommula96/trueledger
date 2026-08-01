@@ -78,7 +78,7 @@ jobs:
 
       - name: Report Coverage
         if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request'
-        uses: zgosalvez/github-actions-report-lcov@v7
+        uses: zgosalvez/github-actions-report-lcov@v7.1.0
         with:
           coverage-files: coverage/lcov.info
           minimum-coverage: 0
