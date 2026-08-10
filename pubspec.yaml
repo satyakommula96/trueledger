@@ -51,7 +51,7 @@ dependencies:
   flutter_web_plugins:
     sdk: flutter
   pdf: ^3.11.3
-  printing: ^5.14.2
+  printing: ^5.14.3
   flutter_localizations:
     sdk: flutter
   json_annotation: ^4.11.0
