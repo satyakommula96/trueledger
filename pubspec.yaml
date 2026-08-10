@@ -29,7 +29,7 @@ dependencies:
 
   # UI & Charts
   fl_chart: ^1.1.1
-  flutter_svg: ^2.0.10+1
+  flutter_svg: ^2.2.4
   flutter_animate: ^4.5.2
 
   # State management
